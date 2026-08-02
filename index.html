@@ -279,6 +279,7 @@
       }
     }
   </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
@@ -288,13 +289,18 @@
       <p class="muted">이 버전은 한 개의 HTML 파일로 실행됩니다.</p>
 
       <div class="form-group">
-        <label for="username">아이디</label>
-        <input id="username" maxlength="20" autocomplete="username" placeholder="2~20자" />
+        <label for="username">이메일</label>
+<input
+  id="username"
+  type="email"
+  autocomplete="email"
+  placeholder="example@email.com"
+/>
       </div>
 
       <div class="form-group">
         <label for="password">비밀번호</label>
-        <input id="password" type="password" minlength="4" autocomplete="current-password" placeholder="4자 이상" />
+        <input id="password" type="password" minlength="6" autocomplete="current-password" placeholder="6자 이상" />
       </div>
 
       <div class="row">
@@ -304,7 +310,7 @@
 
       <div id="authMessage" class="message"></div>
       <p class="muted" style="font-size:13px;">
-        연습용 계정입니다. 데이터는 현재 브라우저에만 저장됩니다.
+        게임 데이터는 온라인 계정에 저장됩니다.
       </p>
     </div>
   </section>
@@ -410,8 +416,16 @@
   </section>
 
   <script>
-    const STORAGE_KEY = 'singleHtmlGachaTDAccountsV1';
-    const SESSION_KEY = 'singleHtmlGachaTDSessionV1';
+    const SUPABASE_URL =
+  'https://gomwkcqkslaoypdbebid.supabase.co';
+
+const SUPABASE_PUBLISHABLE_KEY =
+  'sb_publishable_iuGd7i15GSv3nszxJhQt0Q_OkNbGbm7';
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
 
     const UNIT_DATA = {
       starterArcher: {
@@ -516,28 +530,9 @@
       screens[name].classList.remove('hidden');
     }
 
-    function getAccounts() {
-      try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-      } catch {
-        return {};
-      }
-    }
 
-    function setAccounts(accounts) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(accounts));
-    }
 
-    async function hashPassword(text) {
-      if (window.crypto?.subtle) {
-        const data = new TextEncoder().encode(text);
-        const hash = await crypto.subtle.digest('SHA-256', data);
-        return Array.from(new Uint8Array(hash))
-          .map(byte => byte.toString(16).padStart(2, '0'))
-          .join('');
-      }
-      return btoa(unescape(encodeURIComponent(text)));
-    }
+
 
     function createDefaultPlayer() {
       return {
@@ -558,13 +553,68 @@
       };
     }
 
-    function savePlayer() {
-      if (!currentUsername || !player) return;
-      const accounts = getAccounts();
-      if (!accounts[currentUsername]) return;
-      accounts[currentUsername].player = player;
-      setAccounts(accounts);
-    }
+   async function savePlayer() {
+  if (!player) {
+    return;
+  }
+
+  const {
+    data: { user },
+    error: userError
+  } = await supabaseClient.auth.getUser();
+
+  if (userError || !user) {
+    console.error('로그인 사용자 확인 실패:', userError);
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from('game_saves')
+    .upsert(
+      {
+        user_id: user.id,
+        save_data: player,
+        updated_at: new Date().toISOString()
+      },
+      {
+        onConflict: 'user_id'
+      }
+    );
+
+  if (error) {
+    console.error('게임 저장 실패:', error.message);
+  }
+}
+
+async function loadPlayer(user) {
+  const { data, error } = await supabaseClient
+    .from('game_saves')
+    .select('save_data')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error('게임 불러오기 실패:', error.message);
+
+    setAuthMessage(
+      '게임 데이터를 불러오지 못했습니다.',
+      'error'
+    );
+
+    return false;
+  }
+
+  currentUsername = user.email || '플레이어';
+
+  if (data?.save_data) {
+    player = data.save_data;
+  } else {
+    player = createDefaultPlayer();
+    await savePlayer();
+  }
+
+  return true;
+}
 
     function setAuthMessage(text, type = '') {
       const el = document.querySelector('#authMessage');
@@ -572,78 +622,134 @@
       el.className = `message ${type}`;
     }
 
-    async function signup() {
-      const username = document.querySelector('#username').value.trim();
-      const password = document.querySelector('#password').value;
+async function signup() {
+  const email =
+    document.querySelector('#username').value.trim();
 
-      if (username.length < 2 || username.length > 20) {
-        setAuthMessage('아이디는 2~20자로 입력하세요.', 'error');
-        return;
+  const password =
+    document.querySelector('#password').value;
+
+  if (!email.includes('@')) {
+    setAuthMessage(
+      '올바른 이메일 주소를 입력하세요.',
+      'error'
+    );
+    return;
+  }
+
+  if (password.length < 6) {
+    setAuthMessage(
+      '비밀번호는 6자 이상이어야 합니다.',
+      'error'
+    );
+    return;
+  }
+
+  const { data, error } =
+    await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo:
+          'https://bidulgy.github.io/bidulgy.games.io/'
       }
+    });
 
-      if (password.length < 4) {
-        setAuthMessage('비밀번호는 4자 이상이어야 합니다.', 'error');
-        return;
-      }
+  if (error) {
+    console.error('회원가입 실패:', error.message);
+    setAuthMessage(error.message, 'error');
+    return;
+  }
 
-      const accounts = getAccounts();
-      if (accounts[username]) {
-        setAuthMessage('이미 사용 중인 아이디입니다.', 'error');
-        return;
-      }
+  if (data.session && data.user) {
+    const loaded = await loadPlayer(data.user);
 
-      accounts[username] = {
-        passwordHash: await hashPassword(password),
-        player: createDefaultPlayer()
-      };
-
-      setAccounts(accounts);
-      setAuthMessage('회원가입 완료! 이제 로그인하세요.', 'success');
-    }
-
-    async function login() {
-      const username = document.querySelector('#username').value.trim();
-      const password = document.querySelector('#password').value;
-      const accounts = getAccounts();
-      const account = accounts[username];
-
-      if (!account) {
-        setAuthMessage('등록되지 않은 아이디입니다.', 'error');
-        return;
-      }
-
-      const hash = await hashPassword(password);
-      if (hash !== account.passwordHash) {
-        setAuthMessage('비밀번호가 맞지 않습니다.', 'error');
-        return;
-      }
-
-      currentUsername = username;
-      player = account.player;
-      sessionStorage.setItem(SESSION_KEY, username);
+    if (loaded) {
       openMenu();
     }
 
-    function logout() {
-      savePlayer();
-      currentUsername = null;
-      player = null;
-      sessionStorage.removeItem(SESSION_KEY);
-      document.querySelector('#password').value = '';
-      showScreen('auth');
-    }
+    return;
+  }
 
-    function restoreSession() {
-      const username = sessionStorage.getItem(SESSION_KEY);
-      const accounts = getAccounts();
-      if (username && accounts[username]) {
-        currentUsername = username;
-        player = accounts[username].player;
-        openMenu();
-      } else {
-        showScreen('auth');
-      }
-    }
+  setAuthMessage(
+    '회원가입이 완료되었습니다. 이메일을 확인한 뒤 로그인하세요.',
+    'success'
+  );
+}
+
+async function login() {
+  const email =
+    document.querySelector('#username').value.trim();
+
+  const password =
+    document.querySelector('#password').value;
+
+  if (!email || !password) {
+    setAuthMessage(
+      '이메일과 비밀번호를 입력하세요.',
+      'error'
+    );
+    return;
+  }
+
+  const { data, error } =
+    await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
+
+  if (error) {
+    console.error('로그인 실패:', error.message);
+
+    setAuthMessage(
+      '이메일 또는 비밀번호를 확인하세요.',
+      'error'
+    );
+
+    return;
+  }
+
+  const loaded = await loadPlayer(data.user);
+
+  if (loaded) {
+    openMenu();
+  }
+}
+async function logout() {
+  await savePlayer();
+
+  const { error } =
+    await supabaseClient.auth.signOut();
+
+  if (error) {
+    console.error('로그아웃 실패:', error.message);
+    return;
+  }
+
+  currentUsername = null;
+  player = null;
+
+  document.querySelector('#password').value = '';
+  showScreen('auth');
+}
+
+  async function restoreSession() {
+  const {
+    data: { session },
+    error
+  } = await supabaseClient.auth.getSession();
+
+  if (error || !session) {
+    showScreen('auth');
+    return;
+  }
+
+  const loaded = await loadPlayer(session.user);
+
+  if (loaded) {
+    openMenu();
+  }
+}
 
     function openMenu() {
       savePlayer();

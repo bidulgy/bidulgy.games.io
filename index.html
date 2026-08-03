@@ -278,6 +278,507 @@
         grid-template-columns: repeat(2, minmax(120px, 1fr));
       }
     }
+    /* ==================================
+   비둘기 침공 메인 메뉴
+================================== */
+
+.invasion-menu {
+  position: relative;
+  width: 100%;
+  max-width: none;
+  min-height: 100vh;
+  padding: 28px clamp(22px, 6vw, 100px);
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 18% 30%,
+      rgba(47, 126, 206, 0.22),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 85% 18%,
+      rgba(255, 72, 72, 0.13),
+      transparent 26%
+    ),
+    linear-gradient(
+      145deg,
+      #07101f 0%,
+      #10223a 48%,
+      #151c2d 100%
+    );
+}
+
+.invasion-menu::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.2;
+  background-image:
+    linear-gradient(
+      rgba(255, 255, 255, 0.04) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.04) 1px,
+      transparent 1px
+    );
+  background-size: 55px 55px;
+}
+
+.invasion-topbar {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  width: min(1200px, 100%);
+  margin: 0 auto;
+}
+
+.commander-info {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.commander-icon {
+  display: grid;
+  place-items: center;
+  width: 55px;
+  height: 55px;
+  border: 1px solid rgba(125, 179, 236, 0.45);
+  border-radius: 17px;
+  background: rgba(29, 58, 94, 0.85);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+  font-size: 29px;
+}
+
+.commander-label {
+  display: block;
+  margin-bottom: 4px;
+  color: #8ba6c7;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.commander-name {
+  margin: 0;
+  color: white;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.invasion-resources {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.invasion-resource {
+  border-color: rgba(130, 168, 216, 0.28);
+  background: rgba(16, 36, 65, 0.85);
+  color: #dceaff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+}
+
+.invasion-resource strong {
+  color: white;
+}
+
+.invasion-logout {
+  min-height: 43px;
+  border: 1px solid rgba(143, 174, 215, 0.25);
+  background: rgba(61, 79, 112, 0.86);
+  color: white;
+  transition: 0.2s;
+}
+
+.invasion-logout:hover {
+  background: rgba(83, 105, 145, 1);
+  transform: translateY(-2px);
+}
+
+.invasion-content {
+  position: relative;
+  z-index: 3;
+  width: min(1020px, 100%);
+  margin: 65px auto 0;
+}
+
+.invasion-hero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(35px, 7vw, 90px);
+}
+
+.enemy-logo-area {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(210px, 28vw, 320px);
+  aspect-ratio: 1;
+  border: 2px solid rgba(255, 92, 92, 0.48);
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle,
+      rgba(255, 75, 75, 0.2),
+      rgba(25, 54, 88, 0.4) 48%,
+      rgba(7, 19, 37, 0.9) 72%
+    );
+  box-shadow:
+    0 0 70px rgba(255, 51, 51, 0.16),
+    inset 0 0 45px rgba(255, 255, 255, 0.05);
+}
+
+.target-ring {
+  position: absolute;
+  inset: 26px;
+  border: 1px dashed rgba(255, 113, 113, 0.5);
+  border-radius: 50%;
+  animation: targetRotate 13s linear infinite;
+}
+
+.target-ring::before,
+.target-ring::after {
+  content: "";
+  position: absolute;
+  background: rgba(255, 96, 96, 0.65);
+}
+
+.target-ring::before {
+  top: 50%;
+  left: -13px;
+  width: calc(100% + 26px);
+  height: 1px;
+}
+
+.target-ring::after {
+  top: -13px;
+  left: 50%;
+  width: 1px;
+  height: calc(100% + 26px);
+}
+
+.enemy-pigeon {
+  position: relative;
+  z-index: 2;
+  font-size: clamp(100px, 15vw, 160px);
+  filter:
+    drop-shadow(0 18px 12px rgba(0, 0, 0, 0.4))
+    drop-shadow(0 0 20px rgba(255, 86, 86, 0.2));
+  animation: enemyPigeonFloat 2.8s ease-in-out infinite;
+}
+
+.alert-symbol {
+  position: absolute;
+  z-index: 4;
+  top: 9%;
+  right: 11%;
+  color: #ffca45;
+  font-size: clamp(36px, 5vw, 55px);
+  font-weight: 900;
+  text-shadow: 0 0 20px rgba(255, 185, 45, 0.55);
+  animation: alertBlink 1.15s infinite;
+}
+
+.invasion-title-area {
+  max-width: 470px;
+}
+
+.invasion-subtitle {
+  color: #ff7878;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.32em;
+}
+
+.invasion-title-area h1 {
+  margin: 11px 0 18px;
+  color: white;
+  font-size: clamp(48px, 7vw, 80px);
+  line-height: 0.94;
+  letter-spacing: -0.07em;
+  text-shadow:
+    0 5px 0 rgba(0, 0, 0, 0.18),
+    0 17px 38px rgba(0, 0, 0, 0.35);
+}
+
+.invasion-title-area p {
+  margin: 0;
+  color: #a7bad3;
+  font-size: clamp(15px, 2vw, 18px);
+  line-height: 1.7;
+}
+
+.invasion-start-button {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  width: min(720px, 100%);
+  min-height: 91px;
+  margin: 55px auto 18px;
+  padding: 18px 27px;
+  border: 1px solid #ffe38b;
+  border-radius: 23px;
+  background: linear-gradient(135deg, #ffe170, #ffbb2f);
+  color: #302407;
+  box-shadow:
+    0 18px 42px rgba(255, 181, 36, 0.24),
+    inset 0 2px 0 rgba(255, 255, 255, 0.6);
+  transition: 0.2s;
+}
+
+.invasion-start-button:hover {
+  transform: translateY(-5px) scale(1.015);
+  box-shadow:
+    0 25px 55px rgba(255, 181, 36, 0.34),
+    inset 0 2px 0 rgba(255, 255, 255, 0.65);
+}
+
+.start-button-icon {
+  font-size: 38px;
+}
+
+.start-button-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+.start-button-text strong {
+  font-size: 25px;
+}
+
+.start-button-text small {
+  opacity: 0.67;
+  font-size: 13px;
+}
+
+.start-button-arrow {
+  font-size: 21px;
+}
+
+.defense-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+  width: min(900px, 100%);
+  margin: 0 auto;
+}
+
+.defense-menu-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 140px;
+  padding: 22px;
+  border: 1px solid rgba(143, 182, 231, 0.22);
+  border-radius: 21px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(37, 66, 104, 0.94),
+      rgba(20, 39, 68, 0.94)
+    );
+  color: white;
+  text-align: left;
+  box-shadow: 0 15px 34px rgba(0, 0, 0, 0.22);
+  transition: 0.2s;
+}
+
+.defense-menu-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(255, 199, 72, 0.68);
+  box-shadow: 0 22px 44px rgba(0, 0, 0, 0.32);
+}
+
+.defense-card-icon {
+  margin-bottom: 15px;
+  font-size: 30px;
+}
+
+.defense-menu-card strong {
+  margin-bottom: 5px;
+  font-size: 18px;
+}
+
+.defense-menu-card small {
+  color: #9db2cd;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.invasion-warning {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 24px;
+  color: #8399b6;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.warning-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff5858;
+  box-shadow: 0 0 12px #ff5858;
+  animation: alertBlink 1.15s infinite;
+}
+
+.enemy-flock {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  gap: 12px;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.enemy-flock span {
+  display: block;
+  animation: flyingPigeon 5s ease-in-out infinite;
+}
+
+.flock-one {
+  top: 18%;
+  left: -180px;
+  font-size: 45px;
+  animation: flockMove 18s linear infinite;
+}
+
+.flock-two {
+  top: 63%;
+  left: -150px;
+  font-size: 34px;
+  animation: flockMove 24s linear infinite 6s;
+}
+
+.warning-light {
+  position: absolute;
+  top: -130px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: rgba(255, 47, 47, 0.1);
+  filter: blur(45px);
+  animation: warningPulse 2s ease-in-out infinite;
+}
+
+.warning-light-left {
+  left: -80px;
+}
+
+.warning-light-right {
+  right: -80px;
+  animation-delay: 1s;
+}
+
+@keyframes enemyPigeonFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+
+  50% {
+    transform: translateY(-11px) rotate(2deg);
+  }
+}
+
+@keyframes targetRotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes alertBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes flyingPigeon {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-5deg);
+  }
+
+  50% {
+    transform: translateY(-18px) rotate(5deg);
+  }
+}
+
+@keyframes flockMove {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(100vw + 350px));
+  }
+}
+
+@keyframes warningPulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+@media (max-width: 800px) {
+  .invasion-menu {
+    padding: 20px;
+  }
+
+  .invasion-topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .invasion-resources {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .invasion-content {
+    margin-top: 45px;
+  }
+
+  .invasion-hero {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .defense-menu-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .defense-menu-card {
+    min-height: 110px;
+  }
+}
   </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -317,28 +818,110 @@
     </div>
   </section>
 
-  <section id="menuScreen" class="screen hidden">
-    <div class="between">
+<section id="menuScreen" class="screen hidden invasion-menu">
+  <div class="warning-light warning-light-left"></div>
+  <div class="warning-light warning-light-right"></div>
+
+  <div class="enemy-flock flock-one">
+    <span>🕊️</span>
+    <span>🕊️</span>
+    <span>🕊️</span>
+  </div>
+
+  <div class="enemy-flock flock-two">
+    <span>🕊️</span>
+    <span>🕊️</span>
+  </div>
+
+  <header class="invasion-topbar">
+    <div class="commander-info">
+      <div class="commander-icon">🛡️</div>
+
       <div>
-        <h1>메인 메뉴</h1>
-        <p id="welcomeText" class="muted"></p>
-      </div>
-      <div class="row">
-        <div class="resource-bar">
-          <div class="resource">💎 소환석 <strong id="menuGems">0</strong></div>
-          <div class="resource">🏆 최고 스테이지 <strong id="menuStage">0</strong></div>
-        </div>
-        <button id="logoutBtn" class="secondary">로그아웃</button>
+        <span class="commander-label">수비대 지휘관</span>
+        <p id="welcomeText" class="commander-name"></p>
       </div>
     </div>
 
-    <div class="menu-grid">
-      <button id="startBattleBtn">⚔️ 전투 시작</button>
-      <button id="openGachaBtn">✨ 캐릭터 소환</button>
-      <button id="openDeckBtn">🧩 덱 편성</button>
-      <button id="openCollectionBtn">📚 보유 캐릭터</button>
+    <div class="invasion-resources">
+      <div class="resource invasion-resource">
+        💎 소환석
+        <strong id="menuGems">0</strong>
+      </div>
+
+      <div class="resource invasion-resource">
+        🏆 최고 스테이지
+        <strong id="menuStage">0</strong>
+      </div>
+
+      <button id="logoutBtn" class="invasion-logout">
+        로그아웃
+      </button>
     </div>
-  </section>
+  </header>
+
+  <main class="invasion-content">
+    <div class="invasion-hero">
+      <div class="enemy-logo-area">
+        <div class="alert-symbol">⚠</div>
+        <div class="enemy-pigeon">🕊️</div>
+        <div class="target-ring"></div>
+      </div>
+
+      <div class="invasion-title-area">
+        <span class="invasion-subtitle">
+          PIGEON INVASION
+        </span>
+
+        <h1>
+          가챠<br />
+          타워디펜스
+        </h1>
+
+        <p>
+          끝없이 몰려오는 비둘기 떼를 막고<br />
+          도시의 마지막 방어선을 지켜내세요!
+        </p>
+      </div>
+    </div>
+
+    <button id="startBattleBtn" class="invasion-start-button">
+      <span class="start-button-icon">⚔️</span>
+
+      <span class="start-button-text">
+        <strong>전투 시작</strong>
+        <small>비둘기 침공을 막으러 출격합니다</small>
+      </span>
+
+      <span class="start-button-arrow">▶</span>
+    </button>
+
+    <div class="defense-menu-grid">
+      <button id="openGachaBtn" class="defense-menu-card">
+        <span class="defense-card-icon">✨</span>
+        <strong>수비대 소환</strong>
+        <small>새로운 방어 유닛을 획득하세요</small>
+      </button>
+
+      <button id="openDeckBtn" class="defense-menu-card">
+        <span class="defense-card-icon">🧩</span>
+        <strong>덱 편성</strong>
+        <small>출전할 수비대원을 선택하세요</small>
+      </button>
+
+      <button id="openCollectionBtn" class="defense-menu-card">
+        <span class="defense-card-icon">📚</span>
+        <strong>수비대 도감</strong>
+        <small>보유한 방어 유닛을 확인하세요</small>
+      </button>
+    </div>
+
+    <div class="invasion-warning">
+      <span class="warning-dot"></span>
+      비둘기 떼 접근 중 · 방어선 전투 준비
+    </div>
+  </main>
+</section>
 
   <section id="gachaScreen" class="screen hidden">
     <div class="between">

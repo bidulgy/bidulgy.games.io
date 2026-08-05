@@ -2449,6 +2449,37 @@
   .batch-result-list { grid-template-columns: 1fr; }
 }
 
+
+
+    /* 배치 유닛 상세 정보 */
+    .selected-unit-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin: 12px 0 14px;
+    }
+
+    .selected-unit-stats > div {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 10px;
+      border: 1px solid rgba(138, 166, 207, .24);
+      border-radius: 11px;
+      background: rgba(13, 25, 44, .72);
+    }
+
+    .selected-unit-stats span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .selected-unit-stats strong {
+      color: #fff;
+      font-size: 16px;
+    }
+
   </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -4309,7 +4340,14 @@ async function logout() {
         waveRewardGranted: false,
         finalBossDefeated: false,
         bossEscaped: false,
-        earnedWaveGems: 0
+        earnedWaveGems: 0,
+        placementPreview: {
+          active: false,
+          x: 0,
+          y: 0,
+          valid: false,
+          pointerType: 'mouse'
+        }
       };
 
       renderBattleDeck();
@@ -4466,6 +4504,7 @@ async function logout() {
         button.addEventListener('click', () => {
           battle.selectedDeployUnitId = button.dataset.battleUnit;
           battle.selectedPlacedUnit = null;
+          clearPlacementPreview();
           renderBattleDeck();
           renderSelectedPanel();
           setBattleMessage('지도에서 길이 아닌 곳을 클릭해 배치하세요.');
@@ -4500,9 +4539,17 @@ async function logout() {
       const unit = UNIT_DATA[placed.unitId];
       const refund = Math.floor(placed.totalInvestment * 0.7);
 
+      const cooldownText = `${placed.fireInterval.toFixed(2)}초`;
+      const attacksPerSecond = (1 / placed.fireInterval).toFixed(2);
+
       panel.innerHTML = `
         <h3>${unit.icon} ${unit.name}</h3>
-        <p>공격력 ${placed.damage}<br>사거리 ${placed.range}</p>
+        <div class="selected-unit-stats">
+          <div><span>데미지</span><strong>${placed.damage}</strong></div>
+          <div><span>공격 쿨타임</span><strong>${cooldownText}</strong></div>
+          <div><span>초당 공격</span><strong>${attacksPerSecond}회</strong></div>
+          <div><span>공격 범위</span><strong>${placed.range}</strong></div>
+        </div>
         <button id="sellUnitBtn" class="danger">판매 +${refund} 골드</button>
       `;
 
@@ -5821,6 +5868,84 @@ async function logout() {
       drawAimedUnitWeapon(unit, data, time);
     }
 
+    function drawRangeCircle(x, y, range, options = {}) {
+      const {
+        fill = 'rgba(80, 190, 255, .10)',
+        stroke = 'rgba(135, 220, 255, .86)',
+        lineWidth = 2,
+        dashed = true
+      } = options;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(x, y, range, 0, Math.PI * 2);
+      ctx.fillStyle = fill;
+      ctx.fill();
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = lineWidth;
+      if (dashed) ctx.setLineDash([10, 7]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+
+    function drawSelectedPlacedUnitRange() {
+      const selected = battle?.selectedPlacedUnit;
+      if (!selected || battle.ended) return;
+
+      drawRangeCircle(selected.x, selected.y, selected.range, {
+        fill: 'rgba(255, 208, 74, .08)',
+        stroke: 'rgba(255, 220, 105, .92)',
+        lineWidth: 2.5,
+        dashed: false
+      });
+    }
+
+    function drawPlacementPreview(time) {
+      const preview = battle?.placementPreview;
+      const unitId = battle?.selectedDeployUnitId;
+      if (!preview?.active || !preview.valid || !unitId || battle.ended) return;
+
+      const data = UNIT_DATA[unitId];
+      if (!data) return;
+
+      drawRangeCircle(preview.x, preview.y, data.range, {
+        fill: 'rgba(66, 211, 146, .10)',
+        stroke: 'rgba(113, 255, 190, .92)',
+        lineWidth: 2.4,
+        dashed: true
+      });
+
+      const ghostUnit = {
+        unitId,
+        x: preview.x,
+        y: preview.y,
+        damage: data.damage,
+        range: data.range,
+        fireInterval: data.fireInterval,
+        cooldown: 0,
+        totalInvestment: data.cost,
+        animationOffset: 0,
+        attackAnimation: 0,
+        angle: 0,
+        stunRemaining: 0,
+        attackSlowRemaining: 0
+      };
+
+      ctx.save();
+      ctx.translate(preview.x, preview.y);
+      ctx.globalAlpha = .42;
+      drawDetailedUnitSprite(ghostUnit, time);
+      ctx.globalAlpha = 1;
+
+      ctx.beginPath();
+      ctx.arc(0, 3, 34, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(147, 255, 204, .95)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.restore();
+    }
+
     function drawPlacedUnit(unit, time) {
       ctx.save();
       ctx.translate(unit.x, unit.y);
@@ -5928,6 +6053,8 @@ async function logout() {
     function drawBattle(time) {
       drawBackground();
       drawPath();
+      drawSelectedPlacedUnitRange();
+      drawPlacementPreview(time);
       battle.placedUnits.forEach(unit => drawPlacedUnit(unit, time));
       battle.enemies.forEach(enemy => drawEnemy(enemy, time));
       drawShots();
@@ -6012,37 +6139,23 @@ async function logout() {
       };
     }
 
-    canvas.addEventListener('click', event => {
-      if (!battle || battle.ended) return;
-      const point = canvasPoint(event);
+    function clearPlacementPreview() {
+      if (!battle?.placementPreview) return;
+      battle.placementPreview.active = false;
+      battle.placementPreview.valid = false;
+    }
 
-      const clickedPlaced = [...battle.placedUnits].reverse().find(unit =>
-        Math.hypot(unit.x - point.x, unit.y - point.y) < 30
-      );
-
-      if (clickedPlaced) {
-        battle.selectedPlacedUnit = clickedPlaced;
-        battle.selectedDeployUnitId = null;
-        renderBattleDeck();
-        renderSelectedPanel();
-        return;
+    function getPlacementCheck(point, unitData) {
+      if (!battle || !unitData) {
+        return { valid: false, reason: '배치할 유닛을 선택하세요.' };
       }
-
-      if (!battle.selectedDeployUnitId) {
-        setBattleMessage('먼저 맵 아래에서 배치할 유닛을 선택하세요.');
-        return;
-      }
-
-      const unitData = UNIT_DATA[battle.selectedDeployUnitId];
 
       if (battle.gold < unitData.cost) {
-        setBattleMessage('전투 골드가 부족합니다.');
-        return;
+        return { valid: false, reason: '전투 골드가 부족합니다.' };
       }
 
       if (isOnPath(point)) {
-        setBattleMessage('길 위에는 유닛을 배치할 수 없습니다.');
-        return;
+        return { valid: false, reason: '길 위에는 유닛을 배치할 수 없습니다.' };
       }
 
       const nearby = battle.placedUnits.some(unit =>
@@ -6050,8 +6163,38 @@ async function logout() {
       );
 
       if (nearby) {
-        setBattleMessage('다른 유닛과 너무 가깝습니다.');
-        return;
+        return { valid: false, reason: '다른 유닛과 너무 가깝습니다.' };
+      }
+
+      return { valid: true, reason: '' };
+    }
+
+    function updatePlacementPreview(point, pointerType = 'mouse') {
+      if (!battle || battle.ended || !battle.selectedDeployUnitId) {
+        clearPlacementPreview();
+        return false;
+      }
+
+      const unitData = UNIT_DATA[battle.selectedDeployUnitId];
+      const check = getPlacementCheck(point, unitData);
+      battle.placementPreview.active = check.valid;
+      battle.placementPreview.valid = check.valid;
+      battle.placementPreview.x = point.x;
+      battle.placementPreview.y = point.y;
+      battle.placementPreview.pointerType = pointerType;
+      return check.valid;
+    }
+
+    function placeSelectedUnitAt(point) {
+      if (!battle || battle.ended || !battle.selectedDeployUnitId) return false;
+
+      const unitData = UNIT_DATA[battle.selectedDeployUnitId];
+      const check = getPlacementCheck(point, unitData);
+
+      if (!check.valid) {
+        setBattleMessage(check.reason);
+        clearPlacementPreview();
+        return false;
       }
 
       battle.placedUnits.push({
@@ -6071,8 +6214,135 @@ async function logout() {
       });
 
       battle.gold -= unitData.cost;
+      clearPlacementPreview();
       updateBattleUi();
       setBattleMessage(`${unitData.name}을 배치했습니다.`);
+      return true;
+    }
+
+    let touchPlacementTimer = null;
+    let touchPlacementState = null;
+    let suppressNextCanvasClick = false;
+
+    canvas.addEventListener('pointermove', event => {
+      if (!battle || battle.ended || !battle.selectedDeployUnitId) {
+        clearPlacementPreview();
+        return;
+      }
+
+      const point = canvasPoint(event);
+
+      if (event.pointerType === 'mouse') {
+        updatePlacementPreview(point, 'mouse');
+        return;
+      }
+
+      if (touchPlacementState?.pointerId === event.pointerId) {
+        touchPlacementState.latestPoint = point;
+        const moved = Math.hypot(
+          point.x - touchPlacementState.startPoint.x,
+          point.y - touchPlacementState.startPoint.y
+        );
+
+        if (moved > 20 && !touchPlacementState.activated) {
+          clearTimeout(touchPlacementTimer);
+          touchPlacementTimer = null;
+        }
+
+        if (touchPlacementState.activated) {
+          updatePlacementPreview(point, 'touch');
+          event.preventDefault();
+        }
+      }
+    });
+
+    canvas.addEventListener('pointerleave', event => {
+      if (event.pointerType === 'mouse') clearPlacementPreview();
+    });
+
+    canvas.addEventListener('pointerdown', event => {
+      if (
+        event.pointerType === 'mouse' ||
+        !battle ||
+        battle.ended ||
+        !battle.selectedDeployUnitId
+      ) return;
+
+      clearTimeout(touchPlacementTimer);
+      const point = canvasPoint(event);
+      touchPlacementState = {
+        pointerId: event.pointerId,
+        startPoint: point,
+        latestPoint: point,
+        activated: false
+      };
+
+      try {
+        canvas.setPointerCapture(event.pointerId);
+      } catch (error) {
+        // 일부 브라우저는 포인터 캡처를 지원하지 않을 수 있습니다.
+      }
+
+      touchPlacementTimer = setTimeout(() => {
+        if (!touchPlacementState || touchPlacementState.pointerId !== event.pointerId) return;
+        touchPlacementState.activated = true;
+        updatePlacementPreview(touchPlacementState.latestPoint, 'touch');
+        setBattleMessage('손가락을 움직여 위치를 확인하고 떼면 배치됩니다.');
+      }, 380);
+    });
+
+    function finishTouchPlacement(event, cancelled = false) {
+      if (!touchPlacementState || touchPlacementState.pointerId !== event.pointerId) return;
+
+      clearTimeout(touchPlacementTimer);
+      touchPlacementTimer = null;
+
+      if (touchPlacementState.activated) {
+        suppressNextCanvasClick = true;
+        setTimeout(() => {
+          suppressNextCanvasClick = false;
+        }, 450);
+        if (!cancelled) {
+          placeSelectedUnitAt(touchPlacementState.latestPoint);
+        }
+        clearPlacementPreview();
+        event.preventDefault();
+      }
+
+      touchPlacementState = null;
+    }
+
+    canvas.addEventListener('pointerup', event => finishTouchPlacement(event, false));
+    canvas.addEventListener('pointercancel', event => finishTouchPlacement(event, true));
+
+    canvas.addEventListener('click', event => {
+      if (suppressNextCanvasClick) {
+        suppressNextCanvasClick = false;
+        return;
+      }
+
+      if (!battle || battle.ended) return;
+      const point = canvasPoint(event);
+
+      const clickedPlaced = [...battle.placedUnits].reverse().find(unit =>
+        Math.hypot(unit.x - point.x, unit.y - point.y) < 30
+      );
+
+      if (clickedPlaced) {
+        battle.selectedPlacedUnit = clickedPlaced;
+        battle.selectedDeployUnitId = null;
+        clearPlacementPreview();
+        renderBattleDeck();
+        renderSelectedPanel();
+        return;
+      }
+
+      if (!battle.selectedDeployUnitId) {
+        setBattleMessage('먼저 맵 아래에서 배치할 유닛을 선택하세요.');
+        return;
+      }
+
+      placeSelectedUnitAt(point);
     });
 
     document.querySelector('#loginBtn').addEventListener('click', login);

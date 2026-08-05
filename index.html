@@ -2480,6 +2480,387 @@
       font-size: 16px;
     }
 
+
+    .unit-upgrade-box {
+      margin: 0 0 12px;
+      padding: 12px;
+      border: 1px solid rgba(255, 208, 74, .32);
+      border-radius: 12px;
+      background: linear-gradient(145deg, rgba(64, 49, 17, .62), rgba(25, 31, 47, .82));
+    }
+
+    .unit-upgrade-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .unit-upgrade-level {
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(255, 208, 74, .16);
+      color: #ffe48a;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .unit-upgrade-box p {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .unit-upgrade-button {
+      width: 100%;
+      min-height: 48px;
+    }
+
+    .unit-upgrade-complete {
+      padding: 10px;
+      border: 1px solid rgba(79, 224, 139, .34);
+      border-radius: 10px;
+      background: rgba(30, 105, 67, .2);
+      color: #83efad;
+      text-align: center;
+      font-weight: 800;
+    }
+
+  
+
+/* ==================================
+   전체화면 전투 · 우측 능력치 · 웨이브 스킵
+================================== */
+#battleScreen:not(.hidden) {
+  position: fixed;
+  z-index: 500;
+  inset: 0;
+  width: 100vw;
+  max-width: none;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #0a1019;
+}
+
+#battleScreen .battle-topbar {
+  position: absolute;
+  z-index: 40;
+  top: max(10px, env(safe-area-inset-top));
+  left: max(12px, env(safe-area-inset-left));
+  right: max(12px, env(safe-area-inset-right));
+  display: flex;
+  align-items: flex-start;
+  pointer-events: none;
+}
+
+#battleScreen .battle-topbar > div,
+#battleScreen .battle-topbar .battle-exit-button {
+  pointer-events: auto;
+}
+
+#battleScreen .battle-topbar > div {
+  padding: 10px 12px;
+  border: 1px solid rgba(156, 190, 230, .28);
+  border-radius: 14px;
+  background: rgba(8, 20, 36, .82);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .28);
+  backdrop-filter: blur(10px);
+}
+
+#battleScreen .battle-topbar h2 {
+  margin: 0 0 7px;
+  font-size: 15px;
+}
+
+#battleScreen .battle-topbar .resource {
+  padding: 6px 9px;
+  font-size: 12px;
+}
+
+#battleScreen .battle-layout,
+#battleScreen .battle-map-shell {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#battleScreen .battle-layout {
+  display: block;
+}
+
+#battleScreen .battle-map-shell {
+  overflow: hidden;
+  border-radius: 0;
+}
+
+#battleScreen #gameCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+
+.battle-wave-center {
+  position: absolute;
+  z-index: 35;
+  top: max(10px, env(safe-area-inset-top));
+  left: 50%;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 7px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.battle-wave-center .map-wave-hud {
+  position: static;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  min-width: 150px;
+  padding: 8px 15px;
+  transform: none;
+}
+
+.wave-skip-controls {
+  display: flex;
+  gap: 7px;
+  pointer-events: auto;
+}
+
+.wave-skip-button,
+.auto-skip-button {
+  min-height: 38px;
+  padding: 7px 11px;
+  border: 1px solid rgba(163, 197, 236, .28);
+  border-radius: 11px;
+  background: rgba(12, 30, 52, .9);
+  color: #eef7ff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .24);
+  font-size: 12px;
+  backdrop-filter: blur(9px);
+}
+
+.wave-skip-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wave-skip-button small {
+  color: #9fb8d4;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.wave-skip-button small strong {
+  color: #ffd45c;
+}
+
+.auto-skip-button.auto-active {
+  border-color: rgba(91, 239, 157, .75);
+  background: rgba(20, 91, 63, .92);
+  color: #d8ffea;
+  box-shadow: 0 0 20px rgba(79, 224, 139, .25);
+}
+
+.wave-skip-button:disabled {
+  opacity: .48;
+}
+
+#battleScreen .battle-bottom-panel {
+  position: absolute;
+  z-index: 30;
+  inset: 0;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+#battleScreen .battle-deploy-section {
+  position: absolute;
+  left: 50%;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  width: min(880px, calc(100vw - 32px));
+  padding: 10px 12px;
+  border: 1px solid rgba(157, 188, 226, .32);
+  border-radius: 16px;
+  background: rgba(8, 20, 36, .88);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, .34);
+  transform: translateX(-50%);
+  backdrop-filter: blur(12px);
+  pointer-events: auto;
+}
+
+#battleScreen .battle-bottom-heading {
+  display: none;
+}
+
+#battleScreen .battle-deck {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+#battleScreen .battle-unit-button,
+#battleScreen .battle-empty-slot {
+  min-width: 0;
+  min-height: 68px;
+  padding: 7px 6px;
+  overflow: hidden;
+  text-align: center;
+  white-space: normal;
+}
+
+#battleScreen .battle-unit-button .battle-unit-icon {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 23px;
+}
+
+#battleScreen .battle-unit-button .battle-unit-name {
+  display: block;
+  overflow: hidden;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#battleScreen .battle-unit-button .battle-unit-cost {
+  display: block;
+  margin-top: 2px;
+  color: #b9c9dc;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+#battleScreen .battle-empty-slot {
+  border: 1px dashed rgba(159, 185, 219, .25);
+  border-radius: 12px;
+  background: rgba(31, 45, 66, .68);
+  color: #778ba5;
+  cursor: default;
+}
+
+#battleScreen .battle-info-section {
+  position: absolute;
+  top: 92px;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: 104px;
+  display: flex;
+  width: min(300px, 31vw);
+  min-width: 240px;
+  padding: 15px;
+  overflow-y: auto;
+  border: 1px solid rgba(157, 188, 226, .30);
+  border-radius: 16px;
+  background: rgba(8, 20, 36, .88);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, .34);
+  backdrop-filter: blur(12px);
+  pointer-events: auto;
+}
+
+#battleScreen .battle-info-section .selected-panel {
+  min-height: 0;
+}
+
+#battleScreen .battle-message {
+  flex: 0 0 auto;
+  max-height: 110px;
+  overflow-y: auto;
+}
+
+@media (max-width: 760px) {
+  #battleScreen .battle-topbar > div {
+    max-width: 48vw;
+    padding: 8px;
+  }
+
+  #battleScreen .battle-topbar h2 {
+    display: none;
+  }
+
+  #battleScreen .battle-topbar .resource-bar {
+    gap: 4px;
+  }
+
+  #battleScreen .battle-topbar .resource {
+    padding: 5px 7px;
+    font-size: 10px;
+  }
+
+  .battle-wave-center {
+    top: max(7px, env(safe-area-inset-top));
+  }
+
+  .battle-wave-center .map-wave-hud {
+    min-width: 112px;
+    padding: 6px 9px;
+  }
+
+  .wave-skip-button,
+  .auto-skip-button {
+    min-height: 32px;
+    padding: 5px 7px;
+    font-size: 10px;
+  }
+
+  .wave-skip-button small {
+    display: none;
+  }
+
+  #battleScreen .battle-info-section {
+    top: 105px;
+    right: 7px;
+    bottom: 95px;
+    width: min(235px, 46vw);
+    min-width: 185px;
+    padding: 10px;
+    font-size: 12px;
+  }
+
+  #battleScreen .battle-deploy-section {
+    bottom: max(6px, env(safe-area-inset-bottom));
+    width: calc(100vw - 12px);
+    padding: 7px;
+  }
+
+  #battleScreen .battle-deck {
+    gap: 4px;
+  }
+
+  #battleScreen .battle-unit-button,
+  #battleScreen .battle-empty-slot {
+    min-height: 57px;
+    padding: 5px 2px;
+  }
+
+  #battleScreen .battle-unit-button .battle-unit-icon {
+    font-size: 18px;
+  }
+
+  #battleScreen .battle-unit-button .battle-unit-name {
+    font-size: 9px;
+  }
+
+  #battleScreen .battle-unit-button .battle-unit-cost {
+    font-size: 8px;
+  }
+}
+
   </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -2749,10 +3130,22 @@
       <div class="battle-map-shell">
         <canvas id="gameCanvas" width="900" height="520"></canvas>
 
-        <div class="map-wave-hud" aria-live="polite">
-          <span>WAVE</span>
-          <strong id="battleWave">0</strong>
-          <small>/ 50</small>
+        <div class="battle-wave-center" aria-live="polite">
+          <div class="map-wave-hud">
+            <span>WAVE</span>
+            <strong id="battleWave">0</strong>
+            <small>/ 50</small>
+          </div>
+
+          <div class="wave-skip-controls">
+            <button id="skipWaveBtn" class="wave-skip-button" type="button">
+              웨이브 스킵
+              <small>남은 횟수 <strong id="skipWaveRemaining">3</strong></small>
+            </button>
+            <button id="autoSkipBtn" class="auto-skip-button" type="button" aria-pressed="false">
+              자동 스킵 OFF
+            </button>
+          </div>
         </div>
 
         <div id="bossSpawnAlert" class="boss-spawn-alert hidden" aria-live="assertive">
@@ -4324,12 +4717,11 @@ async function logout() {
         lives: 20,
         wave: 1,
         maxWave: STAGE_ONE_MAX_WAVE,
+        highestLaunchedWave: 0,
         kills: 0,
-        enemiesSpawnedThisWave: 0,
-        enemiesPerWave: 0,
-        waveQueue: [],
-        spawnTimer: 0,
         waveDelay: 0,
+        activeWaves: [],
+        launchedWaves: {},
         enemies: [],
         placedUnits: [],
         shots: [],
@@ -4337,10 +4729,13 @@ async function logout() {
         selectedPlacedUnit: null,
         ended: false,
         resultShown: false,
-        waveRewardGranted: false,
         finalBossDefeated: false,
         bossEscaped: false,
         earnedWaveGems: 0,
+        skipUses: 0,
+        maxSkipUses: 3,
+        autoWaveSkip: false,
+        autoSkipTimer: .8,
         placementPreview: {
           active: false,
           x: 0,
@@ -4352,7 +4747,7 @@ async function logout() {
 
       renderBattleDeck();
       showScreen('battle');
-      beginWave(1);
+      launchWave(1);
       updateBattleUi();
 
       previousTime = performance.now();
@@ -4452,16 +4847,35 @@ async function logout() {
       return targets.length;
     }
 
-    function beginWave(wave) {
-      battle.wave = wave;
-      battle.waveQueue = createWaveQueue(wave);
-      battle.enemiesSpawnedThisWave = 0;
-      battle.enemiesPerWave = battle.waveQueue.length;
-      battle.spawnTimer = 0;
-      battle.waveDelay = 0;
-      battle.waveRewardGranted = false;
+    function getWaveState(waveNumber) {
+      return battle?.activeWaves.find(item => item.wave === waveNumber) || null;
+    }
 
-      let message = `웨이브 ${wave} 시작!`;
+    function launchWave(wave, options = {}) {
+      if (!battle || battle.ended) return false;
+      if (wave < 1 || wave > battle.maxWave) return false;
+      if (battle.launchedWaves[wave]) return false;
+
+      const queue = createWaveQueue(wave);
+      const waveState = {
+        wave,
+        queue,
+        spawned: 0,
+        total: queue.length,
+        killed: 0,
+        escaped: 0,
+        spawnTimer: 0,
+        completed: false,
+        cleared: false
+      };
+
+      battle.activeWaves.push(waveState);
+      battle.launchedWaves[wave] = true;
+      battle.highestLaunchedWave = Math.max(battle.highestLaunchedWave, wave);
+      battle.wave = battle.highestLaunchedWave;
+      battle.waveDelay = 0;
+
+      let message = `${options.isSkip ? '웨이브 스킵! ' : ''}웨이브 ${wave} 시작!`;
       let bossName = '';
 
       if (wave === 10) {
@@ -4479,23 +4893,107 @@ async function logout() {
         message = '최종 보스 각성한 킹 비둘기가 단독으로 등장합니다!';
       }
 
-      if (bossName) {
-        showBossSpawnAlert(bossName);
-      }
+      if (bossName) showBossSpawnAlert(bossName);
 
       setBattleMessage(message);
       updateBattleUi();
+      return true;
+    }
+
+    function beginWave(wave) {
+      return launchWave(wave);
+    }
+
+    function canSkipWave() {
+      return Boolean(
+        battle &&
+        !battle.ended &&
+        battle.highestLaunchedWave < battle.maxWave &&
+        battle.skipUses < battle.maxSkipUses
+      );
+    }
+
+    function skipNextWave(isAutomatic = false) {
+      if (!canSkipWave()) {
+        if (!isAutomatic && battle) {
+          const reason = battle.highestLaunchedWave >= battle.maxWave
+            ? '50웨이브가 이미 시작되었습니다.'
+            : '연속 웨이브 스킵 3회를 모두 사용했습니다. 진행 중인 웨이브를 클리어하면 다시 사용할 수 있습니다.';
+          setBattleMessage(reason);
+        }
+        updateWaveSkipUi();
+        return false;
+      }
+
+      battle.skipUses += 1;
+      const nextWave = battle.highestLaunchedWave + 1;
+      const launched = launchWave(nextWave, { isSkip: true });
+
+      if (launched) {
+        setBattleMessage(
+          `${isAutomatic ? '자동 ' : ''}웨이브 스킵! ${nextWave}웨이브의 적이 현재 적과 함께 등장합니다.`
+        );
+      }
+
+      updateWaveSkipUi();
+      return launched;
+    }
+
+    function toggleAutoWaveSkip() {
+      if (!battle || battle.ended) return;
+      battle.autoWaveSkip = !battle.autoWaveSkip;
+      battle.autoSkipTimer = .25;
+      updateWaveSkipUi();
+      setBattleMessage(
+        battle.autoWaveSkip
+          ? '자동 웨이브 스킵을 켰습니다. 사용 가능한 동안 다음 웨이브를 자동으로 불러옵니다.'
+          : '자동 웨이브 스킵을 껐습니다.'
+      );
+    }
+
+    function updateWaveSkipUi() {
+      const skipButton = document.querySelector('#skipWaveBtn');
+      const remaining = document.querySelector('#skipWaveRemaining');
+      const autoButton = document.querySelector('#autoSkipBtn');
+      if (!skipButton || !remaining || !autoButton) return;
+
+      const usesLeft = battle
+        ? Math.max(0, battle.maxSkipUses - battle.skipUses)
+        : 0;
+
+      remaining.textContent = usesLeft;
+      skipButton.disabled = !canSkipWave();
+
+      const autoActive = Boolean(battle?.autoWaveSkip);
+      autoButton.classList.toggle('auto-active', autoActive);
+      autoButton.setAttribute('aria-pressed', String(autoActive));
+      autoButton.textContent = autoActive ? '자동 스킵 ON' : '자동 스킵 OFF';
+      autoButton.disabled = !battle || battle.ended || battle.highestLaunchedWave >= battle.maxWave;
     }
 
     function renderBattleDeck() {
       const deckEl = document.querySelector('#battleDeck');
-      deckEl.innerHTML = player.deck.filter(Boolean).map(unitId => {
+      const slots = [...player.deck].slice(0, 5);
+      while (slots.length < 5) slots.push(null);
+
+      deckEl.innerHTML = slots.map((unitId, index) => {
+        if (!unitId || !UNIT_DATA[unitId]) {
+          return `
+            <button class="battle-empty-slot" type="button" disabled>
+              <span>＋</span><br>
+              <small>${index + 1}번 빈 슬롯</small>
+            </button>
+          `;
+        }
+
         const unit = UNIT_DATA[unitId];
         return `
           <button class="battle-unit-button ${battle.selectedDeployUnitId === unitId ? 'selected' : ''}"
+                  type="button"
                   data-battle-unit="${unitId}">
-            ${unit.icon} ${unit.name}<br>
-            <span style="font-weight:400;">${unit.cost} 골드</span>
+            <span class="battle-unit-icon">${unit.icon}</span>
+            <span class="battle-unit-name">${unit.name}</span>
+            <span class="battle-unit-cost">${unit.cost} 골드</span>
           </button>
         `;
       }).join('');
@@ -4518,6 +5016,7 @@ async function logout() {
       document.querySelector('#battleLives').textContent = battle.lives;
       document.querySelector('#battleWave').textContent = battle.wave;
       document.querySelector('#battleKills').textContent = battle.kills;
+      updateWaveSkipUi();
     }
 
     function setBattleMessage(text) {
@@ -4537,21 +5036,83 @@ async function logout() {
       }
 
       const unit = UNIT_DATA[placed.unitId];
-      const refund = Math.floor(placed.totalInvestment * 0.7);
+      placed.baseDamage ??= unit.damage;
+      placed.upgradeLevel ??= 0;
 
+      const refund = Math.floor(placed.totalInvestment * 0.7);
       const cooldownText = `${placed.fireInterval.toFixed(2)}초`;
       const attacksPerSecond = (1 / placed.fireInterval).toFixed(2);
+      const damageText = Number.isInteger(placed.damage)
+        ? placed.damage
+        : Number(placed.damage.toFixed(2));
+
+      const upgradeLevel = placed.upgradeLevel;
+      const isMaxUpgrade = upgradeLevel >= 2;
+      const nextUpgradeLevel = upgradeLevel + 1;
+      const nextMultiplier = upgradeLevel === 0 ? 1.25 : 1.5;
+      const upgradeCost = upgradeLevel === 0
+        ? Math.ceil(unit.cost / 3)
+        : Math.ceil(unit.cost / 2);
+      const nextDamage = Number((placed.baseDamage * nextMultiplier).toFixed(2));
+
+      const upgradeHtml = isMaxUpgrade
+        ? `
+          <div class="unit-upgrade-box">
+            <div class="unit-upgrade-title">
+              <strong>공격력 업그레이드</strong>
+              <span class="unit-upgrade-level">2 / 2단계</span>
+            </div>
+            <div class="unit-upgrade-complete">최대 업그레이드 완료 · 기본 데미지의 1.5배</div>
+          </div>
+        `
+        : `
+          <div class="unit-upgrade-box">
+            <div class="unit-upgrade-title">
+              <strong>공격력 업그레이드</strong>
+              <span class="unit-upgrade-level">${upgradeLevel} / 2단계</span>
+            </div>
+            <p>
+              ${nextUpgradeLevel}단계 적용 시 데미지
+              <strong>${nextDamage}</strong>
+              · 기본 데미지의 ${nextMultiplier}배
+            </p>
+            <button id="upgradeUnitBtn" class="unit-upgrade-button">
+              ${nextUpgradeLevel}단계 업그레이드 · ${upgradeCost} 골드
+            </button>
+          </div>
+        `;
 
       panel.innerHTML = `
         <h3>${unit.icon} ${unit.name}</h3>
         <div class="selected-unit-stats">
-          <div><span>데미지</span><strong>${placed.damage}</strong></div>
+          <div><span>데미지</span><strong>${damageText}</strong></div>
           <div><span>공격 쿨타임</span><strong>${cooldownText}</strong></div>
           <div><span>초당 공격</span><strong>${attacksPerSecond}회</strong></div>
           <div><span>공격 범위</span><strong>${placed.range}</strong></div>
         </div>
+        ${upgradeHtml}
         <button id="sellUnitBtn" class="danger">판매 +${refund} 골드</button>
       `;
+
+      const upgradeButton = document.querySelector('#upgradeUnitBtn');
+      if (upgradeButton) {
+        upgradeButton.addEventListener('click', () => {
+          if (battle.gold < upgradeCost) {
+            setBattleMessage(`업그레이드에 필요한 골드가 부족합니다. 필요 골드: ${upgradeCost}`);
+            return;
+          }
+
+          battle.gold -= upgradeCost;
+          placed.upgradeLevel = nextUpgradeLevel;
+          placed.damage = placed.baseDamage * nextMultiplier;
+          placed.totalInvestment += upgradeCost;
+          updateBattleUi();
+          renderSelectedPanel();
+          setBattleMessage(
+            `${unit.name} ${nextUpgradeLevel}단계 업그레이드 완료! 데미지 ${nextDamage}`
+          );
+        });
+      }
 
       document.querySelector('#sellUnitBtn').addEventListener('click', () => {
         battle.gold += refund;
@@ -4563,19 +5124,21 @@ async function logout() {
       });
     }
 
-    function spawnEnemy() {
-      const spec = battle.waveQueue[battle.enemiesSpawnedThisWave];
+    function spawnEnemyFromWave(waveState) {
+      const spec = waveState.queue[waveState.spawned];
       if (!spec) return;
 
       const maxHealth = spec.health;
       battle.enemies.push({
         ...spec,
+        waveNumber: waveState.wave,
         x: path[0].x,
         y: path[0].y,
         targetIndex: 1,
         health: maxHealth,
         maxHealth,
         dead: false,
+        resolvedRecorded: false,
         pulseEffect: 0,
         pulseKind: '',
         abilityTimer: spec.abilityTimer ?? 0,
@@ -4583,7 +5146,23 @@ async function logout() {
         heading: 0
       });
 
-      battle.enemiesSpawnedThisWave += 1;
+      waveState.spawned += 1;
+    }
+
+    function spawnEnemy() {
+      const waveState = battle?.activeWaves.find(item => !item.completed && item.spawned < item.total);
+      if (waveState) spawnEnemyFromWave(waveState);
+    }
+
+    function recordEnemyResolved(enemy, wasKilled) {
+      if (!enemy || enemy.resolvedRecorded) return;
+      enemy.resolvedRecorded = true;
+
+      const waveState = getWaveState(enemy.waveNumber);
+      if (!waveState) return;
+
+      if (wasKilled) waveState.killed += 1;
+      else waveState.escaped += 1;
     }
 
     function affectNearbyUnits(enemy, effect, seconds) {
@@ -4650,6 +5229,7 @@ async function logout() {
 
       if (!target) {
         enemy.dead = true;
+        recordEnemyResolved(enemy, false);
 
         if (enemy.type !== 'normal') {
           battle.bossEscaped = true;
@@ -4741,6 +5321,7 @@ async function logout() {
 
       enemy.health = 0;
       enemy.dead = true;
+      recordEnemyResolved(enemy, true);
       battle.gold += enemy.reward;
       battle.kills += 1;
 
@@ -4816,59 +5397,52 @@ async function logout() {
       }
     }
 
-    function grantWaveClearReward(wave) {
-      if (battle.waveRewardGranted) return;
+    function grantWaveClearReward(waveState) {
+      if (!waveState || waveState.rewardGranted) return;
 
-      battle.waveRewardGranted = true;
+      waveState.rewardGranted = true;
       battle.earnedWaveGems += 100;
       player.gems += 100;
+      battle.skipUses = 0;
       void savePlayer();
 
       setBattleMessage(
-        `웨이브 ${wave} 클리어! 소환석 100개를 획득했습니다. 누적 웨이브 보상: ${battle.earnedWaveGems}개`
+        `웨이브 ${waveState.wave} 완전 클리어! 소환석 100개를 획득했고 웨이브 스킵이 다시 활성화되었습니다.`
       );
+      updateWaveSkipUi();
+    }
+
+    function completeResolvedWaves() {
+      battle.activeWaves.forEach(waveState => {
+        if (waveState.completed) return;
+        if (waveState.spawned < waveState.total) return;
+        if (waveState.killed + waveState.escaped < waveState.total) return;
+
+        waveState.completed = true;
+        waveState.cleared = waveState.escaped === 0 && waveState.killed === waveState.total;
+
+        if (waveState.cleared) {
+          grantWaveClearReward(waveState);
+        } else if (!battle.ended) {
+          setBattleMessage(
+            `웨이브 ${waveState.wave} 종료: 탈출한 비둘기가 있어 완전 클리어 보상과 스킵 충전은 없습니다.`
+          );
+        }
+      });
     }
 
     function updateBattle(dt) {
       if (!battle || battle.ended) return;
 
-      const aliveEnemies = battle.enemies.filter(enemy => !enemy.dead);
+      battle.activeWaves.forEach(waveState => {
+        if (waveState.completed || waveState.spawned >= waveState.total) return;
 
-      if (battle.enemiesSpawnedThisWave < battle.enemiesPerWave) {
-        battle.spawnTimer -= dt;
-        if (battle.spawnTimer <= 0) {
-          spawnEnemy();
-          battle.spawnTimer = battle.wave === 10 ? .12 : .78;
+        waveState.spawnTimer -= dt;
+        if (waveState.spawnTimer <= 0) {
+          spawnEnemyFromWave(waveState);
+          waveState.spawnTimer = waveState.wave === 10 ? .12 : .78;
         }
-      } else if (aliveEnemies.length === 0) {
-        if (battle.bossEscaped) {
-          endBattle(false, '보스를 처치하지 못해 스테이지 클리어에 실패했습니다.');
-          return;
-        }
-
-        if (battle.wave === battle.maxWave && !battle.finalBossDefeated) {
-          endBattle(
-            false,
-            '각성한 킹 비둘기를 직접 처치해야 스테이지를 클리어할 수 있습니다.'
-          );
-          return;
-        }
-
-        grantWaveClearReward(battle.wave);
-        battle.waveDelay += dt;
-
-        if (battle.wave >= battle.maxWave) {
-          if (battle.waveDelay >= 1.1) {
-            endBattle(true);
-          }
-          return;
-        }
-
-        if (battle.waveDelay >= 1.4) {
-          battle.gold += 80;
-          beginWave(battle.wave + 1);
-        }
-      }
+      });
 
       battle.enemies.forEach(enemy => updateEnemy(enemy, dt));
       battle.placedUnits.forEach(unit => updatePlacedUnit(unit, dt));
@@ -4876,6 +5450,42 @@ async function logout() {
 
       battle.enemies = battle.enemies.filter(enemy => !enemy.dead);
       battle.shots = battle.shots.filter(shot => shot.life > 0);
+
+      completeResolvedWaves();
+      if (battle.ended) {
+        updateBattleUi();
+        return;
+      }
+
+      if (battle.autoWaveSkip && canSkipWave()) {
+        battle.autoSkipTimer -= dt;
+        if (battle.autoSkipTimer <= 0) {
+          skipNextWave(true);
+          battle.autoSkipTimer = 1.05;
+        }
+      } else {
+        battle.autoSkipTimer = Math.min(battle.autoSkipTimer, .35);
+      }
+
+      const unresolvedWaves = battle.activeWaves.filter(item => !item.completed);
+
+      if (unresolvedWaves.length === 0) {
+        battle.waveDelay += dt;
+
+        if (battle.highestLaunchedWave >= battle.maxWave) {
+          if (battle.finalBossDefeated && !battle.bossEscaped) {
+            if (battle.waveDelay >= 1.1) endBattle(true);
+          } else if (battle.waveDelay >= .4) {
+            endBattle(false, '각성한 킹 비둘기를 직접 처치해야 스테이지를 클리어할 수 있습니다.');
+          }
+        } else if (battle.waveDelay >= 1.4) {
+          battle.gold += 80;
+          launchWave(battle.highestLaunchedWave + 1);
+        }
+      } else {
+        battle.waveDelay = 0;
+      }
+
       updateBattleUi();
     }
 
@@ -6201,7 +6811,9 @@ async function logout() {
         unitId: unitData.id,
         x: point.x,
         y: point.y,
+        baseDamage: unitData.damage,
         damage: unitData.damage,
+        upgradeLevel: 0,
         range: unitData.range,
         fireInterval: unitData.fireInterval,
         cooldown: 0,
@@ -6360,6 +6972,8 @@ async function logout() {
       renderInventory();
     });
     document.querySelector('#startBattleBtn').addEventListener('click', createBattle);
+    document.querySelector('#skipWaveBtn').addEventListener('click', () => skipNextWave(false));
+    document.querySelector('#autoSkipBtn').addEventListener('click', toggleAutoWaveSkip);
     document.querySelectorAll('[data-draw-count]').forEach(button => {
       button.addEventListener('click', () => {
         requestGachaDraw(Number(button.dataset.drawCount));

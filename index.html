@@ -779,6 +779,1676 @@
     min-height: 110px;
   }
 }
+
+/* ==================================
+   주사위 가챠 · 인벤토리 · 컷신
+================================== */
+
+.rarity-mythic { color: #ff5b5b; }
+.rarity-secret {
+  color: #d8b4fe;
+  text-shadow: 0 0 12px rgba(216, 180, 254, .72);
+}
+
+.section-kicker {
+  display: inline-block;
+  margin-bottom: 6px;
+  color: #76bfff;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .24em;
+}
+
+.gacha-screen,
+.inventory-screen {
+  min-height: 100vh;
+  padding-top: 32px;
+}
+
+.gacha-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 310px;
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.gacha-chamber {
+  position: relative;
+  min-height: 590px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(75, 137, 215, .22), transparent 35%),
+    linear-gradient(155deg, rgba(25, 43, 69, .98), rgba(9, 18, 35, .98));
+}
+
+.gacha-chamber::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: .14;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
+
+.gacha-orbit {
+  position: absolute;
+  border: 1px solid rgba(116, 185, 255, .22);
+  border-radius: 50%;
+  animation: gachaOrbit 14s linear infinite;
+}
+
+.orbit-one {
+  width: 410px;
+  height: 410px;
+}
+
+.orbit-two {
+  width: 310px;
+  height: 310px;
+  border-style: dashed;
+  animation-direction: reverse;
+  animation-duration: 10s;
+}
+
+.gacha-preview-chest {
+  position: relative;
+  z-index: 2;
+  width: 230px;
+  height: 175px;
+  margin-bottom: 36px;
+  filter: drop-shadow(0 30px 24px rgba(0,0,0,.42));
+  animation: chestIdle 2.6s ease-in-out infinite;
+}
+
+.preview-chest-body,
+.preview-chest-lid {
+  position: absolute;
+  left: 15px;
+  width: 200px;
+  border: 5px solid #5f3718;
+  background:
+    linear-gradient(90deg, transparent 21%, #d3973b 22%, #d3973b 27%, transparent 28%, transparent 72%, #d3973b 73%, #d3973b 78%, transparent 79%),
+    linear-gradient(180deg, #a86628, #6e3e1b);
+  box-shadow: inset 0 0 22px rgba(0,0,0,.34);
+}
+
+.preview-chest-body {
+  bottom: 0;
+  height: 105px;
+  border-radius: 8px 8px 18px 18px;
+}
+
+.preview-chest-lid {
+  top: 6px;
+  height: 78px;
+  border-radius: 80px 80px 10px 10px;
+  transform-origin: bottom center;
+}
+
+.preview-chest-lock {
+  position: absolute;
+  z-index: 4;
+  left: 92px;
+  top: 72px;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 52px;
+  border: 4px solid #69400d;
+  border-radius: 9px;
+  background: linear-gradient(#ffe177, #c98c16);
+  color: #5e3a09;
+  font-size: 23px;
+}
+
+.preview-chest-glow {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: rgba(89, 175, 255, .28);
+  filter: blur(24px);
+  transform: translateX(-50%);
+  animation: previewGlow 1.8s ease-in-out infinite;
+}
+
+.gacha-copy {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+.gacha-copy h3 {
+  margin-bottom: 8px;
+  font-size: 24px;
+}
+
+.gacha-copy p {
+  color: #9fb2cc;
+}
+
+.premium-summon-button {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 260px;
+  margin-top: 12px;
+  padding: 15px 24px;
+  border: 1px solid #ffe991;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ffe575, #ffb82e);
+  box-shadow: 0 15px 38px rgba(255, 184, 46, .25);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.premium-summon-button:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 22px 46px rgba(255, 184, 46, .34);
+}
+
+.premium-summon-button > span:first-child {
+  font-size: 33px;
+}
+
+.premium-summon-button > span:last-child {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.premium-summon-button strong {
+  font-size: 19px;
+}
+
+.premium-summon-button small {
+  opacity: .68;
+  font-size: 12px;
+}
+
+.gacha-status {
+  position: relative;
+  z-index: 2;
+  min-height: 26px;
+  margin-top: 18px;
+  color: #a9bad0;
+  text-align: center;
+}
+
+.probability-panel {
+  align-self: stretch;
+}
+
+.probability-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.probability-row {
+  display: grid;
+  grid-template-columns: 18px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(137, 166, 207, .18);
+  border-radius: 13px;
+  background: rgba(14, 28, 50, .72);
+}
+
+.probability-color {
+  width: 13px;
+  height: 13px;
+  border-radius: 4px;
+  background: var(--rarity-color);
+  box-shadow: 0 0 12px var(--rarity-glow);
+}
+
+.probability-total {
+  margin-top: 4px;
+  border-color: rgba(255, 208, 74, .42);
+  background: rgba(255, 208, 74, .08);
+  color: #ffe69a;
+}
+
+.inventory-tabs {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+  padding: 6px;
+  width: fit-content;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(15, 25, 43, .82);
+}
+
+.inventory-tab {
+  min-width: 135px;
+  background: transparent;
+  color: #aebbd0;
+}
+
+.inventory-tab.active {
+  background: linear-gradient(135deg, #ffd85c, #ffb82f);
+  color: #2d2309;
+  box-shadow: 0 8px 24px rgba(255, 184, 47, .22);
+}
+
+.inventory-panel {
+  margin-top: 14px;
+}
+
+.dice-inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(235px, 1fr));
+  gap: 15px;
+  margin-top: 16px;
+}
+
+.dice-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 255px;
+  padding: 20px;
+  border: 1px solid color-mix(in srgb, var(--dice-color) 62%, #52617a);
+  border-radius: 19px;
+  background:
+    radial-gradient(circle at 80% 12%, var(--dice-glow), transparent 34%),
+    linear-gradient(150deg, rgba(33, 48, 76, .98), rgba(15, 24, 43, .98));
+  box-shadow: 0 18px 38px rgba(0,0,0,.24);
+}
+
+.dice-card::after {
+  content: "";
+  position: absolute;
+  width: 145px;
+  height: 145px;
+  right: -55px;
+  bottom: -55px;
+  border: 1px solid var(--dice-color);
+  border-radius: 50%;
+  opacity: .22;
+}
+
+.dice-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dice-card h3 {
+  margin-bottom: 6px;
+}
+
+.dice-count {
+  color: var(--dice-color);
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.mini-die {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, 17px);
+  grid-template-rows: repeat(2, 17px);
+  gap: 13px;
+  place-content: center;
+  width: 92px;
+  height: 92px;
+  margin: 21px auto;
+  border: 4px solid color-mix(in srgb, var(--dice-color) 72%, #fff);
+  border-radius: 19px;
+  background: var(--dice-color);
+  box-shadow:
+    0 0 28px var(--dice-glow),
+    inset 0 0 24px rgba(255,255,255,.2),
+    0 16px 25px rgba(0,0,0,.3);
+  transform: rotate(-8deg);
+}
+
+.mini-die span {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--dice-dot);
+  box-shadow: inset 0 2px 3px rgba(0,0,0,.3);
+}
+
+.roll-dice-btn {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  border: 1px solid color-mix(in srgb, var(--dice-color) 55%, white);
+  background: color-mix(in srgb, var(--dice-color) 72%, #172238);
+  color: var(--dice-text);
+}
+
+.roll-dice-btn:hover:not(:disabled) {
+  filter: brightness(1.15);
+  transform: translateY(-2px);
+}
+
+.cutscene-overlay {
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: #050811;
+}
+
+.cutscene-backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at center, var(--scene-glow, rgba(74, 146, 255, .24)), transparent 43%),
+    linear-gradient(180deg, #07101d, #02040a);
+}
+
+.cutscene-backdrop::before {
+  content: "";
+  position: absolute;
+  inset: -30%;
+  background: repeating-conic-gradient(from 0deg, transparent 0deg 12deg, rgba(255,255,255,.025) 13deg 14deg);
+  animation: backdropSpin 18s linear infinite;
+}
+
+.cutscene-content {
+  position: relative;
+  z-index: 2;
+  width: min(900px, 94vw);
+  min-height: min(650px, 90vh);
+  display: grid;
+  place-items: center;
+  text-align: center;
+  perspective: 1100px;
+}
+
+.cutscene-title {
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  margin: 0;
+  transform: translateX(-50%);
+  color: white;
+  font-size: clamp(18px, 3vw, 28px);
+  letter-spacing: .12em;
+  white-space: nowrap;
+  text-shadow: 0 0 22px var(--scene-color, #7dbdff);
+}
+
+.chest-scene {
+  position: relative;
+  width: 100%;
+  height: 510px;
+  display: grid;
+  place-items: center;
+}
+
+.cinematic-chest {
+  position: relative;
+  width: 280px;
+  height: 225px;
+  transform-style: preserve-3d;
+  filter: drop-shadow(0 36px 32px rgba(0,0,0,.55));
+  animation: chestArrival .75s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.cinematic-chest.shaking {
+  animation: chestShake .65s ease-in-out 2;
+}
+
+.cinematic-chest.chest-clickable {
+  cursor: pointer;
+  touch-action: manipulation;
+  outline: none;
+}
+
+.cinematic-chest.chest-clickable:hover,
+.cinematic-chest.chest-clickable:focus-visible {
+  filter:
+    drop-shadow(0 36px 32px rgba(0,0,0,.55))
+    drop-shadow(0 0 26px var(--scene-glow));
+}
+
+.cinematic-chest.chest-armed {
+  filter:
+    drop-shadow(0 36px 32px rgba(0,0,0,.55))
+    drop-shadow(0 0 38px var(--scene-color));
+}
+
+.chest-click-instruction {
+  position: absolute;
+  left: 50%;
+  bottom: 54px;
+  z-index: 15;
+  width: min(540px, 90%);
+  margin: 0;
+  padding: 12px 16px;
+  border: 1px solid color-mix(in srgb, var(--scene-color) 60%, white);
+  border-radius: 999px;
+  background: rgba(5, 10, 20, .86);
+  color: white;
+  font-weight: 900;
+  letter-spacing: .02em;
+  box-shadow: 0 0 28px var(--scene-glow);
+  transform: translateX(-50%);
+  transition: .2s ease;
+}
+
+.chest-click-instruction.armed {
+  background: color-mix(in srgb, var(--scene-color) 20%, rgba(5, 10, 20, .92));
+  animation: chestInstructionPulse .7s ease-in-out infinite alternate;
+}
+
+.chest-click-instruction.hidden-after-open {
+  opacity: 0;
+  transform: translateX(-50%) translateY(8px);
+  pointer-events: none;
+}
+
+.cinematic-chest.opened .cinematic-chest-lid {
+  transform: rotateX(-118deg) translateY(-12px);
+}
+
+.cinematic-chest.opened .cinematic-chest-lock {
+  animation: lockBurst .45s ease-out forwards;
+}
+
+.cinematic-chest.opened .chest-beam {
+  opacity: 1;
+  transform: translateX(-50%) scaleY(1);
+}
+
+.cinematic-chest-lid,
+.cinematic-chest-body {
+  position: absolute;
+  left: 20px;
+  width: 240px;
+  border: 7px solid #5e3514;
+  background:
+    linear-gradient(90deg, transparent 18%, #e2aa48 19%, #e2aa48 25%, transparent 26%, transparent 74%, #e2aa48 75%, #e2aa48 81%, transparent 82%),
+    linear-gradient(#a76627, #633414);
+  box-shadow: inset 0 0 30px rgba(0,0,0,.38);
+}
+
+.cinematic-chest-body {
+  bottom: 0;
+  height: 135px;
+  border-radius: 10px 10px 24px 24px;
+}
+
+.cinematic-chest-lid {
+  top: 0;
+  height: 105px;
+  border-radius: 95px 95px 12px 12px;
+  transform-origin: bottom center;
+  transition: transform .8s cubic-bezier(.18,.78,.2,1.18);
+}
+
+.cinematic-chest-lock {
+  position: absolute;
+  z-index: 6;
+  left: 108px;
+  top: 91px;
+  display: grid;
+  place-items: center;
+  width: 66px;
+  height: 70px;
+  border: 6px solid #5c370b;
+  border-radius: 12px;
+  background: linear-gradient(#fff0a0, #c98b13);
+  color: #4b2c06;
+  font-size: 28px;
+}
+
+.chest-beam {
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  bottom: 75px;
+  width: 230px;
+  height: 530px;
+  opacity: 0;
+  background: linear-gradient(to top, var(--scene-color), transparent 78%);
+  clip-path: polygon(44% 100%, 56% 100%, 100% 0, 0 0);
+  filter: blur(4px);
+  transform: translateX(-50%) scaleY(.1);
+  transform-origin: bottom;
+  transition: .7s ease;
+}
+
+.reward-die {
+  position: absolute;
+  z-index: 8;
+  left: 50%;
+  top: 165px;
+  display: grid;
+  place-items: center;
+  width: 116px;
+  height: 116px;
+  border: 5px solid color-mix(in srgb, var(--scene-color) 72%, white);
+  border-radius: 25px;
+  background: var(--scene-color);
+  color: var(--scene-text);
+  font-size: 55px;
+  box-shadow:
+    0 0 45px var(--scene-glow),
+    inset 0 0 25px rgba(255,255,255,.25);
+  opacity: 0;
+  transform: translateX(-50%) translateY(80px) scale(.25) rotate(-45deg);
+}
+
+.reward-die.revealed {
+  animation: dieEmerge 1.25s cubic-bezier(.18,.86,.24,1.12) forwards;
+}
+
+.cutscene-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.cutscene-particle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--particle-size);
+  height: var(--particle-size);
+  border-radius: 50%;
+  background: var(--scene-color);
+  box-shadow: 0 0 14px var(--scene-color);
+  animation: particleBurst var(--particle-duration) ease-out forwards;
+}
+
+.reward-panel {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  width: min(520px, 92%);
+  padding: 20px;
+  border: 1px solid color-mix(in srgb, var(--scene-color) 65%, white);
+  border-radius: 20px;
+  background: rgba(9, 17, 31, .9);
+  box-shadow: 0 0 45px var(--scene-glow);
+  opacity: 0;
+  transform: translate(-50%, 24px);
+  backdrop-filter: blur(14px);
+}
+
+.reward-panel.visible {
+  animation: rewardPanelIn .5s ease-out forwards;
+}
+
+.reward-panel h2 {
+  margin: 5px 0;
+  color: var(--scene-color);
+  font-size: 31px;
+}
+
+.cutscene-close-button {
+  margin-top: 12px;
+  min-width: 150px;
+  background: var(--scene-color);
+  color: var(--scene-text);
+}
+
+.dice-roll-stage {
+  position: relative;
+  width: 100%;
+  height: 525px;
+  display: grid;
+  place-items: center;
+}
+
+.dice-shadow {
+  position: absolute;
+  top: 62%;
+  width: 235px;
+  height: 55px;
+  border-radius: 50%;
+  background: rgba(0,0,0,.5);
+  filter: blur(18px);
+  animation: shadowPulse 1s ease-in-out infinite;
+}
+
+.dice-cube-holder {
+  position: relative;
+  width: 170px;
+  height: 170px;
+  transform-style: preserve-3d;
+  animation: diceHop .72s ease-in-out 4;
+}
+
+.dice-cube {
+  position: absolute;
+  width: 170px;
+  height: 170px;
+  transform-style: preserve-3d;
+}
+
+.dice-face {
+  position: absolute;
+  width: 170px;
+  height: 170px;
+  display: grid;
+  place-items: center;
+  border: 5px solid color-mix(in srgb, var(--scene-color) 65%, white);
+  border-radius: 25px;
+  background:
+    radial-gradient(circle at 32% 22%, rgba(255,255,255,.36), transparent 28%),
+    var(--scene-color);
+  color: var(--scene-text);
+  box-shadow: inset 0 0 30px rgba(255,255,255,.18);
+  backface-visibility: visible;
+}
+
+.dice-face-content {
+  display: grid;
+  place-items: center;
+  gap: 5px;
+  width: 82%;
+  height: 82%;
+  border: 2px solid rgba(255,255,255,.4);
+  border-radius: 20px;
+  background: rgba(5, 9, 17, .14);
+}
+
+.dice-face-icon {
+  font-size: 64px;
+  filter: drop-shadow(0 7px 6px rgba(0,0,0,.28));
+}
+
+.dice-face-name {
+  max-width: 130px;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dice-face.front  { transform: rotateY(0deg) translateZ(85px); }
+.dice-face.back   { transform: rotateY(180deg) translateZ(85px); }
+.dice-face.right  { transform: rotateY(90deg) translateZ(85px); }
+.dice-face.left   { transform: rotateY(-90deg) translateZ(85px); }
+.dice-face.top    { transform: rotateX(90deg) translateZ(85px); }
+.dice-face.bottom { transform: rotateX(-90deg) translateZ(85px); }
+
+.unit-reveal-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+.unit-reveal-icon {
+  display: grid;
+  place-items: center;
+  width: 85px;
+  height: 85px;
+  border: 2px solid var(--scene-color);
+  border-radius: 50%;
+  background: rgba(255,255,255,.08);
+  font-size: 48px;
+  box-shadow: 0 0 24px var(--scene-glow);
+}
+
+.unit-reveal-copy {
+  text-align: left;
+}
+
+.unit-reveal-copy p {
+  margin-bottom: 3px;
+}
+
+@keyframes gachaOrbit {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes chestIdle {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-10px) rotate(1deg); }
+}
+
+@keyframes previewGlow {
+  0%, 100% { opacity: .45; transform: translateX(-50%) scale(.85); }
+  50% { opacity: 1; transform: translateX(-50%) scale(1.15); }
+}
+
+@keyframes backdropSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes chestArrival {
+  from { opacity: 0; transform: translateY(-220px) scale(.65) rotate(-7deg); }
+  65% { opacity: 1; transform: translateY(22px) scale(1.04) rotate(2deg); }
+  to { transform: translateY(0) scale(1) rotate(0); }
+}
+
+@keyframes chestShake {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  20% { transform: translateX(-17px) rotate(-4deg); }
+  40% { transform: translateX(15px) rotate(4deg); }
+  60% { transform: translateX(-10px) rotate(-2deg); }
+  80% { transform: translateX(8px) rotate(2deg); }
+}
+
+@keyframes lockBurst {
+  to {
+    opacity: 0;
+    transform: translateY(-55px) rotate(70deg) scale(.35);
+  }
+}
+
+@keyframes dieEmerge {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(90px) scale(.2) rotate(-90deg);
+  }
+  55% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-125px) scale(1.15) rotate(30deg);
+  }
+  78% {
+    transform: translateX(-50%) translateY(-95px) scale(.95) rotate(-8deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-105px) scale(1) rotate(0);
+  }
+}
+
+@keyframes particleBurst {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(var(--particle-angle)) translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--particle-angle)) translateX(var(--particle-distance)) scale(.15);
+  }
+}
+
+@keyframes rewardPanelIn {
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes diceHop {
+  0%, 100% { transform: translateY(0) scaleX(1); }
+  45% { transform: translateY(-105px) scaleX(.95); }
+  82% { transform: translateY(8px) scaleX(1.08); }
+}
+
+@keyframes shadowPulse {
+  0%, 100% { opacity: .45; transform: scale(1); }
+  50% { opacity: .18; transform: scale(.65); }
+}
+
+@media (max-width: 820px) {
+  .gacha-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .gacha-chamber {
+    min-height: 530px;
+  }
+
+  .cutscene-content {
+    min-height: 92vh;
+  }
+
+  .cinematic-chest {
+    transform: scale(.82);
+  }
+
+  .dice-cube-holder,
+  .dice-cube,
+  .dice-face {
+    width: 135px;
+    height: 135px;
+  }
+
+  .dice-face.front  { transform: rotateY(0deg) translateZ(67.5px); }
+  .dice-face.back   { transform: rotateY(180deg) translateZ(67.5px); }
+  .dice-face.right  { transform: rotateY(90deg) translateZ(67.5px); }
+  .dice-face.left   { transform: rotateY(-90deg) translateZ(67.5px); }
+  .dice-face.top    { transform: rotateX(90deg) translateZ(67.5px); }
+  .dice-face.bottom { transform: rotateX(-90deg) translateZ(67.5px); }
+
+  .dice-face-icon {
+    font-size: 48px;
+  }
+
+  .unit-reveal-card {
+    flex-direction: column;
+  }
+
+  .unit-reveal-copy {
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gacha-preview-chest,
+  .gacha-orbit,
+  .enemy-pigeon,
+  .enemy-flock,
+  .warning-light {
+    animation: none !important;
+  }
+}
+
+
+
+/* 스테이지 1 · 비둘기 보스 웨이브 */
+.stage-status-note {
+  width: min(720px, 100%);
+  margin: -4px auto 18px;
+  color: #8fa6c4;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.boss-wave-guide {
+  padding: 13px;
+  border: 1px solid rgba(255, 95, 95, .25);
+  border-radius: 14px;
+  background: rgba(82, 28, 39, .22);
+}
+
+.boss-wave-guide h3 {
+  margin-bottom: 9px;
+  color: #ffb5b5;
+  font-size: 14px;
+}
+
+.boss-wave-guide p {
+  display: flex;
+  gap: 8px;
+  margin: 5px 0;
+  color: #c8d5e8;
+  font-size: 12px;
+}
+
+.boss-wave-guide p strong {
+  display: inline-grid;
+  place-items: center;
+  width: 27px;
+  height: 22px;
+  border-radius: 7px;
+  background: rgba(255, 91, 91, .16);
+  color: #ffb4b4;
+}
+
+
+
+/* ==================================
+   현실적인 날개짓 비둘기 · 전투 나가기 수정
+================================== */
+#battleScreen > .between {
+  position: relative;
+  z-index: 80;
+}
+
+#battleScreen .battle-layout {
+  position: relative;
+  z-index: 1;
+}
+
+.battle-exit-button {
+  position: relative;
+  z-index: 100;
+  pointer-events: auto !important;
+  touch-action: manipulation;
+  user-select: none;
+  min-width: 118px;
+  box-shadow: 0 8px 22px rgba(255, 100, 116, .22);
+}
+
+.battle-exit-button.leave-armed {
+  background: #ffb020;
+  color: #2d2000;
+  animation: leaveButtonPulse .75s ease-in-out infinite;
+}
+
+.enemy-pigeon {
+  width: min(88%, 230px);
+  aspect-ratio: 240 / 170;
+  display: grid;
+  place-items: center;
+  font-size: 0;
+}
+
+.enemy-pigeon .realistic-pigeon-svg {
+  width: 100%;
+  height: auto;
+}
+
+.enemy-flock span {
+  width: 76px;
+  height: 55px;
+  display: block;
+}
+
+.enemy-flock .realistic-pigeon-svg {
+  width: 100%;
+  height: 100%;
+  filter: grayscale(.15) drop-shadow(0 7px 7px rgba(0,0,0,.36));
+}
+
+.realistic-pigeon-svg {
+  display: block;
+  overflow: visible;
+  filter:
+    drop-shadow(0 16px 11px rgba(0, 0, 0, .34))
+    drop-shadow(0 0 14px rgba(120, 166, 210, .12));
+}
+
+.pigeon-ground-shadow {
+  fill: rgba(0, 0, 0, .24);
+  transform-origin: center;
+  animation: pigeonShadowBreath .68s ease-in-out infinite;
+}
+
+.pigeon-flight-body {
+  transform-origin: 50% 58%;
+  animation: pigeonBodyFlight .68s ease-in-out infinite;
+}
+
+.pigeon-tail-feather {
+  fill: #68717d;
+  stroke: #333b45;
+  stroke-width: 2;
+}
+
+.pigeon-body-shape {
+  fill: url(#pigeonBodyGradient);
+  stroke: #3e4752;
+  stroke-width: 2.5;
+}
+
+.pigeon-chest-shape {
+  fill: #aab1b9;
+  opacity: .9;
+}
+
+.pigeon-wing {
+  transform-box: fill-box;
+  will-change: transform;
+}
+
+.pigeon-wing-far {
+  transform-origin: 78% 76%;
+  animation: pigeonWingFar .68s cubic-bezier(.45, 0, .55, 1) infinite;
+}
+
+.pigeon-wing-near {
+  transform-origin: 76% 38%;
+  animation: pigeonWingNear .68s cubic-bezier(.45, 0, .55, 1) infinite;
+}
+
+.pigeon-wing-surface {
+  fill: url(#pigeonWingGradient);
+  stroke: #37404a;
+  stroke-width: 2.5;
+}
+
+.pigeon-wing-highlight {
+  fill: none;
+  stroke: rgba(225, 232, 240, .66);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.pigeon-wing-band {
+  fill: none;
+  stroke: #3e4650;
+  stroke-width: 5;
+  stroke-linecap: round;
+  opacity: .8;
+}
+
+.pigeon-primary-feather {
+  fill: url(#pigeonWingGradient);
+  stroke: rgba(47, 56, 66, .9);
+  stroke-width: 1.15;
+  stroke-linejoin: round;
+}
+
+.pigeon-secondary-feather {
+  fill: #7c8792;
+  stroke: rgba(52, 61, 71, .82);
+  stroke-width: 1;
+}
+
+.pigeon-wing-coverts {
+  fill: rgba(183, 193, 203, .38);
+  stroke: rgba(56, 66, 76, .55);
+  stroke-width: 1.1;
+}
+
+.pigeon-tail-light {
+  fill: #7c8792;
+}
+
+.pigeon-tail-shaft,
+.pigeon-body-feather-detail,
+.pigeon-neck-feather-line,
+.pigeon-head-highlight {
+  fill: none;
+  stroke: rgba(226, 232, 240, .45);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+
+.pigeon-neck-iridescence {
+  fill: url(#pigeonNeckGlow);
+  mix-blend-mode: screen;
+}
+
+.pigeon-neck-shape {
+  fill: #75808c;
+  stroke: #3c4650;
+  stroke-width: 2;
+}
+
+.pigeon-neck-green {
+  fill: rgba(32, 177, 134, .74);
+}
+
+.pigeon-neck-purple {
+  fill: rgba(121, 72, 178, .66);
+}
+
+.pigeon-head-shape {
+  fill: #88929e;
+  stroke: #3b444e;
+  stroke-width: 2;
+}
+
+.pigeon-beak {
+  fill: #d8a46f;
+  stroke: #805d3c;
+  stroke-width: 1.5;
+}
+
+.pigeon-beak-tip {
+  fill: #eee4d3;
+}
+
+.pigeon-eye-ring {
+  fill: #e88245;
+}
+
+.pigeon-eye {
+  fill: #111820;
+}
+
+.pigeon-eye-glint {
+  fill: white;
+}
+
+.pigeon-cere {
+  fill: #e8e5df;
+}
+
+.enemy-flock span:nth-child(2) .pigeon-flight-body,
+.enemy-flock span:nth-child(2) .pigeon-wing,
+.enemy-flock span:nth-child(2) .pigeon-ground-shadow {
+  animation-delay: -.21s;
+}
+
+.enemy-flock span:nth-child(3) .pigeon-flight-body,
+.enemy-flock span:nth-child(3) .pigeon-wing,
+.enemy-flock span:nth-child(3) .pigeon-ground-shadow {
+  animation-delay: -.42s;
+}
+
+@keyframes pigeonWingNear {
+  0%, 100% { transform: rotate(-12deg) scaleY(.72); }
+  50% { transform: rotate(29deg) scaleY(1.08); }
+}
+
+@keyframes pigeonWingFar {
+  0%, 100% { transform: rotate(13deg) scaleY(.78); }
+  50% { transform: rotate(-24deg) scaleY(1.04); }
+}
+
+@keyframes pigeonBodyFlight {
+  0%, 100% { transform: translateY(2px) rotate(-1deg); }
+  50% { transform: translateY(-5px) rotate(1deg); }
+}
+
+@keyframes pigeonShadowBreath {
+  0%, 100% { transform: scaleX(.92); opacity: .22; }
+  50% { transform: scaleX(.72); opacity: .13; }
+}
+
+@keyframes leaveButtonPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.035); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .realistic-pigeon-svg *,
+  .battle-exit-button.leave-armed {
+    animation: none !important;
+  }
+}
+
+  
+/* ==================================
+   전투 UI · 보스 등장 경고 · 개선된 모션
+================================== */
+#battleScreen {
+  width: min(1180px, 100%);
+}
+
+#battleScreen .battle-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.battle-topbar {
+  margin-bottom: 12px;
+}
+
+.battle-map-shell {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 16px;
+  isolation: isolate;
+}
+
+.battle-map-shell canvas {
+  position: relative;
+  z-index: 1;
+}
+
+.map-wave-hud {
+  position: absolute;
+  z-index: 8;
+  top: 12px;
+  right: 14px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 142px;
+  padding: 9px 14px;
+  border: 1px solid rgba(168, 199, 235, .34);
+  border-radius: 13px;
+  background: rgba(7, 19, 37, .82);
+  color: #d8e8fb;
+  box-shadow: 0 9px 24px rgba(0, 0, 0, .24);
+  backdrop-filter: blur(9px);
+  pointer-events: none;
+}
+
+.map-wave-hud span {
+  color: #8fb7df;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .16em;
+}
+
+.map-wave-hud strong {
+  color: #ffffff;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.map-wave-hud small {
+  color: #9fb2ca;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.boss-spawn-alert {
+  position: absolute;
+  z-index: 15;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  width: min(420px, calc(100% - 40px));
+  padding: 17px 22px;
+  border: 2px solid rgba(255, 213, 89, .85);
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(94, 12, 21, .96), rgba(24, 11, 21, .95));
+  color: white;
+  box-shadow:
+    0 0 0 999px rgba(8, 6, 12, .30),
+    0 0 42px rgba(255, 69, 69, .48);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.boss-spawn-alert.boss-alert-play {
+  animation: bossAlertEntrance 1.85s cubic-bezier(.18, .8, .25, 1) both;
+}
+
+.boss-alert-icon {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #ffcc3d;
+  color: #351d00;
+  font-size: 30px;
+  box-shadow: 0 0 25px rgba(255, 204, 61, .65);
+  animation: bossAlertIconPulse .42s ease-in-out infinite alternate;
+}
+
+.boss-spawn-alert strong {
+  display: block;
+  color: #fff3c4;
+  font-size: clamp(25px, 4vw, 38px);
+  letter-spacing: .05em;
+  text-shadow: 0 0 18px rgba(255, 92, 92, .58);
+}
+
+.boss-spawn-alert small {
+  display: block;
+  margin-top: 4px;
+  color: #ffd0d0;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.battle-bottom-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(240px, .55fr);
+  gap: 18px;
+  padding: 16px;
+}
+
+.battle-bottom-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.battle-bottom-heading h3 {
+  margin: 0;
+}
+
+.battle-bottom-heading span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+#battleScreen .battle-deck {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(112px, 1fr));
+  gap: 9px;
+}
+
+#battleScreen .battle-unit-button {
+  min-height: 66px;
+  padding: 9px 11px;
+  border: 1px solid rgba(153, 184, 224, .20);
+  border-radius: 12px;
+  background:
+    linear-gradient(145deg, rgba(55, 77, 111, .96), rgba(38, 53, 79, .96));
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+
+#battleScreen .battle-unit-button:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 208, 74, .58);
+}
+
+#battleScreen .battle-unit-button.selected {
+  outline: none;
+  border-color: #ffd04a;
+  box-shadow: 0 0 0 2px rgba(255, 208, 74, .22);
+}
+
+.battle-info-section {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+  border-left: 1px solid var(--line);
+  padding-left: 17px;
+}
+
+.battle-info-section .selected-panel {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.battle-message {
+  min-height: 42px;
+  margin-top: auto;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(13, 24, 42, .78);
+  line-height: 1.45;
+}
+
+.boss-wave-guide {
+  display: none !important;
+}
+
+/* 메뉴 비둘기: 힘찬 내려치기와 부드러운 회복 동작 */
+.pigeon-wing-near {
+  animation: pigeonWingNearDetailed .74s cubic-bezier(.36, 0, .24, 1) infinite;
+}
+
+.pigeon-wing-far {
+  animation: pigeonWingFarDetailed .74s cubic-bezier(.36, 0, .24, 1) infinite;
+}
+
+.pigeon-primary-feather,
+.pigeon-secondary-feather {
+  transform-box: fill-box;
+  transform-origin: 88% 50%;
+}
+
+.pigeon-wing-near .pigeon-primary-feather:nth-child(1) { animation: pigeonFeatherFlex .74s ease-in-out infinite; }
+.pigeon-wing-near .pigeon-primary-feather:nth-child(2) { animation: pigeonFeatherFlex .74s ease-in-out -.035s infinite; }
+.pigeon-wing-near .pigeon-primary-feather:nth-child(3) { animation: pigeonFeatherFlex .74s ease-in-out -.07s infinite; }
+.pigeon-wing-far .pigeon-primary-feather:nth-child(1) { animation: pigeonFeatherFlexFar .74s ease-in-out -.04s infinite; }
+.pigeon-wing-far .pigeon-primary-feather:nth-child(2) { animation: pigeonFeatherFlexFar .74s ease-in-out -.085s infinite; }
+
+.pigeon-flight-body {
+  animation: pigeonBodyFlightDetailed .74s cubic-bezier(.35, 0, .28, 1) infinite;
+}
+
+@keyframes pigeonWingNearDetailed {
+  0%   { transform: rotate(-14deg) scaleY(.74) scaleX(.96); }
+  18%  { transform: rotate(-38deg) scaleY(.63) scaleX(.91); }
+  43%  { transform: rotate(32deg) scaleY(1.10) scaleX(1.03); }
+  62%  { transform: rotate(20deg) scaleY(1.02) scaleX(1); }
+  100% { transform: rotate(-14deg) scaleY(.74) scaleX(.96); }
+}
+
+@keyframes pigeonWingFarDetailed {
+  0%   { transform: rotate(14deg) scaleY(.78) scaleX(.95); }
+  18%  { transform: rotate(35deg) scaleY(.67) scaleX(.92); }
+  43%  { transform: rotate(-29deg) scaleY(1.06) scaleX(1.02); }
+  64%  { transform: rotate(-17deg) scaleY(.98) scaleX(1); }
+  100% { transform: rotate(14deg) scaleY(.78) scaleX(.95); }
+}
+
+@keyframes pigeonFeatherFlex {
+  0%, 100% { transform: rotate(0deg) scaleX(1); }
+  20% { transform: rotate(-4deg) scaleX(.96); }
+  48% { transform: rotate(7deg) scaleX(1.05); }
+  70% { transform: rotate(3deg) scaleX(1.02); }
+}
+
+@keyframes pigeonFeatherFlexFar {
+  0%, 100% { transform: rotate(0deg) scaleX(1); }
+  20% { transform: rotate(4deg) scaleX(.96); }
+  48% { transform: rotate(-7deg) scaleX(1.05); }
+  70% { transform: rotate(-3deg) scaleX(1.02); }
+}
+
+@keyframes pigeonBodyFlightDetailed {
+  0%   { transform: translateY(3px) rotate(-1.5deg) scaleY(.99); }
+  20%  { transform: translateY(5px) rotate(-2deg) scaleY(.97); }
+  45%  { transform: translateY(-7px) rotate(1.4deg) scaleY(1.02); }
+  70%  { transform: translateY(-3px) rotate(.4deg) scaleY(1.01); }
+  100% { transform: translateY(3px) rotate(-1.5deg) scaleY(.99); }
+}
+
+@keyframes bossAlertEntrance {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.5);
+    filter: blur(8px);
+  }
+  12% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(.94);
+    filter: blur(0);
+  }
+  25% {
+    transform: translate(-50%, -50%) scale(1.04);
+  }
+  36%, 72% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  78% {
+    transform: translate(-48.5%, -50%) scale(1);
+  }
+  82% {
+    transform: translate(-51.5%, -50%) scale(1);
+  }
+  86% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(.92);
+  }
+}
+
+@keyframes bossAlertIconPulse {
+  from { transform: scale(.92) rotate(-3deg); }
+  to { transform: scale(1.08) rotate(3deg); }
+}
+
+@media (max-width: 860px) {
+  .battle-bottom-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .battle-info-section {
+    border-top: 1px solid var(--line);
+    border-left: 0;
+    padding-top: 14px;
+    padding-left: 0;
+  }
+
+  #battleScreen .battle-deck {
+    grid-template-columns: repeat(3, minmax(100px, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .map-wave-hud {
+    top: 8px;
+    right: 8px;
+    min-width: 116px;
+    padding: 7px 10px;
+  }
+
+  #battleScreen .battle-deck {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .battle-bottom-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+
+
+/* ===== 2026-08 전투/가챠 업그레이드 ===== */
+.gacha-draw-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  width: min(620px, 100%);
+  margin: 20px auto 0;
+}
+
+.gacha-draw-button {
+  width: 100%;
+  min-height: 70px;
+  justify-content: center;
+  transition: transform .18s ease, filter .18s ease, box-shadow .18s ease;
+}
+
+.gacha-draw-button.gacha-confirm-ready {
+  transform: translateY(-3px) scale(1.018);
+  filter: saturate(1.25) brightness(1.1);
+  box-shadow:
+    0 0 0 3px rgba(255, 237, 145, .48),
+    0 0 34px rgba(255, 193, 56, .52),
+    0 18px 38px rgba(0, 0, 0, .34);
+  animation: gachaConfirmPulse .72s ease-in-out infinite alternate;
+}
+
+.gacha-double-click-guide {
+  margin: 12px 0 0;
+  color: #b8c7dc;
+  font-size: 13px;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.batch-dice-burst {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: min(480px, 88vw);
+  min-height: 125px;
+  margin: 0 auto;
+  perspective: 700px;
+}
+
+.batch-reward-die {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border: 2px solid rgba(255,255,255,.72);
+  border-radius: 13px;
+  background: var(--die-color);
+  color: var(--die-text);
+  box-shadow: 0 0 24px var(--die-glow), inset 0 0 12px rgba(255,255,255,.35);
+  font-size: 26px;
+  opacity: 0;
+  transform: translateY(55px) rotateX(70deg) rotateZ(-25deg) scale(.35);
+}
+
+.batch-dice-burst.revealed .batch-reward-die {
+  animation: batchDieReveal .72s cubic-bezier(.16,.84,.3,1.16) forwards;
+  animation-delay: calc(var(--die-index) * 55ms);
+}
+
+.batch-extra-count {
+  display: grid;
+  place-items: center;
+  min-width: 70px;
+  height: 54px;
+  padding: 0 12px;
+  border-radius: 14px;
+  background: rgba(12, 24, 44, .88);
+  border: 1px solid rgba(255,255,255,.25);
+  color: white;
+  font-weight: 900;
+}
+
+.batch-result-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: min(440px, 88vw);
+  margin: 14px auto 0;
+}
+
+.batch-result-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 11px;
+  border: 1px solid color-mix(in srgb, var(--row-color) 55%, transparent);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--row-color) 12%, rgba(10,18,34,.84));
+}
+
+.batch-result-row strong { color: var(--row-color); }
+
+/* 메뉴 비둘기 양쪽 날개를 완전히 같은 박자로 동기화 */
+.pigeon-wing-near {
+  animation: pigeonWingNearSynchronized .70s cubic-bezier(.36,0,.22,1) infinite !important;
+}
+.pigeon-wing-far {
+  animation: pigeonWingFarSynchronized .70s cubic-bezier(.36,0,.22,1) infinite !important;
+}
+.pigeon-wing-near .pigeon-primary-feather,
+.pigeon-wing-far .pigeon-primary-feather,
+.pigeon-wing-near .pigeon-secondary-feather,
+.pigeon-wing-far .pigeon-secondary-feather {
+  animation-delay: 0s !important;
+  animation-duration: .70s !important;
+}
+
+@keyframes pigeonWingNearSynchronized {
+  0%, 100% { transform: rotate(-12deg) scaleX(.97) scaleY(.78); }
+  20% { transform: rotate(-40deg) scaleX(.92) scaleY(.63); }
+  47% { transform: rotate(34deg) scaleX(1.04) scaleY(1.12); }
+  67% { transform: rotate(18deg) scaleX(1.01) scaleY(1.01); }
+}
+
+@keyframes pigeonWingFarSynchronized {
+  0%, 100% { transform: rotate(12deg) scaleX(.97) scaleY(.78); }
+  20% { transform: rotate(40deg) scaleX(.92) scaleY(.63); }
+  47% { transform: rotate(-34deg) scaleX(1.04) scaleY(1.12); }
+  67% { transform: rotate(-18deg) scaleX(1.01) scaleY(1.01); }
+}
+
+@keyframes chestInstructionPulse {
+  from {
+    transform: translateX(-50%) scale(1);
+    box-shadow: 0 0 20px var(--scene-glow);
+  }
+
+  to {
+    transform: translateX(-50%) scale(1.025);
+    box-shadow: 0 0 38px var(--scene-color);
+  }
+}
+
+@keyframes gachaConfirmPulse {
+  from { box-shadow: 0 0 0 2px rgba(255,237,145,.38), 0 0 20px rgba(255,193,56,.38); }
+  to { box-shadow: 0 0 0 4px rgba(255,237,145,.58), 0 0 42px rgba(255,193,56,.68); }
+}
+
+@keyframes batchDieReveal {
+  0% { opacity: 0; transform: translateY(55px) rotateX(70deg) rotateZ(-25deg) scale(.35); }
+  65% { opacity: 1; transform: translateY(-9px) rotateX(-8deg) rotateZ(7deg) scale(1.12); }
+  100% { opacity: 1; transform: translateY(0) rotateX(0) rotateZ(0) scale(1); }
+}
+
+@media (max-width: 700px) {
+  .gacha-draw-grid,
+  .batch-result-list { grid-template-columns: 1fr; }
+}
+
   </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -790,8 +2460,7 @@
       <p class="muted">이 버전은 한 개의 HTML 파일로 실행됩니다.</p>
 
       <div class="form-group">
-       <div class="form-group">
-  <label for="username">아이디</label>
+        <label for="username">아이디</label>
   <input
     id="username"
     type="text"
@@ -799,8 +2468,8 @@
     maxlength="20"
     autocomplete="username"
     placeholder="영문 소문자·숫자·_ 3~20자"
-  />
-</div>
+        />
+      </div>
       <div class="form-group">
         <label for="password">비밀번호</label>
         <input id="password" type="password" minlength="6" autocomplete="current-password" placeholder="6자 이상" />
@@ -823,14 +2492,14 @@
   <div class="warning-light warning-light-right"></div>
 
   <div class="enemy-flock flock-one">
-    <span>🕊️</span>
-    <span>🕊️</span>
-    <span>🕊️</span>
+    <span class="flock-pigeon"></span>
+    <span class="flock-pigeon"></span>
+    <span class="flock-pigeon"></span>
   </div>
 
   <div class="enemy-flock flock-two">
-    <span>🕊️</span>
-    <span>🕊️</span>
+    <span class="flock-pigeon"></span>
+    <span class="flock-pigeon"></span>
   </div>
 
   <header class="invasion-topbar">
@@ -864,7 +2533,7 @@
     <div class="invasion-hero">
       <div class="enemy-logo-area">
         <div class="alert-symbol">⚠</div>
-        <div class="enemy-pigeon">🕊️</div>
+        <div class="enemy-pigeon" aria-label="날개짓하는 적 비둘기"></div>
         <div class="target-ring"></div>
       </div>
 
@@ -889,18 +2558,22 @@
       <span class="start-button-icon">⚔️</span>
 
       <span class="start-button-text">
-        <strong>전투 시작</strong>
-        <small>비둘기 침공을 막으러 출격합니다</small>
+        <strong id="startBattleTitle">전투 시작</strong>
+        <small id="startBattleSubtitle">스테이지 1 · 50웨이브 방어전</small>
       </span>
 
       <span class="start-button-arrow">▶</span>
     </button>
 
+    <div class="stage-status-note">
+      스테이지 1 플레이 가능 · 스테이지 2 준비 중
+    </div>
+
     <div class="defense-menu-grid">
       <button id="openGachaBtn" class="defense-menu-card">
-        <span class="defense-card-icon">✨</span>
-        <strong>수비대 소환</strong>
-        <small>새로운 방어 유닛을 획득하세요</small>
+        <span class="defense-card-icon">📦</span>
+        <strong>주사위 보급</strong>
+        <small>상자를 열어 등급 주사위를 획득하세요</small>
       </button>
 
       <button id="openDeckBtn" class="defense-menu-card">
@@ -910,9 +2583,9 @@
       </button>
 
       <button id="openCollectionBtn" class="defense-menu-card">
-        <span class="defense-card-icon">📚</span>
-        <strong>수비대 도감</strong>
-        <small>보유한 방어 유닛을 확인하세요</small>
+        <span class="defense-card-icon">🎒</span>
+        <strong>인벤토리</strong>
+        <small>유닛과 주사위를 관리하세요</small>
       </button>
     </div>
 
@@ -923,11 +2596,12 @@
   </main>
 </section>
 
-  <section id="gachaScreen" class="screen hidden">
+  <section id="gachaScreen" class="screen hidden gacha-screen">
     <div class="between">
       <div>
-        <h2>캐릭터 소환</h2>
-        <p class="muted">1회 소환 비용: 소환석 100개</p>
+        <span class="section-kicker">SUPPLY DROP</span>
+        <h2>주사위 보급 상자</h2>
+        <p class="muted">상자를 열어 등급별 주사위를 획득하세요.</p>
       </div>
       <div class="row">
         <div class="resource">💎 <strong id="gachaGems">0</strong></div>
@@ -935,21 +2609,81 @@
       </div>
     </div>
 
-    <div class="card">
-      <button id="summonBtn">1회 소환</button>
-      <div id="gachaResult" class="gacha-result">소환 버튼을 눌러 보세요.</div>
+    <div class="gacha-layout">
+      <div class="gacha-chamber card">
+        <div class="gacha-orbit orbit-one"></div>
+        <div class="gacha-orbit orbit-two"></div>
+        <div class="gacha-preview-chest" aria-hidden="true">
+          <div class="preview-chest-lid"></div>
+          <div class="preview-chest-body"></div>
+          <div class="preview-chest-lock">◆</div>
+          <div class="preview-chest-glow"></div>
+        </div>
+
+        <div class="gacha-copy">
+          <h3>비둘기 격퇴 보급품</h3>
+          <p>뽑기 구매 후 나타나는 보급 상자를 두 번 눌러야 결과가 공개됩니다.</p>
+        </div>
+
+        <div class="gacha-draw-grid" aria-label="주사위 보급 횟수 선택">
+          <button id="summonBtn" class="premium-summon-button gacha-draw-button" data-draw-count="1" data-default-label="1회 구매">
+            <span>📦</span>
+            <span><strong>1회 구매</strong><small>소환석 100개</small></span>
+          </button>
+          <button id="summon5Btn" class="premium-summon-button gacha-draw-button" data-draw-count="5" data-default-label="5회 구매">
+            <span>📦</span>
+            <span><strong>5회 구매</strong><small>소환석 500개</small></span>
+          </button>
+          <button id="summon10Btn" class="premium-summon-button gacha-draw-button" data-draw-count="10" data-default-label="10회 구매">
+            <span>📦</span>
+            <span><strong>10회 구매</strong><small>소환석 1,000개</small></span>
+          </button>
+          <button id="summon50Btn" class="premium-summon-button gacha-draw-button" data-draw-count="50" data-default-label="50회 구매">
+            <span>🧰</span>
+            <span><strong>50회 구매</strong><small>소환석 5,000개</small></span>
+          </button>
+        </div>
+        <p class="gacha-double-click-guide">구매 버튼은 한 번만 누릅니다. 이후 컷신에 나타나는 보급 상자를 두 번 눌러 결과를 확인하세요.</p>
+
+        <div id="gachaResult" class="gacha-status">
+          상자를 열면 획득한 주사위가 이곳에 표시됩니다.
+        </div>
+      </div>
+
+      <aside class="card probability-panel">
+        <h3>주사위 획득 확률</h3>
+        <p class="muted">등급이 높을수록 강력한 유닛을 얻을 수 있습니다.</p>
+        <div id="diceProbabilityList" class="probability-list"></div>
+      </aside>
     </div>
   </section>
 
-  <section id="collectionScreen" class="screen hidden">
+  <section id="collectionScreen" class="screen hidden inventory-screen">
     <div class="between">
       <div>
-        <h2>보유 캐릭터</h2>
-        <p class="muted">중복 획득 시 조각이 증가합니다.</p>
+        <span class="section-kicker">COMMAND STORAGE</span>
+        <h2>인벤토리</h2>
+        <p class="muted">보유 유닛을 확인하거나 주사위를 굴려 새 유닛을 획득하세요.</p>
       </div>
       <button class="secondary backToMenu">메뉴로</button>
     </div>
-    <div id="collectionGrid" class="unit-grid"></div>
+
+    <div class="inventory-tabs" role="tablist">
+      <button id="inventoryUnitsTab" class="inventory-tab active" data-inventory-tab="units">
+        ⚔️ 유닛
+      </button>
+      <button id="inventoryDiceTab" class="inventory-tab" data-inventory-tab="dice">
+        🎲 주사위
+      </button>
+    </div>
+
+    <div id="inventoryUnitsPanel" class="inventory-panel">
+      <div id="collectionGrid" class="unit-grid"></div>
+    </div>
+
+    <div id="inventoryDicePanel" class="inventory-panel hidden">
+      <div id="diceInventoryGrid" class="dice-inventory-grid"></div>
+    </div>
   </section>
 
   <section id="deckScreen" class="screen hidden">
@@ -968,37 +2702,63 @@
   </section>
 
   <section id="battleScreen" class="screen hidden">
-    <div class="between">
+    <div class="between battle-topbar">
       <div>
         <h2>스테이지 <span id="battleStage">1</span></h2>
         <div class="resource-bar">
           <div class="resource">🪙 전투 골드 <strong id="battleGold">0</strong></div>
           <div class="resource">❤️ 생명 <strong id="battleLives">0</strong></div>
-          <div class="resource">🌊 웨이브 <strong id="battleWave">0</strong>/5</div>
           <div class="resource">💀 처치 <strong id="battleKills">0</strong></div>
         </div>
       </div>
-      <button id="leaveBattleBtn" class="danger">전투 나가기</button>
+      <button id="leaveBattleBtn" class="danger battle-exit-button" type="button">전투 나가기</button>
     </div>
 
     <div class="battle-layout">
-      <canvas id="gameCanvas" width="900" height="520"></canvas>
+      <div class="battle-map-shell">
+        <canvas id="gameCanvas" width="900" height="520"></canvas>
 
-      <aside class="card battle-side">
-        <div>
-          <h3>배치할 유닛</h3>
+        <div class="map-wave-hud" aria-live="polite">
+          <span>WAVE</span>
+          <strong id="battleWave">0</strong>
+          <small>/ 50</small>
+        </div>
+
+        <div id="bossSpawnAlert" class="boss-spawn-alert hidden" aria-live="assertive">
+          <span class="boss-alert-icon">⚠</span>
+          <div>
+            <strong>보스 등장</strong>
+            <small id="bossSpawnName"></small>
+          </div>
+        </div>
+      </div>
+
+      <section class="card battle-bottom-panel">
+        <div class="battle-deploy-section">
+          <div class="battle-bottom-heading">
+            <h3>배치할 유닛</h3>
+            <span>유닛을 선택한 뒤 맵의 길이 아닌 곳을 누르세요.</span>
+          </div>
           <div id="battleDeck" class="battle-deck"></div>
         </div>
 
-        <div id="selectedUnitPanel" class="selected-panel">
-          <h3>배치 유닛 정보</h3>
-          <p class="muted">지도에 배치된 유닛을 클릭하세요.</p>
-        </div>
+        <div class="battle-info-section">
+          <div id="selectedUnitPanel" class="selected-panel">
+            <h3>배치 유닛 정보</h3>
+            <p class="muted">지도에 배치된 유닛을 클릭하세요.</p>
+          </div>
 
-        <div id="battleMessage" class="message"></div>
-      </aside>
+          <div id="battleMessage" class="message battle-message"></div>
+        </div>
+      </section>
     </div>
   </section>
+
+
+  <div id="cutsceneOverlay" class="cutscene-overlay hidden" role="dialog" aria-modal="true">
+    <div id="cutsceneBackdrop" class="cutscene-backdrop"></div>
+    <div id="cutsceneContent" class="cutscene-content"></div>
+  </div>
 
   <script>
     const SUPABASE_URL =
@@ -1019,12 +2779,106 @@ function usernameToInternalEmail(username) {
   return `${username}@players.example.com`;
 }
 
+
+
+const REALISTIC_PIGEON_SVG = `
+  <svg class="realistic-pigeon-svg" viewBox="0 0 260 185" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="pigeonBodyGradient" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#b7bec6"></stop>
+        <stop offset=".5" stop-color="#8d97a2"></stop>
+        <stop offset="1" stop-color="#646f7a"></stop>
+      </linearGradient>
+      <linearGradient id="pigeonWingGradient" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#929ca7"></stop>
+        <stop offset="1" stop-color="#56616c"></stop>
+      </linearGradient>
+      <radialGradient id="pigeonNeckGlow" cx="35%" cy="38%" r="70%">
+        <stop offset="0" stop-color="#41c69d" stop-opacity=".92"></stop>
+        <stop offset=".55" stop-color="#7652bd" stop-opacity=".74"></stop>
+        <stop offset="1" stop-color="#697580" stop-opacity="0"></stop>
+      </radialGradient>
+    </defs>
+
+    <ellipse class="pigeon-ground-shadow" cx="126" cy="165" rx="70" ry="11"></ellipse>
+
+    <g class="pigeon-flight-body">
+      <g class="pigeon-tail-detailed">
+        <path class="pigeon-tail-feather" d="M88 108 C61 111 35 119 12 134 C42 136 66 133 93 123 Z"></path>
+        <path class="pigeon-tail-feather pigeon-tail-light" d="M90 113 C61 126 40 142 24 160 C55 151 77 140 101 124 Z"></path>
+        <path class="pigeon-tail-feather" d="M90 104 C60 99 36 101 16 108 C43 115 68 119 98 119 Z"></path>
+        <path class="pigeon-tail-shaft" d="M91 111 L27 151"></path>
+        <path class="pigeon-tail-shaft" d="M92 108 L21 110"></path>
+      </g>
+
+      <g class="pigeon-wing pigeon-wing-far">
+        <path class="pigeon-wing-surface" d="M121 102 C91 107 55 139 24 174 C66 166 104 146 137 116 C140 104 134 99 121 102 Z"></path>
+        <g class="pigeon-feather-layer pigeon-feather-layer-far">
+          <path class="pigeon-primary-feather" d="M109 116 C78 134 54 153 35 169 C65 159 92 145 120 124 Z"></path>
+          <path class="pigeon-primary-feather" d="M116 119 C86 142 70 157 59 166 C82 155 104 141 128 122 Z"></path>
+          <path class="pigeon-secondary-feather" d="M111 108 C83 118 61 133 44 148 C71 138 94 127 123 113 Z"></path>
+          <path class="pigeon-secondary-feather" d="M120 107 C94 114 74 124 57 136 C82 130 103 121 132 112 Z"></path>
+        </g>
+        <path class="pigeon-wing-coverts" d="M119 104 C95 111 76 123 61 135 C84 130 105 119 130 111 Z"></path>
+        <path class="pigeon-wing-band" d="M105 128 C82 141 66 151 52 158"></path>
+        <path class="pigeon-wing-highlight" d="M112 116 C82 134 58 151 40 163"></path>
+      </g>
+
+      <ellipse class="pigeon-body-shape" cx="128" cy="108" rx="57" ry="38" transform="rotate(-4 128 108)"></ellipse>
+      <path class="pigeon-chest-shape" d="M141 78 C170 80 188 99 184 120 C166 141 136 147 108 134 C137 127 149 103 141 78 Z"></path>
+      <path class="pigeon-body-feather-detail" d="M91 111 C107 118 123 122 142 120"></path>
+      <path class="pigeon-body-feather-detail" d="M96 121 C112 128 130 131 148 127"></path>
+
+      <g class="pigeon-wing pigeon-wing-near">
+        <path class="pigeon-wing-surface" d="M129 102 C105 66 67 29 24 8 C39 55 63 91 108 122 C126 122 140 112 129 102 Z"></path>
+        <g class="pigeon-feather-layer">
+          <path class="pigeon-primary-feather" d="M106 103 C81 71 55 40 30 17 C49 53 69 82 114 113 Z"></path>
+          <path class="pigeon-primary-feather" d="M114 105 C94 70 77 43 57 23 C69 60 87 88 122 113 Z"></path>
+          <path class="pigeon-primary-feather" d="M121 107 C107 75 96 53 82 35 C87 70 101 95 130 114 Z"></path>
+          <path class="pigeon-secondary-feather" d="M106 104 C83 84 64 69 47 59 C66 83 84 101 115 114 Z"></path>
+          <path class="pigeon-secondary-feather" d="M116 103 C96 89 80 80 64 74 C82 94 99 108 126 114 Z"></path>
+        </g>
+        <path class="pigeon-wing-coverts" d="M118 99 C98 80 80 66 63 57 C82 84 99 102 129 111 Z"></path>
+        <path class="pigeon-wing-band" d="M101 97 C76 70 57 47 43 28"></path>
+        <path class="pigeon-wing-highlight" d="M113 99 C87 70 64 46 40 25"></path>
+      </g>
+
+      <ellipse class="pigeon-neck-shape" cx="169" cy="89" rx="29" ry="32" transform="rotate(-18 169 89)"></ellipse>
+      <ellipse class="pigeon-neck-iridescence" cx="166" cy="93" rx="24" ry="29" transform="rotate(-18 166 93)"></ellipse>
+      <path class="pigeon-neck-feather-line" d="M153 82 C165 88 174 98 178 111"></path>
+      <path class="pigeon-neck-feather-line" d="M158 74 C173 81 184 92 187 104"></path>
+
+      <circle class="pigeon-head-shape" cx="199" cy="70" r="27"></circle>
+      <path class="pigeon-head-highlight" d="M182 57 C192 48 207 47 218 55"></path>
+      <path class="pigeon-beak" d="M219 69 L252 77 L219 85 Z"></path>
+      <path class="pigeon-beak-tip" d="M240 74 L252 77 L240 81 Z"></path>
+      <ellipse class="pigeon-cere" cx="220" cy="72" rx="8" ry="5.5"></ellipse>
+      <circle class="pigeon-eye-ring" cx="203" cy="61" r="7"></circle>
+      <circle class="pigeon-eye" cx="203" cy="61" r="3.8"></circle>
+      <circle class="pigeon-eye-glint" cx="204.5" cy="59.5" r="1.3"></circle>
+    </g>
+  </svg>
+`;
+
+function installAnimatedMenuPigeons() {
+  const heroPigeon = document.querySelector('.enemy-pigeon');
+  if (heroPigeon) {
+    heroPigeon.innerHTML = REALISTIC_PIGEON_SVG;
+  }
+
+  document.querySelectorAll('.flock-pigeon').forEach(pigeon => {
+    pigeon.innerHTML = REALISTIC_PIGEON_SVG;
+  });
+}
+
+
     const UNIT_DATA = {
       starterArcher: {
         id: 'starterArcher',
         name: '견습 궁수',
         icon: '🏹',
         rarity: '일반',
+        rarityKey: 'common',
         rarityClass: 'rarity-common',
         cost: 90,
         damage: 18,
@@ -1037,6 +2891,7 @@ function usernameToInternalEmail(username) {
         name: '견습 기사',
         icon: '🗡️',
         rarity: '일반',
+        rarityKey: 'common',
         rarityClass: 'rarity-common',
         cost: 120,
         damage: 34,
@@ -1049,6 +2904,7 @@ function usernameToInternalEmail(username) {
         name: '견습 마법사',
         icon: '🔮',
         rarity: '희귀',
+        rarityKey: 'rare',
         rarityClass: 'rarity-rare',
         cost: 165,
         damage: 55,
@@ -1061,6 +2917,7 @@ function usernameToInternalEmail(username) {
         name: '바람 사수',
         icon: '🍃',
         rarity: '희귀',
+        rarityKey: 'rare',
         rarityClass: 'rarity-rare',
         cost: 150,
         damage: 28,
@@ -1073,6 +2930,7 @@ function usernameToInternalEmail(username) {
         name: '화염 마도사',
         icon: '🔥',
         rarity: '영웅',
+        rarityKey: 'epic',
         rarityClass: 'rarity-epic',
         cost: 230,
         damage: 88,
@@ -1085,23 +2943,109 @@ function usernameToInternalEmail(username) {
         name: '왕실 수호자',
         icon: '🛡️',
         rarity: '전설',
+        rarityKey: 'legendary',
         rarityClass: 'rarity-legend',
         cost: 300,
         damage: 145,
         range: 135,
         fireInterval: 1.3,
         color: '#ffd04a'
+      },
+      skyDragonKnight: {
+        id: 'skyDragonKnight',
+        name: '천공 용기사',
+        icon: '🐉',
+        rarity: '신화',
+        rarityKey: 'mythic',
+        rarityClass: 'rarity-mythic',
+        cost: 390,
+        damage: 225,
+        range: 205,
+        fireInterval: 1.05,
+        color: '#ef4444'
+      },
+      astralChronomancer: {
+        id: 'astralChronomancer',
+        name: '별빛 시간술사',
+        icon: '🌌',
+        rarity: '비밀',
+        rarityKey: 'secret',
+        rarityClass: 'rarity-secret',
+        cost: 470,
+        damage: 330,
+        range: 235,
+        fireInterval: 0.92,
+        color: '#d8b4fe'
       }
     };
 
-    const GACHA_POOL = [
-      { id: 'starterArcher', weight: 30 },
-      { id: 'starterKnight', weight: 30 },
-      { id: 'starterMage', weight: 20 },
-      { id: 'windRanger', weight: 13 },
-      { id: 'flameWizard', weight: 6 },
-      { id: 'royalGuardian', weight: 1 }
-    ];
+    const DICE_DATA = {
+      common: {
+        key: 'common',
+        name: '일반 주사위',
+        rarity: '일반',
+        color: '#f4f7fb',
+        textColor: '#1f2937',
+        dotColor: '#263143',
+        glow: 'rgba(244, 247, 251, .68)',
+        chance: 58
+      },
+      rare: {
+        key: 'rare',
+        name: '희귀 주사위',
+        rarity: '희귀',
+        color: '#3b82f6',
+        textColor: '#ffffff',
+        dotColor: '#ffffff',
+        glow: 'rgba(59, 130, 246, .78)',
+        chance: 29
+      },
+      epic: {
+        key: 'epic',
+        name: '영웅 주사위',
+        rarity: '영웅',
+        color: '#a855f7',
+        textColor: '#ffffff',
+        dotColor: '#ffffff',
+        glow: 'rgba(168, 85, 247, .82)',
+        chance: 11.85
+      },
+      legendary: {
+        key: 'legendary',
+        name: '전설 주사위',
+        rarity: '전설',
+        color: '#facc15',
+        textColor: '#332600',
+        dotColor: '#332600',
+        glow: 'rgba(250, 204, 21, .9)',
+        chance: 1
+      },
+      mythic: {
+        key: 'mythic',
+        name: '신화 주사위',
+        rarity: '신화',
+        color: '#ef4444',
+        textColor: '#ffffff',
+        dotColor: '#ffffff',
+        glow: 'rgba(239, 68, 68, .95)',
+        chance: .1
+      },
+      secret: {
+        key: 'secret',
+        name: '비밀 주사위',
+        rarity: '비밀',
+        color: '#d8b4fe',
+        textColor: '#32154f',
+        dotColor: '#32154f',
+        glow: 'rgba(216, 180, 254, 1)',
+        chance: .05
+      }
+    };
+
+    const DICE_GACHA_POOL = Object.values(DICE_DATA).map(dice => ({
+      rarity: dice.key,
+      weight: dice.chance
+    }));
 
     const screens = {
       auth: document.querySelector('#authScreen'),
@@ -1116,6 +3060,10 @@ function usernameToInternalEmail(username) {
     let player = null;
     let selectedDeckUnitId = null;
     let selectedDeckSlot = null;
+    let activeInventoryTab = 'units';
+    let cutsceneRunning = false;
+    let gachaArmedButton = null;
+    let gachaConfirmTimer = null;
 
     function showScreen(name) {
       Object.values(screens).forEach(screen => screen.classList.add('hidden'));
@@ -1135,6 +3083,14 @@ function usernameToInternalEmail(username) {
           starterKnight: { level: 1, fragments: 0 },
           starterMage: { level: 1, fragments: 0 }
         },
+        diceInventory: {
+          common: 0,
+          rare: 0,
+          epic: 0,
+          legendary: 0,
+          mythic: 0,
+          secret: 0
+        },
         deck: [
           'starterArcher',
           'starterKnight',
@@ -1145,10 +3101,44 @@ function usernameToInternalEmail(username) {
       };
     }
 
+    function ensurePlayerData() {
+      if (!player || typeof player !== 'object') {
+        player = createDefaultPlayer();
+        return;
+      }
+
+      if (typeof player.gems !== 'number') player.gems = 500;
+      if (typeof player.highestStage !== 'number') player.highestStage = 0;
+      if (!player.ownedUnits || typeof player.ownedUnits !== 'object') {
+        player.ownedUnits = {};
+      }
+      if (!Array.isArray(player.deck)) {
+        player.deck = [null, null, null, null, null];
+      }
+
+      while (player.deck.length < 5) player.deck.push(null);
+      player.deck = player.deck.slice(0, 5).map(unitId =>
+        UNIT_DATA[unitId] ? unitId : null
+      );
+
+      if (!player.diceInventory || typeof player.diceInventory !== 'object') {
+        player.diceInventory = {};
+      }
+
+      Object.keys(DICE_DATA).forEach(rarityKey => {
+        const amount = player.diceInventory[rarityKey];
+        if (!Number.isFinite(amount) || amount < 0) {
+          player.diceInventory[rarityKey] = 0;
+        }
+      });
+    }
+
    async function savePlayer() {
   if (!player) {
     return;
   }
+
+  ensurePlayerData();
 
   const {
     data: { user },
@@ -1205,9 +3195,10 @@ currentUsername =
     player = data.save_data;
   } else {
     player = createDefaultPlayer();
-    await savePlayer();
   }
 
+  ensurePlayerData();
+  await savePlayer();
   return true;
 }
 
@@ -1384,15 +3375,30 @@ async function logout() {
 }
 
     function openMenu() {
+      ensurePlayerData();
       savePlayer();
       document.querySelector('#welcomeText').textContent = `${currentUsername}님의 계정`;
       document.querySelector('#menuGems').textContent = player.gems;
-      document.querySelector('#menuStage').textContent = player.highestStage;
+      document.querySelector('#menuStage').textContent = Math.min(player.highestStage, 1);
+
+      const startTitle = document.querySelector('#startBattleTitle');
+      const startSubtitle = document.querySelector('#startBattleSubtitle');
+
+      if (player.highestStage >= 1) {
+        startTitle.textContent = '스테이지 1 다시 플레이';
+        startSubtitle.textContent = '50웨이브 재도전 · 스테이지 2 준비 중';
+      } else {
+        startTitle.textContent = '전투 시작';
+        startSubtitle.textContent = '스테이지 1 · 50웨이브 방어전';
+      }
+
       showScreen('menu');
     }
 
     function getOwnedUnitIds() {
-      return Object.keys(player.ownedUnits);
+      ensurePlayerData();
+      return Object.keys(player.ownedUnits)
+        .filter(unitId => UNIT_DATA[unitId]);
     }
 
     function unitCardHtml(unitId, ownedInfo, selectable = false) {
@@ -1413,60 +3419,678 @@ async function logout() {
       `;
     }
 
-    function openCollection() {
-      const grid = document.querySelector('#collectionGrid');
-      grid.innerHTML = getOwnedUnitIds()
-        .map(id => unitCardHtml(id, player.ownedUnits[id]))
-        .join('');
+    function openCollection(tab = 'units') {
+      activeInventoryTab = tab;
+      renderInventory();
       showScreen('collection');
     }
 
-    function weightedRandomUnit() {
-      const total = GACHA_POOL.reduce((sum, item) => sum + item.weight, 0);
-      let roll = Math.random() * total;
+    function renderInventory() {
+      ensurePlayerData();
 
-      for (const item of GACHA_POOL) {
-        roll -= item.weight;
-        if (roll <= 0) return item.id;
-      }
+      const unitsTab = document.querySelector('#inventoryUnitsTab');
+      const diceTab = document.querySelector('#inventoryDiceTab');
+      const unitsPanel = document.querySelector('#inventoryUnitsPanel');
+      const dicePanel = document.querySelector('#inventoryDicePanel');
 
-      return GACHA_POOL[0].id;
-    }
+      const showingUnits = activeInventoryTab === 'units';
+      unitsTab.classList.toggle('active', showingUnits);
+      diceTab.classList.toggle('active', !showingUnits);
+      unitsPanel.classList.toggle('hidden', !showingUnits);
+      dicePanel.classList.toggle('hidden', showingUnits);
 
-    function openGacha() {
-      document.querySelector('#gachaGems').textContent = player.gems;
-      document.querySelector('#gachaResult').textContent = '소환 버튼을 눌러 보세요.';
-      showScreen('gacha');
-    }
+      if (showingUnits) {
+        const grid = document.querySelector('#collectionGrid');
+        const ownedIds = getOwnedUnitIds().filter(id => UNIT_DATA[id]);
 
-    function summon() {
-      if (player.gems < 100) {
-        document.querySelector('#gachaResult').innerHTML =
-          '<span style="color:#ff9ca7;">소환석이 부족합니다.</span>';
+        grid.innerHTML = ownedIds.length
+          ? ownedIds
+              .map(id => unitCardHtml(id, player.ownedUnits[id]))
+              .join('')
+          : '<div class="card"><p class="muted">아직 보유한 유닛이 없습니다.</p></div>';
         return;
       }
 
-      player.gems -= 100;
-      const unitId = weightedRandomUnit();
-      const unit = UNIT_DATA[unitId];
-      const isNew = !player.ownedUnits[unitId];
+      const diceGrid = document.querySelector('#diceInventoryGrid');
+      diceGrid.innerHTML = Object.values(DICE_DATA)
+        .map(dice => {
+          const amount = player.diceInventory[dice.key] || 0;
 
-      if (isNew) {
-        player.ownedUnits[unitId] = { level: 1, fragments: 0 };
-      } else {
-        player.ownedUnits[unitId].fragments += 10;
+          return `
+            <article
+              class="dice-card"
+              style="
+                --dice-color:${dice.color};
+                --dice-glow:${dice.glow};
+                --dice-text:${dice.textColor};
+                --dice-dot:${dice.dotColor};
+              "
+            >
+              <div class="dice-card-header">
+                <div>
+                  <h3>${dice.name}</h3>
+                  <span class="muted">${dice.rarity} 등급 유닛 전용</span>
+                </div>
+                <span class="dice-count">×${amount}</span>
+              </div>
+
+              <div class="mini-die" aria-hidden="true">
+                <span></span><span></span><span></span><span></span>
+              </div>
+
+              <button
+                class="roll-dice-btn"
+                data-roll-rarity="${dice.key}"
+                ${amount <= 0 ? 'disabled' : ''}
+              >
+                🎲 주사위 굴리기
+              </button>
+            </article>
+          `;
+        })
+        .join('');
+
+      diceGrid.querySelectorAll('[data-roll-rarity]').forEach(button => {
+        button.addEventListener('click', () => {
+          rollDice(button.dataset.rollRarity);
+        });
+      });
+    }
+
+    function weightedRandomDice() {
+      const total = DICE_GACHA_POOL.reduce(
+        (sum, item) => sum + item.weight,
+        0
+      );
+
+      let roll = Math.random() * total;
+
+      for (const item of DICE_GACHA_POOL) {
+        roll -= item.weight;
+        if (roll <= 0) return item.rarity;
       }
 
-      savePlayer();
+      return 'common';
+    }
+
+    function renderDiceProbabilities() {
+      const list = document.querySelector('#diceProbabilityList');
+      if (!list) return;
+
+      list.innerHTML = Object.values(DICE_DATA)
+        .map(dice => `
+          <div
+            class="probability-row"
+            style="
+              --rarity-color:${dice.color};
+              --rarity-glow:${dice.glow};
+            "
+          >
+            <span class="probability-color"></span>
+            <strong>${dice.rarity}</strong>
+            <span>${dice.chance}%</span>
+          </div>
+        `)
+        .join('');
+    }
+
+    function resetGachaConfirmation() {
+      clearTimeout(gachaConfirmTimer);
+      gachaConfirmTimer = null;
+      gachaArmedButton = null;
+
+      document.querySelectorAll('[data-draw-count]').forEach(button => {
+        button.classList.remove('gacha-confirm-ready');
+        const label = button.querySelector('strong');
+        if (label) label.textContent = button.dataset.defaultLabel;
+      });
+    }
+
+    function refreshGachaButtons() {
+      document.querySelectorAll('[data-draw-count]').forEach(button => {
+        const count = Number(button.dataset.drawCount || 1);
+        button.disabled = cutsceneRunning || !player || player.gems < count * 100;
+      });
+    }
+
+    function openGacha() {
+      ensurePlayerData();
+      resetGachaConfirmation();
       document.querySelector('#gachaGems').textContent = player.gems;
-      document.querySelector('#gachaResult').innerHTML = `
-        <div>
-          <div style="font-size:52px;">${unit.icon}</div>
-          <h2>${unit.name}</h2>
-          <p class="${unit.rarityClass}">${unit.rarity}</p>
-          <strong>${isNew ? '새 캐릭터 획득!' : '중복 획득: 조각 +10'}</strong>
+      document.querySelector('#gachaResult').textContent =
+        '구매 버튼을 누른 뒤, 나타나는 보급 상자를 두 번 눌러 결과를 확인하세요.';
+      renderDiceProbabilities();
+      showScreen('gacha');
+      refreshGachaButtons();
+    }
+
+    function wait(milliseconds) {
+      return new Promise(resolve => setTimeout(resolve, milliseconds));
+    }
+
+    function waitForChestDoubleOpen(chest, instruction) {
+      return new Promise(resolve => {
+        let clickCount = 0;
+        let acceptingClick = true;
+        let finished = false;
+
+        chest.classList.add('chest-clickable');
+        chest.setAttribute('role', 'button');
+        chest.setAttribute('tabindex', '0');
+        chest.setAttribute('aria-label', '보급 상자. 두 번 눌러 개방');
+
+        const cleanup = () => {
+          chest.removeEventListener('click', activate);
+          chest.removeEventListener('keydown', handleKeydown);
+          chest.classList.remove('chest-clickable', 'chest-armed');
+          chest.removeAttribute('role');
+          chest.removeAttribute('tabindex');
+          chest.removeAttribute('aria-label');
+        };
+
+        const activate = () => {
+          if (finished || !acceptingClick) return;
+
+          clickCount += 1;
+
+          if (clickCount === 1) {
+            acceptingClick = false;
+            chest.classList.add('shaking', 'chest-armed');
+            instruction.textContent = '잠금 해제! 상자를 한 번 더 눌러 개방하세요. (2/2)';
+            instruction.classList.add('armed');
+
+            window.setTimeout(() => {
+              chest.classList.remove('shaking');
+              acceptingClick = true;
+            }, 720);
+            return;
+          }
+
+          finished = true;
+          instruction.textContent = '보급 상자 개방!';
+          instruction.classList.remove('armed');
+          instruction.classList.add('hidden-after-open');
+          cleanup();
+          resolve();
+        };
+
+        const handleKeydown = event => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          activate();
+        };
+
+        chest.addEventListener('click', activate);
+        chest.addEventListener('keydown', handleKeydown);
+      });
+    }
+
+    function setCutsceneTheme(dice) {
+      const overlay = document.querySelector('#cutsceneOverlay');
+      overlay.style.setProperty('--scene-color', dice.color);
+      overlay.style.setProperty('--scene-glow', dice.glow);
+      overlay.style.setProperty('--scene-text', dice.textColor);
+    }
+
+    function createParticleMarkup(count = 30) {
+      return Array.from({ length: count }, (_, index) => {
+        const angle = Math.round((360 / count) * index + Math.random() * 18);
+        const distance = 120 + Math.round(Math.random() * 240);
+        const size = 3 + Math.round(Math.random() * 8);
+        const duration = 700 + Math.round(Math.random() * 800);
+
+        return `
+          <span
+            class="cutscene-particle"
+            style="
+              --particle-angle:${angle}deg;
+              --particle-distance:${distance}px;
+              --particle-size:${size}px;
+              --particle-duration:${duration}ms;
+            "
+          ></span>
+        `;
+      }).join('');
+    }
+
+    function closeCutscene() {
+      document.querySelector('#cutsceneOverlay').classList.add('hidden');
+      document.querySelector('#cutsceneContent').innerHTML = '';
+      cutsceneRunning = false;
+      resetGachaConfirmation();
+      refreshGachaButtons();
+    }
+
+    async function playChestCutscene(rarityKey, onReveal = null) {
+      const dice = DICE_DATA[rarityKey];
+      const overlay = document.querySelector('#cutsceneOverlay');
+      const content = document.querySelector('#cutsceneContent');
+
+      setCutsceneTheme(dice);
+      cutsceneRunning = true;
+      overlay.classList.remove('hidden');
+      content.innerHTML = `
+        <h2 class="cutscene-title">보급 상자 도착</h2>
+
+        <div class="chest-scene">
+          <div id="cinematicChest" class="cinematic-chest">
+            <div class="chest-beam"></div>
+            <div class="cinematic-chest-lid"></div>
+            <div class="cinematic-chest-body"></div>
+            <div class="cinematic-chest-lock">◆</div>
+
+            <div id="rewardDie" class="reward-die">🎲</div>
+          </div>
+
+          <div id="chestParticles" class="cutscene-particles"></div>
+          <p id="chestClickInstruction" class="chest-click-instruction">보급 상자를 눌러 잠금을 해제하세요. (1/2)</p>
+
+          <div id="chestRewardPanel" class="reward-panel">
+            <span class="section-kicker">DICE ACQUIRED</span>
+            <h2>${dice.name}</h2>
+            <p>인벤토리의 주사위 탭에서 굴릴 수 있습니다.</p>
+            <button id="closeChestCutscene" class="cutscene-close-button">
+              확인
+            </button>
+          </div>
         </div>
       `;
+
+      const chest = document.querySelector('#cinematicChest');
+      const rewardDie = document.querySelector('#rewardDie');
+      const particleBox = document.querySelector('#chestParticles');
+      const panel = document.querySelector('#chestRewardPanel');
+      const instruction = document.querySelector('#chestClickInstruction');
+
+      await wait(500);
+      await waitForChestDoubleOpen(chest, instruction);
+
+      chest.classList.add('opened');
+      particleBox.innerHTML = createParticleMarkup(
+        rarityKey === 'secret' ? 70 : rarityKey === 'mythic' ? 55 : 38
+      );
+
+      if (onReveal) await onReveal();
+
+      await wait(300);
+      rewardDie.classList.add('revealed');
+      await wait(1350);
+      panel.classList.add('visible');
+
+      document.querySelector('#closeChestCutscene')
+        .addEventListener('click', closeCutscene, { once: true });
+    }
+
+    function getHighestRarityKey(rarityKeys) {
+      const rank = {
+        common: 0,
+        rare: 1,
+        epic: 2,
+        legendary: 3,
+        mythic: 4,
+        secret: 5
+      };
+
+      return [...rarityKeys].sort((a, b) => rank[b] - rank[a])[0] || 'common';
+    }
+
+    async function playBatchChestCutscene(rarityKeys, onReveal = null) {
+      const highestKey = getHighestRarityKey(rarityKeys);
+      const highestDice = DICE_DATA[highestKey];
+      const overlay = document.querySelector('#cutsceneOverlay');
+      const content = document.querySelector('#cutsceneContent');
+      const counts = {};
+
+      rarityKeys.forEach(key => {
+        counts[key] = (counts[key] || 0) + 1;
+      });
+
+      const visibleKeys = rarityKeys.slice(0, 12);
+      const diceMarkup = visibleKeys.map((key, index) => {
+        const dice = DICE_DATA[key];
+        return `
+          <div
+            class="batch-reward-die"
+            style="
+              --die-index:${index};
+              --die-color:${dice.color};
+              --die-text:${dice.textColor};
+              --die-glow:${dice.glow};
+            "
+            title="${dice.name}"
+          >🎲</div>
+        `;
+      }).join('');
+
+      const summaryMarkup = Object.values(DICE_DATA)
+        .filter(dice => counts[dice.key])
+        .map(dice => `
+          <div class="batch-result-row" style="--row-color:${dice.color};">
+            <strong>${dice.name}</strong>
+            <span>×${counts[dice.key]}</span>
+          </div>
+        `)
+        .join('');
+
+      setCutsceneTheme(highestDice);
+      cutsceneRunning = true;
+      refreshGachaButtons();
+      overlay.classList.remove('hidden');
+      content.innerHTML = `
+        <h2 class="cutscene-title">보급 상자 도착</h2>
+        <div class="chest-scene">
+          <div id="cinematicChest" class="cinematic-chest">
+            <div class="chest-beam"></div>
+            <div class="cinematic-chest-lid"></div>
+            <div class="cinematic-chest-body"></div>
+            <div class="cinematic-chest-lock">◆</div>
+          </div>
+          <div id="chestParticles" class="cutscene-particles"></div>
+          <p id="chestClickInstruction" class="chest-click-instruction">보급 상자를 눌러 잠금을 해제하세요. (1/2)</p>
+          <div id="batchDiceBurst" class="batch-dice-burst">
+            ${diceMarkup}
+            ${rarityKeys.length > visibleKeys.length ? `<div class="batch-extra-count">+${rarityKeys.length - visibleKeys.length}</div>` : ''}
+          </div>
+          <div id="chestRewardPanel" class="reward-panel">
+            <span class="section-kicker">DICE ACQUIRED</span>
+            <h2>주사위 ${rarityKeys.length}개 획득</h2>
+            <div class="batch-result-list">${summaryMarkup}</div>
+            <button id="closeChestCutscene" class="cutscene-close-button">확인</button>
+          </div>
+        </div>
+      `;
+
+      const chest = document.querySelector('#cinematicChest');
+      const particleBox = document.querySelector('#chestParticles');
+      const burst = document.querySelector('#batchDiceBurst');
+      const panel = document.querySelector('#chestRewardPanel');
+      const instruction = document.querySelector('#chestClickInstruction');
+
+      await wait(500);
+      await waitForChestDoubleOpen(chest, instruction);
+
+      chest.classList.add('opened');
+      particleBox.innerHTML = createParticleMarkup(
+        highestKey === 'secret' ? 78 : highestKey === 'mythic' ? 62 : 46
+      );
+
+      if (onReveal) await onReveal();
+
+      await wait(260);
+      burst.classList.add('revealed');
+      await wait(1250 + Math.min(700, rarityKeys.length * 25));
+      panel.classList.add('visible');
+
+      document.querySelector('#closeChestCutscene')
+        .addEventListener('click', closeCutscene, { once: true });
+    }
+
+    async function executeGachaDraw(count) {
+      const cost = count * 100;
+      if (cutsceneRunning) return;
+
+      ensurePlayerData();
+      if (player.gems < cost) {
+        document.querySelector('#gachaResult').innerHTML =
+          `<span style="color:#ff9ca7;">${count}회 구매에는 소환석 ${cost.toLocaleString()}개가 필요합니다.</span>`;
+        refreshGachaButtons();
+        return;
+      }
+
+      cutsceneRunning = true;
+      refreshGachaButtons();
+
+      let rewardsCommitted = false;
+
+      try {
+        player.gems -= cost;
+        const results = Array.from({ length: count }, () => weightedRandomDice());
+
+        document.querySelector('#gachaGems').textContent = player.gems;
+        document.querySelector('#gachaResult').textContent =
+          '보급 상자가 도착했습니다. 상자를 두 번 눌러 결과를 확인하세요.';
+
+        await playBatchChestCutscene(results, async () => {
+          results.forEach(rarityKey => {
+            player.diceInventory[rarityKey] += 1;
+          });
+
+          rewardsCommitted = true;
+          document.querySelector('#gachaResult').innerHTML =
+            `<strong>${count}회 구매 완료 · 주사위 ${count}개 획득</strong>`;
+          await savePlayer();
+        });
+      } catch (error) {
+        console.error('주사위 뽑기 실패:', error);
+
+        if (!rewardsCommitted) {
+          player.gems += cost;
+          document.querySelector('#gachaGems').textContent = player.gems;
+        }
+
+        cutsceneRunning = false;
+        closeCutscene();
+        document.querySelector('#gachaResult').innerHTML =
+          '<span style="color:#ff9ca7;">뽑기 처리 중 오류가 발생해 소환석을 되돌렸습니다.</span>';
+      }
+    }
+
+    function requestGachaDraw(count) {
+      if (cutsceneRunning) return;
+
+      const cost = count * 100;
+      if (player.gems < cost) {
+        document.querySelector('#gachaResult').innerHTML =
+          `<span style="color:#ff9ca7;">소환석 ${cost.toLocaleString()}개가 필요합니다.</span>`;
+        return;
+      }
+
+      executeGachaDraw(count);
+    }
+
+    function summon() {
+      requestGachaDraw(1);
+    }
+
+    function shuffledUnits(units) {
+      const copy = [...units];
+
+      for (let index = copy.length - 1; index > 0; index -= 1) {
+        const target = Math.floor(Math.random() * (index + 1));
+        [copy[index], copy[target]] = [copy[target], copy[index]];
+      }
+
+      return copy;
+    }
+
+    function buildDiceFaces(rarityKey) {
+      const eligible = Object.values(UNIT_DATA)
+        .filter(unit => unit.rarityKey === rarityKey);
+
+      if (!eligible.length) return [];
+
+      const shuffled = shuffledUnits(eligible);
+      return Array.from({ length: 6 }, (_, index) =>
+        shuffled[index % shuffled.length]
+      );
+    }
+
+    function diceFaceMarkup(faceClass, unit) {
+      return `
+        <div class="dice-face ${faceClass}">
+          <div class="dice-face-content">
+            <span class="dice-face-icon">${unit.icon}</span>
+            <span class="dice-face-name">${unit.name}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function grantUnit(unit) {
+      const owned = player.ownedUnits[unit.id];
+
+      if (owned) {
+        owned.fragments += 10;
+        return {
+          isNew: false,
+          message: '중복 획득 · 조각 +10'
+        };
+      }
+
+      player.ownedUnits[unit.id] = {
+        level: 1,
+        fragments: 0
+      };
+
+      return {
+        isNew: true,
+        message: '새 유닛 획득!'
+      };
+    }
+
+    async function playDiceRollCutscene(rarityKey, faces, winningFace) {
+      const dice = DICE_DATA[rarityKey];
+      const overlay = document.querySelector('#cutsceneOverlay');
+      const content = document.querySelector('#cutsceneContent');
+      const faceClasses = [
+        'front',
+        'back',
+        'right',
+        'left',
+        'top',
+        'bottom'
+      ];
+
+      setCutsceneTheme(dice);
+      cutsceneRunning = true;
+      overlay.classList.remove('hidden');
+
+      content.innerHTML = `
+        <h2 class="cutscene-title">${dice.name} 굴리기</h2>
+
+        <div class="dice-roll-stage">
+          <div class="dice-shadow"></div>
+
+          <div class="dice-cube-holder">
+            <div id="cinematicDiceCube" class="dice-cube">
+              ${faces.map((unit, index) =>
+                diceFaceMarkup(faceClasses[index], unit)
+              ).join('')}
+            </div>
+          </div>
+
+          <div id="diceParticles" class="cutscene-particles"></div>
+
+          <div id="unitRewardPanel" class="reward-panel">
+            <div class="unit-reveal-card">
+              <div class="unit-reveal-icon">${winningFace.icon}</div>
+              <div class="unit-reveal-copy">
+                <span class="section-kicker">UNIT ACQUIRED</span>
+                <h2>${winningFace.name}</h2>
+                <p class="${winningFace.rarityClass}">
+                  ${winningFace.rarity}
+                </p>
+                <strong id="unitRewardMessage"></strong>
+              </div>
+            </div>
+
+            <button id="closeDiceCutscene" class="cutscene-close-button">
+              인벤토리로
+            </button>
+          </div>
+        </div>
+      `;
+
+      const cube = document.querySelector('#cinematicDiceCube');
+      const panel = document.querySelector('#unitRewardPanel');
+      const particleBox = document.querySelector('#diceParticles');
+
+      const winningIndex = faces.indexOf(winningFace);
+      const finalTransforms = [
+        'rotateX(-8deg) rotateY(0deg) rotateZ(0deg)',
+        'rotateX(-8deg) rotateY(180deg) rotateZ(0deg)',
+        'rotateX(-8deg) rotateY(-90deg) rotateZ(0deg)',
+        'rotateX(-8deg) rotateY(90deg) rotateZ(0deg)',
+        'rotateX(-90deg) rotateY(0deg) rotateZ(0deg)',
+        'rotateX(90deg) rotateY(0deg) rotateZ(0deg)'
+      ];
+
+      const animation = cube.animate(
+        [
+          {
+            transform: 'rotateX(0deg) rotateY(0deg) rotateZ(0deg)',
+            offset: 0
+          },
+          {
+            transform: 'rotateX(650deg) rotateY(880deg) rotateZ(310deg)',
+            offset: .58
+          },
+          {
+            transform: 'rotateX(1040deg) rotateY(1320deg) rotateZ(700deg)',
+            offset: .82
+          },
+          {
+            transform: finalTransforms[winningIndex],
+            offset: 1
+          }
+        ],
+        {
+          duration: 3300,
+          easing: 'cubic-bezier(.14,.72,.15,1)',
+          fill: 'forwards'
+        }
+      );
+
+      await animation.finished;
+      particleBox.innerHTML = createParticleMarkup(
+        rarityKey === 'secret' ? 80 : rarityKey === 'mythic' ? 62 : 42
+      );
+
+      const result = grantUnit(winningFace);
+      document.querySelector('#unitRewardMessage').textContent =
+        result.message;
+
+      await savePlayer();
+      await wait(450);
+      panel.classList.add('visible');
+
+      document.querySelector('#closeDiceCutscene')
+        .addEventListener('click', () => {
+          closeCutscene();
+          activeInventoryTab = 'units';
+          renderInventory();
+        }, { once: true });
+    }
+
+    async function rollDice(rarityKey) {
+      if (cutsceneRunning) return;
+
+      ensurePlayerData();
+
+      if (!DICE_DATA[rarityKey]) return;
+      if ((player.diceInventory[rarityKey] || 0) <= 0) {
+        alert('보유한 주사위가 없습니다.');
+        return;
+      }
+
+      const faces = buildDiceFaces(rarityKey);
+
+      if (!faces.length) {
+        alert('이 등급에 등록된 유닛이 없습니다.');
+        return;
+      }
+
+      player.diceInventory[rarityKey] -= 1;
+      await savePlayer();
+
+      const winningIndex = Math.floor(Math.random() * faces.length);
+      const winningUnit = faces[winningIndex];
+
+      await playDiceRollCutscene(
+        rarityKey,
+        faces,
+        winningUnit
+      );
     }
 
     function openDeck() {
@@ -1547,9 +4171,104 @@ async function logout() {
       { x: 935, y: 420 }
     ];
 
+
+    const NORMAL_PIGEON_HP = 100;
+    const STAGE_ONE_MAX_WAVE = 50;
+    const BROTHER_FORMATION = [
+      { x: -50, y: -35 },
+      { x: 0, y: -48 },
+      { x: 50, y: -35 },
+      { x: -28, y: 38 },
+      { x: 28, y: 38 }
+    ];
+
     let battle = null;
     let animationId = null;
     let previousTime = 0;
+
+
+    let battleAudioContext = null;
+    let bossAlertTimer = null;
+
+    function ensureBattleAudio() {
+      const AudioContextClass =
+        window.AudioContext || window.webkitAudioContext;
+
+      if (!AudioContextClass) return null;
+
+      if (!battleAudioContext) {
+        battleAudioContext = new AudioContextClass();
+      }
+
+      if (battleAudioContext.state === 'suspended') {
+        void battleAudioContext.resume();
+      }
+
+      return battleAudioContext;
+    }
+
+    function playBossWarningSound() {
+      const audio = ensureBattleAudio();
+      if (!audio) return;
+
+      const now = audio.currentTime;
+      const master = audio.createGain();
+      master.gain.setValueAtTime(.0001, now);
+      master.gain.exponentialRampToValueAtTime(.22, now + .025);
+      master.gain.exponentialRampToValueAtTime(.0001, now + 1.25);
+      master.connect(audio.destination);
+
+      [0, .32, .64].forEach((delay, index) => {
+        const oscillator = audio.createOscillator();
+        const gain = audio.createGain();
+        oscillator.type = index === 1 ? 'square' : 'sawtooth';
+        oscillator.frequency.setValueAtTime(220, now + delay);
+        oscillator.frequency.exponentialRampToValueAtTime(
+          145,
+          now + delay + .22
+        );
+        gain.gain.setValueAtTime(.0001, now + delay);
+        gain.gain.exponentialRampToValueAtTime(.35, now + delay + .015);
+        gain.gain.exponentialRampToValueAtTime(.0001, now + delay + .26);
+        oscillator.connect(gain);
+        gain.connect(master);
+        oscillator.start(now + delay);
+        oscillator.stop(now + delay + .28);
+      });
+
+      const siren = audio.createOscillator();
+      const sirenGain = audio.createGain();
+      siren.type = 'triangle';
+      siren.frequency.setValueAtTime(520, now + .08);
+      siren.frequency.linearRampToValueAtTime(760, now + .40);
+      siren.frequency.linearRampToValueAtTime(470, now + .75);
+      siren.frequency.linearRampToValueAtTime(710, now + 1.05);
+      sirenGain.gain.setValueAtTime(.0001, now);
+      sirenGain.gain.exponentialRampToValueAtTime(.12, now + .10);
+      sirenGain.gain.exponentialRampToValueAtTime(.0001, now + 1.16);
+      siren.connect(sirenGain);
+      sirenGain.connect(master);
+      siren.start(now + .08);
+      siren.stop(now + 1.18);
+    }
+
+    function showBossSpawnAlert(name) {
+      const alert = document.querySelector('#bossSpawnAlert');
+      const nameElement = document.querySelector('#bossSpawnName');
+      if (!alert || !nameElement) return;
+
+      clearTimeout(bossAlertTimer);
+      nameElement.textContent = name;
+      alert.classList.remove('hidden', 'boss-alert-play');
+      void alert.offsetWidth;
+      alert.classList.add('boss-alert-play');
+      playBossWarningSound();
+
+      bossAlertTimer = setTimeout(() => {
+        alert.classList.add('hidden');
+        alert.classList.remove('boss-alert-play');
+      }, 1900);
+    }
 
     function createBattle() {
       const deck = player.deck.filter(Boolean);
@@ -1560,15 +4279,24 @@ async function logout() {
         return;
       }
 
+      if (typeof resetLeaveBattleButton === 'function') {
+        resetLeaveBattleButton();
+      }
+
+      ensureBattleAudio();
+      const bossAlert = document.querySelector('#bossSpawnAlert');
+      if (bossAlert) bossAlert.classList.add('hidden');
+
       battle = {
-        stage: Math.max(1, player.highestStage + 1),
+        stage: 1,
         gold: 300,
         lives: 20,
         wave: 1,
-        maxWave: 5,
+        maxWave: STAGE_ONE_MAX_WAVE,
         kills: 0,
         enemiesSpawnedThisWave: 0,
-        enemiesPerWave: 7,
+        enemiesPerWave: 0,
+        waveQueue: [],
         spawnTimer: 0,
         waveDelay: 0,
         enemies: [],
@@ -1577,16 +4305,148 @@ async function logout() {
         selectedDeployUnitId: deck[0],
         selectedPlacedUnit: null,
         ended: false,
-        resultShown: false
+        resultShown: false,
+        waveRewardGranted: false,
+        finalBossDefeated: false,
+        bossEscaped: false,
+        earnedWaveGems: 0
       };
 
       renderBattleDeck();
-      updateBattleUi();
       showScreen('battle');
+      beginWave(1);
+      updateBattleUi();
 
       previousTime = performance.now();
       cancelAnimationFrame(animationId);
       animationId = requestAnimationFrame(gameLoop);
+    }
+
+    function makeNormalPigeonSpec(wave) {
+      const healthMultiplier = wave > 25 ? 2 : 1;
+      return {
+        type: 'normal',
+        name: '일반 비둘기',
+        icon: '🕊️',
+        health: NORMAL_PIGEON_HP * healthMultiplier,
+        speed: Math.min(86, 58 + wave * .55),
+        radius: 17,
+        reward: 15 + Math.floor(wave / 5)
+      };
+    }
+
+    function createWaveQueue(wave) {
+      if (wave === 10) {
+        return Array.from({ length: 5 }, (_, index) => ({
+          type: 'brother',
+          name: '비둘기 브라더스',
+          icon: '🕊️',
+          health: NORMAL_PIGEON_HP * 20,
+          speed: 54,
+          radius: 51,
+          reward: 85,
+          groupIndex: index
+        }));
+      }
+
+      if (wave === 25) {
+        return [{
+          type: 'knight',
+          name: '기사 비둘기',
+          icon: '🕊️',
+          health: NORMAL_PIGEON_HP * 50,
+          speed: 50,
+          radius: 29,
+          reward: 350
+        }];
+      }
+
+      if (wave === 40) {
+        return [{
+          type: 'king',
+          name: '킹 비둘기',
+          icon: '🕊️',
+          health: NORMAL_PIGEON_HP * 150,
+          speed: 45,
+          radius: 32,
+          reward: 700,
+          abilityInterval: 5,
+          abilityTimer: 5,
+          abilityRange: 190
+        }];
+      }
+
+      if (wave === 50) {
+        return [{
+          type: 'awakenedKing',
+          name: '각성한 킹 비둘기',
+          icon: '🕊️',
+          health: NORMAL_PIGEON_HP * 225,
+          speed: 48,
+          radius: 36,
+          reward: 1200,
+          abilityInterval: 3,
+          abilityTimer: 3,
+          abilityRange: 235
+        }];
+      }
+
+      const count = Math.min(22, 7 + Math.floor((wave - 1) / 3));
+      return Array.from({ length: count }, () => makeNormalPigeonSpec(wave));
+    }
+
+    function stunRandomPlacedUnits(count, seconds) {
+      const candidates = [...battle.placedUnits];
+
+      for (let index = candidates.length - 1; index > 0; index -= 1) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        [candidates[index], candidates[randomIndex]] = [
+          candidates[randomIndex],
+          candidates[index]
+        ];
+      }
+
+      const targets = candidates.slice(0, Math.min(count, candidates.length));
+      targets.forEach(unit => {
+        unit.stunRemaining = Math.max(unit.stunRemaining || 0, seconds);
+      });
+
+      return targets.length;
+    }
+
+    function beginWave(wave) {
+      battle.wave = wave;
+      battle.waveQueue = createWaveQueue(wave);
+      battle.enemiesSpawnedThisWave = 0;
+      battle.enemiesPerWave = battle.waveQueue.length;
+      battle.spawnTimer = 0;
+      battle.waveDelay = 0;
+      battle.waveRewardGranted = false;
+
+      let message = `웨이브 ${wave} 시작!`;
+      let bossName = '';
+
+      if (wave === 10) {
+        bossName = '비둘기 브라더스';
+        message = '비둘기 브라더스 5마리가 뭉쳐서 등장합니다!';
+      } else if (wave === 25) {
+        bossName = '기사 비둘기';
+        const stunnedCount = stunRandomPlacedUnits(3, 10);
+        message = `기사 비둘기 등장! 설치 유닛 ${stunnedCount}명이 10초간 기절했습니다.`;
+      } else if (wave === 40) {
+        bossName = '킹 비둘기';
+        message = '킹 비둘기 등장! 5초마다 회복과 마비 전파를 사용합니다.';
+      } else if (wave === 50) {
+        bossName = '각성한 킹 비둘기';
+        message = '최종 보스 각성한 킹 비둘기가 단독으로 등장합니다!';
+      }
+
+      if (bossName) {
+        showBossSpawnAlert(bossName);
+      }
+
+      setBattleMessage(message);
+      updateBattleUi();
     }
 
     function renderBattleDeck() {
@@ -1657,36 +4517,131 @@ async function logout() {
     }
 
     function spawnEnemy() {
-      const health = 85 + battle.wave * 35 + battle.stage * 15;
+      const spec = battle.waveQueue[battle.enemiesSpawnedThisWave];
+      if (!spec) return;
+
+      const maxHealth = spec.health;
       battle.enemies.push({
+        ...spec,
         x: path[0].x,
         y: path[0].y,
         targetIndex: 1,
-        speed: 58 + battle.wave * 4,
-        health,
-        maxHealth: health,
-        radius: 15,
-        reward: 20 + battle.wave * 3,
-        dead: false
+        health: maxHealth,
+        maxHealth,
+        dead: false,
+        pulseEffect: 0,
+        pulseKind: '',
+        abilityTimer: spec.abilityTimer ?? 0,
+        wingPhase: Math.random() * Math.PI * 2,
+        heading: 0
       });
+
       battle.enemiesSpawnedThisWave += 1;
     }
 
+    function affectNearbyUnits(enemy, effect, seconds) {
+      let affected = 0;
+
+      battle.placedUnits.forEach(unit => {
+        const distance = Math.hypot(unit.x - enemy.x, unit.y - enemy.y);
+        if (distance > enemy.abilityRange) return;
+
+        if (effect === 'stun') {
+          unit.stunRemaining = Math.max(unit.stunRemaining || 0, seconds);
+        } else if (effect === 'slow') {
+          unit.attackSlowRemaining = Math.max(
+            unit.attackSlowRemaining || 0,
+            seconds
+          );
+        }
+
+        affected += 1;
+      });
+
+      return affected;
+    }
+
+    function useBossAbility(enemy) {
+      enemy.health = Math.min(
+        enemy.maxHealth,
+        enemy.health + enemy.maxHealth * .05
+      );
+
+      if (enemy.type === 'king') {
+        const affected = affectNearbyUnits(enemy, 'stun', 1);
+        enemy.pulseKind = 'stun';
+        enemy.pulseEffect = .65;
+        setBattleMessage(
+          `킹 비둘기가 최대 HP의 5%를 회복하고 주변 유닛 ${affected}명을 1초간 마비시켰습니다!`
+        );
+      }
+
+      if (enemy.type === 'awakenedKing') {
+        const affected = affectNearbyUnits(enemy, 'slow', 2);
+        enemy.pulseKind = 'slow';
+        enemy.pulseEffect = .65;
+        setBattleMessage(
+          `각성한 킹 비둘기가 최대 HP의 5%를 회복하고 유닛 ${affected}명의 공격 속도를 2초간 2/3로 낮췄습니다!`
+        );
+      }
+    }
+
     function updateEnemy(enemy, dt) {
+      if (enemy.dead) return;
+
+      enemy.pulseEffect = Math.max(0, (enemy.pulseEffect || 0) - dt);
+
+      if (enemy.abilityInterval) {
+        enemy.abilityTimer -= dt;
+        if (enemy.abilityTimer <= 0) {
+          useBossAbility(enemy);
+          enemy.abilityTimer += enemy.abilityInterval;
+        }
+      }
+
       const target = path[enemy.targetIndex];
 
       if (!target) {
         enemy.dead = true;
+
+        if (enemy.type !== 'normal') {
+          battle.bossEscaped = true;
+          endBattle(
+            false,
+            `${enemy.name}을 처치하지 못했습니다. 보스를 잡아야 스테이지를 클리어할 수 있습니다.`
+          );
+          return;
+        }
+
         battle.lives -= 1;
         if (battle.lives <= 0) {
           battle.lives = 0;
-          endBattle(false);
+          endBattle(false, '생명이 모두 소진되었습니다.');
         }
         return;
       }
 
       const dx = target.x - enemy.x;
       const dy = target.y - enemy.y;
+
+      // 위로 올라가는 구간에서는 몸과 시선이 오른쪽 위를 향하게 한다.
+      const targetHeading =
+        dy < -5 && Math.abs(dx) < 12
+          ? -Math.PI / 4
+          : Math.atan2(dy, dx);
+
+      let angleDifference =
+        ((targetHeading - (enemy.heading || 0) + Math.PI) %
+          (Math.PI * 2)) - Math.PI;
+
+      if (angleDifference < -Math.PI) {
+        angleDifference += Math.PI * 2;
+      }
+
+      enemy.heading =
+        (enemy.heading || 0) +
+        angleDifference * Math.min(1, dt * 9);
+
       const distance = Math.hypot(dx, dy);
       const movement = enemy.speed * dt;
 
@@ -1700,11 +4655,66 @@ async function logout() {
       }
     }
 
-    function updatePlacedUnit(placed, dt) {
-      placed.cooldown -= dt;
-      placed.attackAnimation = Math.max(0, placed.attackAnimation - dt * 5);
 
-      if (placed.cooldown > 0) return;
+    function getAttackEffectType(unitId) {
+      const effects = {
+        starterArcher: 'arrow',
+        windRanger: 'windArrow',
+        starterKnight: 'steelSlash',
+        royalGuardian: 'goldenWave',
+        starterMage: 'arcaneBolt',
+        flameWizard: 'fireball',
+        skyDragonKnight: 'dragonLance',
+        astralChronomancer: 'timeRift'
+      };
+
+      return effects[unitId] || 'arcaneBolt';
+    }
+
+    function getAttackEffectDuration(effect) {
+      const durations = {
+        arrow: .27,
+        windArrow: .36,
+        steelSlash: .22,
+        goldenWave: .34,
+        arcaneBolt: .38,
+        fireball: .46,
+        dragonLance: .32,
+        timeRift: .48
+      };
+
+      return durations[effect] || .34;
+    }
+
+    function applyDamageToEnemy(enemy, damage) {
+      if (!enemy || enemy.dead) return false;
+
+      enemy.health -= damage;
+      if (enemy.health > 0) return false;
+
+      enemy.health = 0;
+      enemy.dead = true;
+      battle.gold += enemy.reward;
+      battle.kills += 1;
+
+      if (enemy.type === 'awakenedKing') {
+        battle.finalBossDefeated = true;
+      }
+
+      if (enemy.type !== 'normal') {
+        setBattleMessage(`${enemy.name}을 처치했습니다!`);
+      }
+
+      return true;
+    }
+
+    function updatePlacedUnit(placed, dt) {
+      placed.stunRemaining = Math.max(0, (placed.stunRemaining || 0) - dt);
+      placed.attackSlowRemaining = Math.max(0, (placed.attackSlowRemaining || 0) - dt);
+      placed.cooldown -= dt;
+      placed.attackAnimation = Math.max(0, placed.attackAnimation - dt * 5.5);
+
+      if (placed.stunRemaining > 0 || placed.cooldown > 0) return;
 
       let target = null;
       let bestProgress = -1;
@@ -1720,25 +4730,56 @@ async function logout() {
 
       if (!target) return;
 
-      target.health -= placed.damage;
-      placed.cooldown = placed.fireInterval;
+      const targetAngle = Math.atan2(target.y - placed.y, target.x - placed.x);
+      placed.angle = targetAngle;
+
+      const slowMultiplier = placed.attackSlowRemaining > 0 ? 1.5 : 1;
+      placed.cooldown = placed.fireInterval * slowMultiplier;
       placed.attackAnimation = 1;
-      placed.angle = Math.atan2(target.y - placed.y, target.x - placed.x);
+
+      const effect = getAttackEffectType(placed.unitId);
+      const duration = getAttackEffectDuration(effect);
+      const muzzleDistance = effect === 'steelSlash' || effect === 'goldenWave' ? 22 : 31;
 
       battle.shots.push({
-        x1: placed.x,
-        y1: placed.y - 10,
+        x1: placed.x + Math.cos(targetAngle) * muzzleDistance,
+        y1: placed.y - 7 + Math.sin(targetAngle) * muzzleDistance,
         x2: target.x,
         y2: target.y,
-        life: 0.09,
-        color: UNIT_DATA[placed.unitId].color
+        life: duration,
+        maxLife: duration,
+        color: UNIT_DATA[placed.unitId].color,
+        effect,
+        angle: targetAngle,
+        seed: Math.random() * 1000,
+        splashRadius: placed.unitId === 'flameWizard' ? 88 : 0
       });
 
-      if (target.health <= 0 && !target.dead) {
-        target.dead = true;
-        battle.gold += target.reward;
-        battle.kills += 1;
+      applyDamageToEnemy(target, placed.damage);
+
+      if (placed.unitId === 'flameWizard') {
+        const splashDamage = placed.damage / 3;
+        battle.enemies.forEach(enemy => {
+          if (enemy === target || enemy.dead) return;
+          const distance = Math.hypot(enemy.x - target.x, enemy.y - target.y);
+          if (distance <= 88) {
+            applyDamageToEnemy(enemy, splashDamage);
+          }
+        });
       }
+    }
+
+    function grantWaveClearReward(wave) {
+      if (battle.waveRewardGranted) return;
+
+      battle.waveRewardGranted = true;
+      battle.earnedWaveGems += 100;
+      player.gems += 100;
+      void savePlayer();
+
+      setBattleMessage(
+        `웨이브 ${wave} 클리어! 소환석 100개를 획득했습니다. 누적 웨이브 보상: ${battle.earnedWaveGems}개`
+      );
     }
 
     function updateBattle(dt) {
@@ -1750,24 +4791,35 @@ async function logout() {
         battle.spawnTimer -= dt;
         if (battle.spawnTimer <= 0) {
           spawnEnemy();
-          battle.spawnTimer = 0.9;
+          battle.spawnTimer = battle.wave === 10 ? .12 : .78;
         }
       } else if (aliveEnemies.length === 0) {
-        battle.waveDelay += dt;
-
-        if (battle.wave >= battle.maxWave) {
-          endBattle(true);
+        if (battle.bossEscaped) {
+          endBattle(false, '보스를 처치하지 못해 스테이지 클리어에 실패했습니다.');
           return;
         }
 
-        if (battle.waveDelay >= 1.3) {
-          battle.wave += 1;
-          battle.enemiesSpawnedThisWave = 0;
-          battle.enemiesPerWave += 2;
-          battle.spawnTimer = 0;
-          battle.waveDelay = 0;
+        if (battle.wave === battle.maxWave && !battle.finalBossDefeated) {
+          endBattle(
+            false,
+            '각성한 킹 비둘기를 직접 처치해야 스테이지를 클리어할 수 있습니다.'
+          );
+          return;
+        }
+
+        grantWaveClearReward(battle.wave);
+        battle.waveDelay += dt;
+
+        if (battle.wave >= battle.maxWave) {
+          if (battle.waveDelay >= 1.1) {
+            endBattle(true);
+          }
+          return;
+        }
+
+        if (battle.waveDelay >= 1.4) {
           battle.gold += 80;
-          setBattleMessage(`웨이브 ${battle.wave} 시작! 보너스 골드 +80`);
+          beginWave(battle.wave + 1);
         }
       }
 
@@ -1817,68 +4869,1059 @@ async function logout() {
       ctx.stroke();
     }
 
-    function drawEnemy(enemy) {
+    function drawCanvasPigeon(enemy, x, y, time) {
+      const radius = enemy.radius;
+      const cycle =
+        (time * .00245 + enemy.wingPhase / (Math.PI * 2)) % 1;
+      const powerStroke =
+        cycle < .38
+          ? Math.sin((cycle / .38) * Math.PI)
+          : -0.58 * Math.sin(((cycle - .38) / .62) * Math.PI);
+      const recoveryFold =
+        cycle < .38
+          ? 0
+          : Math.sin(((cycle - .38) / .62) * Math.PI);
+      const flap = powerStroke;
+      const featherFlutter =
+        Math.sin(time * .031 + enemy.wingPhase * 1.7) *
+        (.35 + recoveryFold * .65);
+      const featherFan = .90 + Math.max(0, powerStroke) * .22;
+      const bob =
+        -Math.max(0, powerStroke) * 4.6 +
+        Math.sin(time * .006 + enemy.wingPhase) * 1.4;
+      const isAwakened = enemy.type === 'awakenedKing';
+      const isKing = enemy.type === 'king' || isAwakened;
+
+      ctx.save();
+      ctx.translate(x, y + bob);
+      ctx.rotate(enemy.heading || 0);
+
+      ctx.save();
+      ctx.rotate(-(enemy.heading || 0));
       ctx.beginPath();
-      ctx.arc(enemy.x, enemy.y, enemy.radius, 0, Math.PI * 2);
-      ctx.fillStyle = '#d84b50';
+      ctx.ellipse(0, radius * .96, radius * 1.16, radius * .29, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0, 0, 0, .24)';
+      ctx.fill();
+      ctx.restore();
+
+      const bodyColor = isAwakened ? '#756e79' : isKing ? '#96949a' : '#8d98a3';
+      const outline = '#303944';
+      const featherDark = isAwakened ? '#514856' : '#56626d';
+      const featherMid = isAwakened ? '#685e6d' : '#6f7b87';
+      const featherLight = isAwakened ? '#95879b' : '#9da8b3';
+
+      // 다섯 장의 꼬리깃과 깃대
+      for (let index = -2; index <= 2; index += 1) {
+        const spread = index * radius * .17;
+        ctx.save();
+        ctx.rotate(index * .075);
+        ctx.beginPath();
+        ctx.moveTo(-radius * .56, spread * .28);
+        ctx.quadraticCurveTo(-radius * 1.14, spread - radius * .16, -radius * 1.78, spread);
+        ctx.quadraticCurveTo(-radius * 1.18, spread + radius * .22, -radius * .48, spread * .34 + radius * .2);
+        ctx.closePath();
+        ctx.fillStyle = index % 2 === 0 ? featherMid : featherDark;
+        ctx.fill();
+        ctx.strokeStyle = outline;
+        ctx.lineWidth = Math.max(1, radius * .045);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(-radius * .55, spread * .30 + radius * .08);
+        ctx.lineTo(-radius * 1.62, spread + radius * .04);
+        ctx.strokeStyle = 'rgba(225,232,240,.36)';
+        ctx.lineWidth = Math.max(.7, radius * .025);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawLayeredWing(side, far = false) {
+        const wingAngle = side * (.10 + flap * .82 - recoveryFold * .18);
+        const rootX = -radius * .02;
+        const rootY = side * radius * .08;
+
+        ctx.save();
+        ctx.translate(rootX, rootY);
+        ctx.rotate(wingAngle);
+        // 양쪽 날개가 같은 진폭과 같은 박자로 움직이도록 동일한 스케일을 사용한다.
+        ctx.scale(featherFan, .92 + Math.abs(flap) * .10);
+
+        // 큰 날개판
+        ctx.beginPath();
+        ctx.moveTo(radius * .18, 0);
+        ctx.bezierCurveTo(
+          -radius * .18,
+          side * radius * .12,
+          -radius * .78,
+          side * radius * .52,
+          -radius * 1.55,
+          side * radius * .80
+        );
+        ctx.bezierCurveTo(
+          -radius * 1.33,
+          side * radius * .25,
+          -radius * .64,
+          -side * radius * .10,
+          radius * .24,
+          0
+        );
+        ctx.closePath();
+        const wingGradient = ctx.createLinearGradient(-radius * 1.5, 0, radius * .2, 0);
+        wingGradient.addColorStop(0, featherDark);
+        wingGradient.addColorStop(.58, featherMid);
+        wingGradient.addColorStop(1, featherLight);
+        ctx.fillStyle = wingGradient;
+        ctx.fill();
+        ctx.strokeStyle = outline;
+        ctx.lineWidth = Math.max(1.1, radius * .06);
+        ctx.stroke();
+
+        // 긴 1차 비행깃
+        for (let i = 0; i < 6; i += 1) {
+          const t = i / 5;
+          const baseX = -radius * (.34 + t * .42);
+          const baseY = side * radius * (.12 + t * .18);
+          const tipX = -radius * (1.30 + t * .34);
+          const tipY = side * radius * (.52 + t * .11 + featherFlutter * .045 * (i + 1) + recoveryFold * .035 * i);
+          ctx.beginPath();
+          ctx.moveTo(baseX, baseY);
+          ctx.quadraticCurveTo(
+            -radius * (.92 + t * .20),
+            side * radius * (.30 + t * .22),
+            tipX,
+            tipY
+          );
+          ctx.quadraticCurveTo(
+            -radius * (1.00 + t * .18),
+            side * radius * (.40 + t * .18),
+            baseX + radius * .18,
+            baseY + side * radius * .14
+          );
+          ctx.closePath();
+          ctx.fillStyle = i % 2 ? featherDark : featherMid;
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(43,51,60,.78)';
+          ctx.lineWidth = Math.max(.8, radius * .032);
+          ctx.stroke();
+        }
+
+        // 2차 깃과 덮깃
+        for (let i = 0; i < 4; i += 1) {
+          const t = i / 3;
+          ctx.beginPath();
+          ctx.moveTo(-radius * (.18 + t * .18), side * radius * (.04 + t * .06));
+          ctx.quadraticCurveTo(
+            -radius * (.52 + t * .18),
+            side * radius * (.22 + t * .10),
+            -radius * (.92 + t * .18),
+            side * radius * (.34 + t * .11)
+          );
+          ctx.quadraticCurveTo(
+            -radius * (.60 + t * .16),
+            side * radius * (.22 + t * .08),
+            -radius * (.08 + t * .14),
+            side * radius * (.12 + t * .04)
+          );
+          ctx.closePath();
+          ctx.fillStyle = `rgba(185,195,205,${.18 + i * .06})`;
+          ctx.fill();
+        }
+
+        // 비둘기 특유의 두 줄 날개 띠
+        for (const bandOffset of [.18, .31]) {
+          ctx.beginPath();
+          ctx.moveTo(-radius * .20, side * radius * bandOffset);
+          ctx.quadraticCurveTo(
+            -radius * .70,
+            side * radius * (bandOffset + .20),
+            -radius * 1.14,
+            side * radius * (bandOffset + .27)
+          );
+          ctx.strokeStyle = 'rgba(45,53,62,.82)';
+          ctx.lineWidth = Math.max(1.2, radius * .075);
+          ctx.lineCap = 'round';
+          ctx.stroke();
+        }
+
+        ctx.restore();
+      }
+
+      drawLayeredWing(-1, true);
+
+      // 몸통
+      const bodyGradient = ctx.createRadialGradient(radius * .32, -radius * .16, radius * .06, 0, 0, radius * 1.3);
+      bodyGradient.addColorStop(0, '#c4cbd1');
+      bodyGradient.addColorStop(.42, bodyColor);
+      bodyGradient.addColorStop(1, '#626d78');
+      ctx.beginPath();
+      ctx.ellipse(-radius * .03, 0, radius * 1.08, radius * .68, 0, 0, Math.PI * 2);
+      ctx.fillStyle = bodyGradient;
+      ctx.fill();
+      ctx.strokeStyle = outline;
+      ctx.lineWidth = Math.max(1.2, radius * .07);
+      ctx.stroke();
+
+      // 몸통 깃 결
+      ctx.strokeStyle = 'rgba(235,240,244,.25)';
+      ctx.lineWidth = Math.max(.7, radius * .026);
+      for (let row = -1; row <= 1; row += 1) {
+        ctx.beginPath();
+        ctx.arc(-radius * .10, row * radius * .18, radius * (.60 - Math.abs(row) * .08), .12, Math.PI - .12);
+        ctx.stroke();
+      }
+
+      drawLayeredWing(1, false);
+
+      // 목과 금속광택
+      ctx.beginPath();
+      ctx.ellipse(radius * .68, 0, radius * .43, radius * .49, 0, 0, Math.PI * 2);
+      ctx.fillStyle = '#77838e';
+      ctx.fill();
+      const neckGlow = ctx.createRadialGradient(radius * .58, -radius * .16, 0, radius * .66, 0, radius * .48);
+      neckGlow.addColorStop(0, isAwakened ? 'rgba(255,90,90,.82)' : 'rgba(38,196,145,.84)');
+      neckGlow.addColorStop(.55, isAwakened ? 'rgba(210,147,255,.58)' : 'rgba(126,76,186,.68)');
+      neckGlow.addColorStop(1, 'rgba(90,105,118,0)');
+      ctx.beginPath();
+      ctx.ellipse(radius * .65, 0, radius * .34, radius * .43, -.10, 0, Math.PI * 2);
+      ctx.fillStyle = neckGlow;
       ctx.fill();
 
+      // 머리
+      const headGradient = ctx.createRadialGradient(radius * .92, -radius * .42, radius * .05, radius * 1.03, -radius * .18, radius * .55);
+      headGradient.addColorStop(0, '#bcc4cb');
+      headGradient.addColorStop(1, '#7b8792');
+      ctx.beginPath();
+      ctx.arc(radius * 1.04, -radius * .18, radius * .49, 0, Math.PI * 2);
+      ctx.fillStyle = headGradient;
+      ctx.fill();
+      ctx.strokeStyle = outline;
+      ctx.lineWidth = Math.max(1, radius * .055);
+      ctx.stroke();
+
+      // 부리와 콧살
+      ctx.beginPath();
+      ctx.moveTo(radius * 1.38, -radius * .25);
+      ctx.lineTo(radius * 1.90, -radius * .04);
+      ctx.lineTo(radius * 1.37, radius * .09);
+      ctx.closePath();
+      ctx.fillStyle = '#d2a06e';
+      ctx.fill();
+      ctx.strokeStyle = '#765539';
+      ctx.lineWidth = Math.max(1, radius * .04);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.ellipse(radius * 1.39, -radius * .17, radius * .14, radius * .10, 0, 0, Math.PI * 2);
+      ctx.fillStyle = '#ece8e2';
+      ctx.fill();
+
+      // 눈
+      ctx.beginPath();
+      ctx.arc(radius * 1.09, -radius * .35, radius * .13, 0, Math.PI * 2);
+      ctx.fillStyle = '#e17e43';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(radius * 1.09, -radius * .35, radius * .071, 0, Math.PI * 2);
+      ctx.fillStyle = '#10151b';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(radius * 1.12, -radius * .39, radius * .024, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+
+      if (enemy.type === 'knight') {
+        ctx.beginPath();
+        ctx.moveTo(radius * .02, radius * .10);
+        ctx.lineTo(radius * .58, radius * .30);
+        ctx.lineTo(radius * .47, radius * .92);
+        ctx.lineTo(radius * .02, radius * 1.17);
+        ctx.lineTo(-radius * .42, radius * .92);
+        ctx.lineTo(-radius * .54, radius * .30);
+        ctx.closePath();
+        const shieldGradient = ctx.createLinearGradient(-radius * .4, 0, radius * .55, radius * 1.1);
+        shieldGradient.addColorStop(0, '#b9d7f4');
+        shieldGradient.addColorStop(.5, '#527ba8');
+        shieldGradient.addColorStop(1, '#294a70');
+        ctx.fillStyle = shieldGradient;
+        ctx.fill();
+        ctx.strokeStyle = '#e8f4ff';
+        ctx.lineWidth = Math.max(1.4, radius * .08);
+        ctx.stroke();
+      }
+
+      if (isKing) {
+        const crownY = -radius * .90;
+        ctx.beginPath();
+        ctx.moveTo(radius * .67, crownY + radius * .27);
+        ctx.lineTo(radius * .72, crownY - radius * .18);
+        ctx.lineTo(radius * .94, crownY + radius * .02);
+        ctx.lineTo(radius * 1.10, crownY - radius * .30);
+        ctx.lineTo(radius * 1.29, crownY + radius * .03);
+        ctx.lineTo(radius * 1.50, crownY - radius * .16);
+        ctx.lineTo(radius * 1.45, crownY + radius * .32);
+        ctx.closePath();
+        const crownGradient = ctx.createLinearGradient(radius * .7, crownY, radius * 1.5, crownY + radius * .3);
+        crownGradient.addColorStop(0, '#fff4a8');
+        crownGradient.addColorStop(.5, isAwakened ? '#ff5b48' : '#facc15');
+        crownGradient.addColorStop(1, isAwakened ? '#b91c1c' : '#b77900');
+        ctx.fillStyle = crownGradient;
+        ctx.fill();
+        ctx.strokeStyle = isAwakened ? '#ffd2ca' : '#fff1a6';
+        ctx.lineWidth = Math.max(1, radius * .055);
+        ctx.stroke();
+      }
+
+      if (isAwakened) {
+        ctx.strokeStyle = 'rgba(255, 92, 92, .88)';
+        ctx.lineWidth = Math.max(1.3, radius * .07);
+        for (const side of [-1, 1]) {
+          ctx.beginPath();
+          ctx.moveTo(-radius * .2, side * radius * .80);
+          ctx.lineTo(radius * .05, side * radius * 1.10);
+          ctx.lineTo(radius * .25, side * radius * .89);
+          ctx.stroke();
+        }
+      }
+
+      ctx.restore();
+    }
+
+    function drawKnightPigeonArmor(enemy, x, y, time) {
+      if (enemy.type !== 'knight') return;
+
+      const radius = enemy.radius;
+      const cycle = (time * .00245 + enemy.wingPhase / (Math.PI * 2)) % 1;
+      const powerStroke = cycle < .38
+        ? Math.sin((cycle / .38) * Math.PI)
+        : -0.58 * Math.sin(((cycle - .38) / .62) * Math.PI);
+      const bob = -Math.max(0, powerStroke) * 4.6 + Math.sin(time * .006 + enemy.wingPhase) * 1.4;
+
+      ctx.save();
+      ctx.translate(x, y + bob);
+      ctx.rotate(enemy.heading || 0);
+
+      // 겹판 흉갑
+      const plate = ctx.createLinearGradient(-radius, -radius, radius, radius);
+      plate.addColorStop(0, '#e8f2fc');
+      plate.addColorStop(.38, '#8da9c4');
+      plate.addColorStop(.72, '#476987');
+      plate.addColorStop(1, '#253f59');
+      ctx.beginPath();
+      ctx.moveTo(-radius * .72, -radius * .48);
+      ctx.quadraticCurveTo(0, -radius * .82, radius * .72, -radius * .44);
+      ctx.lineTo(radius * .64, radius * .45);
+      ctx.quadraticCurveTo(0, radius * .76, -radius * .68, radius * .43);
+      ctx.closePath();
+      ctx.fillStyle = plate;
+      ctx.fill();
+      ctx.strokeStyle = '#d9edff';
+      ctx.lineWidth = Math.max(1.6, radius * .07);
+      ctx.stroke();
+
+      // 흉갑 세로 리브와 중앙 문장
+      for (const offset of [-.35, 0, .35]) {
+        ctx.beginPath();
+        ctx.moveTo(offset * radius, -radius * .52);
+        ctx.lineTo(offset * radius * .86, radius * .48);
+        ctx.strokeStyle = 'rgba(238,247,255,.55)';
+        ctx.lineWidth = Math.max(1, radius * .035);
+        ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.moveTo(0, -radius * .25);
+      ctx.lineTo(radius * .18, 0);
+      ctx.lineTo(0, radius * .28);
+      ctx.lineTo(-radius * .18, 0);
+      ctx.closePath();
+      ctx.fillStyle = '#f2c94c';
+      ctx.fill();
+
+      // 날개 뿌리 견갑
+      for (const side of [-1, 1]) {
+        ctx.beginPath();
+        ctx.ellipse(-radius * .18, side * radius * .66, radius * .48, radius * .24, side * .18, 0, Math.PI * 2);
+        ctx.fillStyle = '#6f8da9';
+        ctx.fill();
+        ctx.strokeStyle = '#d7e9fa';
+        ctx.lineWidth = Math.max(1.2, radius * .05);
+        ctx.stroke();
+      }
+
+      // 목 보호대
+      ctx.beginPath();
+      ctx.arc(radius * .62, 0, radius * .43, -1.2, 1.2);
+      ctx.strokeStyle = '#aec6dc';
+      ctx.lineWidth = radius * .20;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(radius * .62, 0, radius * .43, -1.2, 1.2);
+      ctx.strokeStyle = '#344f69';
+      ctx.lineWidth = radius * .08;
+      ctx.stroke();
+
+      // 완전한 투구와 눈가리개
+      const headX = radius * 1.04;
+      const headY = -radius * .18;
+      ctx.beginPath();
+      ctx.arc(headX, headY, radius * .57, Math.PI * .80, Math.PI * 2.12);
+      ctx.lineTo(headX + radius * .44, headY + radius * .36);
+      ctx.quadraticCurveTo(headX, headY + radius * .57, headX - radius * .40, headY + radius * .27);
+      ctx.closePath();
+      ctx.fillStyle = plate;
+      ctx.fill();
+      ctx.strokeStyle = '#edf7ff';
+      ctx.lineWidth = Math.max(1.4, radius * .06);
+      ctx.stroke();
+
+      ctx.fillStyle = '#182838';
+      ctx.fillRect(headX + radius * .06, headY - radius * .28, radius * .54, radius * .13);
+      for (let index = 0; index < 4; index += 1) {
+        ctx.fillStyle = '#8aa4bb';
+        ctx.fillRect(
+          headX + radius * (.13 + index * .11),
+          headY - radius * .27,
+          radius * .035,
+          radius * .12
+        );
+      }
+
+      // 투구 볏
+      ctx.beginPath();
+      ctx.moveTo(headX - radius * .25, headY - radius * .50);
+      ctx.quadraticCurveTo(headX, headY - radius * .95, headX + radius * .34, headY - radius * .50);
+      ctx.lineTo(headX + radius * .14, headY - radius * .35);
+      ctx.quadraticCurveTo(headX, headY - radius * .66, headX - radius * .19, headY - radius * .34);
+      ctx.closePath();
+      ctx.fillStyle = '#b51f36';
+      ctx.fill();
+      ctx.strokeStyle = '#ff8697';
+      ctx.lineWidth = Math.max(1, radius * .035);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function drawEnemy(enemy, time) {
+      const formation = enemy.type === 'brother'
+        ? BROTHER_FORMATION[enemy.groupIndex] || { x: 0, y: 0 }
+        : { x: 0, y: 0 };
+      const drawX = enemy.x + formation.x;
+      const drawY = enemy.y + formation.y;
+      const isBoss = enemy.type !== 'normal';
+
+      ctx.save();
+
+      if (enemy.pulseEffect > 0) {
+        const progress = 1 - enemy.pulseEffect / .65;
+        ctx.beginPath();
+        ctx.arc(
+          enemy.x,
+          enemy.y,
+          35 + progress * enemy.abilityRange,
+          0,
+          Math.PI * 2
+        );
+        ctx.strokeStyle = enemy.pulseKind === 'slow'
+          ? `rgba(216, 180, 254, ${1 - progress})`
+          : `rgba(100, 190, 255, ${1 - progress})`;
+        ctx.lineWidth = 5;
+        ctx.stroke();
+      }
+
+      if (enemy.type === 'king' || enemy.type === 'awakenedKing') {
+        ctx.beginPath();
+        ctx.arc(drawX, drawY, enemy.radius + 15, 0, Math.PI * 2);
+        ctx.fillStyle = enemy.type === 'awakenedKing'
+          ? 'rgba(239, 68, 68, .20)'
+          : 'rgba(250, 204, 21, .18)';
+        ctx.fill();
+      }
+
+      drawCanvasPigeon(enemy, drawX, drawY, time);
+      drawKnightPigeonArmor(enemy, drawX, drawY, time);
+
+      const barWidth = isBoss ? 100 : 44;
+      const barHeight = isBoss ? 8 : 5;
+      const barY = drawY - enemy.radius - (isBoss ? 40 : 28);
       const ratio = Math.max(0, enemy.health / enemy.maxHealth);
+
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      if (isBoss) {
+        ctx.font = 'bold 12px Arial, sans-serif';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(enemy.name, drawX, barY - 10);
+      }
+
       ctx.fillStyle = '#202736';
-      ctx.fillRect(enemy.x - 20, enemy.y - 27, 40, 5);
-      ctx.fillStyle = '#45df7d';
-      ctx.fillRect(enemy.x - 20, enemy.y - 27, 40 * ratio, 5);
+      ctx.fillRect(drawX - barWidth / 2, barY, barWidth, barHeight);
+      ctx.fillStyle = enemy.type === 'awakenedKing'
+        ? '#ef4444'
+        : enemy.type === 'king'
+          ? '#facc15'
+          : '#45df7d';
+      ctx.fillRect(drawX - barWidth / 2, barY, barWidth * ratio, barHeight);
+      ctx.strokeStyle = 'rgba(255,255,255,.28)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(drawX - barWidth / 2, barY, barWidth, barHeight);
+
+      ctx.restore();
+    }
+
+    function drawUnitBodyBase(unit, palette, time) {
+      const stride = Math.sin(time * .007 + unit.animationOffset) * 1.2;
+      const attackLean = (unit.attackAnimation || 0) * 2.4;
+
+      // 바닥 그림자
+      ctx.beginPath();
+      ctx.ellipse(-2, 9, 25, 9, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,.30)';
+      ctx.fill();
+
+      // 뒤로 흐르는 망토
+      ctx.beginPath();
+      ctx.moveTo(-6, -10);
+      ctx.bezierCurveTo(-20, -15 - stride, -28, -8, -31, -1);
+      ctx.bezierCurveTo(-27, 7, -18, 13 + stride, -6, 10);
+      ctx.closePath();
+      const capeGradient = ctx.createLinearGradient(-31, -10, -5, 10);
+      capeGradient.addColorStop(0, palette.dark);
+      capeGradient.addColorStop(1, palette.cape);
+      ctx.fillStyle = capeGradient;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(15,23,42,.82)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // 다리와 장화: 진행 방향(+x)을 향한 3/4 시점
+      ctx.strokeStyle = palette.boot;
+      ctx.lineWidth = 6;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(-9, -5);
+      ctx.lineTo(-20, -8 - stride);
+      ctx.moveTo(-9, 5);
+      ctx.lineTo(-19, 9 + stride);
+      ctx.stroke();
+
+      ctx.fillStyle = palette.boot;
+      ctx.beginPath();
+      ctx.ellipse(-22, -9 - stride, 7, 4, -.15, 0, Math.PI * 2);
+      ctx.ellipse(-21, 10 + stride, 7, 4, .15, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 몸통 갑옷/로브
+      const torsoGradient = ctx.createRadialGradient(
+        5,
+        -6,
+        1,
+        -2,
+        0,
+        24
+      );
+      torsoGradient.addColorStop(0, palette.light);
+      torsoGradient.addColorStop(.45, palette.main);
+      torsoGradient.addColorStop(1, palette.dark);
+
+      ctx.beginPath();
+      ctx.ellipse(-1 + attackLean, 0, 18, 14, 0, 0, Math.PI * 2);
+      ctx.fillStyle = torsoGradient;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(17,24,39,.90)';
+      ctx.lineWidth = 1.8;
+      ctx.stroke();
+
+      // 갑옷 판과 허리띠
+      ctx.beginPath();
+      ctx.moveTo(-12, -9);
+      ctx.lineTo(7 + attackLean, -11);
+      ctx.lineTo(13 + attackLean, 0);
+      ctx.lineTo(7 + attackLean, 11);
+      ctx.lineTo(-12, 9);
+      ctx.closePath();
+      ctx.strokeStyle = 'rgba(255,255,255,.26)';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      ctx.strokeStyle = palette.belt;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(-7, -12);
+      ctx.lineTo(-7, 12);
+      ctx.stroke();
+
+      // 어깨 갑옷
+      for (const side of [-1, 1]) {
+        const shoulderGradient = ctx.createRadialGradient(
+          4,
+          side * 12,
+          0,
+          3,
+          side * 12,
+          8
+        );
+        shoulderGradient.addColorStop(0, palette.light);
+        shoulderGradient.addColorStop(1, palette.dark);
+        ctx.beginPath();
+        ctx.ellipse(4 + attackLean, side * 12, 8, 5.5, side * .18, 0, Math.PI * 2);
+        ctx.fillStyle = shoulderGradient;
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(15,23,42,.72)';
+        ctx.lineWidth = 1.1;
+        ctx.stroke();
+      }
+
+      // 팔
+      ctx.strokeStyle = palette.main;
+      ctx.lineWidth = 5.5;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(7 + attackLean, -8);
+      ctx.lineTo(18 + attackLean, -6);
+      ctx.moveTo(7 + attackLean, 8);
+      ctx.lineTo(18 + attackLean, 6);
+      ctx.stroke();
+
+      // 머리: +x 방향을 바라봄
+      const skinGradient = ctx.createRadialGradient(
+        20,
+        -4,
+        1,
+        19,
+        0,
+        13
+      );
+      skinGradient.addColorStop(0, '#ffe0bd');
+      skinGradient.addColorStop(1, '#bd7e55');
+      ctx.beginPath();
+      ctx.ellipse(19 + attackLean, 0, 11.5, 10, 0, 0, Math.PI * 2);
+      ctx.fillStyle = skinGradient;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(76,50,35,.78)';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      // 코와 시선
+      ctx.beginPath();
+      ctx.moveTo(29 + attackLean, -2);
+      ctx.lineTo(34 + attackLean, 0);
+      ctx.lineTo(29 + attackLean, 2);
+      ctx.closePath();
+      ctx.fillStyle = '#c98a61';
+      ctx.fill();
+
+      ctx.fillStyle = '#172033';
+      ctx.beginPath();
+      ctx.arc(24.5 + attackLean, -4, 1.25, 0, Math.PI * 2);
+      ctx.arc(24.5 + attackLean, 4, 1.25, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawUnitWeapon(unit, data, time) {
+      const attack = unit.attackAnimation || 0;
+      const handX = 18 + attack * 3;
+
+      switch (unit.unitId) {
+        case 'starterArcher':
+        case 'windRanger': {
+          const wind = unit.unitId === 'windRanger';
+          ctx.strokeStyle = wind ? '#73f2ad' : '#d9a86c';
+          ctx.lineWidth = 2.6;
+          ctx.beginPath();
+          ctx.arc(handX + 8, 0, 17, -1.15, 1.15);
+          ctx.stroke();
+
+          ctx.strokeStyle = 'rgba(245,250,255,.92)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(handX + 15, -15);
+          ctx.lineTo(handX + 15 - attack * 5, 15);
+          ctx.stroke();
+
+          ctx.strokeStyle = wind ? '#c7ffe0' : '#e8f2ff';
+          ctx.lineWidth = 1.8;
+          ctx.beginPath();
+          ctx.moveTo(handX - 3, 0);
+          ctx.lineTo(handX + 32, 0);
+          ctx.stroke();
+
+          ctx.fillStyle = wind ? '#8ef0b9' : data.color;
+          ctx.beginPath();
+          ctx.moveTo(handX + 37, 0);
+          ctx.lineTo(handX + 29, -4);
+          ctx.lineTo(handX + 29, 4);
+          ctx.closePath();
+          ctx.fill();
+          break;
+        }
+
+        case 'starterKnight':
+        case 'royalGuardian': {
+          const royal = unit.unitId === 'royalGuardian';
+          const swordGradient = ctx.createLinearGradient(handX, -2, handX + 43, 2);
+          swordGradient.addColorStop(0, royal ? '#b77900' : '#667381');
+          swordGradient.addColorStop(.45, '#ffffff');
+          swordGradient.addColorStop(1, royal ? '#ffe76b' : '#b9d4ee');
+          ctx.fillStyle = swordGradient;
+          ctx.fillRect(handX, -2.6, 35 + attack * 5, 5.2);
+
+          ctx.beginPath();
+          ctx.moveTo(handX + 35 + attack * 5, -6);
+          ctx.lineTo(handX + 47 + attack * 5, 0);
+          ctx.lineTo(handX + 35 + attack * 5, 6);
+          ctx.closePath();
+          ctx.fillStyle = royal ? '#fff1a6' : '#f8fafc';
+          ctx.fill();
+
+          ctx.fillStyle = royal ? '#7c5200' : '#485565';
+          ctx.fillRect(handX - 3, -7, 5, 14);
+          break;
+        }
+
+        case 'starterMage':
+        case 'flameWizard':
+        case 'astralChronomancer': {
+          const fire = unit.unitId === 'flameWizard';
+          const timeMage = unit.unitId === 'astralChronomancer';
+          ctx.strokeStyle = fire ? '#6f2916' : timeMage ? '#5c3a79' : '#4f3272';
+          ctx.lineWidth = 4.3;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(handX - 4, 4);
+          ctx.lineTo(handX + 27 + attack * 4, -2);
+          ctx.stroke();
+
+          const orbX = handX + 32 + attack * 4;
+          const orbColor = fire
+            ? '#ff5a1f'
+            : timeMage
+              ? '#d8b4fe'
+              : '#9b64ff';
+
+          const orbGradient = ctx.createRadialGradient(
+            orbX - 2,
+            -5,
+            1,
+            orbX,
+            -2,
+            10
+          );
+          orbGradient.addColorStop(0, '#ffffff');
+          orbGradient.addColorStop(.32, orbColor);
+          orbGradient.addColorStop(1, 'rgba(20,20,40,.08)');
+          ctx.beginPath();
+          ctx.arc(orbX, -2, 8.5 + attack * 2, 0, Math.PI * 2);
+          ctx.fillStyle = orbGradient;
+          ctx.fill();
+
+          if (timeMage) {
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(orbX, -2, 12, 0, Math.PI * 2);
+            ctx.stroke();
+            for (let i = 0; i < 6; i += 1) {
+              const angle = time * .004 + i * Math.PI / 3;
+              ctx.beginPath();
+              ctx.arc(
+                orbX + Math.cos(angle) * 12,
+                -2 + Math.sin(angle) * 12,
+                1.3,
+                0,
+                Math.PI * 2
+              );
+              ctx.fillStyle = '#ffffff';
+              ctx.fill();
+            }
+          }
+          break;
+        }
+
+        case 'skyDragonKnight': {
+          const lanceGradient = ctx.createLinearGradient(handX, 0, handX + 54, 0);
+          lanceGradient.addColorStop(0, '#3f1d1d');
+          lanceGradient.addColorStop(.5, '#f3c4a7');
+          lanceGradient.addColorStop(1, '#ef4444');
+          ctx.strokeStyle = lanceGradient;
+          ctx.lineWidth = 5;
+          ctx.beginPath();
+          ctx.moveTo(handX - 3, 2);
+          ctx.lineTo(handX + 47 + attack * 6, -2);
+          ctx.stroke();
+
+          ctx.fillStyle = '#ef4444';
+          ctx.beginPath();
+          ctx.moveTo(handX + 47 + attack * 6, -9);
+          ctx.lineTo(handX + 60 + attack * 6, -2);
+          ctx.lineTo(handX + 47 + attack * 6, 7);
+          ctx.lineTo(handX + 51 + attack * 6, -2);
+          ctx.closePath();
+          ctx.fill();
+          break;
+        }
+      }
+    }
+
+    function drawStandingUnitBody(unit, time) {
+      const id = unit.unitId;
+      const attackPulse = (unit.attackAnimation || 0) * .8;
+
+      // 공통 그림자와 발
+      ctx.beginPath();
+      ctx.ellipse(0, 23, 20, 7, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,.31)';
+      ctx.fill();
+
+      const drawBoots = (color, spread = 8) => {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.roundRect(-spread - 5, 13, 9, 13, 3);
+        ctx.roundRect(spread - 4, 13, 9, 13, 3);
+        ctx.fill();
+      };
+
+      if (id === 'starterArcher') {
+        drawBoots('#493326', 7);
+        ctx.fillStyle = '#244b84';
+        ctx.beginPath();
+        ctx.moveTo(-14, 12); ctx.lineTo(-11, -10); ctx.lineTo(11, -10); ctx.lineTo(15, 12); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#4d8fff';
+        ctx.fillRect(-12, -6, 24, 14);
+        ctx.fillStyle = '#d9b36c';
+        ctx.fillRect(-14, 3, 28, 4);
+        ctx.fillStyle = '#315f9f';
+        ctx.beginPath(); ctx.arc(0, -17, 12, Math.PI, 0); ctx.lineTo(10, -8); ctx.lineTo(-10, -8); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#f0c39a'; ctx.beginPath(); ctx.arc(0, -14, 7.5, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#7a4a26'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-12, -5); ctx.lineTo(-19, 15); ctx.stroke();
+        for (let i = 0; i < 3; i += 1) { ctx.strokeStyle = '#dcecff'; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.moveTo(-18 + i * 3, -8); ctx.lineTo(-18 + i * 3, 8); ctx.stroke(); }
+      } else if (id === 'windRanger') {
+        drawBoots('#33452d', 8);
+        ctx.fillStyle = '#15583e';
+        ctx.beginPath(); ctx.moveTo(-18, 15); ctx.lineTo(-10, -11); ctx.lineTo(10, -11); ctx.lineTo(18, 15); ctx.lineTo(0, 9); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#43d890'; ctx.beginPath(); ctx.moveTo(-12,-8); ctx.lineTo(12,-8); ctx.lineTo(9,9); ctx.lineTo(-9,9); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#1f8c5e'; ctx.beginPath(); ctx.arc(0,-17,12,Math.PI,0); ctx.lineTo(9,-7); ctx.lineTo(-9,-7); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#e7c39e'; ctx.beginPath(); ctx.arc(0,-14,7,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#b8ffd7';
+        for (const side of [-1,1]) { ctx.beginPath(); ctx.ellipse(side*13,-5,5,12,side*.45,0,Math.PI*2); ctx.fill(); }
+        ctx.beginPath(); ctx.moveTo(3,-28); ctx.quadraticCurveTo(15,-37,18,-23); ctx.quadraticCurveTo(10,-27,3,-20); ctx.closePath(); ctx.fill();
+      } else if (id === 'starterKnight') {
+        drawBoots('#283342', 9);
+        ctx.fillStyle = '#596575'; ctx.fillRect(-15,-7,30,23);
+        const metal = ctx.createLinearGradient(-15,-10,15,12); metal.addColorStop(0,'#edf4fa'); metal.addColorStop(.5,'#9ca8ba'); metal.addColorStop(1,'#4c5968');
+        ctx.fillStyle = metal; ctx.beginPath(); ctx.roundRect(-14,-10,28,25,6); ctx.fill();
+        ctx.fillStyle = '#748395'; for (const side of [-1,1]) { ctx.beginPath(); ctx.arc(side*16,-5,8,0,Math.PI*2); ctx.fill(); }
+        ctx.fillStyle = '#b8c3cf'; ctx.beginPath(); ctx.arc(0,-19,12,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#273545'; ctx.fillRect(-10,-22,20,5); ctx.fillRect(-2,-30,4,11);
+        ctx.strokeStyle = '#f7fbff'; ctx.lineWidth = 1.4; ctx.strokeRect(-13,-9,26,23);
+        ctx.fillStyle = '#426b91'; ctx.beginPath(); ctx.moveTo(-24,-5); ctx.lineTo(-11,-11); ctx.lineTo(-7,5); ctx.lineTo(-16,14); ctx.lineTo(-25,7); ctx.closePath(); ctx.fill();
+      } else if (id === 'royalGuardian') {
+        drawBoots('#4a3512', 10);
+        ctx.fillStyle = '#6d1e2a'; ctx.beginPath(); ctx.moveTo(-19,15); ctx.lineTo(-16,-13); ctx.lineTo(16,-13); ctx.lineTo(21,15); ctx.closePath(); ctx.fill();
+        const gold = ctx.createLinearGradient(-18,-12,18,15); gold.addColorStop(0,'#fff5b2'); gold.addColorStop(.38,'#ffd04a'); gold.addColorStop(1,'#986600');
+        ctx.fillStyle = gold; ctx.beginPath(); ctx.roundRect(-17,-11,34,28,7); ctx.fill();
+        for (const side of [-1,1]) { ctx.beginPath(); ctx.arc(side*19,-5,10,0,Math.PI*2); ctx.fill(); }
+        ctx.beginPath(); ctx.arc(0,-21,13,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#4d2f0a'; ctx.fillRect(-11,-23,22,5);
+        ctx.fillStyle = '#f7d65a'; ctx.beginPath(); ctx.moveTo(-8,-34); ctx.lineTo(-3,-27); ctx.lineTo(1,-36); ctx.lineTo(5,-27); ctx.lineTo(10,-34); ctx.lineTo(9,-25); ctx.lineTo(-9,-25); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#b77900'; ctx.beginPath(); ctx.moveTo(-26,-7); ctx.lineTo(-12,-13); ctx.lineTo(-7,5); ctx.lineTo(-17,16); ctx.lineTo(-27,8); ctx.closePath(); ctx.fill();
+      } else if (id === 'starterMage') {
+        ctx.fillStyle = '#3d2467'; ctx.beginPath(); ctx.moveTo(-19,20); ctx.lineTo(-10,-10); ctx.lineTo(10,-10); ctx.lineTo(20,20); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#9b64ff'; ctx.beginPath(); ctx.moveTo(-14,16); ctx.lineTo(-8,-8); ctx.lineTo(8,-8); ctx.lineTo(14,16); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#f0c39a'; ctx.beginPath(); ctx.arc(0,-15,8,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#5b2fa4'; ctx.beginPath(); ctx.moveTo(-15,-17); ctx.quadraticCurveTo(-2,-38,8,-18); ctx.lineTo(18,-11); ctx.lineTo(-14,-10); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#f3e8ff'; ctx.beginPath(); ctx.arc(-2,-25,2.2,0,Math.PI*2); ctx.fill();
+      } else if (id === 'flameWizard') {
+        ctx.fillStyle = '#6b1d18'; ctx.beginPath(); ctx.moveTo(-22,21); ctx.lineTo(-13,-9); ctx.lineTo(13,-9); ctx.lineTo(22,21); ctx.lineTo(10,15); ctx.lineTo(0,22); ctx.lineTo(-10,15); ctx.closePath(); ctx.fill();
+        const fireRobe = ctx.createLinearGradient(0,-10,0,21); fireRobe.addColorStop(0,'#ffb08f'); fireRobe.addColorStop(.45,'#ff6d42'); fireRobe.addColorStop(1,'#9f2415');
+        ctx.fillStyle = fireRobe; ctx.beginPath(); ctx.moveTo(-14,16); ctx.lineTo(-9,-8); ctx.lineTo(9,-8); ctx.lineTo(14,16); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#d9421f'; ctx.beginPath(); ctx.arc(0,-16,10,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ffe0bd'; ctx.beginPath(); ctx.arc(0,-14,6.5,0,Math.PI*2); ctx.fill();
+        for (const side of [-1,1]) { ctx.fillStyle = '#ffca54'; ctx.beginPath(); ctx.moveTo(side*5,-24); ctx.quadraticCurveTo(side*15,-38,side*13,-21); ctx.closePath(); ctx.fill(); }
+        ctx.fillStyle = '#ff7a2f'; for (const side of [-1,1]) { ctx.beginPath(); ctx.arc(side*14,-5,5+attackPulse,0,Math.PI*2); ctx.fill(); }
+      } else if (id === 'skyDragonKnight') {
+        drawBoots('#24171a', 10);
+        ctx.fillStyle = '#2b1218'; ctx.beginPath(); ctx.moveTo(-21,17); ctx.lineTo(-17,-13); ctx.lineTo(17,-13); ctx.lineTo(22,17); ctx.closePath(); ctx.fill();
+        const dragonArmor = ctx.createLinearGradient(-18,-12,18,15); dragonArmor.addColorStop(0,'#ffb28e'); dragonArmor.addColorStop(.32,'#ef4444'); dragonArmor.addColorStop(.72,'#8b1b24'); dragonArmor.addColorStop(1,'#3b1118');
+        ctx.fillStyle = dragonArmor; ctx.beginPath(); ctx.moveTo(-17,-10); ctx.lineTo(-10,-15); ctx.lineTo(10,-15); ctx.lineTo(17,-10); ctx.lineTo(14,16); ctx.lineTo(-14,16); ctx.closePath(); ctx.fill();
+        for (const side of [-1,1]) { ctx.beginPath(); ctx.moveTo(side*13,-10); ctx.lineTo(side*27,-17); ctx.lineTo(side*21,-2); ctx.closePath(); ctx.fill(); }
+        ctx.beginPath(); ctx.arc(0,-21,13,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#4a1119'; ctx.fillRect(-10,-23,20,5);
+        ctx.fillStyle = '#ff947c'; for (const side of [-1,1]) { ctx.beginPath(); ctx.moveTo(side*5,-32); ctx.lineTo(side*17,-42); ctx.lineTo(side*12,-25); ctx.closePath(); ctx.fill(); }
+        ctx.fillStyle = '#f9d26b'; ctx.beginPath(); ctx.moveTo(0,-4); ctx.lineTo(6,5); ctx.lineTo(0,11); ctx.lineTo(-6,5); ctx.closePath(); ctx.fill();
+      } else if (id === 'astralChronomancer') {
+        const hover = Math.sin(time*.004 + unit.animationOffset)*2;
+        ctx.save(); ctx.translate(0,hover);
+        ctx.fillStyle = '#2e2042'; ctx.beginPath(); ctx.moveTo(-22,20); ctx.lineTo(-11,-10); ctx.lineTo(11,-10); ctx.lineTo(22,20); ctx.quadraticCurveTo(0,13,-22,20); ctx.fill();
+        ctx.fillStyle = '#d8b4fe'; ctx.beginPath(); ctx.moveTo(-14,14); ctx.lineTo(-8,-8); ctx.lineTo(8,-8); ctx.lineTo(14,14); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = '#f3e8ff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0,-20,16,0,Math.PI*2); ctx.stroke();
+        for (let i=0;i<8;i+=1){const a=time*.002+i*Math.PI/4;ctx.beginPath();ctx.moveTo(Math.cos(a)*13, -20+Math.sin(a)*13);ctx.lineTo(Math.cos(a)*18,-20+Math.sin(a)*18);ctx.stroke();}
+        ctx.fillStyle = '#f1c9a7'; ctx.beginPath(); ctx.arc(0,-18,7,0,Math.PI*2); ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function drawAimedUnitWeapon(unit, data, time) {
+      const attack = unit.attackAnimation || 0;
+      const recoil = attack * 5;
+      const angle = unit.angle || 0;
+
+      ctx.save();
+      ctx.translate(1, -5);
+      ctx.rotate(angle);
+      ctx.translate(-recoil, 0);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      if (unit.unitId === 'starterArcher' || unit.unitId === 'windRanger') {
+        const wind = unit.unitId === 'windRanger';
+        ctx.strokeStyle = wind ? '#8ff4bd' : '#d49a55';
+        ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(12,0,17,-1.18,1.18); ctx.stroke();
+        ctx.strokeStyle = '#f8fbff'; ctx.lineWidth = 1.1; ctx.beginPath(); ctx.moveTo(19,-15); ctx.lineTo(19,15); ctx.stroke();
+        ctx.strokeStyle = wind ? '#d7ffe8' : '#e7edf5'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-5,0); ctx.lineTo(35,0); ctx.stroke();
+        ctx.fillStyle = wind ? '#62e89c' : '#dbeafe'; ctx.beginPath(); ctx.moveTo(42,0); ctx.lineTo(33,-5); ctx.lineTo(33,5); ctx.closePath(); ctx.fill();
+      } else if (unit.unitId === 'starterKnight' || unit.unitId === 'royalGuardian') {
+        const royal = unit.unitId === 'royalGuardian';
+        const blade = ctx.createLinearGradient(0,0,46,0); blade.addColorStop(0,royal?'#8c5a00':'#596979'); blade.addColorStop(.38,'#ffffff'); blade.addColorStop(1,royal?'#ffe76b':'#b8d9f5');
+        ctx.fillStyle = blade; ctx.beginPath(); ctx.moveTo(0,-3); ctx.lineTo(39,-2.2); ctx.lineTo(50,0); ctx.lineTo(39,2.2); ctx.lineTo(0,3); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = royal?'#b47a00':'#465565'; ctx.fillRect(-3,-8,5,16);
+        ctx.strokeStyle = royal?'#fff2a3':'#e8f2fb'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-8,-8); ctx.lineTo(7,8); ctx.moveTo(-8,8); ctx.lineTo(7,-8); ctx.stroke();
+      } else if (unit.unitId === 'starterMage' || unit.unitId === 'flameWizard' || unit.unitId === 'astralChronomancer') {
+        const fire = unit.unitId === 'flameWizard';
+        const chrono = unit.unitId === 'astralChronomancer';
+        ctx.strokeStyle = fire?'#6f2916':chrono?'#70508d':'#4f3272'; ctx.lineWidth=5; ctx.beginPath(); ctx.moveTo(-5,4); ctx.lineTo(34,-1); ctx.stroke();
+        const orbX=39; const orbColor=fire?'#ff5a1f':chrono?'#d8b4fe':'#9b64ff';
+        const orb=ctx.createRadialGradient(orbX-3,-4,1,orbX,0,12); orb.addColorStop(0,'#fff'); orb.addColorStop(.3,orbColor); orb.addColorStop(1,'rgba(20,20,40,0)');
+        ctx.fillStyle=orb;ctx.beginPath();ctx.arc(orbX,0,11+attack*2,0,Math.PI*2);ctx.fill();
+        if (chrono){ctx.strokeStyle='#fff';ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(orbX,0,15,0,Math.PI*2);ctx.stroke();}
+      } else if (unit.unitId === 'skyDragonKnight') {
+        // 황금 신화창: 이중 자루, 용날개 가드, 보석과 다층 창날
+        const shaft = ctx.createLinearGradient(-5,0,58,0); shaft.addColorStop(0,'#6a3c00'); shaft.addColorStop(.38,'#d99a16'); shaft.addColorStop(.68,'#fff2a6'); shaft.addColorStop(1,'#b86a00');
+        ctx.strokeStyle='rgba(255,221,105,.22)';ctx.lineWidth=10;ctx.beginPath();ctx.moveTo(-8,0);ctx.lineTo(58,0);ctx.stroke();
+        ctx.strokeStyle=shaft;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-8,0);ctx.lineTo(55,0);ctx.stroke();
+        ctx.fillStyle='#8b4b00';ctx.beginPath();ctx.moveTo(10,0);ctx.lineTo(21,-10);ctx.lineTo(27,-2);ctx.lineTo(21,0);ctx.lineTo(27,2);ctx.lineTo(21,10);ctx.closePath();ctx.fill();
+        ctx.fillStyle='#ffe36e';ctx.beginPath();ctx.arc(23,0,4.5,0,Math.PI*2);ctx.fill();
+        const tip=ctx.createLinearGradient(50,-10,72,10);tip.addColorStop(0,'#fffbd1');tip.addColorStop(.35,'#ffe36e');tip.addColorStop(1,'#b56a00');
+        ctx.fillStyle=tip;ctx.beginPath();ctx.moveTo(49,-8);ctx.lineTo(66,-13);ctx.lineTo(78,0);ctx.lineTo(66,13);ctx.lineTo(49,8);ctx.lineTo(57,0);ctx.closePath();ctx.fill();
+        ctx.strokeStyle='#fff3a3';ctx.lineWidth=1.4;ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    function drawDetailedUnitSprite(unit, time) {
+      const data = UNIT_DATA[unit.unitId];
+      const auraPulse = .36 + Math.sin(time * .005 + unit.animationOffset) * .10;
+      ctx.beginPath();
+      ctx.arc(0, 2, 31, 0, Math.PI * 2);
+      ctx.strokeStyle = `${data.color}${Math.round(auraPulse * 255).toString(16).padStart(2, '0')}`;
+      ctx.lineWidth = unit.unitId === 'skyDragonKnight' || unit.unitId === 'astralChronomancer' ? 3 : 1.5;
+      ctx.stroke();
+
+      drawStandingUnitBody(unit, time);
+      drawAimedUnitWeapon(unit, data, time);
     }
 
     function drawPlacedUnit(unit, time) {
-      const data = UNIT_DATA[unit.unitId];
-      const bob = Math.sin(time * 0.004 + unit.animationOffset) * 3;
-      const recoil = unit.attackAnimation * 5;
-
       ctx.save();
-      ctx.translate(
-        unit.x - Math.cos(unit.angle) * recoil,
-        unit.y + bob - Math.sin(unit.angle) * recoil
-      );
+      ctx.translate(unit.x, unit.y);
 
       if (battle.selectedPlacedUnit === unit) {
         ctx.beginPath();
-        ctx.arc(0, 0, 32, 0, Math.PI * 2);
+        ctx.arc(0, 2, 37, 0, Math.PI * 2);
         ctx.strokeStyle = '#ffd04a';
         ctx.lineWidth = 3;
         ctx.stroke();
       }
 
-      ctx.beginPath();
-      ctx.arc(0, 2, 21, 0, Math.PI * 2);
-      ctx.fillStyle = data.color;
-      ctx.fill();
+      if (unit.attackSlowRemaining > 0) {
+        ctx.beginPath();
+        ctx.arc(0, 2, 34, 0, Math.PI * 2);
+        ctx.strokeStyle = '#d8b4fe';
+        ctx.lineWidth = 4;
+        ctx.setLineDash([5, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
 
-      ctx.beginPath();
-      ctx.arc(0, -19, 12, 0, Math.PI * 2);
-      ctx.fillStyle = '#f1c9a8';
-      ctx.fill();
+      // 몸은 항상 똑바로 서 있고 무기만 unit.angle 방향으로 회전한다.
+      drawDetailedUnitSprite(unit, time);
 
-      ctx.save();
-      ctx.rotate(unit.angle);
-      ctx.fillStyle = '#222b3b';
-      ctx.fillRect(5, -7, 27, 7);
-      ctx.restore();
+      if (unit.stunRemaining > 0) {
+        ctx.fillStyle = 'rgba(38, 93, 170, .28)';
+        ctx.beginPath();
+        ctx.arc(0, 0, 32, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.font = '20px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('💫', 0, -43);
+      } else if (unit.attackSlowRemaining > 0) {
+        ctx.font = '18px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('〰️', 0, -43);
+      }
 
-      ctx.font = '20px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(data.icon, 0, 8);
       ctx.restore();
     }
 
     function drawShots() {
+      const clamp01 = value => Math.max(0, Math.min(1, value));
+      const lerp = (start, end, amount) => start + (end - start) * amount;
+
       battle.shots.forEach(shot => {
-        ctx.beginPath();
-        ctx.moveTo(shot.x1, shot.y1);
-        ctx.lineTo(shot.x2, shot.y2);
-        ctx.strokeStyle = shot.color;
-        ctx.lineWidth = 4;
-        ctx.stroke();
+        const progress = clamp01(1 - shot.life / shot.maxLife);
+        const travel = 1 - Math.pow(1 - progress, 3);
+        const dx = shot.x2 - shot.x1;
+        const dy = shot.y2 - shot.y1;
+        const distance = Math.max(1, Math.hypot(dx, dy));
+        const ux = dx / distance;
+        const uy = dy / distance;
+        const nx = -uy;
+        const ny = ux;
+        const x = lerp(shot.x1, shot.x2, travel);
+        const y = lerp(shot.y1, shot.y2, travel);
+        const fade = Math.max(0, 1 - progress);
+        const angle = Math.atan2(dy, dx);
+
+        ctx.save();
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        if (shot.effect === 'arrow') {
+          const tailX = x - ux * 29;
+          const tailY = y - uy * 29;
+          const trail = ctx.createLinearGradient(tailX, tailY, x, y);
+          trail.addColorStop(0, 'rgba(160,205,255,0)');
+          trail.addColorStop(1, `rgba(235,247,255,${.82 * fade})`);
+          ctx.strokeStyle = trail; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(tailX-ux*15,tailY-uy*15); ctx.lineTo(x,y); ctx.stroke();
+          ctx.strokeStyle='#e8f3ff';ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(tailX,tailY);ctx.lineTo(x,y);ctx.stroke();
+          ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.fillStyle='#f8fafc';ctx.beginPath();ctx.moveTo(11,0);ctx.lineTo(-2,-5);ctx.lineTo(1,0);ctx.lineTo(-2,5);ctx.closePath();ctx.fill();ctx.restore();
+          for(const side of [-1,1]){ctx.strokeStyle='#9fb3c8';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(tailX,tailY);ctx.lineTo(tailX-ux*8+nx*side*5,tailY-uy*8+ny*side*5);ctx.stroke();}
+        } else if (shot.effect === 'windArrow') {
+          for (let layer=0; layer<4; layer+=1){const amp=7+layer*4;const wave=Math.sin(progress*Math.PI*8+shot.seed+layer*1.7)*amp;ctx.strokeStyle=layer===0?`rgba(218,255,233,${.85*fade})`:`rgba(54,222,143,${(.5-layer*.08)*fade})`;ctx.lineWidth=4-layer*.65;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.bezierCurveTo(shot.x1+dx*.28+nx*wave,shot.y1+dy*.28+ny*wave,shot.x1+dx*.68-nx*wave,shot.y1+dy*.68-ny*wave,x,y);ctx.stroke();}
+          for(let i=0;i<5;i+=1){const a=shot.seed+i*2.4+progress*10;ctx.fillStyle=`rgba(170,255,207,${.75*fade})`;ctx.beginPath();ctx.ellipse(x-ux*(10+i*7)+nx*Math.sin(a)*8,y-uy*(10+i*7)+ny*Math.sin(a)*8,4,1.7,a,0,Math.PI*2);ctx.fill();}
+          ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.fillStyle='#d7ffe8';ctx.beginPath();ctx.moveTo(12,0);ctx.lineTo(-5,-7);ctx.lineTo(-1,0);ctx.lineTo(-5,7);ctx.closePath();ctx.fill();ctx.restore();
+        } else if (shot.effect === 'steelSlash') {
+          const pulse=Math.sin(progress*Math.PI);ctx.translate(shot.x2,shot.y2);ctx.rotate(shot.angle);for(let i=0;i<3;i+=1){ctx.strokeStyle=`rgba(${210+i*15},${230+i*8},255,${pulse*(.85-i*.18)})`;ctx.lineWidth=7-i*2;ctx.beginPath();ctx.arc(-i*4,0,24+i*8,-1.05,.95);ctx.stroke();}for(let i=0;i<6;i+=1){const a=-.8+i*.32;ctx.fillStyle=`rgba(255,255,255,${pulse*.8})`;ctx.beginPath();ctx.arc(Math.cos(a)*35,Math.sin(a)*35,1.5+i%2,0,Math.PI*2);ctx.fill();}
+        } else if (shot.effect === 'goldenWave') {
+          const pulse=Math.sin(progress*Math.PI);ctx.translate(shot.x2,shot.y2);ctx.rotate(shot.angle);for(let i=0;i<4;i+=1){ctx.strokeStyle=`rgba(255,${225-i*12},${100-i*15},${pulse*(.9-i*.16)})`;ctx.lineWidth=8-i*1.5;ctx.beginPath();ctx.arc(-i*3,0,24+i*9,-1.08,1.08);ctx.stroke();}const core=ctx.createRadialGradient(0,0,0,0,0,42);core.addColorStop(0,`rgba(255,255,230,${pulse})`);core.addColorStop(.35,`rgba(255,215,55,${pulse*.58})`);core.addColorStop(1,'rgba(255,190,20,0)');ctx.fillStyle=core;ctx.beginPath();ctx.arc(0,0,42,0,Math.PI*2);ctx.fill();
+        } else if (shot.effect === 'arcaneBolt') {
+          for(let i=0;i<7;i+=1){const back=8+i*7;const swirl=Math.sin(shot.seed+i*1.8+progress*16)*(4+i*.8);ctx.fillStyle=`rgba(${180+i*4},${120+i*6},255,${fade*(.85-i*.08)})`;ctx.beginPath();ctx.arc(x-ux*back+nx*swirl,y-uy*back+ny*swirl,Math.max(1.2,4.5-i*.45),0,Math.PI*2);ctx.fill();}
+          const orb=ctx.createRadialGradient(x-4,y-4,1,x,y,15);orb.addColorStop(0,'#fff');orb.addColorStop(.25,'#ead7ff');orb.addColorStop(.55,'#a766ff');orb.addColorStop(1,'rgba(80,20,160,0)');ctx.fillStyle=orb;ctx.beginPath();ctx.arc(x,y,15,0,Math.PI*2);ctx.fill();ctx.strokeStyle=`rgba(235,215,255,${fade})`;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,17+Math.sin(progress*20)*3,0,Math.PI*2);ctx.stroke();
+        } else if (shot.effect === 'fireball') {
+          for(let i=0;i<10;i+=1){const back=i*6;const side=Math.sin(shot.seed+i*2.2+progress*22)*(3+i*.55);const r=Math.max(1.2,7-i*.55);const flame=ctx.createRadialGradient(x-ux*back+nx*side,y-uy*back+ny*side,0,x-ux*back+nx*side,y-uy*back+ny*side,r);flame.addColorStop(0,'rgba(255,248,185,.9)');flame.addColorStop(.45,`rgba(255,120,30,${.75*fade})`);flame.addColorStop(1,'rgba(180,25,8,0)');ctx.fillStyle=flame;ctx.beginPath();ctx.arc(x-ux*back+nx*side,y-uy*back+ny*side,r,0,Math.PI*2);ctx.fill();}
+          const core=ctx.createRadialGradient(x-4,y-5,1,x,y,17);core.addColorStop(0,'#fffde1');core.addColorStop(.24,'#ffd84d');core.addColorStop(.58,'#ff6428');core.addColorStop(1,'rgba(125,15,5,0)');ctx.fillStyle=core;ctx.beginPath();ctx.arc(x,y,17,0,Math.PI*2);ctx.fill();
+          if(progress>.64){const p=(progress-.64)/.36;const radius=(shot.splashRadius||88)*(.2+p*.8);const alpha=1-p;const blast=ctx.createRadialGradient(shot.x2,shot.y2,0,shot.x2,shot.y2,radius);blast.addColorStop(0,`rgba(255,255,210,${.75*alpha})`);blast.addColorStop(.25,`rgba(255,186,54,${.58*alpha})`);blast.addColorStop(.58,`rgba(255,72,25,${.32*alpha})`);blast.addColorStop(1,'rgba(150,20,5,0)');ctx.fillStyle=blast;ctx.beginPath();ctx.arc(shot.x2,shot.y2,radius,0,Math.PI*2);ctx.fill();for(let i=0;i<13;i+=1){const a=shot.seed+i*Math.PI*2/13;const d=18+p*(35+(i%4)*8);ctx.fillStyle=`rgba(255,${120+i*5},35,${alpha})`;ctx.beginPath();ctx.arc(shot.x2+Math.cos(a)*d,shot.y2+Math.sin(a)*d,2+(i%3),0,Math.PI*2);ctx.fill();}ctx.strokeStyle=`rgba(255,225,118,${alpha})`;ctx.lineWidth=5;ctx.beginPath();ctx.arc(shot.x2,shot.y2,12+p*radius*.75,0,Math.PI*2);ctx.stroke();}
+        } else if (shot.effect === 'dragonLance') {
+          // 신화 유닛 전용 황금 창 투사체
+          for(let ring=0;ring<3;ring+=1){const rx=x-ux*(16+ring*12);const ry=y-uy*(16+ring*12);ctx.save();ctx.translate(rx,ry);ctx.rotate(angle+progress*8+ring);ctx.strokeStyle=`rgba(255,224,93,${(.72-ring*.16)*fade})`;ctx.lineWidth=2.2;ctx.beginPath();ctx.ellipse(0,0,8+ring*3,4+ring,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
+          const trail=ctx.createLinearGradient(shot.x1,shot.y1,x,y);trail.addColorStop(0,'rgba(255,179,20,0)');trail.addColorStop(.45,`rgba(255,205,55,${.42*fade})`);trail.addColorStop(1,`rgba(255,250,190,${.95*fade})`);ctx.strokeStyle=trail;ctx.lineWidth=14;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.lineTo(x,y);ctx.stroke();ctx.strokeStyle=`rgba(255,238,135,${fade})`;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);for(let i=1;i<=8;i+=1){const t=travel*i/8;const jitter=Math.sin(shot.seed+i*3.1+progress*24)*4;ctx.lineTo(lerp(shot.x1,shot.x2,t)+nx*jitter,lerp(shot.y1,shot.y2,t)+ny*jitter);}ctx.stroke();
+          ctx.save();ctx.translate(x,y);ctx.rotate(angle);const tip=ctx.createLinearGradient(-18,-10,24,10);tip.addColorStop(0,'#b97900');tip.addColorStop(.35,'#ffe36e');tip.addColorStop(.65,'#fffbd0');tip.addColorStop(1,'#d68b00');ctx.strokeStyle='#9f6200';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-30,0);ctx.lineTo(4,0);ctx.stroke();ctx.fillStyle='#ffd34d';ctx.beginPath();ctx.moveTo(-10,0);ctx.lineTo(-2,-9);ctx.lineTo(5,-2);ctx.lineTo(-1,0);ctx.lineTo(5,2);ctx.lineTo(-2,9);ctx.closePath();ctx.fill();ctx.fillStyle=tip;ctx.beginPath();ctx.moveTo(0,-8);ctx.lineTo(17,-13);ctx.lineTo(30,0);ctx.lineTo(17,13);ctx.lineTo(0,8);ctx.lineTo(9,0);ctx.closePath();ctx.fill();ctx.strokeStyle='#fff3a3';ctx.lineWidth=1.5;ctx.stroke();ctx.restore();
+          if(progress>.70){const p=(progress-.70)/.30;ctx.strokeStyle=`rgba(255,221,83,${1-p})`;ctx.lineWidth=6;ctx.beginPath();ctx.arc(shot.x2,shot.y2,12+p*38,0,Math.PI*2);ctx.stroke();for(let i=0;i<8;i+=1){const a=i*Math.PI/4;ctx.beginPath();ctx.moveTo(shot.x2+Math.cos(a)*10,shot.y2+Math.sin(a)*10);ctx.lineTo(shot.x2+Math.cos(a)*(26+p*32),shot.y2+Math.sin(a)*(26+p*32));ctx.stroke();}}
+        } else if (shot.effect === 'timeRift') {
+          const orbit=progress*Math.PI*5;ctx.strokeStyle=`rgba(216,180,254,${.68*fade})`;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.bezierCurveTo(shot.x1+dx*.28+nx*26,shot.y1+dy*.28+ny*26,shot.x1+dx*.72-nx*26,shot.y1+dy*.72-ny*26,x,y);ctx.stroke();ctx.save();ctx.translate(x,y);ctx.rotate(orbit);ctx.strokeStyle='#f7edff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,14,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(0,0,9,0,Math.PI*2);ctx.stroke();for(let i=0;i<8;i+=1){const a=i*Math.PI/4;ctx.beginPath();ctx.moveTo(Math.cos(a)*10,Math.sin(a)*10);ctx.lineTo(Math.cos(a)*15,Math.sin(a)*15);ctx.stroke();}ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-8);ctx.moveTo(0,0);ctx.lineTo(7,3);ctx.stroke();ctx.restore();if(progress>.62){const p=(progress-.62)/.38;for(let i=0;i<3;i+=1){ctx.strokeStyle=`rgba(216,180,254,${(1-p)*(.8-i*.18)})`;ctx.lineWidth=4-i;ctx.beginPath();ctx.ellipse(shot.x2,shot.y2,12+p*(30+i*10),6+p*(14+i*5),shot.angle+i*.4,0,Math.PI*2);ctx.stroke();}}
+        }
+
+        ctx.restore();
       });
     }
 
@@ -1886,7 +5929,7 @@ async function logout() {
       drawBackground();
       drawPath();
       battle.placedUnits.forEach(unit => drawPlacedUnit(unit, time));
-      battle.enemies.forEach(drawEnemy);
+      battle.enemies.forEach(enemy => drawEnemy(enemy, time));
       drawShots();
 
       if (battle.ended) {
@@ -1897,7 +5940,7 @@ async function logout() {
         ctx.font = 'bold 54px sans-serif';
         ctx.fillText(battle.resultShown ? battle.resultText : '', canvas.width / 2, 245);
         ctx.font = '22px sans-serif';
-        ctx.fillText('오른쪽의 메뉴 버튼을 눌러 돌아가세요.', canvas.width / 2, 290);
+        ctx.fillText('상단의 전투 나가기 버튼을 눌러 돌아가세요.', canvas.width / 2, 290);
       }
     }
 
@@ -1913,24 +5956,28 @@ async function logout() {
       animationId = requestAnimationFrame(gameLoop);
     }
 
-    function endBattle(victory) {
+    function endBattle(victory, failureReason = '') {
       if (!battle || battle.ended) return;
 
       battle.ended = true;
       battle.resultShown = true;
 
-      if (victory) {
-        const gemReward = 120 + battle.stage * 10;
-        player.gems += gemReward;
-        player.highestStage = Math.max(player.highestStage, battle.stage);
-        battle.resultText = `승리! 소환석 +${gemReward}`;
-        setBattleMessage(`승리했습니다. 소환석 ${gemReward}개를 얻었습니다.`);
+      if (victory && battle.finalBossDefeated && !battle.bossEscaped) {
+        const stageBonus = 1000;
+        player.gems += stageBonus;
+        player.highestStage = Math.max(player.highestStage, 1);
+        battle.resultText = '스테이지 1 클리어!';
+        setBattleMessage(
+          `각성한 킹 비둘기를 처치했습니다! 웨이브 보상 ${battle.earnedWaveGems}개와 스테이지 보너스 ${stageBonus}개를 획득했습니다. 스테이지 1을 다시 플레이할 수 있습니다.`
+        );
       } else {
-        battle.resultText = '패배';
-        setBattleMessage('생명이 모두 소진되었습니다.');
+        battle.resultText = '스테이지 클리어 실패';
+        setBattleMessage(
+          failureReason || '보스를 처치하지 못했거나 생명이 모두 소진되었습니다. 스테이지 1에 다시 도전하세요.'
+        );
       }
 
-      savePlayer();
+      void savePlayer();
     }
 
     function distanceToSegment(point, start, end) {
@@ -1982,7 +6029,7 @@ async function logout() {
       }
 
       if (!battle.selectedDeployUnitId) {
-        setBattleMessage('먼저 오른쪽에서 배치할 유닛을 선택하세요.');
+        setBattleMessage('먼저 맵 아래에서 배치할 유닛을 선택하세요.');
         return;
       }
 
@@ -2018,7 +6065,9 @@ async function logout() {
         totalInvestment: unitData.cost,
         animationOffset: Math.random() * Math.PI * 2,
         attackAnimation: 0,
-        angle: 0
+        angle: 0,
+        stunRemaining: 0,
+        attackSlowRemaining: 0
       });
 
       battle.gold -= unitData.cost;
@@ -2031,31 +6080,88 @@ async function logout() {
     document.querySelector('#logoutBtn').addEventListener('click', logout);
     document.querySelector('#openGachaBtn').addEventListener('click', openGacha);
     document.querySelector('#openDeckBtn').addEventListener('click', openDeck);
-    document.querySelector('#openCollectionBtn').addEventListener('click', openCollection);
+    document.querySelector('#openCollectionBtn').addEventListener('click', () => openCollection('units'));
+    document.querySelector('#inventoryUnitsTab').addEventListener('click', () => {
+      activeInventoryTab = 'units';
+      renderInventory();
+    });
+    document.querySelector('#inventoryDiceTab').addEventListener('click', () => {
+      activeInventoryTab = 'dice';
+      renderInventory();
+    });
     document.querySelector('#startBattleBtn').addEventListener('click', createBattle);
-    document.querySelector('#summonBtn').addEventListener('click', summon);
+    document.querySelectorAll('[data-draw-count]').forEach(button => {
+      button.addEventListener('click', () => {
+        requestGachaDraw(Number(button.dataset.drawCount));
+      });
+    });
 
     document.querySelectorAll('.backToMenu').forEach(button => {
       button.addEventListener('click', openMenu);
     });
 
-    document.querySelector('#leaveBattleBtn').addEventListener('click', () => {
-      if (!battle) return;
+    const leaveBattleButton = document.querySelector('#leaveBattleBtn');
+    let leaveBattleArmedUntil = 0;
+    let leaveBattleResetTimer = null;
 
-      if (!battle.ended) {
-        const confirmed = confirm('전투를 중단하고 메뉴로 돌아갈까요?');
-        if (!confirmed) return;
+    function resetLeaveBattleButton() {
+      leaveBattleArmedUntil = 0;
+      clearTimeout(leaveBattleResetTimer);
+      leaveBattleButton.classList.remove('leave-armed');
+      leaveBattleButton.textContent = '전투 나가기';
+    }
+
+    function finishLeavingBattle() {
+      cancelAnimationFrame(animationId);
+      animationId = null;
+      previousTime = 0;
+      battle = null;
+      clearTimeout(bossAlertTimer);
+      const bossAlert = document.querySelector('#bossSpawnAlert');
+      if (bossAlert) bossAlert.classList.add('hidden');
+      resetLeaveBattleButton();
+      openMenu();
+    }
+
+    leaveBattleButton.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (!battle) {
+        resetLeaveBattleButton();
+        openMenu();
+        return;
       }
 
-      cancelAnimationFrame(animationId);
-      battle = null;
-      openMenu();
+      if (battle.ended) {
+        finishLeavingBattle();
+        return;
+      }
+
+      const now = Date.now();
+      if (now <= leaveBattleArmedUntil) {
+        finishLeavingBattle();
+        return;
+      }
+
+      leaveBattleArmedUntil = now + 2600;
+      leaveBattleButton.classList.add('leave-armed');
+      leaveBattleButton.textContent = '한 번 더 눌러 나가기';
+      setBattleMessage('전투를 중단하려면 2.6초 안에 전투 나가기 버튼을 한 번 더 누르세요.');
+
+      clearTimeout(leaveBattleResetTimer);
+      leaveBattleResetTimer = setTimeout(() => {
+        if (Date.now() >= leaveBattleArmedUntil) {
+          resetLeaveBattleButton();
+        }
+      }, 2700);
     });
 
     document.querySelector('#password').addEventListener('keydown', event => {
       if (event.key === 'Enter') login();
     });
 
+    installAnimatedMenuPigeons();
     restoreSession();
   </script>
 </body>

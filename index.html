@@ -4619,69 +4619,195 @@ async function logout() {
       document.querySelector('#closeChestCutscene')
         .addEventListener('click', closeCutscene, { once: true });
     }
-
-    async function executeGachaDraw(count) {
-      const cost = count * 100;
-      if (cutsceneRunning) return;
-
-      ensurePlayerData();
-      if (player.gems < cost) {
-        document.querySelector('#gachaResult').innerHTML =
-          `<span style="color:#ff9ca7;">${count}회 구매에는 소환석 ${cost.toLocaleString()}개가 필요합니다.</span>`;
-        refreshGachaButtons();
-        return;
-      }
-
-      cutsceneRunning = true;
-      refreshGachaButtons();
-
-      let rewardsCommitted = false;
-
-      try {
-        player.gems -= cost;
-        const results = Array.from({ length: count }, () => weightedRandomDice());
-
-        document.querySelector('#gachaGems').textContent = player.gems;
-        document.querySelector('#gachaResult').textContent =
-          '보급 상자가 도착했습니다. 상자를 두 번 눌러 결과를 확인하세요.';
-
-        await playBatchChestCutscene(results, async () => {
-          results.forEach(rarityKey => {
-            player.diceInventory[rarityKey] += 1;
-          });
-
-          rewardsCommitted = true;
-          document.querySelector('#gachaResult').innerHTML =
-            `<strong>${count}회 구매 완료 · 주사위 ${count}개 획득</strong>`;
-          await savePlayer();
-        });
-      } catch (error) {
-        console.error('주사위 뽑기 실패:', error);
-
-        if (!rewardsCommitted) {
-          player.gems += cost;
-          document.querySelector('#gachaGems').textContent = player.gems;
+async function requestServerGacha(count) {
+  const { data, error } =
+    await supabaseClient.functions.invoke(
+      'gacha-purchase',
+      {
+        body: {
+          count: count
         }
-
-        cutsceneRunning = false;
-        closeCutscene();
-        document.querySelector('#gachaResult').innerHTML =
-          '<span style="color:#ff9ca7;">뽑기 처리 중 오류가 발생해 소환석을 되돌렸습니다.</span>';
       }
+    );
+
+  if (error) {
+    let message =
+      '서버에서 가챠를 처리하지 못했습니다.';
+
+    try {
+      if (error.context) {
+        const errorData =
+          await error.context.json();
+
+        if (errorData?.error) {
+          message = errorData.error;
+        }
+      }
+    } catch (parseError) {
+      console.error(
+        '서버 오류 메시지 확인 실패:',
+        parseError
+      );
     }
 
-    function requestGachaDraw(count) {
-      if (cutsceneRunning) return;
+    throw new Error(message);
+  }
 
-      const cost = count * 100;
-      if (player.gems < cost) {
-        document.querySelector('#gachaResult').innerHTML =
-          `<span style="color:#ff9ca7;">소환석 ${cost.toLocaleString()}개가 필요합니다.</span>`;
+  if (
+    !data ||
+    !Number.isFinite(Number(data.gems)) ||
+    !data.results
+  ) {
+    throw new Error(
+      '서버에서 올바르지 않은 결과를 받았습니다.'
+    );
+  }
+
+  return data;
+}
+
+
+function expandServerGachaResults(resultCounts) {
+  const rarityOrder = [
+    'common',
+    'rare',
+    'epic',
+    'legendary',
+    'mythic',
+    'secret'
+  ];
+
+  const results = [];
+
+  rarityOrder.forEach(rarityKey => {
+    const amount = Math.max(
+      0,
+      Number(resultCounts?.[rarityKey] || 0)
+    );
+
+    for (
+      let index = 0;
+      index < amount;
+      index += 1
+    ) {
+      results.push(rarityKey);
+    }
+  });
+
+  // 결과 표시 순서를 섞음
+  for (
+    let index = results.length - 1;
+    index > 0;
+    index -= 1
+  ) {
+    const targetIndex =
+      Math.floor(Math.random() * (index + 1));
+
+    [
+      results[index],
+      results[targetIndex]
+    ] = [
+      results[targetIndex],
+      results[index]
+    ];
+  }
+
+  return results;
+}
+async function executeGachaDraw(count) {
+  if (cutsceneRunning) {
+    return;
+  }
+
+  ensurePlayerData();
+
+  cutsceneRunning = true;
+  refreshGachaButtons();
+
+  const resultElement =
+    document.querySelector('#gachaResult');
+
+  try {
+    resultElement.textContent =
+      '서버에서 소환석과 가챠 결과를 확인하고 있습니다...';
+
+    // 소환석 차감과 확률 계산은 서버에서 처리
+    const serverResult =
+      await requestServerGacha(count);
+
+    const results =
+      expandServerGachaResults(
+        serverResult.results
+      );
+
+    if (results.length !== count) {
+      throw new Error(
+        '서버 가챠 결과의 개수가 맞지 않습니다.'
+      );
+    }
+
+    // 서버가 반환한 값을 화면용 player에 반영
+    player.gems =
+      Number(serverResult.gems);
+
+    Object.entries(
+      serverResult.results
+    ).forEach(([rarityKey, amount]) => {
+      if (!DICE_DATA[rarityKey]) {
         return;
       }
 
-      executeGachaDraw(count);
-    }
+      player.diceInventory[rarityKey] =
+        (
+          player.diceInventory[rarityKey] ||
+          0
+        ) + Number(amount || 0);
+    });
+
+    document.querySelector(
+      '#gachaGems'
+    ).textContent = player.gems;
+
+    resultElement.textContent =
+      '보급 상자가 도착했습니다. 상자를 두 번 눌러 결과를 확인하세요.';
+
+    // 서버 결과를 기존 저장 데이터에도 복사
+    // 서버 테이블이 실제 기준이며 이것은 화면 복구용입니다.
+    await savePlayer();
+
+    // 기존 상자 두 번 클릭 컷신 유지
+    await playBatchChestCutscene(
+      results,
+      async () => {
+        resultElement.innerHTML =
+          `<strong>${count}회 구매 완료 · 주사위 ${count}개 획득</strong>`;
+      }
+    );
+  } catch (error) {
+    console.error(
+      '서버 주사위 가챠 실패:',
+      error
+    );
+
+    cutsceneRunning = false;
+    closeCutscene();
+
+    resultElement.innerHTML =
+      `<span style="color:#ff9ca7;">${
+        error.message ||
+        '가챠 처리 중 오류가 발생했습니다.'
+      }</span>`;
+  }
+}
+
+function requestGachaDraw(count) {
+  if (cutsceneRunning) {
+    return;
+  }
+
+  // 잔액 확인도 서버에서 수행
+  executeGachaDraw(count);
+}
 
     function summon() {
       requestGachaDraw(1);

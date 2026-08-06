@@ -2,7 +2,15 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#10223a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="비둘기 침공" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
   <title>가챠 타워디펜스</title>
   <style>
     :root {
@@ -2871,6 +2879,346 @@
   }
 }
 
+
+
+/* ==================================
+   모바일 전투 최적화 · PWA · 화면 방향
+================================== */
+html,
+body {
+  overscroll-behavior: none;
+}
+
+.install-app-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  width: min(520px, 100%);
+  margin: 16px auto 0;
+  padding: 13px 18px;
+  border: 1px solid rgba(113, 209, 255, .42);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(32, 92, 145, .94), rgba(31, 63, 111, .94));
+  color: #f5fbff;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .25);
+}
+
+.install-app-button > span:first-child {
+  font-size: 27px;
+}
+
+.install-app-button > span:last-child {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.install-app-button small {
+  color: #b9d7ee;
+  font-size: 11px;
+}
+
+.orientation-guard {
+  position: fixed;
+  z-index: 100000;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  padding: 28px;
+  background:
+    radial-gradient(circle at center, rgba(37, 92, 145, .30), transparent 42%),
+    rgba(4, 11, 22, .98);
+  color: white;
+  text-align: center;
+  touch-action: none;
+}
+
+.orientation-guard .orientation-device {
+  margin-bottom: 17px;
+  font-size: clamp(72px, 17vw, 120px);
+  animation: orientationTurn 1.5s ease-in-out infinite;
+}
+
+.orientation-guard strong {
+  font-size: clamp(22px, 5vw, 34px);
+}
+
+.orientation-guard p {
+  margin: 10px 0 0;
+  color: #b7cbe0;
+}
+
+@keyframes orientationTurn {
+  0%, 18% { transform: rotate(0deg); }
+  62%, 100% { transform: rotate(90deg); }
+}
+
+#battleScreen:not(.hidden) {
+  width: 100dvw;
+  height: 100dvh;
+}
+
+#battleScreen .battle-topbar {
+  right: auto;
+  width: auto;
+}
+
+#battleScreen .battle-topbar > div {
+  padding: 7px 9px;
+}
+
+#battleScreen .battle-topbar .resource-bar {
+  flex-wrap: nowrap;
+  gap: 5px;
+}
+
+#battleScreen .battle-topbar .resource {
+  white-space: nowrap;
+}
+
+.battle-wave-center {
+  top: max(3px, env(safe-area-inset-top));
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 7px;
+}
+
+.wave-skip-controls {
+  gap: 5px;
+  padding: 4px;
+  border: 1px solid rgba(161, 195, 233, .23);
+  border-radius: 13px;
+  background: rgba(7, 18, 32, .68);
+  backdrop-filter: blur(9px);
+}
+
+.wave-skip-controls > button {
+  margin: 0;
+}
+
+#battleScreen .battle-exit-button {
+  min-height: 38px;
+  padding: 7px 11px;
+  border-radius: 10px;
+  white-space: nowrap;
+  pointer-events: auto;
+}
+
+#battleScreen .battle-info-section.is-empty {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(18px);
+}
+
+#battleScreen .battle-info-section {
+  transition: opacity .18s ease, transform .18s ease, visibility .18s;
+}
+
+.selected-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.selected-panel-header h3 {
+  margin: 0;
+}
+
+.close-battle-info-button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 10px;
+  background: #35435e;
+  color: white;
+  font-size: 20px;
+}
+
+@media (max-width: 860px) {
+  .invasion-menu {
+    min-height: 100dvh;
+    padding: max(16px, env(safe-area-inset-top)) 14px max(18px, env(safe-area-inset-bottom));
+  }
+
+  .invasion-content {
+    margin-top: 34px;
+  }
+
+  .enemy-logo-area {
+    width: min(210px, 56vw);
+  }
+
+  .invasion-title-area h1 {
+    font-size: clamp(43px, 14vw, 65px);
+  }
+
+  .defense-menu-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .defense-menu-card {
+    min-height: 108px;
+    padding: 12px 9px;
+  }
+
+  .defense-card-icon {
+    margin-bottom: 8px;
+    font-size: 24px;
+  }
+
+  .defense-menu-card strong {
+    font-size: 14px;
+  }
+
+  .defense-menu-card small {
+    font-size: 10px;
+  }
+}
+
+/* 휴대전화 가로 전투: 모든 조작을 한 화면에 배치 */
+@media (orientation: landscape) and (max-height: 650px) and (pointer: coarse) {
+  #battleScreen .battle-topbar {
+    top: max(4px, env(safe-area-inset-top));
+    left: max(5px, env(safe-area-inset-left));
+  }
+
+  #battleScreen .battle-topbar > div {
+    max-width: none;
+    padding: 5px 6px;
+    border-radius: 10px;
+  }
+
+  #battleScreen .battle-topbar .resource {
+    padding: 4px 6px;
+    font-size: 9px;
+  }
+
+  .battle-wave-center {
+    top: max(3px, env(safe-area-inset-top));
+    gap: 4px;
+  }
+
+  .battle-wave-center .map-wave-hud {
+    min-width: 92px;
+    padding: 5px 7px;
+    border-radius: 10px;
+  }
+
+  .battle-wave-center .map-wave-hud span,
+  .battle-wave-center .map-wave-hud small {
+    font-size: 8px;
+  }
+
+  .battle-wave-center .map-wave-hud strong {
+    font-size: 18px;
+  }
+
+  .wave-skip-controls {
+    gap: 3px;
+    padding: 3px;
+    border-radius: 10px;
+  }
+
+  .wave-skip-button,
+  .auto-skip-button,
+  #battleScreen .battle-exit-button {
+    min-height: 30px;
+    padding: 4px 7px;
+    border-radius: 8px;
+    font-size: 9px;
+  }
+
+  .wave-skip-button small {
+    display: none;
+  }
+
+  #battleScreen .battle-deploy-section {
+    left: max(5px, env(safe-area-inset-left));
+    right: max(5px, env(safe-area-inset-right));
+    bottom: max(4px, env(safe-area-inset-bottom));
+    width: auto;
+    padding: 5px;
+    border-radius: 11px;
+    transform: none;
+  }
+
+  #battleScreen .battle-deck {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  #battleScreen .battle-unit-button,
+  #battleScreen .battle-empty-slot {
+    min-height: 48px;
+    padding: 3px 2px;
+    border-radius: 8px;
+  }
+
+  #battleScreen .battle-unit-button .battle-unit-icon {
+    margin: 0;
+    font-size: 16px;
+  }
+
+  #battleScreen .battle-unit-button .battle-unit-name {
+    font-size: 8px;
+  }
+
+  #battleScreen .battle-unit-button .battle-unit-cost {
+    margin-top: 0;
+    font-size: 7px;
+  }
+
+  #battleScreen .battle-info-section {
+    top: max(47px, calc(env(safe-area-inset-top) + 43px));
+    right: max(5px, env(safe-area-inset-right));
+    bottom: max(61px, calc(env(safe-area-inset-bottom) + 57px));
+    width: min(188px, 28vw);
+    min-width: 162px;
+    padding: 8px;
+    border-radius: 11px;
+    font-size: 10px;
+  }
+
+  #battleScreen .battle-info-section h3 {
+    font-size: 13px;
+  }
+
+  #battleScreen .selected-unit-stats {
+    gap: 5px;
+  }
+
+  #battleScreen .selected-unit-stats > div,
+  #battleScreen .unit-upgrade-box {
+    padding: 7px;
+  }
+
+  #battleScreen .unit-upgrade-box p,
+  #battleScreen .battle-message {
+    font-size: 9px;
+  }
+
+  #battleScreen .unit-upgrade-button,
+  #battleScreen #sellUnitBtn {
+    min-height: 34px;
+    padding: 6px;
+    font-size: 9px;
+  }
+
+  .close-battle-info-button {
+    width: 28px;
+    height: 28px;
+    font-size: 17px;
+  }
+}
+
   </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -3011,6 +3359,11 @@
       </button>
     </div>
 
+    <button id="installAppBtn" class="install-app-button hidden" type="button">
+      <span>📲</span>
+      <span><strong>홈 화면에 게임 설치</strong><small>브라우저 없이 앱처럼 실행</small></span>
+    </button>
+
     <div class="invasion-warning">
       <span class="warning-dot"></span>
       비둘기 떼 접근 중 · 방어선 전투 준비
@@ -3128,12 +3481,11 @@
       <div>
         <h2>스테이지 <span id="battleStage">1</span></h2>
         <div class="resource-bar">
-          <div class="resource">🪙 전투 골드 <strong id="battleGold">0</strong></div>
-          <div class="resource">🏰 거점 HP <strong id="battleLives">0 / 2000</strong></div>
-          <div class="resource">💀 처치 <strong id="battleKills">0</strong></div>
+          <div class="resource">🪙 <strong id="battleGold">0</strong></div>
+          <div class="resource">🏰 <strong id="battleLives">0 / 2000</strong></div>
+          <div class="resource">💀 <strong id="battleKills">0</strong></div>
         </div>
       </div>
-      <button id="leaveBattleBtn" class="danger battle-exit-button" type="button">전투 나가기</button>
     </div>
 
     <div class="battle-layout">
@@ -3154,6 +3506,9 @@
             </button>
             <button id="autoSkipBtn" class="auto-skip-button" type="button" aria-pressed="false">
               자동 스킵 OFF
+            </button>
+            <button id="leaveBattleBtn" class="danger battle-exit-button" type="button">
+              나가기
             </button>
           </div>
         </div>
@@ -3176,7 +3531,7 @@
           <div id="battleDeck" class="battle-deck"></div>
         </div>
 
-        <div class="battle-info-section">
+        <div id="battleInfoSection" class="battle-info-section is-empty">
           <div id="selectedUnitPanel" class="selected-panel">
             <h3>배치 유닛 정보</h3>
             <p class="muted">지도에 배치된 유닛을 클릭하세요. 거점 성은 오른쪽 길 끝에 있습니다.</p>
@@ -3188,6 +3543,12 @@
     </div>
   </section>
 
+
+  <div id="orientationGuard" class="orientation-guard hidden" role="alert" aria-live="assertive">
+    <div class="orientation-device" aria-hidden="true">📱</div>
+    <strong id="orientationGuardTitle">화면을 돌려주세요</strong>
+    <p id="orientationGuardText">전투는 가로 화면에서 진행됩니다.</p>
+  </div>
 
   <div id="cutsceneOverlay" class="cutscene-overlay hidden" role="dialog" aria-modal="true">
     <div id="cutsceneBackdrop" class="cutscene-backdrop"></div>
@@ -4597,12 +4958,12 @@ async function logout() {
     const ctx = canvas.getContext('2d');
 
     const path = [
-      { x: -35, y: 305 },
-      { x: 190, y: 305 },
-      { x: 190, y: 158 },
-      { x: 510, y: 158 },
-      { x: 510, y: 405 },
-      { x: 650, y: 405 }
+      { x: -35, y: 304 },
+      { x: 178, y: 304 },
+      { x: 178, y: 198 },
+      { x: 492, y: 198 },
+      { x: 492, y: 356 },
+      { x: 650, y: 356 }
     ];
 
 
@@ -4621,6 +4982,131 @@ async function logout() {
     let battle = null;
     let animationId = null;
     let previousTime = 0;
+    let deferredInstallPrompt = null;
+
+    const orientationGuard = document.querySelector('#orientationGuard');
+    const orientationGuardTitle = document.querySelector('#orientationGuardTitle');
+    const orientationGuardText = document.querySelector('#orientationGuardText');
+    const installAppButton = document.querySelector('#installAppBtn');
+
+    function isMobileLikeDevice() {
+      return window.matchMedia('(pointer: coarse)').matches &&
+        Math.min(screen.width, screen.height) <= 1024;
+    }
+
+    function isStandaloneApp() {
+      return window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true;
+    }
+
+    function updateOrientationGuard() {
+      if (!orientationGuard || !isMobileLikeDevice()) {
+        orientationGuard?.classList.add('hidden');
+        return;
+      }
+
+      const battleActive = battle && !screens.battle.classList.contains('hidden');
+      const isLandscape = window.innerWidth > window.innerHeight;
+      const wrongOrientation = battleActive ? !isLandscape : isLandscape;
+
+      if (!wrongOrientation) {
+        orientationGuard.classList.add('hidden');
+        return;
+      }
+
+      orientationGuardTitle.textContent = battleActive
+        ? '가로 화면으로 돌려주세요'
+        : '세로 화면으로 돌려주세요';
+      orientationGuardText.textContent = battleActive
+        ? '전투 화면은 가로 방향에서만 조작할 수 있습니다.'
+        : '메뉴와 인벤토리는 세로 방향에서만 조작할 수 있습니다.';
+      orientationGuard.classList.remove('hidden');
+    }
+
+    async function requestOrientationLock(mode) {
+      try {
+        if (screen.orientation?.lock) {
+          await screen.orientation.lock(mode);
+          return true;
+        }
+      } catch (error) {
+        console.info('화면 방향 잠금을 사용할 수 없습니다:', error?.message || error);
+      }
+      return false;
+    }
+
+    async function enterBattlePresentation() {
+      if (!isMobileLikeDevice()) return;
+
+      try {
+        if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+        }
+      } catch (error) {
+        console.info('전체화면 전환을 사용할 수 없습니다:', error?.message || error);
+      }
+
+      await requestOrientationLock('landscape');
+      updateOrientationGuard();
+    }
+
+    async function leaveBattlePresentation() {
+      if (!isMobileLikeDevice()) return;
+
+      try {
+        screen.orientation?.unlock?.();
+      } catch (error) {
+        console.info('화면 방향 잠금 해제를 사용할 수 없습니다:', error?.message || error);
+      }
+
+      await requestOrientationLock('portrait');
+
+      try {
+        if (document.fullscreenElement && document.exitFullscreen) {
+          await document.exitFullscreen();
+        }
+      } catch (error) {
+        console.info('전체화면 종료를 사용할 수 없습니다:', error?.message || error);
+      }
+
+      updateOrientationGuard();
+    }
+
+    function refreshInstallButton() {
+      if (!installAppButton) return;
+      if (isStandaloneApp()) {
+        installAppButton.classList.add('hidden');
+        return;
+      }
+
+      const isiOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+      if (deferredInstallPrompt || isiOS) {
+        installAppButton.classList.remove('hidden');
+      }
+    }
+
+    window.addEventListener('beforeinstallprompt', event => {
+      event.preventDefault();
+      deferredInstallPrompt = event;
+      refreshInstallButton();
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredInstallPrompt = null;
+      refreshInstallButton();
+    });
+
+    window.addEventListener('resize', updateOrientationGuard);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(updateOrientationGuard, 180);
+    });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+          .catch(error => console.error('서비스 워커 등록 실패:', error));
+      });
+    }
 
 
     let battleAudioContext = null;
@@ -4719,6 +5205,7 @@ async function logout() {
         resetLeaveBattleButton();
       }
 
+      void enterBattlePresentation();
       ensureBattleAudio();
       const bossAlert = document.querySelector('#bossSpawnAlert');
       if (bossAlert) bossAlert.classList.add('hidden');
@@ -4763,6 +5250,8 @@ async function logout() {
 
       renderBattleDeck();
       showScreen('battle');
+      renderSelectedPanel();
+      updateOrientationGuard();
       launchWave(1);
       updateBattleUi();
 
@@ -5042,15 +5531,19 @@ async function logout() {
 
     function renderSelectedPanel() {
       const panel = document.querySelector('#selectedUnitPanel');
+      const infoSection = document.querySelector('#battleInfoSection');
       const placed = battle.selectedPlacedUnit;
 
       if (!placed) {
+        infoSection?.classList.add('is-empty');
         panel.innerHTML = `
           <h3>배치 유닛 정보</h3>
           <p class="muted">지도에 배치된 유닛을 클릭하세요.</p>
         `;
         return;
       }
+
+      infoSection?.classList.remove('is-empty');
 
       const unit = UNIT_DATA[placed.unitId];
       placed.baseDamage ??= unit.damage;
@@ -5100,7 +5593,10 @@ async function logout() {
         `;
 
       panel.innerHTML = `
-        <h3>${unit.icon} ${unit.name}</h3>
+        <div class="selected-panel-header">
+          <h3>${unit.icon} ${unit.name}</h3>
+          <button id="closeBattleInfoBtn" class="close-battle-info-button" type="button" aria-label="유닛 정보 닫기">×</button>
+        </div>
         <div class="selected-unit-stats">
           <div><span>데미지</span><strong>${damageText}</strong></div>
           <div><span>공격 쿨타임</span><strong>${cooldownText}</strong></div>
@@ -5110,6 +5606,11 @@ async function logout() {
         ${upgradeHtml}
         <button id="sellUnitBtn" class="danger">판매 +${refund} 골드</button>
       `;
+
+      document.querySelector('#closeBattleInfoBtn')?.addEventListener('click', () => {
+        battle.selectedPlacedUnit = null;
+        renderSelectedPanel();
+      });
 
       const upgradeButton = document.querySelector('#upgradeUnitBtn');
       if (upgradeButton) {
@@ -7229,6 +7730,22 @@ async function logout() {
       renderInventory();
     });
     document.querySelector('#startBattleBtn').addEventListener('click', createBattle);
+    installAppButton?.addEventListener('click', async () => {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+        refreshInstallButton();
+        return;
+      }
+
+      const isiOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+      if (isiOS) {
+        alert('Safari 아래쪽의 공유 버튼을 누른 뒤 “홈 화면에 추가”를 선택하세요.');
+      } else {
+        alert('브라우저 메뉴에서 “앱 설치” 또는 “홈 화면에 추가”를 선택하세요.');
+      }
+    });
     document.querySelector('#skipWaveBtn').addEventListener('click', () => skipNextWave(false));
     document.querySelector('#autoSkipBtn').addEventListener('click', toggleAutoWaveSkip);
     document.querySelectorAll('[data-draw-count]').forEach(button => {
@@ -7249,7 +7766,7 @@ async function logout() {
       leaveBattleArmedUntil = 0;
       clearTimeout(leaveBattleResetTimer);
       leaveBattleButton.classList.remove('leave-armed');
-      leaveBattleButton.textContent = '전투 나가기';
+      leaveBattleButton.textContent = '나가기';
     }
 
     function finishLeavingBattle() {
@@ -7261,6 +7778,7 @@ async function logout() {
       const bossAlert = document.querySelector('#bossSpawnAlert');
       if (bossAlert) bossAlert.classList.add('hidden');
       resetLeaveBattleButton();
+      void leaveBattlePresentation();
       openMenu();
     }
 
@@ -7287,7 +7805,7 @@ async function logout() {
 
       leaveBattleArmedUntil = now + 2600;
       leaveBattleButton.classList.add('leave-armed');
-      leaveBattleButton.textContent = '한 번 더 눌러 나가기';
+      leaveBattleButton.textContent = '확인';
       setBattleMessage('전투를 중단하려면 2.6초 안에 전투 나가기 버튼을 한 번 더 누르세요.');
 
       clearTimeout(leaveBattleResetTimer);
@@ -7303,6 +7821,8 @@ async function logout() {
     });
 
     installAnimatedMenuPigeons();
+    refreshInstallButton();
+    updateOrientationGuard();
     restoreSession();
   </script>
 </body>

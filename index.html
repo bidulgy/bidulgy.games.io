@@ -2611,7 +2611,7 @@
 .battle-wave-center {
   position: absolute;
   z-index: 35;
-  top: max(10px, env(safe-area-inset-top));
+  top: max(2px, env(safe-area-inset-top));
   left: 50%;
   display: flex;
   align-items: center;
@@ -2761,8 +2761,8 @@
   right: max(12px, env(safe-area-inset-right));
   bottom: 104px;
   display: flex;
-  width: min(300px, 31vw);
-  min-width: 240px;
+  width: min(270px, 28vw);
+  min-width: 220px;
   padding: 15px;
   overflow-y: auto;
   border: 1px solid rgba(157, 188, 226, .30);
@@ -2775,6 +2775,16 @@
 
 #battleScreen .battle-info-section .selected-panel {
   min-height: 0;
+}
+
+/* 상단 웨이브 HUD가 길을 가리지 않도록 더 위쪽에 밀착 */
+.battle-wave-center .map-wave-hud {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .24);
+}
+
+/* 오른쪽 정보창은 거점 성 오른쪽에 머물도록 폭을 조금 줄임 */
+#battleScreen .battle-info-section {
+  scrollbar-width: thin;
 }
 
 #battleScreen .battle-message {
@@ -2803,7 +2813,7 @@
   }
 
   .battle-wave-center {
-    top: max(7px, env(safe-area-inset-top));
+    top: max(1px, env(safe-area-inset-top));
   }
 
   .battle-wave-center .map-wave-hud {
@@ -3119,7 +3129,7 @@
         <h2>스테이지 <span id="battleStage">1</span></h2>
         <div class="resource-bar">
           <div class="resource">🪙 전투 골드 <strong id="battleGold">0</strong></div>
-          <div class="resource">❤️ 생명 <strong id="battleLives">0</strong></div>
+          <div class="resource">🏰 거점 HP <strong id="battleLives">0 / 2000</strong></div>
           <div class="resource">💀 처치 <strong id="battleKills">0</strong></div>
         </div>
       </div>
@@ -3169,7 +3179,7 @@
         <div class="battle-info-section">
           <div id="selectedUnitPanel" class="selected-panel">
             <h3>배치 유닛 정보</h3>
-            <p class="muted">지도에 배치된 유닛을 클릭하세요.</p>
+            <p class="muted">지도에 배치된 유닛을 클릭하세요. 거점 성은 오른쪽 길 끝에 있습니다.</p>
           </div>
 
           <div id="battleMessage" class="message battle-message"></div>
@@ -4587,16 +4597,18 @@ async function logout() {
     const ctx = canvas.getContext('2d');
 
     const path = [
-      { x: -35, y: 270 },
-      { x: 200, y: 270 },
-      { x: 200, y: 100 },
-      { x: 560, y: 100 },
-      { x: 560, y: 420 },
-      { x: 935, y: 420 }
+      { x: -35, y: 305 },
+      { x: 190, y: 305 },
+      { x: 190, y: 158 },
+      { x: 510, y: 158 },
+      { x: 510, y: 405 },
+      { x: 650, y: 405 }
     ];
 
 
     const NORMAL_PIGEON_HP = 100;
+    const BASE_MAX_HP = 2000;
+    const BASE_POSITION = path[path.length - 1];
     const STAGE_ONE_MAX_WAVE = 50;
     const BROTHER_FORMATION = [
       { x: -50, y: -35 },
@@ -4714,7 +4726,11 @@ async function logout() {
       battle = {
         stage: 1,
         gold: 300,
-        lives: 20,
+        lives: BASE_MAX_HP,
+        baseMaxHp: BASE_MAX_HP,
+        baseHitFlash: 0,
+        baseDamageText: 0,
+        baseDamageTextTimer: 0,
         wave: 1,
         maxWave: STAGE_ONE_MAX_WAVE,
         highestLaunchedWave: 0,
@@ -5013,7 +5029,8 @@ async function logout() {
     function updateBattleUi() {
       document.querySelector('#battleStage').textContent = battle.stage;
       document.querySelector('#battleGold').textContent = battle.gold;
-      document.querySelector('#battleLives').textContent = battle.lives;
+      document.querySelector('#battleLives').textContent =
+        `${Math.max(0, Math.ceil(battle.lives))} / ${battle.baseMaxHp || BASE_MAX_HP}`;
       document.querySelector('#battleWave').textContent = battle.wave;
       document.querySelector('#battleKills').textContent = battle.kills;
       updateWaveSkipUi();
@@ -5231,19 +5248,30 @@ async function logout() {
         enemy.dead = true;
         recordEnemyResolved(enemy, false);
 
+        // 성에 도달한 적의 남은 HP만큼 거점 HP가 감소한다.
+        // 예: HP 100이 남은 일반 비둘기 → 거점 피해 100.
+        const baseDamage = Math.max(1, Math.ceil(enemy.health));
+        battle.lives = Math.max(0, battle.lives - baseDamage);
+        battle.baseHitFlash = .58;
+        battle.baseDamageText = baseDamage;
+        battle.baseDamageTextTimer = 1.15;
+
         if (enemy.type !== 'normal') {
           battle.bossEscaped = true;
           endBattle(
             false,
-            `${enemy.name}을 처치하지 못했습니다. 보스를 잡아야 스테이지를 클리어할 수 있습니다.`
+            `${enemy.name}이 거점에 도달해 ${baseDamage}의 피해를 입혔습니다. 보스를 직접 처치해야 스테이지를 클리어할 수 있습니다.`
           );
           return;
         }
 
-        battle.lives -= 1;
         if (battle.lives <= 0) {
           battle.lives = 0;
-          endBattle(false, '생명이 모두 소진되었습니다.');
+          endBattle(false, '거점 성의 HP가 모두 소진되었습니다.');
+        } else {
+          setBattleMessage(
+            `비둘기가 거점에 도달했습니다. 남은 HP에 비례해 거점 피해 ${baseDamage}!`
+          );
         }
         return;
       }
@@ -5434,6 +5462,12 @@ async function logout() {
     function updateBattle(dt) {
       if (!battle || battle.ended) return;
 
+      battle.baseHitFlash = Math.max(0, (battle.baseHitFlash || 0) - dt);
+      battle.baseDamageTextTimer = Math.max(
+        0,
+        (battle.baseDamageTextTimer || 0) - dt
+      );
+
       battle.activeWaves.forEach(waveState => {
         if (waveState.completed || waveState.spawned >= waveState.total) return;
 
@@ -5509,6 +5543,22 @@ async function logout() {
         ctx.lineTo(canvas.width, y);
         ctx.stroke();
       }
+
+      // 넓어진 초록 지형에 잔디 결을 더해 빈 공간도 맵처럼 보이게 한다.
+      ctx.save();
+      ctx.globalAlpha = .12;
+      for (let index = 0; index < 90; index += 1) {
+        const x = (index * 97) % canvas.width;
+        const y = (index * 53 + 31) % canvas.height;
+        ctx.strokeStyle = index % 3 === 0 ? '#d8f0b3' : '#315f30';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(x - 3, y + 4);
+        ctx.lineTo(x, y - 3);
+        ctx.lineTo(x + 3, y + 4);
+        ctx.stroke();
+      }
+      ctx.restore();
     }
 
     function drawPath() {
@@ -5524,6 +5574,212 @@ async function logout() {
       ctx.lineWidth = 4;
       ctx.strokeStyle = '#e7c99b';
       ctx.stroke();
+    }
+
+    function drawBaseCastle(time) {
+      if (!battle) return;
+
+      const hpRatio = Math.max(
+        0,
+        Math.min(1, battle.lives / (battle.baseMaxHp || BASE_MAX_HP))
+      );
+      const damageRatio = 1 - hpRatio;
+      const flash = battle.baseHitFlash || 0;
+      const shake = flash > 0
+        ? Math.sin(time * .075) * 5 * Math.min(1, flash * 3)
+        : 0;
+      const x = BASE_POSITION.x + shake;
+      const y = BASE_POSITION.y;
+
+      ctx.save();
+      ctx.translate(x, y);
+
+      // 지면 그림자와 성 주변 방어석
+      ctx.fillStyle = 'rgba(13, 23, 18, .30)';
+      ctx.beginPath();
+      ctx.ellipse(3, 27, 69, 31, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      const wallGradient = ctx.createLinearGradient(-45, -50, 45, 35);
+      wallGradient.addColorStop(0, flash > 0 ? '#ffd1c8' : '#d8dde3');
+      wallGradient.addColorStop(.48, '#9ca8b5');
+      wallGradient.addColorStop(1, '#596675');
+
+      // 중앙 성벽
+      ctx.fillStyle = wallGradient;
+      ctx.strokeStyle = '#3e4956';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(-43, -37, 86, 64, 8);
+      ctx.fill();
+      ctx.stroke();
+
+      // 성벽 돌 블록
+      ctx.strokeStyle = 'rgba(54, 66, 79, .46)';
+      ctx.lineWidth = 1.2;
+      for (let row = 0; row < 4; row += 1) {
+        const blockY = -29 + row * 14;
+        ctx.beginPath();
+        ctx.moveTo(-42, blockY);
+        ctx.lineTo(42, blockY);
+        ctx.stroke();
+        for (let col = 0; col < 4; col += 1) {
+          const blockX = -32 + col * 21 + (row % 2 ? 10 : 0);
+          ctx.beginPath();
+          ctx.moveTo(blockX, blockY - 8);
+          ctx.lineTo(blockX, blockY + 6);
+          ctx.stroke();
+        }
+      }
+
+      // 양쪽 탑
+      [-42, 42].forEach((towerX, index) => {
+        const towerGradient = ctx.createLinearGradient(
+          towerX - 18,
+          -62,
+          towerX + 18,
+          31
+        );
+        towerGradient.addColorStop(0, index === 0 ? '#eef2f5' : '#dfe5ea');
+        towerGradient.addColorStop(.55, '#8e9ba8');
+        towerGradient.addColorStop(1, '#4f5b68');
+        ctx.fillStyle = towerGradient;
+        ctx.strokeStyle = '#35414e';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(towerX - 18, -55, 36, 82, 7);
+        ctx.fill();
+        ctx.stroke();
+
+        // 흉벽
+        for (let crenel = -1; crenel <= 1; crenel += 1) {
+          ctx.fillStyle = '#cbd3da';
+          ctx.fillRect(towerX + crenel * 12 - 5, -65, 10, 15);
+          ctx.strokeStyle = '#35414e';
+          ctx.strokeRect(towerX + crenel * 12 - 5, -65, 10, 15);
+        }
+
+        // 창문
+        ctx.fillStyle = hpRatio > .3 ? '#68d5ff' : '#ff765f';
+        ctx.shadowColor = ctx.fillStyle;
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.roundRect(towerX - 5, -30, 10, 18, 4);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+
+      // 중앙 흉벽
+      for (let crenel = -2; crenel <= 2; crenel += 1) {
+        ctx.fillStyle = '#cbd3da';
+        ctx.strokeStyle = '#35414e';
+        ctx.fillRect(crenel * 16 - 6, -49, 12, 15);
+        ctx.strokeRect(crenel * 16 - 6, -49, 12, 15);
+      }
+
+      // 문과 금속 보강재
+      const gateGradient = ctx.createLinearGradient(0, -17, 0, 27);
+      gateGradient.addColorStop(0, '#74472b');
+      gateGradient.addColorStop(1, '#33251d');
+      ctx.fillStyle = gateGradient;
+      ctx.strokeStyle = '#251b16';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(-16, 27);
+      ctx.lineTo(-16, 1);
+      ctx.arc(0, 1, 16, Math.PI, 0);
+      ctx.lineTo(16, 27);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.strokeStyle = '#b98b4f';
+      ctx.lineWidth = 2;
+      [-8, 0, 8].forEach(gateX => {
+        ctx.beginPath();
+        ctx.moveTo(gateX, -11);
+        ctx.lineTo(gateX, 26);
+        ctx.stroke();
+      });
+
+      // 깃발
+      const flagWave = Math.sin(time * .004) * 3;
+      ctx.strokeStyle = '#3f4752';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(0, -49);
+      ctx.lineTo(0, -87);
+      ctx.stroke();
+      ctx.fillStyle = hpRatio > .45 ? '#347edb' : '#b43a3a';
+      ctx.beginPath();
+      ctx.moveTo(1, -85);
+      ctx.quadraticCurveTo(20, -88 + flagWave, 35, -77);
+      ctx.quadraticCurveTo(18, -68 - flagWave, 1, -72);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,.55)';
+      ctx.lineWidth = 1.3;
+      ctx.stroke();
+
+      // HP가 감소하면 균열이 늘어난다.
+      if (damageRatio > .18) {
+        ctx.strokeStyle = `rgba(52, 42, 38, ${.35 + damageRatio * .55})`;
+        ctx.lineWidth = 2;
+        const crackCount = damageRatio > .62 ? 4 : 2;
+        for (let index = 0; index < crackCount; index += 1) {
+          const crackX = -28 + index * 18;
+          ctx.beginPath();
+          ctx.moveTo(crackX, -25 + index * 5);
+          ctx.lineTo(crackX + 7, -10 + index * 2);
+          ctx.lineTo(crackX + 1, 2 + index * 4);
+          ctx.lineTo(crackX + 10, 15 + index * 2);
+          ctx.stroke();
+        }
+      }
+
+      // 피격 붉은 섬광
+      if (flash > 0) {
+        ctx.fillStyle = `rgba(255, 62, 46, ${Math.min(.36, flash * .65)})`;
+        ctx.beginPath();
+        ctx.arc(0, -12, 76, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 성 HP 바
+      const barWidth = 126;
+      const barY = -110;
+      ctx.fillStyle = 'rgba(5, 12, 19, .88)';
+      ctx.beginPath();
+      ctx.roundRect(-barWidth / 2, barY, barWidth, 17, 8);
+      ctx.fill();
+      ctx.fillStyle = hpRatio > .5
+        ? '#4fe08b'
+        : hpRatio > .22
+          ? '#ffd04a'
+          : '#ff6474';
+      ctx.beginPath();
+      ctx.roundRect(-barWidth / 2 + 3, barY + 3, (barWidth - 6) * hpRatio, 11, 5);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,.30)';
+      ctx.strokeRect(-barWidth / 2, barY, barWidth, 17);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillText(
+        `거점 ${Math.max(0, Math.ceil(battle.lives))} / ${battle.baseMaxHp}`,
+        0,
+        barY - 6
+      );
+
+      if (battle.baseDamageTextTimer > 0 && battle.baseDamageText > 0) {
+        const alpha = Math.min(1, battle.baseDamageTextTimer * 1.8);
+        const rise = (1.15 - battle.baseDamageTextTimer) * 20;
+        ctx.fillStyle = `rgba(255, 90, 72, ${alpha})`;
+        ctx.font = 'bold 22px sans-serif';
+        ctx.fillText(`-${battle.baseDamageText}`, 0, -124 - rise);
+      }
+
+      ctx.restore();
     }
 
     function drawCanvasPigeon(enemy, x, y, time) {
@@ -6663,6 +6919,7 @@ async function logout() {
     function drawBattle(time) {
       drawBackground();
       drawPath();
+      drawBaseCastle(time);
       drawSelectedPlacedUnitRange();
       drawPlacementPreview(time);
       battle.placedUnits.forEach(unit => drawPlacedUnit(unit, time));

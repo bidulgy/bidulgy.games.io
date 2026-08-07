@@ -2491,6 +2491,217 @@
 
 .batch-result-row strong { color: var(--row-color); }
 
+/* ===== 다중 주사위 굴리기 · 유닛 수량/조각 변환 ===== */
+.quantity-stepper {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: 42px minmax(62px, 1fr) 42px;
+  align-items: stretch;
+  gap: 7px;
+  margin: 10px 0;
+}
+
+.quantity-stepper button {
+  min-height: 42px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--dice-color, #7aa7ff) 45%, #ffffff);
+  background: rgba(18, 32, 54, .92);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.quantity-stepper input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgba(255,255,255,.24);
+  border-radius: 11px;
+  background: rgba(7, 15, 28, .9);
+  color: #fff;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 900;
+  outline: none;
+}
+
+.quantity-stepper input:focus {
+  border-color: var(--dice-color, #7aa7ff);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--dice-color, #7aa7ff) 24%, transparent);
+}
+
+.roll-quantity-label,
+.convert-quantity-label {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 7px;
+  color: #b8c7dc;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.unit-copy-count {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  min-width: 42px;
+  padding: 6px 9px;
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 999px;
+  background: rgba(6, 12, 24, .82);
+  color: #fff;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.unit-convert-box {
+  margin-top: 12px;
+  padding-top: 11px;
+  border-top: 1px solid rgba(255,255,255,.12);
+}
+
+.unit-convert-box .quantity-stepper {
+  --dice-color: #f4c95d;
+  margin: 8px 0;
+}
+
+.convert-unit-btn {
+  width: 100%;
+  min-height: 40px;
+  background: linear-gradient(135deg, #f0b429, #d58d14);
+  color: #261b05;
+}
+
+.convert-unit-btn:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.multi-dice-roll-stage {
+  position: relative;
+  width: min(860px, 94vw);
+  min-height: 500px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 20px;
+}
+
+.multi-dice-cube-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+  width: 100%;
+  perspective: 1000px;
+}
+
+.multi-dice-cube-holder {
+  position: relative;
+  width: 118px;
+  height: 118px;
+  transform-style: preserve-3d;
+  animation: multiDiceHop .68s ease-in-out 4;
+  animation-delay: calc(var(--dice-index) * -70ms);
+}
+
+.multi-dice-cube {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+.multi-dice-cube .dice-face {
+  width: 118px;
+  height: 118px;
+  border-width: 4px;
+  border-radius: 19px;
+}
+
+.multi-dice-cube .dice-face.front  { transform: rotateY(0deg) translateZ(59px); }
+.multi-dice-cube .dice-face.back   { transform: rotateY(180deg) translateZ(59px); }
+.multi-dice-cube .dice-face.right  { transform: rotateY(90deg) translateZ(59px); }
+.multi-dice-cube .dice-face.left   { transform: rotateY(-90deg) translateZ(59px); }
+.multi-dice-cube .dice-face.top    { transform: rotateX(90deg) translateZ(59px); }
+.multi-dice-cube .dice-face.bottom { transform: rotateX(-90deg) translateZ(59px); }
+.multi-dice-cube .dice-face-icon { font-size: 42px; }
+.multi-dice-cube .dice-face-name { max-width: 92px; font-size: 10px; }
+
+.multi-roll-note {
+  padding: 7px 12px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 999px;
+  background: rgba(9, 17, 31, .78);
+  color: #dbe7f7;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.multi-unit-results {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: min(560px, 88vw);
+  max-height: 235px;
+  overflow: auto;
+  margin-top: 8px;
+  padding-right: 3px;
+}
+
+.multi-unit-result-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 11px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 11px;
+  background: rgba(10,18,34,.84);
+}
+
+.multi-unit-result-row .unit-result-name {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.multi-unit-result-row .unit-result-name strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.multi-unit-result-row .unit-result-count {
+  flex: 0 0 auto;
+  font-weight: 950;
+}
+
+@keyframes multiDiceHop {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-18px) rotate(2deg); }
+}
+
+@media (max-width: 700px) {
+  .multi-dice-cube-grid { gap: 18px; }
+  .multi-dice-cube-holder { width: 92px; height: 92px; }
+  .multi-dice-cube .dice-face { width: 92px; height: 92px; border-radius: 15px; }
+  .multi-dice-cube .dice-face.front  { transform: rotateY(0deg) translateZ(46px); }
+  .multi-dice-cube .dice-face.back   { transform: rotateY(180deg) translateZ(46px); }
+  .multi-dice-cube .dice-face.right  { transform: rotateY(90deg) translateZ(46px); }
+  .multi-dice-cube .dice-face.left   { transform: rotateY(-90deg) translateZ(46px); }
+  .multi-dice-cube .dice-face.top    { transform: rotateX(90deg) translateZ(46px); }
+  .multi-dice-cube .dice-face.bottom { transform: rotateX(-90deg) translateZ(46px); }
+  .multi-dice-cube .dice-face-icon { font-size: 31px; }
+  .multi-dice-cube .dice-face-name { max-width: 72px; font-size: 9px; }
+  .multi-unit-results { grid-template-columns: 1fr; }
+}
+
 /* 메뉴 비둘기 날개 동기화
    뒤쪽 날개는 앞쪽 날개 바로 뒤에 붙어 같은 각도로 움직입니다.
    완전히 겹치지 않도록 위쪽으로만 조금 드러나며 아래로 처지지 않습니다. */
@@ -4749,6 +4960,15 @@ function applyStagePreview(stageId = selectedStage) {
       weight: dice.chance
     }));
 
+    const UNIT_FRAGMENT_CONVERSION = {
+      common: 10,
+      rare: 20,
+      epic: 30,
+      legendary: 50,
+      mythic: 100,
+      secret: 500
+    };
+
     const screens = {
       auth: document.querySelector('#authScreen'),
       menu: document.querySelector('#menuScreen'),
@@ -4784,9 +5004,9 @@ function applyStagePreview(stageId = selectedStage) {
         highestStage: 0,
         pendingBattleRewards: [],
         ownedUnits: {
-          starterArcher: { level: 1, fragments: 0 },
-          starterKnight: { level: 1, fragments: 0 },
-          starterMage: { level: 1, fragments: 0 }
+          starterArcher: { level: 1, fragments: 0, copies: 1 },
+          starterKnight: { level: 1, fragments: 0, copies: 1 },
+          starterMage: { level: 1, fragments: 0, copies: 1 }
         },
         diceInventory: {
           common: 0,
@@ -4820,6 +5040,27 @@ function applyStagePreview(stageId = selectedStage) {
       if (!player.ownedUnits || typeof player.ownedUnits !== 'object') {
         player.ownedUnits = {};
       }
+
+      // 기존 저장 데이터는 유닛 수량(copies)이 없으므로 1개 보유로 자동 변환합니다.
+      Object.entries(player.ownedUnits).forEach(([unitId, ownedInfo]) => {
+        if (!ownedInfo || typeof ownedInfo !== 'object') {
+          player.ownedUnits[unitId] = { level: 1, fragments: 0, copies: 1 };
+          return;
+        }
+
+        if (!Number.isFinite(Number(ownedInfo.level)) || Number(ownedInfo.level) < 1) {
+          ownedInfo.level = 1;
+        }
+        if (!Number.isFinite(Number(ownedInfo.fragments)) || Number(ownedInfo.fragments) < 0) {
+          ownedInfo.fragments = 0;
+        }
+        if (!Number.isFinite(Number(ownedInfo.copies)) || Number(ownedInfo.copies) < 1) {
+          ownedInfo.copies = 1;
+        } else {
+          ownedInfo.copies = Math.max(1, Math.floor(Number(ownedInfo.copies)));
+        }
+      });
+
       if (!Array.isArray(player.deck)) {
         player.deck = [null, null, null, null, null];
       }
@@ -5278,9 +5519,46 @@ async function logout() {
 
     function unitCardHtml(unitId, ownedInfo, selectable = false) {
       const unit = UNIT_DATA[unitId];
+      const copies = Math.max(1, Math.floor(Number(ownedInfo.copies || 1)));
+      const fragments = Math.max(0, Math.floor(Number(ownedInfo.fragments || 0)));
+      const conversionValue = UNIT_FRAGMENT_CONVERSION[unit.rarityKey] || 0;
+      const convertibleCopies = Math.max(0, copies - 1);
+
+      const conversionMarkup = selectable ? '' : `
+        <div class="unit-convert-box">
+          <div class="convert-quantity-label">
+            <span>중복 유닛 → 조각</span>
+            <span>1개당 ${conversionValue}조각</span>
+          </div>
+          <div class="quantity-stepper" data-unit-convert-control="${unitId}">
+            <button type="button" data-convert-step="down" data-unit-id="${unitId}" ${convertibleCopies <= 0 ? 'disabled' : ''}>▼</button>
+            <input
+              type="number"
+              inputmode="numeric"
+              min="${convertibleCopies > 0 ? 1 : 0}"
+              max="${convertibleCopies}"
+              value="${convertibleCopies > 0 ? 1 : 0}"
+              data-convert-count-input="${unitId}"
+              ${convertibleCopies <= 0 ? 'disabled' : ''}
+              aria-label="${unit.name} 조각 변환 수량"
+            >
+            <button type="button" data-convert-step="up" data-unit-id="${unitId}" ${convertibleCopies <= 0 ? 'disabled' : ''}>▲</button>
+          </div>
+          <button
+            type="button"
+            class="convert-unit-btn"
+            data-convert-unit="${unitId}"
+            ${convertibleCopies <= 0 ? 'disabled' : ''}
+          >
+            ${convertibleCopies > 0 ? '선택한 중복 유닛을 조각으로 변환' : '중복 유닛이 없습니다'}
+          </button>
+        </div>
+      `;
+
       return `
         <div class="unit-card ${selectable && selectedDeckUnitId === unitId ? 'selected' : ''}"
              ${selectable ? `data-unit-id="${unitId}"` : ''}>
+          <div class="unit-copy-count">X${copies}</div>
           <div class="unit-icon">${unit.icon}</div>
           <h3>${unit.name}</h3>
           <p class="${unit.rarityClass}">${unit.rarity}</p>
@@ -5289,7 +5567,8 @@ async function logout() {
             배치 비용 ${unit.cost}
           </p>
           <strong>Lv.${ownedInfo.level}</strong>
-          <span class="muted"> · 조각 ${ownedInfo.fragments}</span>
+          <span class="muted"> · 조각 ${fragments}</span>
+          ${conversionMarkup}
         </div>
       `;
     }
@@ -5323,6 +5602,44 @@ async function logout() {
               .map(id => unitCardHtml(id, player.ownedUnits[id]))
               .join('')
           : '<div class="card"><p class="muted">아직 보유한 유닛이 없습니다.</p></div>';
+
+        grid.querySelectorAll('[data-convert-step]').forEach(button => {
+          button.addEventListener('click', () => {
+            const unitId = button.dataset.unitId;
+            const owned = player.ownedUnits[unitId];
+            if (!owned) return;
+            const max = Math.max(0, Math.floor(Number(owned.copies || 1)) - 1);
+            const input = grid.querySelector(`[data-convert-count-input="${unitId}"]`);
+            if (!input || max <= 0) return;
+            const current = Number(input.value || 1);
+            const next = button.dataset.convertStep === 'up' ? current + 1 : current - 1;
+            input.value = String(Math.min(max, Math.max(1, Math.floor(next))));
+          });
+        });
+
+        grid.querySelectorAll('[data-convert-count-input]').forEach(input => {
+          input.addEventListener('change', () => {
+            const unitId = input.dataset.convertCountInput;
+            const owned = player.ownedUnits[unitId];
+            const max = Math.max(0, Math.floor(Number(owned?.copies || 1)) - 1);
+            if (max <= 0) {
+              input.value = '0';
+              return;
+            }
+            const value = Number(input.value);
+            input.value = String(Math.min(max, Math.max(1, Number.isFinite(value) ? Math.floor(value) : 1)));
+          });
+        });
+
+        grid.querySelectorAll('[data-convert-unit]').forEach(button => {
+          button.addEventListener('click', async () => {
+            const unitId = button.dataset.convertUnit;
+            const input = grid.querySelector(`[data-convert-count-input="${unitId}"]`);
+            const count = Number(input?.value || 0);
+            button.disabled = true;
+            await convertDuplicateUnitsToFragments(unitId, count);
+          });
+        });
         return;
       }
 
@@ -5353,21 +5670,67 @@ async function logout() {
                 <span></span><span></span><span></span><span></span>
               </div>
 
+              <div class="roll-quantity-label">
+                <span>한 번에 굴릴 개수</span>
+                <span>보유 ${amount}개</span>
+              </div>
+              <div class="quantity-stepper" data-roll-control="${dice.key}">
+                <button type="button" data-roll-step="down" data-rarity="${dice.key}" ${amount <= 0 ? 'disabled' : ''}>▼</button>
+                <input
+                  type="number"
+                  inputmode="numeric"
+                  min="${amount > 0 ? 1 : 0}"
+                  max="${amount}"
+                  value="${amount > 0 ? 1 : 0}"
+                  data-roll-count-input="${dice.key}"
+                  ${amount <= 0 ? 'disabled' : ''}
+                  aria-label="${dice.name} 굴릴 개수"
+                >
+                <button type="button" data-roll-step="up" data-rarity="${dice.key}" ${amount <= 0 ? 'disabled' : ''}>▲</button>
+              </div>
+
               <button
                 class="roll-dice-btn"
                 data-roll-rarity="${dice.key}"
                 ${amount <= 0 ? 'disabled' : ''}
               >
-                🎲 주사위 굴리기
+                🎲 선택한 개수 굴리기
               </button>
             </article>
           `;
         })
         .join('');
 
+      diceGrid.querySelectorAll('[data-roll-step]').forEach(button => {
+        button.addEventListener('click', () => {
+          const rarityKey = button.dataset.rarity;
+          const input = diceGrid.querySelector(`[data-roll-count-input="${rarityKey}"]`);
+          const max = Math.max(0, Number(player.diceInventory[rarityKey] || 0));
+          if (!input || max <= 0) return;
+          const current = Number(input.value || 1);
+          const next = button.dataset.rollStep === 'up' ? current + 1 : current - 1;
+          input.value = String(Math.min(max, Math.max(1, Math.floor(next))));
+        });
+      });
+
+      diceGrid.querySelectorAll('[data-roll-count-input]').forEach(input => {
+        input.addEventListener('change', () => {
+          const rarityKey = input.dataset.rollCountInput;
+          const max = Math.max(0, Number(player.diceInventory[rarityKey] || 0));
+          if (max <= 0) {
+            input.value = '0';
+            return;
+          }
+          const value = Number(input.value);
+          input.value = String(Math.min(max, Math.max(1, Number.isFinite(value) ? Math.floor(value) : 1)));
+        });
+      });
+
       diceGrid.querySelectorAll('[data-roll-rarity]').forEach(button => {
         button.addEventListener('click', () => {
-          rollDice(button.dataset.rollRarity);
+          const rarityKey = button.dataset.rollRarity;
+          const input = diceGrid.querySelector(`[data-roll-count-input="${rarityKey}"]`);
+          rollDice(rarityKey, Number(input?.value || 1));
         });
       });
     }
@@ -5963,22 +6326,51 @@ function requestGachaDraw(count) {
       const owned = player.ownedUnits[unit.id];
 
       if (owned) {
-        owned.fragments += 10;
+        owned.copies = Math.max(1, Math.floor(Number(owned.copies || 1))) + 1;
         return {
           isNew: false,
-          message: '중복 획득 · 조각 +10'
+          copies: owned.copies,
+          message: `중복 획득 · 보유 수량 X${owned.copies}`
         };
       }
 
       player.ownedUnits[unit.id] = {
         level: 1,
-        fragments: 0
+        fragments: 0,
+        copies: 1
       };
 
       return {
         isNew: true,
-        message: '새 유닛 획득!'
+        copies: 1,
+        message: '새 유닛 획득! · 보유 수량 X1'
       };
+    }
+
+    async function convertDuplicateUnitsToFragments(unitId, requestedCount) {
+      ensurePlayerData();
+      const unit = UNIT_DATA[unitId];
+      const owned = player.ownedUnits[unitId];
+      if (!unit || !owned) return;
+
+      const copies = Math.max(1, Math.floor(Number(owned.copies || 1)));
+      const maxConvertible = Math.max(0, copies - 1);
+      const count = Math.min(
+        maxConvertible,
+        Math.max(0, Math.floor(Number(requestedCount || 0)))
+      );
+
+      if (count <= 0) {
+        renderInventory();
+        return;
+      }
+
+      const rate = UNIT_FRAGMENT_CONVERSION[unit.rarityKey] || 0;
+      owned.copies = copies - count;
+      owned.fragments = Math.max(0, Math.floor(Number(owned.fragments || 0))) + count * rate;
+
+      await savePlayer();
+      renderInventory();
     }
 
     async function playDiceRollCutscene(rarityKey, faces, winningFace) {
@@ -6095,35 +6487,164 @@ function requestGachaDraw(count) {
         }, { once: true });
     }
 
-    async function rollDice(rarityKey) {
+    async function playMultiDiceRollCutscene(rarityKey, rollResults) {
+      const dice = DICE_DATA[rarityKey];
+      const overlay = document.querySelector('#cutsceneOverlay');
+      const content = document.querySelector('#cutsceneContent');
+      const faceClasses = ['front', 'back', 'right', 'left', 'top', 'bottom'];
+      const visibleResults = rollResults.slice(0, 5);
+
+      const cubesMarkup = visibleResults.map((result, index) => `
+        <div class="multi-dice-cube-holder" style="--dice-index:${index};">
+          <div class="multi-dice-cube" data-multi-dice-index="${index}">
+            ${result.faces.map((unit, faceIndex) =>
+              diceFaceMarkup(faceClasses[faceIndex], unit)
+            ).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      setCutsceneTheme(dice);
+      cutsceneRunning = true;
+      overlay.classList.remove('hidden');
+
+      content.innerHTML = `
+        <h2 class="cutscene-title">${dice.name} ${rollResults.length}개 굴리기</h2>
+        <div class="multi-dice-roll-stage">
+          <div class="multi-roll-note">
+            ${rollResults.length <= 5
+              ? `선택한 ${rollResults.length}개의 주사위가 동시에 굴러갑니다.`
+              : `총 ${rollResults.length}개를 굴립니다. 모션은 대표 주사위 5개만 표시됩니다.`}
+          </div>
+          <div class="multi-dice-cube-grid">${cubesMarkup}</div>
+          <div id="diceParticles" class="cutscene-particles"></div>
+          <div id="unitRewardPanel" class="reward-panel">
+            <span class="section-kicker">UNITS ACQUIRED</span>
+            <h2>${rollResults.length}개 결과</h2>
+            <div id="multiUnitResults" class="multi-unit-results"></div>
+            <button id="closeDiceCutscene" class="cutscene-close-button">인벤토리로</button>
+          </div>
+        </div>
+      `;
+
+      const cubes = [...content.querySelectorAll('[data-multi-dice-index]')];
+      const finalTransforms = [
+        'rotateX(-8deg) rotateY(0deg) rotateZ(0deg)',
+        'rotateX(-8deg) rotateY(180deg) rotateZ(0deg)',
+        'rotateX(-8deg) rotateY(-90deg) rotateZ(0deg)',
+        'rotateX(-8deg) rotateY(90deg) rotateZ(0deg)',
+        'rotateX(-90deg) rotateY(0deg) rotateZ(0deg)',
+        'rotateX(90deg) rotateY(0deg) rotateZ(0deg)'
+      ];
+
+      const animations = cubes.map((cube, index) => {
+        const result = visibleResults[index];
+        const winningIndex = Math.max(0, result.faces.indexOf(result.winningUnit));
+        return cube.animate(
+          [
+            { transform: `rotateX(${index * 23}deg) rotateY(${index * 17}deg) rotateZ(0deg)`, offset: 0 },
+            { transform: `rotateX(${650 + index * 95}deg) rotateY(${880 + index * 120}deg) rotateZ(${310 + index * 70}deg)`, offset: .58 },
+            { transform: `rotateX(${1040 + index * 110}deg) rotateY(${1320 + index * 135}deg) rotateZ(${700 + index * 85}deg)`, offset: .82 },
+            { transform: finalTransforms[winningIndex], offset: 1 }
+          ],
+          {
+            duration: 3150 + index * 65,
+            easing: 'cubic-bezier(.14,.72,.15,1)',
+            fill: 'forwards'
+          }
+        ).finished;
+      });
+
+      await Promise.all(animations);
+
+      const particleBox = document.querySelector('#diceParticles');
+      particleBox.innerHTML = createParticleMarkup(
+        rarityKey === 'secret' ? 90 : rarityKey === 'mythic' ? 72 : 52
+      );
+
+      const summary = {};
+      rollResults.forEach(result => {
+        const grant = grantUnit(result.winningUnit);
+        const id = result.winningUnit.id;
+        if (!summary[id]) {
+          summary[id] = {
+            unit: result.winningUnit,
+            amount: 0,
+            newAmount: 0,
+            finalCopies: grant.copies
+          };
+        }
+        summary[id].amount += 1;
+        if (grant.isNew) summary[id].newAmount += 1;
+        summary[id].finalCopies = grant.copies;
+      });
+
+      await savePlayer();
+
+      const resultsBox = document.querySelector('#multiUnitResults');
+      resultsBox.innerHTML = Object.values(summary)
+        .sort((a, b) => b.amount - a.amount)
+        .map(item => `
+          <div class="multi-unit-result-row">
+            <div class="unit-result-name">
+              <span>${item.unit.icon}</span>
+              <strong>${item.unit.name}</strong>
+              ${item.newAmount > 0 ? '<span class="rarity-rare">NEW</span>' : ''}
+            </div>
+            <span class="unit-result-count">획득 X${item.amount} · 보유 X${item.finalCopies}</span>
+          </div>
+        `)
+        .join('');
+
+      await wait(350);
+      document.querySelector('#unitRewardPanel').classList.add('visible');
+
+      document.querySelector('#closeDiceCutscene')
+        .addEventListener('click', () => {
+          closeCutscene();
+          activeInventoryTab = 'units';
+          renderInventory();
+        }, { once: true });
+    }
+
+    async function rollDice(rarityKey, requestedCount = 1) {
       if (cutsceneRunning) return;
 
       ensurePlayerData();
 
       if (!DICE_DATA[rarityKey]) return;
-      if ((player.diceInventory[rarityKey] || 0) <= 0) {
+      const available = Math.max(0, Math.floor(Number(player.diceInventory[rarityKey] || 0)));
+      if (available <= 0) {
         alert('보유한 주사위가 없습니다.');
         return;
       }
 
-      const faces = buildDiceFaces(rarityKey);
+      const count = Math.min(
+        available,
+        Math.max(1, Math.floor(Number(requestedCount || 1)))
+      );
 
-      if (!faces.length) {
+      const eligible = Object.values(UNIT_DATA)
+        .filter(unit => unit.rarityKey === rarityKey);
+
+      if (!eligible.length) {
         alert('이 등급에 등록된 유닛이 없습니다.');
         return;
       }
 
-      player.diceInventory[rarityKey] -= 1;
+      const rollResults = Array.from({ length: count }, () => {
+        const faces = buildDiceFaces(rarityKey);
+        const winningIndex = Math.floor(Math.random() * faces.length);
+        return {
+          faces,
+          winningUnit: faces[winningIndex]
+        };
+      });
+
+      player.diceInventory[rarityKey] = available - count;
       await savePlayer();
 
-      const winningIndex = Math.floor(Math.random() * faces.length);
-      const winningUnit = faces[winningIndex];
-
-      await playDiceRollCutscene(
-        rarityKey,
-        faces,
-        winningUnit
-      );
+      await playMultiDiceRollCutscene(rarityKey, rollResults);
     }
 
     function openDeck() {

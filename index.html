@@ -2400,19 +2400,27 @@
 
 .batch-result-row strong { color: var(--row-color); }
 
-/* 메뉴 비둘기 양쪽 날개를 완전히 같은 박자로 동기화 */
+/* 메뉴 비둘기 날개 동기화
+   뒤쪽 날개는 앞쪽 날개 바로 뒤에 붙어 같은 각도로 움직입니다.
+   완전히 겹치지 않도록 위쪽으로만 조금 드러나며 아래로 처지지 않습니다. */
 .pigeon-wing-near {
+  transform-origin: 76% 38%;
   animation: pigeonWingNearSynchronized .70s cubic-bezier(.36,0,.22,1) infinite !important;
 }
 .pigeon-wing-far {
+  transform-origin: 77% 39%;
+  opacity: .86;
+  filter: brightness(.84);
   animation: pigeonWingFarSynchronized .70s cubic-bezier(.36,0,.22,1) infinite !important;
 }
 .pigeon-wing-near .pigeon-primary-feather,
-.pigeon-wing-far .pigeon-primary-feather,
-.pigeon-wing-near .pigeon-secondary-feather,
-.pigeon-wing-far .pigeon-secondary-feather {
+.pigeon-wing-near .pigeon-secondary-feather {
   animation-delay: 0s !important;
   animation-duration: .70s !important;
+}
+.pigeon-wing-far .pigeon-primary-feather,
+.pigeon-wing-far .pigeon-secondary-feather {
+  animation: pigeonFeatherFlex .70s ease-in-out infinite !important;
 }
 
 @keyframes pigeonWingNearSynchronized {
@@ -2423,10 +2431,10 @@
 }
 
 @keyframes pigeonWingFarSynchronized {
-  0%, 100% { transform: rotate(12deg) scaleX(.97) scaleY(.78); }
-  20% { transform: rotate(40deg) scaleX(.92) scaleY(.63); }
-  47% { transform: rotate(-34deg) scaleX(1.04) scaleY(1.12); }
-  67% { transform: rotate(-18deg) scaleX(1.01) scaleY(1.01); }
+  0%, 100% { transform: translate(4px, -4px) rotate(-12deg) scaleX(.94) scaleY(.76); }
+  20% { transform: translate(4px, -4px) rotate(-40deg) scaleX(.89) scaleY(.61); }
+  47% { transform: translate(4px, -4px) rotate(34deg) scaleX(1.01) scaleY(1.08); }
+  67% { transform: translate(4px, -4px) rotate(18deg) scaleX(.98) scaleY(.98); }
 }
 
 @keyframes chestInstructionPulse {
@@ -3219,7 +3227,470 @@ body {
   }
 }
 
-  </style>
+  
+
+/* ==================================
+   스테이지별 메인 배경 시스템
+   - 현재: 스테이지 1 햇살 초원
+   - 이후: data-stage-theme과 STAGE_CONFIG만 추가하면 교체 가능
+================================== */
+.invasion-menu {
+  --stage-sky-top: #3ca8ef;
+  --stage-sky-bottom: #bcecff;
+  --stage-hill-back: #66a956;
+  --stage-hill-front: #438744;
+  --stage-ground-top: #89ca46;
+  --stage-ground-bottom: #2f742f;
+  --stage-tree-leaf-light: #86c83c;
+  --stage-tree-leaf: #4d9b38;
+  --stage-tree-leaf-dark: #27682f;
+  --stage-accent: #ffe06a;
+  isolation: isolate;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: linear-gradient(
+    180deg,
+    var(--stage-sky-top) 0%,
+    var(--stage-sky-bottom) 54%,
+    var(--stage-ground-top) 54%,
+    var(--stage-ground-bottom) 100%
+  );
+}
+
+/* 다음 스테이지를 추가할 때 사용할 준비된 색상 테마 */
+.invasion-menu[data-stage-theme="forest"] {
+  --stage-sky-top: #153f50;
+  --stage-sky-bottom: #4f7b6a;
+  --stage-hill-back: #315d46;
+  --stage-hill-front: #193f32;
+  --stage-ground-top: #35623f;
+  --stage-ground-bottom: #142f26;
+  --stage-tree-leaf-light: #4f8a4b;
+  --stage-tree-leaf: #285c3a;
+  --stage-tree-leaf-dark: #143b2b;
+  --stage-accent: #a8e0b2;
+}
+
+.invasion-menu[data-stage-theme="desert"] {
+  --stage-sky-top: #55b8ef;
+  --stage-sky-bottom: #ffd99b;
+  --stage-hill-back: #d99d52;
+  --stage-hill-front: #b96f31;
+  --stage-ground-top: #e2ae5a;
+  --stage-ground-bottom: #a85f2e;
+  --stage-tree-leaf-light: #8caa47;
+  --stage-tree-leaf: #607d36;
+  --stage-tree-leaf-dark: #3d5927;
+  --stage-accent: #fff0a3;
+}
+
+.invasion-menu::before {
+  z-index: 1;
+  opacity: 1;
+  background:
+    linear-gradient(180deg, rgba(4, 24, 48, .06), rgba(5, 34, 20, .2)),
+    radial-gradient(circle at 50% 40%, transparent 30%, rgba(4, 18, 28, .22) 100%);
+  background-size: auto;
+}
+
+.stage-scenery {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.stage-sun {
+  position: absolute;
+  top: clamp(56px, 8vh, 110px);
+  left: clamp(28px, 9vw, 150px);
+  width: clamp(72px, 9vw, 128px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 42% 38%, #fffde0 0 24%, #ffe98a 54%, #ffc84f 100%);
+  box-shadow:
+    0 0 24px rgba(255, 247, 183, .95),
+    0 0 72px rgba(255, 214, 76, .72),
+    0 0 130px rgba(255, 227, 116, .38);
+  animation: stageSunGlow 4.5s ease-in-out infinite alternate;
+}
+
+.stage-cloud {
+  position: absolute;
+  width: 150px;
+  height: 42px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .82);
+  box-shadow:
+    36px -18px 0 4px rgba(255, 255, 255, .84),
+    78px -7px 0 10px rgba(255, 255, 255, .8),
+    110px 4px 0 -2px rgba(255, 255, 255, .76);
+  filter: blur(.2px);
+  opacity: .86;
+}
+
+.stage-cloud-one {
+  top: 16%;
+  left: 30%;
+  transform: scale(.78);
+  animation: stageCloudDrift 24s ease-in-out infinite alternate;
+}
+
+.stage-cloud-two {
+  top: 29%;
+  left: 6%;
+  transform: scale(.52);
+  opacity: .65;
+  animation: stageCloudDrift 31s ease-in-out infinite alternate-reverse;
+}
+
+.stage-hill {
+  position: absolute;
+  bottom: 32%;
+  border-radius: 50% 50% 0 0;
+  transform-origin: bottom;
+}
+
+.stage-hill-back {
+  left: -10%;
+  width: 70%;
+  height: 25%;
+  background: var(--stage-hill-back);
+  transform: rotate(3deg);
+  opacity: .8;
+  box-shadow: 48vw 3vh 0 1vh color-mix(in srgb, var(--stage-hill-back) 88%, white);
+}
+
+.stage-hill-front {
+  left: -6%;
+  bottom: 25%;
+  width: 62%;
+  height: 22%;
+  background: var(--stage-hill-front);
+  transform: rotate(-2deg);
+  opacity: .9;
+  box-shadow: 53vw 1vh 0 2vh color-mix(in srgb, var(--stage-hill-front) 92%, #9ac65c);
+}
+
+.stage-meadow {
+  position: absolute;
+  left: -2%;
+  right: -2%;
+  bottom: -3%;
+  height: 48%;
+  background:
+    radial-gradient(circle at 11% 62%, #fff6a4 0 2px, transparent 3px),
+    radial-gradient(circle at 21% 78%, #fff 0 2px, transparent 3px),
+    radial-gradient(circle at 37% 56%, #ffda77 0 2px, transparent 3px),
+    radial-gradient(circle at 52% 73%, #f4f2d8 0 2px, transparent 3px),
+    radial-gradient(circle at 69% 61%, #ffe45f 0 2px, transparent 3px),
+    radial-gradient(circle at 83% 79%, #fff 0 2px, transparent 3px),
+    repeating-linear-gradient(102deg, transparent 0 22px, rgba(239, 255, 168, .12) 23px 25px),
+    linear-gradient(180deg, var(--stage-ground-top), var(--stage-ground-bottom));
+  background-size:
+    130px 110px,
+    170px 130px,
+    145px 120px,
+    190px 145px,
+    155px 125px,
+    180px 150px,
+    auto,
+    auto;
+  box-shadow: inset 0 30px 55px rgba(242, 255, 173, .15);
+}
+
+.stage-tree {
+  position: absolute;
+  right: clamp(-92px, -3vw, -22px);
+  bottom: 11%;
+  width: clamp(220px, 28vw, 440px);
+  height: clamp(430px, 72vh, 760px);
+  transform-origin: bottom center;
+  filter: drop-shadow(-22px 25px 22px rgba(15, 50, 22, .24));
+}
+
+.stage-tree-trunk {
+  position: absolute;
+  right: 23%;
+  bottom: 0;
+  width: 21%;
+  height: 58%;
+  border-radius: 46% 54% 18% 14% / 18% 22% 8% 8%;
+  background:
+    linear-gradient(90deg, rgba(72, 35, 12, .72), transparent 22% 72%, rgba(54, 27, 9, .62)),
+    linear-gradient(100deg, #6d3c17, #a6682c 48%, #543012);
+  box-shadow: inset 11px 0 18px rgba(255, 196, 106, .14);
+  transform: rotate(3deg);
+}
+
+.stage-tree-trunk::before,
+.stage-tree-trunk::after {
+  content: "";
+  position: absolute;
+  bottom: 16%;
+  width: 74%;
+  height: 42%;
+  border-radius: 999px;
+  background: #704019;
+  transform-origin: bottom;
+}
+
+.stage-tree-trunk::before {
+  left: -35%;
+  transform: rotate(-39deg);
+}
+
+.stage-tree-trunk::after {
+  right: -42%;
+  transform: rotate(42deg);
+}
+
+.stage-tree-crown {
+  position: absolute;
+  border-radius: 48% 52% 46% 54%;
+  background:
+    radial-gradient(circle at 33% 24%, var(--stage-tree-leaf-light), transparent 32%),
+    radial-gradient(circle at 70% 63%, var(--stage-tree-leaf-dark), transparent 44%),
+    var(--stage-tree-leaf);
+  box-shadow:
+    inset -18px -22px 35px rgba(16, 65, 28, .24),
+    inset 18px 12px 28px rgba(225, 255, 133, .12);
+}
+
+.stage-tree-crown-one {
+  top: 2%;
+  right: 0;
+  width: 72%;
+  height: 38%;
+}
+
+.stage-tree-crown-two {
+  top: 16%;
+  left: 0;
+  width: 72%;
+  height: 36%;
+}
+
+.stage-tree-crown-three {
+  top: 28%;
+  right: 11%;
+  width: 77%;
+  height: 35%;
+}
+
+.stage-preview-card {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto 24px;
+  padding: 10px 15px 10px 10px;
+  border: 1px solid rgba(255, 255, 255, .5);
+  border-radius: 18px;
+  background: rgba(16, 54, 48, .63);
+  color: white;
+  box-shadow: 0 12px 32px rgba(18, 60, 25, .22);
+  backdrop-filter: blur(10px);
+}
+
+.stage-preview-badge {
+  display: grid;
+  place-items: center;
+  min-width: 78px;
+  min-height: 47px;
+  padding: 7px 10px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ffe879, #ffbe3b);
+  color: #3c2c05;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.58);
+}
+
+.stage-preview-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.stage-preview-copy strong {
+  font-size: 17px;
+}
+
+.stage-preview-copy small {
+  overflow: hidden;
+  color: #e5f4dc;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.invasion-topbar,
+.invasion-content {
+  position: relative;
+  z-index: 3;
+}
+
+.invasion-topbar > *,
+.invasion-resource,
+.invasion-logout {
+  backdrop-filter: blur(10px);
+}
+
+.enemy-logo-area {
+  border-color: rgba(255, 242, 164, .68);
+  background:
+    radial-gradient(circle at 44% 38%, rgba(255,255,255,.4), rgba(223, 246, 210, .22) 45%, rgba(30, 94, 46, .56) 76%);
+  box-shadow:
+    0 18px 46px rgba(31, 87, 39, .25),
+    inset 0 0 42px rgba(255, 255, 255, .18);
+  backdrop-filter: blur(5px);
+}
+
+.target-ring {
+  border-color: rgba(255, 235, 123, .64);
+}
+
+.target-ring::before,
+.target-ring::after {
+  background: rgba(255, 224, 93, .42);
+}
+
+.alert-symbol {
+  color: #ffdf54;
+  text-shadow: 0 2px 8px rgba(87, 56, 0, .5), 0 0 20px rgba(255, 231, 91, .76);
+}
+
+.invasion-subtitle {
+  color: #fff08a;
+  text-shadow: 0 2px 8px rgba(40, 65, 16, .55);
+}
+
+.invasion-title-area h1,
+.invasion-title-area p {
+  text-shadow: 0 3px 8px rgba(20, 58, 27, .52), 0 14px 34px rgba(15, 48, 20, .3);
+}
+
+.invasion-title-area p {
+  color: #f3faec;
+}
+
+.defense-menu-card {
+  border-color: rgba(235, 255, 204, .4);
+  background: linear-gradient(145deg, rgba(40, 100, 52, .86), rgba(19, 62, 45, .88));
+  backdrop-filter: blur(10px);
+}
+
+.defense-menu-card small {
+  color: #d4e9cd;
+}
+
+.stage-status-note,
+.invasion-warning {
+  color: #eef8df;
+  text-shadow: 0 2px 7px rgba(19, 52, 23, .5);
+}
+
+.warning-light {
+  display: none;
+}
+
+@keyframes stageSunGlow {
+  from { transform: scale(.96); filter: brightness(.96); }
+  to { transform: scale(1.04); filter: brightness(1.08); }
+}
+
+@keyframes stageCloudDrift {
+  from { translate: -18px 0; }
+  to { translate: 32px 7px; }
+}
+
+@media (max-width: 860px) {
+  .stage-tree {
+    right: -98px;
+    bottom: 15%;
+    width: 250px;
+    height: 460px;
+    opacity: .92;
+  }
+
+  .stage-sun {
+    top: 105px;
+    left: 22px;
+    width: 70px;
+  }
+
+  .stage-cloud-one {
+    top: 20%;
+    left: 38%;
+    transform: scale(.48);
+  }
+
+  .stage-cloud-two {
+    display: none;
+  }
+
+  .stage-preview-card {
+    margin-bottom: 18px;
+  }
+
+  .stage-preview-copy small {
+    max-width: 54vw;
+  }
+}
+
+@media (max-width: 520px) {
+  .stage-tree {
+    right: -130px;
+    bottom: 21%;
+    opacity: .75;
+  }
+
+  .stage-preview-card {
+    width: 100%;
+  }
+
+  .stage-preview-copy small {
+    max-width: none;
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-sun,
+  .stage-cloud {
+    animation: none !important;
+  }
+}
+
+  
+
+    .unit-skill-note {
+      margin: 12px 0;
+      padding: 12px;
+      border: 1px solid rgba(255, 211, 82, .28);
+      border-radius: 12px;
+      background: rgba(255, 208, 74, .07);
+    }
+
+    .unit-skill-note strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #ffe58a;
+      font-size: 12px;
+    }
+
+    .unit-skill-note p {
+      margin: 0;
+      color: #c9d5e6;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
@@ -3257,7 +3728,22 @@ body {
     </div>
   </section>
 
-<section id="menuScreen" class="screen hidden invasion-menu">
+<section id="menuScreen" class="screen hidden invasion-menu" data-stage-theme="meadow">
+  <div class="stage-scenery" aria-hidden="true">
+    <div class="stage-sun"></div>
+    <div class="stage-cloud stage-cloud-one"></div>
+    <div class="stage-cloud stage-cloud-two"></div>
+    <div class="stage-hill stage-hill-back"></div>
+    <div class="stage-hill stage-hill-front"></div>
+    <div class="stage-meadow"></div>
+    <div class="stage-tree">
+      <div class="stage-tree-trunk"></div>
+      <div class="stage-tree-crown stage-tree-crown-one"></div>
+      <div class="stage-tree-crown stage-tree-crown-two"></div>
+      <div class="stage-tree-crown stage-tree-crown-three"></div>
+    </div>
+  </div>
+
   <div class="warning-light warning-light-left"></div>
   <div class="warning-light warning-light-right"></div>
 
@@ -3300,6 +3786,14 @@ body {
   </header>
 
   <main class="invasion-content">
+    <div class="stage-preview-card" aria-live="polite">
+      <span id="menuStageBadge" class="stage-preview-badge">STAGE 1</span>
+      <span class="stage-preview-copy">
+        <strong id="menuStageName">햇살 초원</strong>
+        <small id="menuStageEnemies">등장 적 · 일반 비둘기 / 빠른 비둘기 / 비둘기 보스</small>
+      </span>
+    </div>
+
     <div class="invasion-hero">
       <div class="enemy-logo-area">
         <div class="alert-symbol">⚠</div>
@@ -3317,9 +3811,9 @@ body {
           타워디펜스
         </h1>
 
-        <p>
-          끝없이 몰려오는 비둘기 떼를 막고<br />
-          도시의 마지막 방어선을 지켜내세요!
+        <p id="menuStageDescription">
+          햇살 가득한 초원으로 몰려오는 비둘기 떼를 막고<br />
+          평야의 마지막 방어선을 지켜내세요!
         </p>
       </div>
     </div>
@@ -3335,8 +3829,8 @@ body {
       <span class="start-button-arrow">▶</span>
     </button>
 
-    <div class="stage-status-note">
-      스테이지 1 플레이 가능 · 스테이지 2 준비 중
+    <div id="stageStatusNote" class="stage-status-note">
+      스테이지 1 플레이 가능 · 다음 지역은 준비 중
     </div>
 
     <div class="defense-menu-grid">
@@ -3607,16 +4101,17 @@ const REALISTIC_PIGEON_SVG = `
       </g>
 
       <g class="pigeon-wing pigeon-wing-far">
-        <path class="pigeon-wing-surface" d="M121 102 C91 107 55 139 24 174 C66 166 104 146 137 116 C140 104 134 99 121 102 Z"></path>
+        <path class="pigeon-wing-surface" d="M131 101 C108 64 71 26 30 3 C43 52 68 89 111 119 C126 120 139 111 131 101 Z"></path>
         <g class="pigeon-feather-layer pigeon-feather-layer-far">
-          <path class="pigeon-primary-feather" d="M109 116 C78 134 54 153 35 169 C65 159 92 145 120 124 Z"></path>
-          <path class="pigeon-primary-feather" d="M116 119 C86 142 70 157 59 166 C82 155 104 141 128 122 Z"></path>
-          <path class="pigeon-secondary-feather" d="M111 108 C83 118 61 133 44 148 C71 138 94 127 123 113 Z"></path>
-          <path class="pigeon-secondary-feather" d="M120 107 C94 114 74 124 57 136 C82 130 103 121 132 112 Z"></path>
+          <path class="pigeon-primary-feather" d="M111 98 C86 66 60 35 35 12 C54 48 74 77 119 108 Z"></path>
+          <path class="pigeon-primary-feather" d="M119 100 C99 65 82 38 62 18 C74 55 92 83 127 108 Z"></path>
+          <path class="pigeon-primary-feather" d="M126 102 C112 70 101 48 87 30 C92 65 106 90 135 109 Z"></path>
+          <path class="pigeon-secondary-feather" d="M111 99 C88 79 69 64 52 54 C71 78 89 96 120 109 Z"></path>
+          <path class="pigeon-secondary-feather" d="M121 98 C101 84 85 75 69 69 C87 89 104 103 131 109 Z"></path>
         </g>
-        <path class="pigeon-wing-coverts" d="M119 104 C95 111 76 123 61 135 C84 130 105 119 130 111 Z"></path>
-        <path class="pigeon-wing-band" d="M105 128 C82 141 66 151 52 158"></path>
-        <path class="pigeon-wing-highlight" d="M112 116 C82 134 58 151 40 163"></path>
+        <path class="pigeon-wing-coverts" d="M123 94 C103 75 85 61 68 52 C87 79 104 97 134 106 Z"></path>
+        <path class="pigeon-wing-band" d="M106 92 C81 65 62 42 48 23"></path>
+        <path class="pigeon-wing-highlight" d="M118 94 C92 65 69 41 45 20"></path>
       </g>
 
       <ellipse class="pigeon-body-shape" cx="128" cy="108" rx="57" ry="38" transform="rotate(-4 128 108)"></ellipse>
@@ -3664,6 +4159,147 @@ function installAnimatedMenuPigeons() {
   document.querySelectorAll('.flock-pigeon').forEach(pigeon => {
     pigeon.innerHTML = REALISTIC_PIGEON_SVG;
   });
+}
+
+
+/*
+ * 스테이지 확장 설정
+ * 새 스테이지를 만들 때 이 객체에 배경 테마, 등장 적, 웨이브 생성 함수를 추가합니다.
+ */
+const STAGE_CONFIG = Object.freeze({
+  1: {
+    id: 1,
+    theme: 'meadow',
+    name: '햇살 초원',
+    description: '햇살 가득한 초원으로 몰려오는 비둘기 떼를 막고\n평야의 마지막 방어선을 지켜내세요!',
+    menuEnemies: ['일반 비둘기', '빠른 비둘기', '비둘기 보스'],
+    menuEnemyArt: () => REALISTIC_PIGEON_SVG,
+    maxWave: 50,
+    startingGold: 300,
+    baseHp: 2000,
+    stageBonus: 1000,
+    available: true,
+    battlePalette: {
+      ground: '#72a84b',
+      grassLight: '#d8f0b3',
+      grassDark: '#315f30',
+      path: '#bd9568',
+      pathEdge: '#e7c99b'
+    },
+    waveFactory: createStageOneWaveQueue
+  },
+
+  /* 아래 항목은 나중에 그림과 몹 로직을 넣기 위한 틀입니다. */
+  2: {
+    id: 2,
+    theme: 'forest',
+    name: '그늘진 숲',
+    description: '짙은 숲과 안개 속에서 새로운 적이 기다리고 있습니다.',
+    menuEnemies: ['숲 비둘기', '독 깃털 비둘기', '숲의 수호자'],
+    menuEnemyArt: () => REALISTIC_PIGEON_SVG,
+    maxWave: 50,
+    startingGold: 300,
+    baseHp: 2000,
+    stageBonus: 1400,
+    available: false,
+    battlePalette: {
+      ground: '#315f3f',
+      grassLight: '#6f9f6a',
+      grassDark: '#18392b',
+      path: '#77634c',
+      pathEdge: '#a58c69'
+    },
+    waveFactory: null
+  },
+
+  3: {
+    id: 3,
+    theme: 'desert',
+    name: '붉은 황야',
+    description: '뜨거운 햇빛과 모래바람을 뚫고 방어선을 지켜야 합니다.',
+    menuEnemies: ['황야 비둘기', '돌진 비둘기', '모래 폭군'],
+    menuEnemyArt: () => REALISTIC_PIGEON_SVG,
+    maxWave: 50,
+    startingGold: 320,
+    baseHp: 2000,
+    stageBonus: 1800,
+    available: false,
+    battlePalette: {
+      ground: '#c68a43',
+      grassLight: '#e3b96c',
+      grassDark: '#92512d',
+      path: '#8c6045',
+      pathEdge: '#e0af75'
+    },
+    waveFactory: null
+  }
+});
+
+function getStageConfig(stageId = selectedStage) {
+  return STAGE_CONFIG[stageId] || STAGE_CONFIG[1];
+}
+
+function renderStageMenuEnemy(stageConfig) {
+  const art = typeof stageConfig.menuEnemyArt === 'function'
+    ? stageConfig.menuEnemyArt()
+    : REALISTIC_PIGEON_SVG;
+
+  const heroEnemy = document.querySelector('.enemy-pigeon');
+  if (heroEnemy) {
+    heroEnemy.innerHTML = art;
+    heroEnemy.dataset.enemyStage = String(stageConfig.id);
+    heroEnemy.setAttribute(
+      'aria-label',
+      `${stageConfig.name}의 대표 적 ${stageConfig.menuEnemies[0]}`
+    );
+  }
+
+  document.querySelectorAll('.flock-pigeon').forEach(enemy => {
+    enemy.innerHTML = art;
+    enemy.dataset.enemyStage = String(stageConfig.id);
+  });
+}
+
+function applyStagePreview(stageId = selectedStage) {
+  const stage = getStageConfig(stageId);
+  selectedStage = stage.id;
+
+  const menu = document.querySelector('#menuScreen');
+  if (menu) menu.dataset.stageTheme = stage.theme;
+
+  const badge = document.querySelector('#menuStageBadge');
+  const name = document.querySelector('#menuStageName');
+  const enemies = document.querySelector('#menuStageEnemies');
+  const description = document.querySelector('#menuStageDescription');
+  const status = document.querySelector('#stageStatusNote');
+  const startButton = document.querySelector('#startBattleBtn');
+  const startTitle = document.querySelector('#startBattleTitle');
+  const startSubtitle = document.querySelector('#startBattleSubtitle');
+
+  if (badge) badge.textContent = `STAGE ${stage.id}`;
+  if (name) name.textContent = stage.name;
+  if (enemies) enemies.textContent = `등장 적 · ${stage.menuEnemies.join(' / ')}`;
+  if (description) description.innerHTML = stage.description.replace('\n', '<br />');
+
+  const alreadyCleared = Boolean(player && player.highestStage >= stage.id);
+  if (startTitle) {
+    startTitle.textContent = alreadyCleared
+      ? `스테이지 ${stage.id} 다시 플레이`
+      : `스테이지 ${stage.id} 전투 시작`;
+  }
+  if (startSubtitle) {
+    startSubtitle.textContent = stage.available
+      ? `${stage.name} · ${stage.maxWave}웨이브 방어전`
+      : `${stage.name} · 준비 중`;
+  }
+  if (startButton) startButton.disabled = !stage.available;
+  if (status) {
+    status.textContent = stage.available
+      ? `스테이지 ${stage.id} 플레이 가능 · 다음 지역은 준비 중`
+      : `스테이지 ${stage.id}은 아직 준비 중입니다.`;
+  }
+
+  renderStageMenuEnemy(stage);
 }
 
 
@@ -3742,9 +4378,12 @@ function installAnimatedMenuPigeons() {
         rarityClass: 'rarity-legend',
         cost: 300,
         damage: 145,
-        range: 135,
+        range: 250,
+        meleeRange: 120,
+        coneAngle: 120,
         fireInterval: 1.3,
-        color: '#ffd04a'
+        color: '#ffd04a',
+        skillText: '120 범위 안에서는 전방 120°를 베어 범위 안의 모든 적에게 피해를 줍니다. 가장 가까운 적이 120 밖·250 안에 있으면 검을 내리쳐 검기를 날려 단일 공격합니다.'
       },
       skyDragonKnight: {
         id: 'skyDragonKnight',
@@ -3757,7 +4396,13 @@ function installAnimatedMenuPigeons() {
         damage: 225,
         range: 205,
         fireInterval: 1.05,
-        color: '#ef4444'
+        lightningChance: 0.5,
+        lightningDelay: 0.5,
+        lightningRadius: 20,
+        laneSweepEvery: 7,
+        laneSweepMultiplier: 5,
+        color: '#ef4444',
+        skillText: '창 명중 후 50% 확률로 0.5초 뒤 명중 지점에 반지름 20의 번개가 떨어져 범위 안의 모든 적에게 일반 공격과 같은 피해를 줍니다. 창을 7번 던질 때마다 자신이 배치된 위치에서 가장 가까운 가로 길을 황금 거대창으로 쓸어 일반 공격의 5배 피해를 줍니다.'
       },
       astralChronomancer: {
         id: 'astralChronomancer',
@@ -3859,6 +4504,7 @@ function installAnimatedMenuPigeons() {
     let cutsceneRunning = false;
     let gachaArmedButton = null;
     let gachaConfirmTimer = null;
+    let selectedStage = 1;
 
     function showScreen(name) {
       Object.values(screens).forEach(screen => screen.classList.add('hidden'));
@@ -3928,6 +4574,57 @@ function installAnimatedMenuPigeons() {
       });
     }
 
+    // 가챠에 사용되는 실제 소환석은 서버 지갑을 기준으로 표시합니다.
+    async function syncServerWallet() {
+      if (!player) return false;
+
+      const {
+        data: { user },
+        error: userError
+      } = await supabaseClient.auth.getUser();
+
+      if (userError || !user) {
+        console.error('서버 지갑 사용자 확인 실패:', userError);
+        return false;
+      }
+
+      // 신규/기존 계정에 서버 지갑과 주사위 보관함이 없으면 먼저 생성합니다.
+      const { error: ensureError } = await supabaseClient
+        .rpc('ensure_game_player');
+
+      if (ensureError) {
+        console.error('서버 게임 계정 초기화 실패:', ensureError.message);
+        return false;
+      }
+
+      const { data: wallet, error: walletError } = await supabaseClient
+        .from('player_wallets')
+        .select('gems')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (walletError) {
+        console.error('서버 소환석 불러오기 실패:', walletError.message);
+        return false;
+      }
+
+      const serverGems = Number(wallet?.gems);
+      if (!Number.isFinite(serverGems)) {
+        console.error('서버 소환석 값이 올바르지 않습니다:', wallet);
+        return false;
+      }
+
+      player.gems = serverGems;
+
+      const menuGems = document.querySelector('#menuGems');
+      const gachaGems = document.querySelector('#gachaGems');
+      if (menuGems) menuGems.textContent = player.gems;
+      if (gachaGems) gachaGems.textContent = player.gems;
+
+      refreshGachaButtons();
+      return true;
+    }
+
    async function savePlayer() {
   if (!player) {
     return;
@@ -3993,6 +4690,9 @@ currentUsername =
   }
 
   ensurePlayerData();
+
+  // 화면에 저장된 소환석이 아니라 서버 지갑 잔액을 가져옵니다.
+  await syncServerWallet();
   await savePlayer();
   return true;
 }
@@ -4174,19 +4874,9 @@ async function logout() {
       savePlayer();
       document.querySelector('#welcomeText').textContent = `${currentUsername}님의 계정`;
       document.querySelector('#menuGems').textContent = player.gems;
-      document.querySelector('#menuStage').textContent = Math.min(player.highestStage, 1);
+      document.querySelector('#menuStage').textContent = player.highestStage;
 
-      const startTitle = document.querySelector('#startBattleTitle');
-      const startSubtitle = document.querySelector('#startBattleSubtitle');
-
-      if (player.highestStage >= 1) {
-        startTitle.textContent = '스테이지 1 다시 플레이';
-        startSubtitle.textContent = '50웨이브 재도전 · 스테이지 2 준비 중';
-      } else {
-        startTitle.textContent = '전투 시작';
-        startSubtitle.textContent = '스테이지 1 · 50웨이브 방어전';
-      }
-
+      applyStagePreview(selectedStage);
       showScreen('menu');
     }
 
@@ -4348,14 +5038,30 @@ async function logout() {
       });
     }
 
-    function openGacha() {
+    async function openGacha() {
       ensurePlayerData();
       resetGachaConfirmation();
-      document.querySelector('#gachaGems').textContent = player.gems;
-      document.querySelector('#gachaResult').textContent =
-        '구매 버튼을 누른 뒤, 나타나는 보급 상자를 두 번 눌러 결과를 확인하세요.';
       renderDiceProbabilities();
       showScreen('gacha');
+
+      const resultElement = document.querySelector('#gachaResult');
+      resultElement.textContent = '서버 소환석 잔액을 확인하고 있습니다...';
+
+      document.querySelectorAll('[data-draw-count]').forEach(button => {
+        button.disabled = true;
+      });
+
+      const synced = await syncServerWallet();
+
+      if (!synced) {
+        resultElement.innerHTML =
+          '<span style="color:#ff9ca7;">서버 소환석 잔액을 불러오지 못했습니다. 잠시 뒤 다시 열어주세요.</span>';
+        return;
+      }
+
+      document.querySelector('#gachaGems').textContent = player.gems;
+      resultElement.textContent =
+        '구매 버튼을 누른 뒤, 나타나는 보급 상자를 두 번 눌러 결과를 확인하세요.';
       refreshGachaButtons();
     }
 
@@ -4620,6 +5326,14 @@ async function logout() {
         .addEventListener('click', closeCutscene, { once: true });
     }
 async function requestServerGacha(count) {
+  // 구매 전에 서버 지갑이 반드시 존재하도록 보장합니다.
+  const { error: ensureError } = await supabaseClient
+    .rpc('ensure_game_player');
+
+  if (ensureError) {
+    throw new Error('서버 소환석 지갑을 준비하지 못했습니다.');
+  }
+
   const { data, error } =
     await supabaseClient.functions.invoke(
       'gacha-purchase',
@@ -4792,11 +5506,19 @@ async function executeGachaDraw(count) {
     cutsceneRunning = false;
     closeCutscene();
 
+    // 실패했을 때도 실제 서버 잔액으로 화면을 다시 맞춥니다.
+    await syncServerWallet();
+
+    const originalMessage =
+      error.message || '가챠 처리 중 오류가 발생했습니다.';
+
+    const displayMessage = originalMessage.includes('부족')
+      ? `서버 기준 소환석은 ${player.gems}개입니다. 필요한 소환석 수를 확인해주세요.`
+      : originalMessage;
+
     resultElement.innerHTML =
-      `<span style="color:#ff9ca7;">${
-        error.message ||
-        '가챠 처리 중 오류가 발생했습니다.'
-      }</span>`;
+      `<span style="color:#ff9ca7;">${displayMessage}</span>`;
+    refreshGachaButtons();
   }
 }
 
@@ -5319,7 +6041,13 @@ function requestGachaDraw(count) {
     }
 
     function createBattle() {
+      const stageConfig = getStageConfig(selectedStage);
       const deck = player.deck.filter(Boolean);
+
+      if (!stageConfig.available || typeof stageConfig.waveFactory !== 'function') {
+        alert('이 스테이지는 아직 준비 중입니다.');
+        return;
+      }
 
       if (deck.length === 0) {
         alert('덱에 캐릭터를 한 명 이상 넣어 주세요.');
@@ -5337,15 +6065,16 @@ function requestGachaDraw(count) {
       if (bossAlert) bossAlert.classList.add('hidden');
 
       battle = {
-        stage: 1,
-        gold: 300,
-        lives: BASE_MAX_HP,
-        baseMaxHp: BASE_MAX_HP,
+        stage: stageConfig.id,
+        stageConfig,
+        gold: stageConfig.startingGold,
+        lives: stageConfig.baseHp,
+        baseMaxHp: stageConfig.baseHp,
         baseHitFlash: 0,
         baseDamageText: 0,
         baseDamageTextTimer: 0,
         wave: 1,
-        maxWave: STAGE_ONE_MAX_WAVE,
+        maxWave: stageConfig.maxWave,
         highestLaunchedWave: 0,
         kills: 0,
         waveDelay: 0,
@@ -5354,6 +6083,7 @@ function requestGachaDraw(count) {
         enemies: [],
         placedUnits: [],
         shots: [],
+        delayedAttacks: [],
         selectedDeployUnitId: deck[0],
         selectedPlacedUnit: null,
         ended: false,
@@ -5399,7 +6129,7 @@ function requestGachaDraw(count) {
       };
     }
 
-    function createWaveQueue(wave) {
+    function createStageOneWaveQueue(wave) {
       if (wave === 10) {
         return Array.from({ length: 5 }, (_, index) => ({
           type: 'brother',
@@ -5480,6 +6210,12 @@ function requestGachaDraw(count) {
 
     function getWaveState(waveNumber) {
       return battle?.activeWaves.find(item => item.wave === waveNumber) || null;
+    }
+
+    function createWaveQueue(wave) {
+      const stageConfig = getStageConfig(battle?.stage || selectedStage);
+      if (typeof stageConfig.waveFactory !== 'function') return [];
+      return stageConfig.waveFactory(wave);
     }
 
     function launchWave(wave, options = {}) {
@@ -5681,6 +6417,12 @@ function requestGachaDraw(count) {
       const damageText = Number.isInteger(placed.damage)
         ? placed.damage
         : Number(placed.damage.toFixed(2));
+      const rangeText = placed.unitId === 'royalGuardian'
+        ? `베기 ${unit.meleeRange || 120} / 검기 ${placed.range}`
+        : `${placed.range}`;
+      const skillHtml = unit.skillText
+        ? `<div class="unit-skill-note"><strong>고유 능력</strong><p>${unit.skillText}</p></div>`
+        : '';
 
       const upgradeLevel = placed.upgradeLevel;
       const isMaxUpgrade = upgradeLevel >= 2;
@@ -5727,8 +6469,9 @@ function requestGachaDraw(count) {
           <div><span>데미지</span><strong>${damageText}</strong></div>
           <div><span>공격 쿨타임</span><strong>${cooldownText}</strong></div>
           <div><span>초당 공격</span><strong>${attacksPerSecond}회</strong></div>
-          <div><span>공격 범위</span><strong>${placed.range}</strong></div>
+          <div><span>공격 범위</span><strong>${rangeText}</strong></div>
         </div>
+        ${skillHtml}
         ${upgradeHtml}
         <button id="sellUnitBtn" class="danger">판매 +${refund} 골드</button>
       `;
@@ -5943,7 +6686,7 @@ function requestGachaDraw(count) {
         starterArcher: 'arrow',
         windRanger: 'windArrow',
         starterKnight: 'steelSlash',
-        royalGuardian: 'goldenWave',
+        royalGuardian: 'royalConeSlash',
         starterMage: 'arcaneBolt',
         flameWizard: 'fireball',
         skyDragonKnight: 'dragonLance',
@@ -5958,10 +6701,14 @@ function requestGachaDraw(count) {
         arrow: .27,
         windArrow: .36,
         steelSlash: .22,
-        goldenWave: .34,
+        royalConeSlash: .42,
+        royalSwordWave: .46,
         arcaneBolt: .38,
         fireball: .46,
         dragonLance: .32,
+        dragonLaneCast: .38,
+        dragonLaneSweep: .72,
+        skyLightning: .44,
         timeRift: .48
       };
 
@@ -5991,13 +6738,285 @@ function requestGachaDraw(count) {
       return true;
     }
 
+    function normalizeBattleAngle(angle) {
+      let normalized = angle;
+      while (normalized > Math.PI) normalized -= Math.PI * 2;
+      while (normalized < -Math.PI) normalized += Math.PI * 2;
+      return normalized;
+    }
+
+    function getClosestEnemyToUnit(placed, maxRange = Infinity) {
+      let closest = null;
+      let closestDistance = Infinity;
+
+      for (const enemy of battle.enemies) {
+        if (enemy.dead) continue;
+        const distance = Math.hypot(enemy.x - placed.x, enemy.y - placed.y);
+        if (distance <= maxRange && distance < closestDistance) {
+          closest = enemy;
+          closestDistance = distance;
+        }
+      }
+
+      return closest ? { enemy: closest, distance: closestDistance } : null;
+    }
+
+    function isEnemyInsideCone(enemy, placed, facingAngle, range, halfAngle) {
+      const dx = enemy.x - placed.x;
+      const dy = enemy.y - placed.y;
+      const distance = Math.hypot(dx, dy);
+      if (distance > range) return false;
+
+      const enemyAngle = Math.atan2(dy, dx);
+      return Math.abs(normalizeBattleAngle(enemyAngle - facingAngle)) <= halfAngle;
+    }
+
+    function getNearestHorizontalLane(placed) {
+      const lanes = [];
+
+      for (let index = 0; index < path.length - 1; index += 1) {
+        const start = path[index];
+        const end = path[index + 1];
+        if (Math.abs(start.y - end.y) > 1) continue;
+
+        const minX = Math.min(start.x, end.x);
+        const maxX = Math.max(start.x, end.x);
+        const y = (start.y + end.y) / 2;
+
+        // 유닛 위치에서 가로 길 "선분 자체"까지의 최단거리로 선택한다.
+        // 이전처럼 길 오른쪽 끝점까지의 거리로 계산하면 가까운 길이 잘못 선택될 수 있다.
+        const closestX = Math.max(minX, Math.min(placed.x, maxX));
+        const distance = Math.hypot(placed.x - closestX, placed.y - y);
+
+        // 선택된 가로 길의 오른쪽 초록 영역으로 특수 창을 먼저 던진다.
+        const anchorX = maxX + 54;
+        const anchorY = y;
+
+        lanes.push({
+          minX,
+          maxX,
+          y,
+          anchorX,
+          anchorY,
+          closestX,
+          distance,
+          pathIndex: index
+        });
+      }
+
+      lanes.sort((a, b) => a.distance - b.distance || a.pathIndex - b.pathIndex);
+      return lanes[0] || null;
+    }
+
+    function scheduleDelayedAttack(attack) {
+      if (!battle) return;
+      battle.delayedAttacks ??= [];
+      battle.delayedAttacks.push(attack);
+    }
+
+    function triggerDelayedAttack(attack) {
+      if (!battle || battle.ended) return;
+
+      if (attack.kind === 'skyLightning') {
+        const impactRadius = attack.radius ?? UNIT_DATA.skyDragonKnight.lightningRadius ?? 20;
+        let hitCount = 0;
+
+        battle.enemies.forEach(enemy => {
+          if (enemy.dead) return;
+          const distance = Math.hypot(enemy.x - attack.x, enemy.y - attack.y);
+          if (distance > impactRadius) return;
+          applyDamageToEnemy(enemy, attack.damage);
+          hitCount += 1;
+        });
+
+        battle.shots.push({
+          x1: attack.x,
+          y1: attack.y - 270,
+          x2: attack.x,
+          y2: attack.y,
+          life: getAttackEffectDuration('skyLightning'),
+          maxLife: getAttackEffectDuration('skyLightning'),
+          color: '#fff3a3',
+          effect: 'skyLightning',
+          angle: Math.PI / 2,
+          radius: impactRadius,
+          seed: Math.random() * 1000
+        });
+
+        if (hitCount > 0) {
+          setBattleMessage(`천공 용기사의 번개가 반지름 ${impactRadius} 안의 적 ${hitCount}마리를 공격했습니다!`);
+        }
+        return;
+      }
+
+      if (attack.kind === 'dragonLaneSweep') {
+        const laneHalfWidth = 46;
+        const minX = attack.minX - 38;
+        const maxX = attack.maxX + 38;
+        let hitCount = 0;
+
+        battle.enemies.forEach(enemy => {
+          if (enemy.dead) return;
+          const onHorizontalLane =
+            enemy.x >= minX &&
+            enemy.x <= maxX &&
+            Math.abs(enemy.y - attack.y) <= laneHalfWidth;
+
+          if (!onHorizontalLane) return;
+          applyDamageToEnemy(enemy, attack.damage);
+          hitCount += 1;
+        });
+
+        battle.shots.push({
+          x1: attack.maxX + 105,
+          y1: attack.y,
+          x2: attack.minX - 105,
+          y2: attack.y,
+          life: getAttackEffectDuration('dragonLaneSweep'),
+          maxLife: getAttackEffectDuration('dragonLaneSweep'),
+          color: '#ffd84f',
+          effect: 'dragonLaneSweep',
+          angle: Math.PI,
+          seed: Math.random() * 1000,
+          laneMinX: attack.minX,
+          laneMaxX: attack.maxX,
+          laneY: attack.y
+        });
+
+        setBattleMessage(
+          `천공 용기사의 황금 거대창이 가로 길을 휩쓸어 ${hitCount}마리에게 ${Math.round(attack.damage)} 피해를 주었습니다!`
+        );
+      }
+    }
+
+    function updateDelayedAttacks(dt) {
+      if (!battle?.delayedAttacks?.length) return;
+
+      for (let index = battle.delayedAttacks.length - 1; index >= 0; index -= 1) {
+        const attack = battle.delayedAttacks[index];
+        attack.timer -= dt;
+        if (attack.timer > 0) continue;
+
+        battle.delayedAttacks.splice(index, 1);
+        triggerDelayedAttack(attack);
+      }
+    }
+
+    function performRoyalGuardianAttack(placed, targetInfo, slowMultiplier) {
+      const data = UNIT_DATA.royalGuardian;
+      const target = targetInfo.enemy;
+      const targetAngle = Math.atan2(target.y - placed.y, target.x - placed.x);
+      const meleeRange = data.meleeRange || 120;
+      const halfAngle = ((data.coneAngle || 120) * Math.PI / 180) / 2;
+
+      placed.angle = targetAngle;
+      placed.cooldown = placed.fireInterval * slowMultiplier;
+      placed.attackAnimation = 1;
+
+      if (targetInfo.distance <= meleeRange) {
+        placed.attackMode = 'coneSlash';
+        const victims = battle.enemies.filter(enemy =>
+          !enemy.dead &&
+          isEnemyInsideCone(enemy, placed, targetAngle, meleeRange, halfAngle)
+        );
+
+        battle.shots.push({
+          x1: placed.x,
+          y1: placed.y - 5,
+          x2: target.x,
+          y2: target.y,
+          life: getAttackEffectDuration('royalConeSlash'),
+          maxLife: getAttackEffectDuration('royalConeSlash'),
+          color: data.color,
+          effect: 'royalConeSlash',
+          angle: targetAngle,
+          seed: Math.random() * 1000,
+          radius: meleeRange,
+          coneAngle: data.coneAngle || 120
+        });
+
+        victims.forEach(enemy => applyDamageToEnemy(enemy, placed.damage));
+        return;
+      }
+
+      placed.attackMode = 'rangedSmash';
+      battle.shots.push({
+        x1: placed.x + Math.cos(targetAngle) * 24,
+        y1: placed.y - 8 + Math.sin(targetAngle) * 24,
+        x2: target.x,
+        y2: target.y,
+        life: getAttackEffectDuration('royalSwordWave'),
+        maxLife: getAttackEffectDuration('royalSwordWave'),
+        color: data.color,
+        effect: 'royalSwordWave',
+        angle: targetAngle,
+        seed: Math.random() * 1000
+      });
+
+      applyDamageToEnemy(target, placed.damage);
+    }
+
+    function triggerSkyDragonSpecials(placed, target, targetAngle) {
+      const data = UNIT_DATA.skyDragonKnight;
+      placed.spearThrowCount = (placed.spearThrowCount || 0) + 1;
+
+      if (Math.random() < (data.lightningChance ?? .5)) {
+        scheduleDelayedAttack({
+          kind: 'skyLightning',
+          timer: data.lightningDelay ?? .5,
+          x: target.x,
+          y: target.y,
+          damage: placed.damage,
+          radius: data.lightningRadius ?? 20
+        });
+      }
+
+      if (placed.spearThrowCount % (data.laneSweepEvery || 7) !== 0) return;
+
+      const lane = getNearestHorizontalLane(placed);
+      if (!lane) return;
+
+      placed.attackMode = 'laneSpecial';
+      battle.shots.push({
+        x1: placed.x + Math.cos(targetAngle) * 24,
+        y1: placed.y - 9 + Math.sin(targetAngle) * 24,
+        x2: lane.anchorX,
+        y2: lane.anchorY,
+        life: getAttackEffectDuration('dragonLaneCast'),
+        maxLife: getAttackEffectDuration('dragonLaneCast'),
+        color: '#ffd84f',
+        effect: 'dragonLaneCast',
+        angle: Math.atan2(lane.anchorY - placed.y, lane.anchorX - placed.x),
+        seed: Math.random() * 1000
+      });
+
+      scheduleDelayedAttack({
+        kind: 'dragonLaneSweep',
+        timer: getAttackEffectDuration('dragonLaneCast'),
+        minX: lane.minX,
+        maxX: lane.maxX,
+        y: lane.y,
+        damage: placed.damage * (data.laneSweepMultiplier || 5)
+      });
+    }
+
     function updatePlacedUnit(placed, dt) {
       placed.stunRemaining = Math.max(0, (placed.stunRemaining || 0) - dt);
       placed.attackSlowRemaining = Math.max(0, (placed.attackSlowRemaining || 0) - dt);
       placed.cooldown -= dt;
-      placed.attackAnimation = Math.max(0, placed.attackAnimation - dt * 5.5);
+      const animationSpeed = placed.unitId === 'royalGuardian' ? 2.8 : 5.5;
+      placed.attackAnimation = Math.max(0, placed.attackAnimation - dt * animationSpeed);
 
       if (placed.stunRemaining > 0 || placed.cooldown > 0) return;
+
+      const slowMultiplier = placed.attackSlowRemaining > 0 ? 1.5 : 1;
+
+      if (placed.unitId === 'royalGuardian') {
+        const targetInfo = getClosestEnemyToUnit(placed, placed.range);
+        if (!targetInfo) return;
+        performRoyalGuardianAttack(placed, targetInfo, slowMultiplier);
+        return;
+      }
 
       let target = null;
       let bestProgress = -1;
@@ -6015,14 +7034,13 @@ function requestGachaDraw(count) {
 
       const targetAngle = Math.atan2(target.y - placed.y, target.x - placed.x);
       placed.angle = targetAngle;
-
-      const slowMultiplier = placed.attackSlowRemaining > 0 ? 1.5 : 1;
       placed.cooldown = placed.fireInterval * slowMultiplier;
       placed.attackAnimation = 1;
+      placed.attackMode = 'normal';
 
       const effect = getAttackEffectType(placed.unitId);
       const duration = getAttackEffectDuration(effect);
-      const muzzleDistance = effect === 'steelSlash' || effect === 'goldenWave' ? 22 : 31;
+      const muzzleDistance = effect === 'steelSlash' ? 22 : 31;
 
       battle.shots.push({
         x1: placed.x + Math.cos(targetAngle) * muzzleDistance,
@@ -6049,6 +7067,10 @@ function requestGachaDraw(count) {
             applyDamageToEnemy(enemy, splashDamage);
           }
         });
+      }
+
+      if (placed.unitId === 'skyDragonKnight') {
+        triggerSkyDragonSpecials(placed, target, targetAngle);
       }
     }
 
@@ -6107,6 +7129,7 @@ function requestGachaDraw(count) {
 
       battle.enemies.forEach(enemy => updateEnemy(enemy, dt));
       battle.placedUnits.forEach(unit => updatePlacedUnit(unit, dt));
+      updateDelayedAttacks(dt);
       battle.shots.forEach(shot => shot.life -= dt);
 
       battle.enemies = battle.enemies.filter(enemy => !enemy.dead);
@@ -6151,7 +7174,8 @@ function requestGachaDraw(count) {
     }
 
     function drawBackground() {
-      ctx.fillStyle = '#72a84b';
+      const palette = battle?.stageConfig?.battlePalette || STAGE_CONFIG[1].battlePalette;
+      ctx.fillStyle = palette.ground;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       ctx.strokeStyle = 'rgba(255,255,255,.08)';
@@ -6177,7 +7201,7 @@ function requestGachaDraw(count) {
       for (let index = 0; index < 90; index += 1) {
         const x = (index * 97) % canvas.width;
         const y = (index * 53 + 31) % canvas.height;
-        ctx.strokeStyle = index % 3 === 0 ? '#d8f0b3' : '#315f30';
+        ctx.strokeStyle = index % 3 === 0 ? palette.grassLight : palette.grassDark;
         ctx.lineWidth = 1.2;
         ctx.beginPath();
         ctx.moveTo(x - 3, y + 4);
@@ -6189,17 +7213,18 @@ function requestGachaDraw(count) {
     }
 
     function drawPath() {
+      const palette = battle?.stageConfig?.battlePalette || STAGE_CONFIG[1].battlePalette;
       ctx.beginPath();
       ctx.moveTo(path[0].x, path[0].y);
       for (let i = 1; i < path.length; i++) ctx.lineTo(path[i].x, path[i].y);
       ctx.lineWidth = 72;
       ctx.lineJoin = 'round';
       ctx.lineCap = 'round';
-      ctx.strokeStyle = '#bd9568';
+      ctx.strokeStyle = palette.path;
       ctx.stroke();
 
       ctx.lineWidth = 4;
-      ctx.strokeStyle = '#e7c99b';
+      ctx.strokeStyle = palette.pathEdge;
       ctx.stroke();
     }
 
@@ -7302,12 +8327,24 @@ function requestGachaDraw(count) {
     function drawAimedUnitWeapon(unit, data, time) {
       const attack = unit.attackAnimation || 0;
       const recoil = attack * 5;
-      const angle = unit.angle || 0;
+      const baseAngle = unit.angle || 0;
+      let weaponAngle = baseAngle;
+      let weaponRecoil = recoil;
+
+      if (unit.unitId === 'royalGuardian' && attack > 0) {
+        const motionProgress = 1 - attack;
+        weaponRecoil = 0;
+        if (unit.attackMode === 'coneSlash') {
+          weaponAngle += -1.05 + motionProgress * 2.10;
+        } else if (unit.attackMode === 'rangedSmash') {
+          weaponAngle += -1.48 + motionProgress * 1.72;
+        }
+      }
 
       ctx.save();
       ctx.translate(1, -5);
-      ctx.rotate(angle);
-      ctx.translate(-recoil, 0);
+      ctx.rotate(weaponAngle);
+      ctx.translate(-weaponRecoil, 0);
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
@@ -7387,11 +8424,20 @@ function requestGachaDraw(count) {
       if (!selected || battle.ended) return;
 
       drawRangeCircle(selected.x, selected.y, selected.range, {
-        fill: 'rgba(255, 208, 74, .08)',
+        fill: 'rgba(255, 208, 74, .06)',
         stroke: 'rgba(255, 220, 105, .92)',
         lineWidth: 2.5,
         dashed: false
       });
+
+      if (selected.unitId === 'royalGuardian') {
+        drawRangeCircle(selected.x, selected.y, UNIT_DATA.royalGuardian.meleeRange || 120, {
+          fill: 'rgba(255, 238, 133, .08)',
+          stroke: 'rgba(255, 246, 177, .95)',
+          lineWidth: 2,
+          dashed: true
+        });
+      }
     }
 
     function drawPlacementPreview(time) {
@@ -7409,6 +8455,15 @@ function requestGachaDraw(count) {
         dashed: true
       });
 
+      if (unitId === 'royalGuardian') {
+        drawRangeCircle(preview.x, preview.y, data.meleeRange || 120, {
+          fill: 'rgba(255, 224, 93, .07)',
+          stroke: 'rgba(255, 238, 156, .95)',
+          lineWidth: 2,
+          dashed: false
+        });
+      }
+
       const ghostUnit = {
         unitId,
         x: preview.x,
@@ -7420,6 +8475,8 @@ function requestGachaDraw(count) {
         totalInvestment: data.cost,
         animationOffset: 0,
         attackAnimation: 0,
+        attackMode: 'idle',
+        spearThrowCount: 0,
         angle: 0,
         stunRemaining: 0,
         attackSlowRemaining: 0
@@ -7522,6 +8579,61 @@ function requestGachaDraw(count) {
           const pulse=Math.sin(progress*Math.PI);ctx.translate(shot.x2,shot.y2);ctx.rotate(shot.angle);for(let i=0;i<3;i+=1){ctx.strokeStyle=`rgba(${210+i*15},${230+i*8},255,${pulse*(.85-i*.18)})`;ctx.lineWidth=7-i*2;ctx.beginPath();ctx.arc(-i*4,0,24+i*8,-1.05,.95);ctx.stroke();}for(let i=0;i<6;i+=1){const a=-.8+i*.32;ctx.fillStyle=`rgba(255,255,255,${pulse*.8})`;ctx.beginPath();ctx.arc(Math.cos(a)*35,Math.sin(a)*35,1.5+i%2,0,Math.PI*2);ctx.fill();}
         } else if (shot.effect === 'goldenWave') {
           const pulse=Math.sin(progress*Math.PI);ctx.translate(shot.x2,shot.y2);ctx.rotate(shot.angle);for(let i=0;i<4;i+=1){ctx.strokeStyle=`rgba(255,${225-i*12},${100-i*15},${pulse*(.9-i*.16)})`;ctx.lineWidth=8-i*1.5;ctx.beginPath();ctx.arc(-i*3,0,24+i*9,-1.08,1.08);ctx.stroke();}const core=ctx.createRadialGradient(0,0,0,0,0,42);core.addColorStop(0,`rgba(255,255,230,${pulse})`);core.addColorStop(.35,`rgba(255,215,55,${pulse*.58})`);core.addColorStop(1,'rgba(255,190,20,0)');ctx.fillStyle=core;ctx.beginPath();ctx.arc(0,0,42,0,Math.PI*2);ctx.fill();
+        } else if (shot.effect === 'royalConeSlash') {
+          const pulse = Math.sin(progress * Math.PI);
+          const radius = shot.radius || 120;
+          const halfAngle = ((shot.coneAngle || 120) * Math.PI / 180) / 2;
+          ctx.translate(shot.x1, shot.y1);
+          ctx.rotate(shot.angle);
+
+          const coneGradient = ctx.createRadialGradient(0, 0, 22, 0, 0, radius);
+          coneGradient.addColorStop(0, `rgba(255,255,225,${.58 * pulse})`);
+          coneGradient.addColorStop(.48, `rgba(255,220,70,${.34 * pulse})`);
+          coneGradient.addColorStop(1, 'rgba(255,174,20,0)');
+          ctx.fillStyle = coneGradient;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.arc(0, 0, radius, -halfAngle, halfAngle);
+          ctx.closePath();
+          ctx.fill();
+
+          for (let layer = 0; layer < 4; layer += 1) {
+            const layerRadius = radius * (.55 + layer * .13) * (.82 + progress * .18);
+            ctx.strokeStyle = `rgba(255,${244-layer*13},${160-layer*22},${pulse * (.95-layer*.17)})`;
+            ctx.lineWidth = 10 - layer * 1.7;
+            ctx.beginPath();
+            ctx.arc(0, 0, layerRadius, -halfAngle, halfAngle);
+            ctx.stroke();
+          }
+        } else if (shot.effect === 'royalSwordWave') {
+          const tailDistance = 48;
+          const tailX = x - ux * tailDistance;
+          const tailY = y - uy * tailDistance;
+          const waveWidth = 23 + Math.sin(progress * Math.PI) * 12;
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(angle);
+          const waveGlow = ctx.createLinearGradient(-45, 0, 30, 0);
+          waveGlow.addColorStop(0, 'rgba(255,182,20,0)');
+          waveGlow.addColorStop(.48, `rgba(255,211,56,${.68 * fade})`);
+          waveGlow.addColorStop(1, `rgba(255,255,222,${.98 * fade})`);
+          ctx.strokeStyle = waveGlow;
+          ctx.lineWidth = 12;
+          ctx.beginPath();
+          ctx.arc(-5, 0, waveWidth, -1.12, 1.12);
+          ctx.stroke();
+          ctx.strokeStyle = `rgba(255,250,201,${fade})`;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(0, 0, waveWidth + 4, -1.02, 1.02);
+          ctx.stroke();
+          ctx.restore();
+          ctx.strokeStyle = `rgba(255,205,48,${.30 * fade})`;
+          ctx.lineWidth = 9;
+          ctx.beginPath();
+          ctx.moveTo(tailX, tailY);
+          ctx.lineTo(x, y);
+          ctx.stroke();
         } else if (shot.effect === 'arcaneBolt') {
           for(let i=0;i<7;i+=1){const back=8+i*7;const swirl=Math.sin(shot.seed+i*1.8+progress*16)*(4+i*.8);ctx.fillStyle=`rgba(${180+i*4},${120+i*6},255,${fade*(.85-i*.08)})`;ctx.beginPath();ctx.arc(x-ux*back+nx*swirl,y-uy*back+ny*swirl,Math.max(1.2,4.5-i*.45),0,Math.PI*2);ctx.fill();}
           const orb=ctx.createRadialGradient(x-4,y-4,1,x,y,15);orb.addColorStop(0,'#fff');orb.addColorStop(.25,'#ead7ff');orb.addColorStop(.55,'#a766ff');orb.addColorStop(1,'rgba(80,20,160,0)');ctx.fillStyle=orb;ctx.beginPath();ctx.arc(x,y,15,0,Math.PI*2);ctx.fill();ctx.strokeStyle=`rgba(235,215,255,${fade})`;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,17+Math.sin(progress*20)*3,0,Math.PI*2);ctx.stroke();
@@ -7535,6 +8647,118 @@ function requestGachaDraw(count) {
           const trail=ctx.createLinearGradient(shot.x1,shot.y1,x,y);trail.addColorStop(0,'rgba(255,179,20,0)');trail.addColorStop(.45,`rgba(255,205,55,${.42*fade})`);trail.addColorStop(1,`rgba(255,250,190,${.95*fade})`);ctx.strokeStyle=trail;ctx.lineWidth=14;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.lineTo(x,y);ctx.stroke();ctx.strokeStyle=`rgba(255,238,135,${fade})`;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);for(let i=1;i<=8;i+=1){const t=travel*i/8;const jitter=Math.sin(shot.seed+i*3.1+progress*24)*4;ctx.lineTo(lerp(shot.x1,shot.x2,t)+nx*jitter,lerp(shot.y1,shot.y2,t)+ny*jitter);}ctx.stroke();
           ctx.save();ctx.translate(x,y);ctx.rotate(angle);const tip=ctx.createLinearGradient(-18,-10,24,10);tip.addColorStop(0,'#b97900');tip.addColorStop(.35,'#ffe36e');tip.addColorStop(.65,'#fffbd0');tip.addColorStop(1,'#d68b00');ctx.strokeStyle='#9f6200';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-30,0);ctx.lineTo(4,0);ctx.stroke();ctx.fillStyle='#ffd34d';ctx.beginPath();ctx.moveTo(-10,0);ctx.lineTo(-2,-9);ctx.lineTo(5,-2);ctx.lineTo(-1,0);ctx.lineTo(5,2);ctx.lineTo(-2,9);ctx.closePath();ctx.fill();ctx.fillStyle=tip;ctx.beginPath();ctx.moveTo(0,-8);ctx.lineTo(17,-13);ctx.lineTo(30,0);ctx.lineTo(17,13);ctx.lineTo(0,8);ctx.lineTo(9,0);ctx.closePath();ctx.fill();ctx.strokeStyle='#fff3a3';ctx.lineWidth=1.5;ctx.stroke();ctx.restore();
           if(progress>.70){const p=(progress-.70)/.30;ctx.strokeStyle=`rgba(255,221,83,${1-p})`;ctx.lineWidth=6;ctx.beginPath();ctx.arc(shot.x2,shot.y2,12+p*38,0,Math.PI*2);ctx.stroke();for(let i=0;i<8;i+=1){const a=i*Math.PI/4;ctx.beginPath();ctx.moveTo(shot.x2+Math.cos(a)*10,shot.y2+Math.sin(a)*10);ctx.lineTo(shot.x2+Math.cos(a)*(26+p*32),shot.y2+Math.sin(a)*(26+p*32));ctx.stroke();}}
+        } else if (shot.effect === 'dragonLaneCast') {
+          const castTrail = ctx.createLinearGradient(shot.x1, shot.y1, x, y);
+          castTrail.addColorStop(0, 'rgba(255,185,25,0)');
+          castTrail.addColorStop(.55, `rgba(255,220,83,${.55 * fade})`);
+          castTrail.addColorStop(1, `rgba(255,255,209,${fade})`);
+          ctx.strokeStyle = castTrail;
+          ctx.lineWidth = 11;
+          ctx.beginPath();
+          ctx.moveTo(shot.x1, shot.y1);
+          ctx.lineTo(x, y);
+          ctx.stroke();
+
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(angle);
+          ctx.fillStyle = '#fff1a1';
+          ctx.strokeStyle = '#b36d00';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(-24, -4);
+          ctx.lineTo(7, -4);
+          ctx.lineTo(24, 0);
+          ctx.lineTo(7, 4);
+          ctx.lineTo(-24, 4);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        } else if (shot.effect === 'dragonLaneSweep') {
+          const sweepPulse = Math.sin(progress * Math.PI);
+          const spearLength = 210;
+          const spearHeight = 34 + sweepPulse * 10;
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(Math.PI);
+
+          const giantGlow = ctx.createRadialGradient(0, 0, 3, 0, 0, 95);
+          giantGlow.addColorStop(0, `rgba(255,255,220,${.92 * fade})`);
+          giantGlow.addColorStop(.35, `rgba(255,215,55,${.46 * fade})`);
+          giantGlow.addColorStop(1, 'rgba(255,166,0,0)');
+          ctx.fillStyle = giantGlow;
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 118, 62, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          const giantShaft = ctx.createLinearGradient(-spearLength / 2, 0, spearLength / 2, 0);
+          giantShaft.addColorStop(0, '#8b5100');
+          giantShaft.addColorStop(.35, '#e9a91b');
+          giantShaft.addColorStop(.68, '#fff4aa');
+          giantShaft.addColorStop(1, '#c77900');
+          ctx.fillStyle = giantShaft;
+          ctx.strokeStyle = '#fff0a2';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.roundRect(-spearLength / 2, -8, spearLength * .72, 16, 8);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.moveTo(spearLength * .18, -spearHeight);
+          ctx.lineTo(spearLength * .50, 0);
+          ctx.lineTo(spearLength * .18, spearHeight);
+          ctx.lineTo(spearLength * .27, 0);
+          ctx.closePath();
+          ctx.fillStyle = '#ffe368';
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+
+          ctx.strokeStyle = `rgba(255,228,98,${.62 * fade})`;
+          ctx.lineWidth = 23;
+          ctx.beginPath();
+          ctx.moveTo(shot.x1, shot.y1);
+          ctx.lineTo(x, y);
+          ctx.stroke();
+          ctx.strokeStyle = `rgba(255,255,211,${.88 * fade})`;
+          ctx.lineWidth = 5;
+          ctx.stroke();
+        } else if (shot.effect === 'skyLightning') {
+          const flash = Math.sin(progress * Math.PI);
+          const topY = shot.y2 - 280;
+          ctx.fillStyle = `rgba(255,247,179,${.13 * flash})`;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          for (let branch = 0; branch < 4; branch += 1) {
+            ctx.strokeStyle = branch === 0
+              ? `rgba(255,255,235,${flash})`
+              : `rgba(255,218,72,${(.78 - branch * .12) * flash})`;
+            ctx.lineWidth = branch === 0 ? 7 : 3.5;
+            ctx.beginPath();
+            ctx.moveTo(shot.x2 + (branch - 1.5) * 5, topY);
+            const segments = 9;
+            for (let index = 1; index <= segments; index += 1) {
+              const t = index / segments;
+              const jitter = Math.sin(shot.seed + branch * 8.7 + index * 4.9) * (18 - t * 8);
+              ctx.lineTo(
+                shot.x2 + jitter + (branch - 1.5) * 4,
+                topY + (shot.y2 - topY) * t
+              );
+            }
+            ctx.stroke();
+          }
+
+          const lightningRadius = shot.radius ?? UNIT_DATA.skyDragonKnight.lightningRadius ?? 20;
+          const impact = ctx.createRadialGradient(shot.x2, shot.y2, 0, shot.x2, shot.y2, lightningRadius);
+          impact.addColorStop(0, `rgba(255,255,245,${.95 * flash})`);
+          impact.addColorStop(.42, `rgba(255,229,83,${.70 * flash})`);
+          impact.addColorStop(1, 'rgba(255,187,0,0)');
+          ctx.fillStyle = impact;
+          ctx.beginPath();
+          ctx.arc(shot.x2, shot.y2, lightningRadius, 0, Math.PI * 2);
+          ctx.fill();
         } else if (shot.effect === 'timeRift') {
           const orbit=progress*Math.PI*5;ctx.strokeStyle=`rgba(216,180,254,${.68*fade})`;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.bezierCurveTo(shot.x1+dx*.28+nx*26,shot.y1+dy*.28+ny*26,shot.x1+dx*.72-nx*26,shot.y1+dy*.72-ny*26,x,y);ctx.stroke();ctx.save();ctx.translate(x,y);ctx.rotate(orbit);ctx.strokeStyle='#f7edff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,14,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(0,0,9,0,Math.PI*2);ctx.stroke();for(let i=0;i<8;i+=1){const a=i*Math.PI/4;ctx.beginPath();ctx.moveTo(Math.cos(a)*10,Math.sin(a)*10);ctx.lineTo(Math.cos(a)*15,Math.sin(a)*15);ctx.stroke();}ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-8);ctx.moveTo(0,0);ctx.lineTo(7,3);ctx.stroke();ctx.restore();if(progress>.62){const p=(progress-.62)/.38;for(let i=0;i<3;i+=1){ctx.strokeStyle=`rgba(216,180,254,${(1-p)*(.8-i*.18)})`;ctx.lineWidth=4-i;ctx.beginPath();ctx.ellipse(shot.x2,shot.y2,12+p*(30+i*10),6+p*(14+i*5),shot.angle+i*.4,0,Math.PI*2);ctx.stroke();}}
         }
@@ -7583,18 +8807,20 @@ function requestGachaDraw(count) {
       battle.ended = true;
       battle.resultShown = true;
 
+      const stageConfig = battle.stageConfig || getStageConfig(battle.stage);
+
       if (victory && battle.finalBossDefeated && !battle.bossEscaped) {
-        const stageBonus = 1000;
+        const stageBonus = stageConfig.stageBonus;
         player.gems += stageBonus;
-        player.highestStage = Math.max(player.highestStage, 1);
-        battle.resultText = '스테이지 1 클리어!';
+        player.highestStage = Math.max(player.highestStage, battle.stage);
+        battle.resultText = `스테이지 ${battle.stage} 클리어!`;
         setBattleMessage(
-          `각성한 킹 비둘기를 처치했습니다! 웨이브 보상 ${battle.earnedWaveGems}개와 스테이지 보너스 ${stageBonus}개를 획득했습니다. 스테이지 1을 다시 플레이할 수 있습니다.`
+          `최종 보스를 처치했습니다! 웨이브 보상 ${battle.earnedWaveGems}개와 스테이지 보너스 ${stageBonus}개를 획득했습니다. ${stageConfig.name}에 다시 도전할 수 있습니다.`
         );
       } else {
         battle.resultText = '스테이지 클리어 실패';
         setBattleMessage(
-          failureReason || '보스를 처치하지 못했거나 생명이 모두 소진되었습니다. 스테이지 1에 다시 도전하세요.'
+          failureReason || `보스를 처치하지 못했거나 생명이 모두 소진되었습니다. ${stageConfig.name}에 다시 도전하세요.`
         );
       }
 
@@ -7704,6 +8930,8 @@ function requestGachaDraw(count) {
         totalInvestment: unitData.cost,
         animationOffset: Math.random() * Math.PI * 2,
         attackAnimation: 0,
+        attackMode: 'idle',
+        spearThrowCount: 0,
         angle: 0,
         stunRemaining: 0,
         attackSlowRemaining: 0
@@ -7947,6 +9175,7 @@ function requestGachaDraw(count) {
     });
 
     installAnimatedMenuPigeons();
+    applyStagePreview(selectedStage);
     refreshInstallButton();
     updateOrientationGuard();
     restoreSession();

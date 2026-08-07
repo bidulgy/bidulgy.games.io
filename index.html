@@ -3784,6 +3784,35 @@ body {
 
 
 /* ==================================
+   PC 전투 · 세로 비율을 더 길게
+   - 기존 900:520보다 세로 방향을 약 9.6% 늘려 900:570 느낌으로 표시
+   - 맵 높이는 화면을 가득 사용하고, 좌우를 조금 줄여 전투 공간이 덜 납작해 보이게 함
+   - 실제 전투 좌표는 그대로 두고 표시 비율만 조정하므로 기존 유닛/적 로직은 유지
+================================== */
+@media (min-width: 821px) and (pointer: fine) {
+  #battleScreen .battle-map-shell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #0a1019;
+  }
+
+  #battleScreen #gameCanvas {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: auto;
+    height: 100%;
+    max-width: 96%;
+    aspect-ratio: 900 / 570;
+    transform: translate(-50%, -50%);
+    border: 0;
+    border-radius: 0;
+  }
+}
+
+/* ==================================
    모바일 가로 전투 · 맵 비율 유지 + 살짝 축소
    - 휴대전화의 넓고 낮은 화면에서 900:520 맵 비율을 유지
    - 좌측 상태창과 하단 배치창이 맵을 덜 가리도록 여백 확보

@@ -4613,7 +4613,10 @@ function applyStagePreview(stageId = selectedStage) {
         damage: 28,
         range: 185,
         fireInterval: 0.38,
-        color: '#43d890'
+        piercingEvery: 3,
+        piercingWidth: 20,
+        color: '#43d890',
+        skillText: '공격을 3번 할 때마다 일반 화살보다 3배 큰 거대 바람 화살을 발사합니다. 거대 화살은 사거리 끝까지 날아가며 진행 경로에 있는 모든 적을 관통해 각각 일반 공격과 같은 피해를 줍니다.'
       },
       flameWizard: {
         id: 'flameWizard',
@@ -4687,7 +4690,7 @@ function applyStagePreview(stageId = selectedStage) {
         textColor: '#1f2937',
         dotColor: '#263143',
         glow: 'rgba(244, 247, 251, .68)',
-        chance: 58
+        chance: 56.67
       },
       rare: {
         key: 'rare',
@@ -4717,7 +4720,7 @@ function applyStagePreview(stageId = selectedStage) {
         textColor: '#332600',
         dotColor: '#332600',
         glow: 'rgba(250, 204, 21, .9)',
-        chance: 1
+        chance: 2
       },
       mythic: {
         key: 'mythic',
@@ -4727,7 +4730,7 @@ function applyStagePreview(stageId = selectedStage) {
         textColor: '#ffffff',
         dotColor: '#ffffff',
         glow: 'rgba(239, 68, 68, .95)',
-        chance: .1
+        chance: .4
       },
       secret: {
         key: 'secret',
@@ -4737,7 +4740,7 @@ function applyStagePreview(stageId = selectedStage) {
         textColor: '#32154f',
         dotColor: '#32154f',
         glow: 'rgba(216, 180, 254, 1)',
-        chance: .05
+        chance: .08
       }
     };
 
@@ -7100,6 +7103,7 @@ function requestGachaDraw(count) {
       const durations = {
         arrow: .27,
         windArrow: .36,
+        windPiercingArrow: .46,
         steelSlash: .22,
         royalConeSlash: .42,
         royalSwordWave: .46,
@@ -7400,6 +7404,55 @@ function requestGachaDraw(count) {
       });
     }
 
+    function fireWindPiercingArrow(placed, targetAngle) {
+      const data = UNIT_DATA.windRanger;
+      const range = placed.range;
+      const corridorHalfWidth = data.piercingWidth || 20;
+      const ux = Math.cos(targetAngle);
+      const uy = Math.sin(targetAngle);
+      const nx = -uy;
+      const ny = ux;
+      const muzzleDistance = 31;
+      const startX = placed.x + ux * muzzleDistance;
+      const startY = placed.y - 7 + uy * muzzleDistance;
+      const endX = placed.x + ux * range;
+      const endY = placed.y + uy * range;
+      let hitCount = 0;
+
+      battle.shots.push({
+        x1: startX,
+        y1: startY,
+        x2: endX,
+        y2: endY,
+        life: getAttackEffectDuration('windPiercingArrow'),
+        maxLife: getAttackEffectDuration('windPiercingArrow'),
+        color: data.color,
+        effect: 'windPiercingArrow',
+        angle: targetAngle,
+        seed: Math.random() * 1000,
+        scale: 3
+      });
+
+      battle.enemies.forEach(enemy => {
+        if (enemy.dead) return;
+
+        const dx = enemy.x - placed.x;
+        const dy = enemy.y - placed.y;
+        const forwardDistance = dx * ux + dy * uy;
+        if (forwardDistance < 0 || forwardDistance > range + enemy.radius) return;
+
+        const sideDistance = Math.abs(dx * nx + dy * ny);
+        if (sideDistance > corridorHalfWidth + enemy.radius * .45) return;
+
+        applyDamageToEnemy(enemy, placed.damage);
+        hitCount += 1;
+      });
+
+      if (hitCount > 0) {
+        setBattleMessage(`바람 사수의 거대 관통 화살이 적 ${hitCount}마리를 관통했습니다!`);
+      }
+    }
+
     function updatePlacedUnit(placed, dt) {
       placed.stunRemaining = Math.max(0, (placed.stunRemaining || 0) - dt);
       placed.attackSlowRemaining = Math.max(0, (placed.attackSlowRemaining || 0) - dt);
@@ -7438,25 +7491,38 @@ function requestGachaDraw(count) {
       placed.attackAnimation = 1;
       placed.attackMode = 'normal';
 
-      const effect = getAttackEffectType(placed.unitId);
-      const duration = getAttackEffectDuration(effect);
-      const muzzleDistance = effect === 'steelSlash' ? 22 : 31;
+      const isWindRanger = placed.unitId === 'windRanger';
+      let isWindPiercingShot = false;
 
-      battle.shots.push({
-        x1: placed.x + Math.cos(targetAngle) * muzzleDistance,
-        y1: placed.y - 7 + Math.sin(targetAngle) * muzzleDistance,
-        x2: target.x,
-        y2: target.y,
-        life: duration,
-        maxLife: duration,
-        color: UNIT_DATA[placed.unitId].color,
-        effect,
-        angle: targetAngle,
-        seed: Math.random() * 1000,
-        splashRadius: placed.unitId === 'flameWizard' ? 88 : 0
-      });
+      if (isWindRanger) {
+        placed.windAttackCount = (placed.windAttackCount || 0) + 1;
+        const piercingEvery = UNIT_DATA.windRanger.piercingEvery || 3;
+        isWindPiercingShot = placed.windAttackCount % piercingEvery === 0;
+      }
 
-      applyDamageToEnemy(target, placed.damage);
+      if (isWindPiercingShot) {
+        fireWindPiercingArrow(placed, targetAngle);
+      } else {
+        const effect = getAttackEffectType(placed.unitId);
+        const duration = getAttackEffectDuration(effect);
+        const muzzleDistance = effect === 'steelSlash' ? 22 : 31;
+
+        battle.shots.push({
+          x1: placed.x + Math.cos(targetAngle) * muzzleDistance,
+          y1: placed.y - 7 + Math.sin(targetAngle) * muzzleDistance,
+          x2: target.x,
+          y2: target.y,
+          life: duration,
+          maxLife: duration,
+          color: UNIT_DATA[placed.unitId].color,
+          effect,
+          angle: targetAngle,
+          seed: Math.random() * 1000,
+          splashRadius: placed.unitId === 'flameWizard' ? 88 : 0
+        });
+
+        applyDamageToEnemy(target, placed.damage);
+      }
 
       if (placed.unitId === 'flameWizard') {
         const splashDamage = placed.damage / 3;
@@ -7906,15 +7972,22 @@ function requestGachaDraw(count) {
       }
 
       function drawLayeredWing(side, far = false) {
-        const wingAngle = side * (.10 + flap * .82 - recoveryFold * .18);
-        const rootX = -radius * .02;
-        const rootY = side * radius * .08;
+        // 메뉴 비둘기처럼 앞/뒤 날개가 같은 방향과 같은 각도로 움직이게 한다.
+        // 뒤쪽 날개만 살짝 위·뒤로 빼서 두 날개가 완전히 겹치지 않게 표현한다.
+        const wingSide = -1;
+        const wingAngle = .10 + flap * .82 - recoveryFold * .18;
+        const rootX = -radius * .02 - (far ? radius * .08 : 0);
+        const rootY = wingSide * radius * .08 - (far ? radius * .08 : 0);
 
         ctx.save();
+        if (far) ctx.globalAlpha *= .84;
         ctx.translate(rootX, rootY);
         ctx.rotate(wingAngle);
-        // 양쪽 날개가 같은 진폭과 같은 박자로 움직이도록 동일한 스케일을 사용한다.
-        ctx.scale(featherFan, .92 + Math.abs(flap) * .10);
+        ctx.scale(
+          featherFan * (far ? .96 : 1),
+          (.92 + Math.abs(flap) * .10) * (far ? .96 : 1)
+        );
+        side = wingSide;
 
         // 큰 날개판
         ctx.beginPath();
@@ -8883,6 +8956,7 @@ function requestGachaDraw(count) {
         attackAnimation: 0,
         attackMode: 'idle',
         spearThrowCount: 0,
+        windAttackCount: 0,
         angle: 0,
         stunRemaining: 0,
         attackSlowRemaining: 0
@@ -8977,6 +9051,47 @@ function requestGachaDraw(count) {
           ctx.strokeStyle='#e8f3ff';ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(tailX,tailY);ctx.lineTo(x,y);ctx.stroke();
           ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.fillStyle='#f8fafc';ctx.beginPath();ctx.moveTo(11,0);ctx.lineTo(-2,-5);ctx.lineTo(1,0);ctx.lineTo(-2,5);ctx.closePath();ctx.fill();ctx.restore();
           for(const side of [-1,1]){ctx.strokeStyle='#9fb3c8';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(tailX,tailY);ctx.lineTo(tailX-ux*8+nx*side*5,tailY-uy*8+ny*side*5);ctx.stroke();}
+        } else if (shot.effect === 'windPiercingArrow') {
+          const arrowScale = shot.scale || 3;
+          const pulse = .82 + Math.sin(progress * Math.PI) * .18;
+          const tailLength = 54 * arrowScale;
+          const tailX = x - ux * tailLength;
+          const tailY = y - uy * tailLength;
+
+          for (let layer = 0; layer < 5; layer += 1) {
+            const spread = (8 + layer * 5) * arrowScale * .55;
+            const wave = Math.sin(progress * Math.PI * 9 + shot.seed + layer * 1.5) * spread;
+            ctx.strokeStyle = layer === 0
+              ? `rgba(226,255,238,${.92 * fade})`
+              : `rgba(58,232,150,${(.58 - layer * .07) * fade})`;
+            ctx.lineWidth = (7 - layer * .85) * arrowScale * .62;
+            ctx.beginPath();
+            ctx.moveTo(tailX, tailY);
+            ctx.quadraticCurveTo(
+              x - ux * tailLength * .42 + nx * wave,
+              y - uy * tailLength * .42 + ny * wave,
+              x,
+              y
+            );
+            ctx.stroke();
+          }
+
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(angle);
+          ctx.scale(arrowScale * pulse, arrowScale * pulse);
+          ctx.fillStyle = '#e8fff1';
+          ctx.strokeStyle = '#55e69c';
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.moveTo(14, 0);
+          ctx.lineTo(-7, -7.5);
+          ctx.lineTo(-2, 0);
+          ctx.lineTo(-7, 7.5);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
         } else if (shot.effect === 'windArrow') {
           for (let layer=0; layer<4; layer+=1){const amp=7+layer*4;const wave=Math.sin(progress*Math.PI*8+shot.seed+layer*1.7)*amp;ctx.strokeStyle=layer===0?`rgba(218,255,233,${.85*fade})`:`rgba(54,222,143,${(.5-layer*.08)*fade})`;ctx.lineWidth=4-layer*.65;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.bezierCurveTo(shot.x1+dx*.28+nx*wave,shot.y1+dy*.28+ny*wave,shot.x1+dx*.68-nx*wave,shot.y1+dy*.68-ny*wave,x,y);ctx.stroke();}
           for(let i=0;i<5;i+=1){const a=shot.seed+i*2.4+progress*10;ctx.fillStyle=`rgba(170,255,207,${.75*fade})`;ctx.beginPath();ctx.ellipse(x-ux*(10+i*7)+nx*Math.sin(a)*8,y-uy*(10+i*7)+ny*Math.sin(a)*8,4,1.7,a,0,Math.PI*2);ctx.fill();}

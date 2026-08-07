@@ -1663,6 +1663,97 @@
 
 
 
+/* 난이도 선택 */
+.difficulty-panel {
+  width: min(860px, 100%);
+  margin: 4px auto 16px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, .22);
+  border-radius: 18px;
+  background: rgba(10, 35, 30, .48);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .16);
+  backdrop-filter: blur(10px);
+}
+
+.difficulty-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.difficulty-heading strong {
+  color: #fffbe4;
+  font-size: 15px;
+}
+
+.difficulty-heading small {
+  color: rgba(255, 255, 255, .74);
+  font-size: 11px;
+}
+
+.difficulty-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.difficulty-button {
+  min-height: 56px;
+  padding: 8px 6px;
+  border: 1px solid rgba(255, 255, 255, .22);
+  border-radius: 12px;
+  background: rgba(31, 55, 58, .82);
+  color: white;
+  box-shadow: none;
+  transition: transform .16s ease, border-color .16s ease, background .16s ease;
+}
+
+.difficulty-button span {
+  display: block;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.difficulty-button small {
+  display: block;
+  margin-top: 3px;
+  color: rgba(255, 255, 255, .66);
+  font-size: 9px;
+  line-height: 1.25;
+}
+
+.difficulty-button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 226, 111, .75);
+}
+
+.difficulty-button.active {
+  border-color: #ffe26f;
+  background: linear-gradient(135deg, #ffdf64, #ffb62f);
+  color: #332400;
+  box-shadow: 0 8px 22px rgba(255, 188, 47, .25);
+}
+
+.difficulty-button.active small {
+  color: rgba(51, 36, 0, .72);
+}
+
+.difficulty-summary {
+  margin: 10px 0 0;
+  color: #fff3b5;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+}
+
+@media (max-width: 620px) {
+  .difficulty-buttons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 /* 스테이지 1 · 비둘기 보스 웨이브 */
 .stage-status-note {
   width: min(720px, 100%);
@@ -3829,6 +3920,32 @@ body {
       <span class="start-button-arrow">▶</span>
     </button>
 
+    <section class="difficulty-panel" aria-label="난이도 선택">
+      <div class="difficulty-heading">
+        <strong>🎚️ 난이도 선택</strong>
+        <small>전투 시작 전에 선택하세요</small>
+      </div>
+      <div class="difficulty-buttons">
+        <button class="difficulty-button" type="button" data-difficulty="easy">
+          <span>쉬움</span>
+          <small>적 HP ×0.75 · 웨이브 75</small>
+        </button>
+        <button class="difficulty-button active" type="button" data-difficulty="normal">
+          <span>보통</span>
+          <small>현재 난이도 · 웨이브 100</small>
+        </button>
+        <button class="difficulty-button" type="button" data-difficulty="hard">
+          <span>어려움</span>
+          <small>적 HP ×2 · 웨이브 200</small>
+        </button>
+        <button class="difficulty-button" type="button" data-difficulty="veryHard">
+          <span>매우 어려움</span>
+          <small>적 HP ×3 · 웨이브 300</small>
+        </button>
+      </div>
+      <p id="difficultySummary" class="difficulty-summary">보통 · 적 HP ×1 · 웨이브 보상 100 · 50웨이브 클리어 보너스 1,000</p>
+    </section>
+
     <div id="stageStatusNote" class="stage-status-note">
       스테이지 1 플레이 가능 · 다음 지역은 준비 중
     </div>
@@ -3973,7 +4090,7 @@ body {
   <section id="battleScreen" class="screen hidden">
     <div class="between battle-topbar">
       <div>
-        <h2>스테이지 <span id="battleStage">1</span></h2>
+        <h2>스테이지 <span id="battleStage">1</span> · <span id="battleDifficulty">보통</span></h2>
         <div class="resource-bar">
           <div class="resource">🪙 <strong id="battleGold">0</strong></div>
           <div class="resource">🏰 <strong id="battleLives">0 / 2000</strong></div>
@@ -4235,6 +4352,79 @@ const STAGE_CONFIG = Object.freeze({
   }
 });
 
+const DIFFICULTY_CONFIG = Object.freeze({
+  easy: {
+    key: 'easy',
+    name: '쉬움',
+    hpMultiplier: 0.75,
+    waveReward: 75,
+    stageBonusMultiplier: 0.75
+  },
+  normal: {
+    key: 'normal',
+    name: '보통',
+    hpMultiplier: 1,
+    waveReward: 100,
+    stageBonusMultiplier: 1
+  },
+  hard: {
+    key: 'hard',
+    name: '어려움',
+    hpMultiplier: 2,
+    waveReward: 200,
+    stageBonusMultiplier: 2
+  },
+  veryHard: {
+    key: 'veryHard',
+    name: '매우 어려움',
+    hpMultiplier: 3,
+    waveReward: 300,
+    stageBonusMultiplier: 3
+  }
+});
+
+function getDifficultyConfig(difficultyKey = selectedDifficulty) {
+  return DIFFICULTY_CONFIG[difficultyKey] || DIFFICULTY_CONFIG.normal;
+}
+
+function getStageClearBonus(stageConfig, difficultyConfig = getDifficultyConfig()) {
+  return Math.round(
+    Number(stageConfig?.stageBonus || 0) *
+    Number(difficultyConfig?.stageBonusMultiplier || 1)
+  );
+}
+
+function applyDifficultyPreview(difficultyKey = selectedDifficulty) {
+  const difficulty = getDifficultyConfig(difficultyKey);
+  selectedDifficulty = difficulty.key;
+
+  document.querySelectorAll('[data-difficulty]').forEach(button => {
+    button.classList.toggle('active', button.dataset.difficulty === difficulty.key);
+    button.setAttribute(
+      'aria-pressed',
+      button.dataset.difficulty === difficulty.key ? 'true' : 'false'
+    );
+  });
+
+  const stage = getStageConfig(selectedStage);
+  const stageBonus = getStageClearBonus(stage, difficulty);
+  const summary = document.querySelector('#difficultySummary');
+  const subtitle = document.querySelector('#startBattleSubtitle');
+
+  if (summary) {
+    summary.textContent =
+      `${difficulty.name} · 적 HP ×${difficulty.hpMultiplier} · ` +
+      `웨이브 보상 ${difficulty.waveReward.toLocaleString()} · ` +
+      `50웨이브 클리어 보너스 ${stageBonus.toLocaleString()}`;
+  }
+
+  if (subtitle) {
+    subtitle.textContent = stage.available
+      ? `${stage.name} · ${difficulty.name} · ${stage.maxWave}웨이브 방어전`
+      : `${stage.name} · 준비 중`;
+  }
+}
+
 function getStageConfig(stageId = selectedStage) {
   return STAGE_CONFIG[stageId] || STAGE_CONFIG[1];
 }
@@ -4300,6 +4490,7 @@ function applyStagePreview(stageId = selectedStage) {
   }
 
   renderStageMenuEnemy(stage);
+  applyDifficultyPreview(selectedDifficulty);
 }
 
 
@@ -4505,6 +4696,7 @@ function applyStagePreview(stageId = selectedStage) {
     let gachaArmedButton = null;
     let gachaConfirmTimer = null;
     let selectedStage = 1;
+    let selectedDifficulty = 'normal';
 
     function showScreen(name) {
       Object.values(screens).forEach(screen => screen.classList.add('hidden'));
@@ -4588,10 +4780,13 @@ function applyStagePreview(stageId = selectedStage) {
       return `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
     }
 
-    function queueBattleReward(kind, stage, wave = null) {
+    function queueBattleReward(kind, stage, wave = null, difficultyKey = null) {
       ensurePlayerData();
 
       const runId = battle?.runId || makeBattleRunId();
+      const difficulty = getDifficultyConfig(
+        difficultyKey || battle?.difficultyKey || 'normal'
+      );
       const claimKey = kind === 'wave'
         ? `battle:${runId}:wave:${wave}`
         : `battle:${runId}:stage:${stage}`;
@@ -4601,14 +4796,15 @@ function applyStagePreview(stageId = selectedStage) {
       }
 
       const amount = kind === 'wave'
-        ? 100
-        : Number(getStageConfig(stage)?.stageBonus || 0);
+        ? difficulty.waveReward
+        : getStageClearBonus(getStageConfig(stage), difficulty);
 
       player.pendingBattleRewards.push({
         claimKey,
         kind,
         stage,
         wave,
+        difficulty: difficulty.key,
         amount
       });
     }
@@ -4655,7 +4851,8 @@ function applyStagePreview(stageId = selectedStage) {
               p_claim_key: reward.claimKey,
               p_reward_kind: reward.kind,
               p_stage: Number(reward.stage),
-              p_wave: reward.wave == null ? null : Number(reward.wave)
+              p_wave: reward.wave == null ? null : Number(reward.wave),
+              p_difficulty: reward.difficulty || 'normal'
             });
 
           if (error) {
@@ -6164,6 +6361,7 @@ function requestGachaDraw(count) {
 
     function createBattle() {
       const stageConfig = getStageConfig(selectedStage);
+      const difficulty = getDifficultyConfig(selectedDifficulty);
       const deck = player.deck.filter(Boolean);
 
       if (!stageConfig.available || typeof stageConfig.waveFactory !== 'function') {
@@ -6190,6 +6388,8 @@ function requestGachaDraw(count) {
         runId: makeBattleRunId(),
         stage: stageConfig.id,
         stageConfig,
+        difficultyKey: difficulty.key,
+        difficulty,
         gold: stageConfig.startingGold,
         lives: stageConfig.baseHp,
         baseMaxHp: stageConfig.baseHp,
@@ -6258,7 +6458,7 @@ function requestGachaDraw(count) {
           type: 'brother',
           name: '비둘기 브라더스',
           icon: '🕊️',
-          health: NORMAL_PIGEON_HP * 20,
+          health: NORMAL_PIGEON_HP * 10,
           speed: 54,
           radius: 51,
           reward: 85,
@@ -6338,7 +6538,12 @@ function requestGachaDraw(count) {
     function createWaveQueue(wave) {
       const stageConfig = getStageConfig(battle?.stage || selectedStage);
       if (typeof stageConfig.waveFactory !== 'function') return [];
-      return stageConfig.waveFactory(wave);
+
+      const difficulty = battle?.difficulty || getDifficultyConfig(selectedDifficulty);
+      return stageConfig.waveFactory(wave).map(spec => ({
+        ...spec,
+        health: Math.max(1, Math.round(Number(spec.health || 1) * difficulty.hpMultiplier))
+      }));
     }
 
     function launchWave(wave, options = {}) {
@@ -6502,6 +6707,10 @@ function requestGachaDraw(count) {
 
     function updateBattleUi() {
       document.querySelector('#battleStage').textContent = battle.stage;
+      const difficultyElement = document.querySelector('#battleDifficulty');
+      if (difficultyElement) {
+        difficultyElement.textContent = battle.difficulty?.name || '보통';
+      }
       document.querySelector('#battleGold').textContent = battle.gold;
       document.querySelector('#battleLives').textContent =
         `${Math.max(0, Math.ceil(battle.lives))} / ${battle.baseMaxHp || BASE_MAX_HP}`;
@@ -7200,17 +7409,20 @@ function requestGachaDraw(count) {
     function grantWaveClearReward(waveState) {
       if (!waveState || waveState.rewardGranted) return;
 
+      const difficulty = battle.difficulty || getDifficultyConfig(battle.difficultyKey);
+      const rewardAmount = difficulty.waveReward;
+
       waveState.rewardGranted = true;
-      battle.earnedWaveGems += 100;
-      player.gems += 100;
-      queueBattleReward('wave', battle.stage, waveState.wave);
+      battle.earnedWaveGems += rewardAmount;
+      player.gems += rewardAmount;
+      queueBattleReward('wave', battle.stage, waveState.wave, difficulty.key);
       battle.skipUses = 0;
 
       void savePlayer();
       void flushPendingBattleRewards();
 
       setBattleMessage(
-        `웨이브 ${waveState.wave} 완전 클리어! 소환석 100개를 획득했고 웨이브 스킵이 다시 활성화되었습니다.`
+        `웨이브 ${waveState.wave} 완전 클리어! ${difficulty.name} 난이도 보상 소환석 ${rewardAmount.toLocaleString()}개를 획득했고 웨이브 스킵이 다시 활성화되었습니다.`
       );
       updateWaveSkipUi();
     }
@@ -8936,13 +9148,14 @@ function requestGachaDraw(count) {
       const stageConfig = battle.stageConfig || getStageConfig(battle.stage);
 
       if (victory && battle.finalBossDefeated && !battle.bossEscaped) {
-        const stageBonus = stageConfig.stageBonus;
+        const difficulty = battle.difficulty || getDifficultyConfig(battle.difficultyKey);
+        const stageBonus = getStageClearBonus(stageConfig, difficulty);
         player.gems += stageBonus;
-        queueBattleReward('stage', battle.stage, null);
+        queueBattleReward('stage', battle.stage, null, difficulty.key);
         player.highestStage = Math.max(player.highestStage, battle.stage);
         battle.resultText = `스테이지 ${battle.stage} 클리어!`;
         setBattleMessage(
-          `최종 보스를 처치했습니다! 웨이브 보상 ${battle.earnedWaveGems}개와 스테이지 보너스 ${stageBonus}개를 획득했습니다. ${stageConfig.name}에 다시 도전할 수 있습니다.`
+          `최종 보스를 처치했습니다! ${difficulty.name} 난이도 웨이브 보상 ${battle.earnedWaveGems.toLocaleString()}개와 스테이지 보너스 ${stageBonus.toLocaleString()}개를 획득했습니다. ${stageConfig.name}에 다시 도전할 수 있습니다.`
         );
       } else {
         battle.resultText = '스테이지 클리어 실패';
@@ -9212,6 +9425,11 @@ function requestGachaDraw(count) {
       renderInventory();
     });
     document.querySelector('#startBattleBtn').addEventListener('click', createBattle);
+    document.querySelectorAll('[data-difficulty]').forEach(button => {
+      button.addEventListener('click', () => {
+        applyDifficultyPreview(button.dataset.difficulty);
+      });
+    });
     installAppButton?.addEventListener('click', async () => {
       if (deferredInstallPrompt) {
         deferredInstallPrompt.prompt();

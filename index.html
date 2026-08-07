@@ -96,7 +96,7 @@
     .form-group {
       margin: 14px 0;
     }
- 
+
     label {
       display: block;
       margin-bottom: 7px;
@@ -4519,6 +4519,7 @@ function applyStagePreview(stageId = selectedStage) {
       return {
         gems: 500,
         highestStage: 0,
+        pendingBattleRewards: [],
         ownedUnits: {
           starterArcher: { level: 1, fragments: 0 },
           starterKnight: { level: 1, fragments: 0 },
@@ -4550,6 +4551,9 @@ function applyStagePreview(stageId = selectedStage) {
 
       if (typeof player.gems !== 'number') player.gems = 500;
       if (typeof player.highestStage !== 'number') player.highestStage = 0;
+      if (!Array.isArray(player.pendingBattleRewards)) {
+        player.pendingBattleRewards = [];
+      }
       if (!player.ownedUnits || typeof player.ownedUnits !== 'object') {
         player.ownedUnits = {};
       }
@@ -4574,6 +4578,114 @@ function applyStagePreview(stageId = selectedStage) {
       });
     }
 
+    let battleRewardFlushPromise = null;
+
+    function makeBattleRunId() {
+      if (globalThis.crypto?.randomUUID) {
+        return globalThis.crypto.randomUUID();
+      }
+
+      return `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+    }
+
+    function queueBattleReward(kind, stage, wave = null) {
+      ensurePlayerData();
+
+      const runId = battle?.runId || makeBattleRunId();
+      const claimKey = kind === 'wave'
+        ? `battle:${runId}:wave:${wave}`
+        : `battle:${runId}:stage:${stage}`;
+
+      if (player.pendingBattleRewards.some(item => item.claimKey === claimKey)) {
+        return;
+      }
+
+      const amount = kind === 'wave'
+        ? 100
+        : Number(getStageConfig(stage)?.stageBonus || 0);
+
+      player.pendingBattleRewards.push({
+        claimKey,
+        kind,
+        stage,
+        wave,
+        amount
+      });
+    }
+
+    async function reconcileSavedWalletOnce() {
+      const { data, error } = await supabaseClient
+        .rpc('reconcile_saved_wallet');
+
+      if (error) {
+        console.error('기존 소환석 서버 이전 실패:', error.message);
+        return false;
+      }
+
+      const gems = Number(data);
+      if (Number.isFinite(gems)) {
+        const pending = (player?.pendingBattleRewards || [])
+          .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+
+        player.gems = Math.max(Number(player.gems || 0), gems + pending);
+      }
+
+      return true;
+    }
+
+    async function flushPendingBattleRewards() {
+      ensurePlayerData();
+
+      if (battleRewardFlushPromise) {
+        return battleRewardFlushPromise;
+      }
+
+      if (!player.pendingBattleRewards.length) {
+        return true;
+      }
+
+      battleRewardFlushPromise = (async () => {
+        let lastServerGems = null;
+
+        while (player.pendingBattleRewards.length) {
+          const reward = player.pendingBattleRewards[0];
+
+          const { data, error } = await supabaseClient
+            .rpc('claim_battle_reward', {
+              p_claim_key: reward.claimKey,
+              p_reward_kind: reward.kind,
+              p_stage: Number(reward.stage),
+              p_wave: reward.wave == null ? null : Number(reward.wave)
+            });
+
+          if (error) {
+            console.error('전투 소환석 서버 반영 실패:', error.message, reward);
+            return false;
+          }
+
+          const serverGems = Number(data);
+          if (Number.isFinite(serverGems)) {
+            lastServerGems = serverGems;
+          }
+
+          player.pendingBattleRewards.shift();
+        }
+
+        if (Number.isFinite(lastServerGems)) {
+          player.gems = lastServerGems;
+        }
+
+        await savePlayer();
+        return true;
+      })();
+
+      try {
+        return await battleRewardFlushPromise;
+      } finally {
+        battleRewardFlushPromise = null;
+      }
+    }
+
     // 가챠에 사용되는 실제 소환석은 서버 지갑을 기준으로 표시합니다.
     async function syncServerWallet() {
       if (!player) return false;
@@ -4594,6 +4706,16 @@ function applyStagePreview(stageId = selectedStage) {
 
       if (ensureError) {
         console.error('서버 게임 계정 초기화 실패:', ensureError.message);
+        return false;
+      }
+
+      const reconciled = await reconcileSavedWalletOnce();
+      if (!reconciled) {
+        return false;
+      }
+
+      const rewardsSynced = await flushPendingBattleRewards();
+      if (!rewardsSynced) {
         return false;
       }
 
@@ -6065,6 +6187,7 @@ function requestGachaDraw(count) {
       if (bossAlert) bossAlert.classList.add('hidden');
 
       battle = {
+        runId: makeBattleRunId(),
         stage: stageConfig.id,
         stageConfig,
         gold: stageConfig.startingGold,
@@ -7080,8 +7203,11 @@ function requestGachaDraw(count) {
       waveState.rewardGranted = true;
       battle.earnedWaveGems += 100;
       player.gems += 100;
+      queueBattleReward('wave', battle.stage, waveState.wave);
       battle.skipUses = 0;
+
       void savePlayer();
+      void flushPendingBattleRewards();
 
       setBattleMessage(
         `웨이브 ${waveState.wave} 완전 클리어! 소환석 100개를 획득했고 웨이브 스킵이 다시 활성화되었습니다.`
@@ -8812,6 +8938,7 @@ function requestGachaDraw(count) {
       if (victory && battle.finalBossDefeated && !battle.bossEscaped) {
         const stageBonus = stageConfig.stageBonus;
         player.gems += stageBonus;
+        queueBattleReward('stage', battle.stage, null);
         player.highestStage = Math.max(player.highestStage, battle.stage);
         battle.resultText = `스테이지 ${battle.stage} 클리어!`;
         setBattleMessage(
@@ -8825,6 +8952,7 @@ function requestGachaDraw(count) {
       }
 
       void savePlayer();
+      void flushPendingBattleRewards();
     }
 
     function distanceToSegment(point, start, end) {

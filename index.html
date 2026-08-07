@@ -3781,6 +3781,45 @@ body {
       font-size: 12px;
       line-height: 1.55;
     }
+
+
+/* ==================================
+   모바일 가로 전투 · 맵 비율 유지 + 살짝 축소
+   - 휴대전화의 넓고 낮은 화면에서 900:520 맵 비율을 유지
+   - 좌측 상태창과 하단 배치창이 맵을 덜 가리도록 여백 확보
+================================== */
+@media (orientation: landscape) and (max-height: 650px) and (pointer: coarse) {
+  #battleScreen .battle-map-shell {
+    inset: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    overflow: hidden;
+    background: #0a1019;
+  }
+
+  #battleScreen #gameCanvas {
+    position: absolute;
+    top: 42.5%;
+    left: 50%;
+    width: 88%;
+    height: auto;
+    aspect-ratio: 900 / 520;
+    transform: translate(-50%, -50%);
+    border: 1px solid rgba(143, 181, 224, .24);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .28);
+  }
+}
+
+/* 가로로 매우 긴 휴대전화는 높이를 기준으로 맞춰 찌그러짐을 방지 */
+@media (orientation: landscape) and (max-height: 650px) and (pointer: coarse) and (min-aspect-ratio: 17 / 10) {
+  #battleScreen #gameCanvas {
+    width: auto;
+    height: 85%;
+    max-width: 88%;
+  }
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>

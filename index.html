@@ -2706,11 +2706,12 @@
    뒤쪽 날개는 앞쪽 날개 바로 뒤에 붙어 같은 각도로 움직입니다.
    완전히 겹치지 않도록 위쪽으로만 조금 드러나며 아래로 처지지 않습니다. */
 .pigeon-wing-near {
-  transform-origin: 76% 38%;
+  /* 날개가 몸에 붙는 끝점 하나를 고정축으로 사용 */
+  transform-origin: 91% 83%;
   animation: pigeonWingNearSynchronized .70s cubic-bezier(.36,0,.22,1) infinite !important;
 }
 .pigeon-wing-far {
-  transform-origin: 77% 39%;
+  transform-origin: 93% 84%;
   opacity: .86;
   filter: brightness(.84);
   animation: pigeonWingFarSynchronized .70s cubic-bezier(.36,0,.22,1) infinite !important;
@@ -4431,6 +4432,215 @@ body {
   .mp-message { min-height: 28px; font-size: 10px; }
   .mp-boss-cycle { display: none; }
 }
+
+
+/* ===== 안전한 관리자 패널 ===== */
+.admin-screen {
+  width: min(1180px, 100%);
+}
+
+.admin-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.admin-toolbar h2 {
+  margin: 0;
+}
+
+.admin-security-banner {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border: 1px solid rgba(117, 235, 165, .3);
+  border-radius: 14px;
+  background: rgba(62, 185, 112, .08);
+  color: #c9f6da;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.admin-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr);
+  gap: 14px;
+}
+
+.admin-stack {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-card {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(22, 31, 49, .96);
+}
+
+.admin-card h3 {
+  margin: 0 0 10px;
+}
+
+.admin-search-row,
+.admin-action-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.admin-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.admin-action-box {
+  padding: 12px;
+  border: 1px solid #3d4e69;
+  border-radius: 13px;
+  background: #111a2b;
+}
+
+.admin-action-box strong {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.admin-action-box input,
+.admin-action-box select,
+.admin-search-row input {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid #4c6080;
+  border-radius: 10px;
+  background: #0c1423;
+  color: #fff;
+}
+
+.admin-action-box input + input,
+.admin-action-box select + input,
+.admin-action-box .admin-action-row {
+  margin-top: 8px;
+}
+
+.admin-search-results,
+.admin-room-list,
+.admin-log-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  max-height: 330px;
+  overflow: auto;
+}
+
+.admin-search-result,
+.admin-room-item,
+.admin-log-item {
+  padding: 10px 12px;
+  border: 1px solid #3c4d68;
+  border-radius: 11px;
+  background: #121d30;
+}
+
+.admin-search-result {
+  width: 100%;
+  text-align: left;
+  color: #fff;
+}
+
+.admin-search-result:hover {
+  border-color: #ffd04a;
+}
+
+.admin-search-result small,
+.admin-room-item small,
+.admin-log-item small {
+  display: block;
+  margin-top: 3px;
+  color: #aebdd2;
+  line-height: 1.45;
+}
+
+.admin-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.admin-summary-tile {
+  padding: 10px;
+  border: 1px solid #3c4d68;
+  border-radius: 11px;
+  background: rgba(10, 18, 31, .72);
+}
+
+.admin-summary-tile span {
+  display: block;
+  color: #aebdd2;
+  font-size: 10px;
+}
+
+.admin-summary-tile strong {
+  display: block;
+  margin-top: 3px;
+  color: #fff;
+  font-size: 16px;
+}
+
+.admin-unit-list,
+.admin-dice-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.admin-chip {
+  padding: 6px 8px;
+  border: 1px solid #40526e;
+  border-radius: 999px;
+  background: #121d30;
+  color: #dbe6f5;
+  font-size: 11px;
+}
+
+.admin-selected-player.hidden,
+.admin-panel-button.hidden {
+  display: none !important;
+}
+
+.admin-room-item .row {
+  margin-top: 8px;
+  justify-content: space-between;
+}
+
+.admin-danger-button {
+  border-color: rgba(255, 100, 116, .5) !important;
+  background: rgba(150, 43, 56, .35) !important;
+  color: #ffd7dc !important;
+}
+
+#adminStatus.error { color: #ff9ca7; }
+#adminStatus.good { color: #75eba5; }
+
+@media (max-width: 820px) {
+  .admin-layout,
+  .admin-action-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 </style>
 
 </head>
@@ -4624,6 +4834,12 @@ body {
         <strong>온라인 2인</strong>
         <small>친구와 협동하거나 1:1로 대결하세요</small>
       </button>
+
+      <button id="adminPanelBtn" class="defense-menu-card admin-panel-button hidden" type="button">
+        <span class="defense-card-icon">🛠️</span>
+        <strong>관리자 패널</strong>
+        <small>유저 · 소환석 · 유닛 · 온라인 방 관리</small>
+      </button>
     </div>
 
     <button id="installAppBtn" class="install-app-button hidden" type="button">
@@ -4637,6 +4853,111 @@ body {
     </div>
   </main>
 </section>
+
+
+  <section id="adminScreen" class="screen hidden admin-screen">
+    <div class="admin-toolbar">
+      <div>
+        <span class="section-kicker">SERVER ADMINISTRATION</span>
+        <h2>🛠️ 비둘기 침공 관리자</h2>
+      </div>
+      <button id="adminBackBtn" class="secondary" type="button">메뉴로</button>
+    </div>
+
+    <div class="admin-security-banner">
+      관리자 권한은 화면의 아이디 문자열이 아니라 Supabase 서버의 관리자 UUID로 확인됩니다.
+      소환석 지급, 유닛 지급, 온라인 방 종료도 서버가 관리자 권한을 다시 검사한 뒤 처리하며 모든 변경 기록을 남깁니다.
+    </div>
+
+    <p id="adminStatus" class="message">관리자 서버 상태를 확인하고 있습니다.</p>
+
+    <div class="admin-layout">
+      <div class="admin-stack">
+        <div class="admin-card">
+          <h3>👤 유저 검색</h3>
+          <div class="admin-search-row">
+            <input id="adminUserSearchInput" type="text" maxlength="40" placeholder="게임 아이디 입력" autocomplete="off" />
+            <button id="adminUserSearchBtn" type="button">검색</button>
+          </div>
+          <div id="adminUserSearchResults" class="admin-search-results"></div>
+        </div>
+
+        <div id="adminSelectedPlayer" class="admin-card admin-selected-player hidden">
+          <div class="between">
+            <div>
+              <span class="section-kicker">SELECTED PLAYER</span>
+              <h3 id="adminSelectedUsername">선택된 유저</h3>
+            </div>
+            <button id="adminRefreshPlayerBtn" class="secondary" type="button">새로고침</button>
+          </div>
+
+          <div id="adminPlayerSummary" class="admin-summary-grid"></div>
+
+          <div class="admin-action-grid">
+            <div class="admin-action-box">
+              <strong>💎 소환석 지급 / 회수</strong>
+              <input id="adminGemDeltaInput" type="number" inputmode="numeric" min="-100000" max="100000" step="1" placeholder="예: 1000 또는 -500" />
+              <input id="adminGemReasonInput" type="text" maxlength="120" placeholder="사유 (필수)" value="관리자 소환석 조정" />
+              <div class="admin-action-row">
+                <span class="muted">한 번에 ±100,000</span>
+                <button id="adminGemApplyBtn" type="button">적용</button>
+              </div>
+            </div>
+
+            <div class="admin-action-box">
+              <strong>🧩 유닛 지급</strong>
+              <select id="adminUnitSelect"></select>
+              <input id="adminUnitCountInput" type="number" inputmode="numeric" min="1" max="100" step="1" value="1" />
+              <input id="adminUnitReasonInput" type="text" maxlength="120" placeholder="사유 (필수)" value="관리자 유닛 지급" />
+              <div class="admin-action-row">
+                <span class="muted">기존 보유 수량에 추가</span>
+                <button id="adminUnitGrantBtn" type="button">지급</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:14px;">
+            <strong>보유 유닛</strong>
+            <div id="adminOwnedUnits" class="admin-unit-list"></div>
+          </div>
+          <div style="margin-top:12px;">
+            <strong>서버 주사위</strong>
+            <div id="adminDiceInventory" class="admin-dice-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-stack">
+        <div class="admin-card">
+          <div class="between">
+            <h3>🌐 현재 온라인 방</h3>
+            <button id="adminRefreshRoomsBtn" class="secondary" type="button">새로고침</button>
+          </div>
+          <div id="adminRoomList" class="admin-room-list"></div>
+        </div>
+
+        <div class="admin-card">
+          <div class="between">
+            <h3>📜 관리자 작업 기록</h3>
+            <button id="adminRefreshLogsBtn" class="secondary" type="button">새로고침</button>
+          </div>
+          <div id="adminLogList" class="admin-log-list"></div>
+        </div>
+
+        <div class="admin-card">
+          <h3>🎲 현재 가챠 확률</h3>
+          <div class="admin-dice-list">
+            <span class="admin-chip">일반 56.67%</span>
+            <span class="admin-chip">희귀 29%</span>
+            <span class="admin-chip">영웅 11.85%</span>
+            <span class="admin-chip">전설 2%</span>
+            <span class="admin-chip">신화 0.4%</span>
+            <span class="admin-chip">비밀 0.08%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <section id="gachaScreen" class="screen hidden gacha-screen">
     <div class="between">
@@ -5462,6 +5783,7 @@ function applyStagePreview(stageId = selectedStage) {
     const screens = {
       auth: document.querySelector('#authScreen'),
       menu: document.querySelector('#menuScreen'),
+      admin: document.querySelector('#adminScreen'),
       gacha: document.querySelector('#gachaScreen'),
       collection: document.querySelector('#collectionScreen'),
       deck: document.querySelector('#deckScreen'),
@@ -5481,6 +5803,10 @@ function applyStagePreview(stageId = selectedStage) {
     let selectedStage = 1;
     let selectedDifficulty = 'normal';
     let multiplayerBattleActive = false;
+    let adminAccessKnown = false;
+    let adminIsAuthorized = false;
+    let adminSelectedUserId = null;
+    let adminSelectedUsernameValue = '';
 
     function showScreen(name) {
       Object.values(screens).forEach(screen => screen.classList.add('hidden'));
@@ -5957,6 +6283,406 @@ async function login() {
     openMenu();
   }
 }
+
+
+function adminEscapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, character => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  }[character]));
+}
+
+function setAdminStatus(message, type = '') {
+  const element = document.querySelector('#adminStatus');
+  if (!element) return;
+  element.textContent = message;
+  element.className = `message ${type}`;
+}
+
+function formatAdminDate(value) {
+  if (!value) return '-';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '-';
+  return date.toLocaleString('ko-KR');
+}
+
+async function refreshAdminAccess(force = false) {
+  const button = document.querySelector('#adminPanelBtn');
+
+  if (adminAccessKnown && !force) {
+    button?.classList.toggle('hidden', !adminIsAuthorized);
+    return adminIsAuthorized;
+  }
+
+  const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+  if (userError || !user) {
+    adminAccessKnown = false;
+    adminIsAuthorized = false;
+    button?.classList.add('hidden');
+    return false;
+  }
+
+  const { data, error } = await supabaseClient.rpc('is_game_admin');
+  adminAccessKnown = true;
+  adminIsAuthorized = !error && data === true;
+  button?.classList.toggle('hidden', !adminIsAuthorized);
+
+  if (error) {
+    console.warn('관리자 권한 확인 실패:', error.message);
+  }
+
+  return adminIsAuthorized;
+}
+
+function populateAdminUnitSelect() {
+  const select = document.querySelector('#adminUnitSelect');
+  if (!select || select.options.length) return;
+
+  Object.values(UNIT_DATA).forEach(unit => {
+    const option = document.createElement('option');
+    option.value = unit.id;
+    option.textContent = `${unit.icon} ${unit.name} · ${unit.rarity}`;
+    select.appendChild(option);
+  });
+}
+
+async function openAdminPanel() {
+  const allowed = await refreshAdminAccess(true);
+  if (!allowed) {
+    alert('관리자 권한이 없습니다. admin_setup.sql이 적용되었는지 확인하세요.');
+    return;
+  }
+
+  populateAdminUnitSelect();
+  showScreen('admin');
+  setAdminStatus('서버에서 관리자 권한이 확인되었습니다.', 'good');
+  await Promise.all([
+    loadAdminRooms(),
+    loadAdminLogs()
+  ]);
+}
+
+async function searchAdminPlayers() {
+  const input = document.querySelector('#adminUserSearchInput');
+  const resultsElement = document.querySelector('#adminUserSearchResults');
+  const query = input?.value?.trim() || '';
+
+  if (!query) {
+    setAdminStatus('검색할 게임 아이디를 입력하세요.', 'error');
+    input?.focus();
+    return;
+  }
+
+  resultsElement.innerHTML = '<div class="muted">검색 중...</div>';
+
+  const { data, error } = await supabaseClient.rpc('admin_search_players', {
+    p_query: query
+  });
+
+  if (error) {
+    console.error('관리자 유저 검색 실패:', error);
+    resultsElement.innerHTML = '';
+    setAdminStatus(`유저 검색 실패: ${error.message}`, 'error');
+    return;
+  }
+
+  const players = Array.isArray(data) ? data : [];
+  if (!players.length) {
+    resultsElement.innerHTML = '<div class="muted">검색 결과가 없습니다.</div>';
+    setAdminStatus('검색 결과가 없습니다.');
+    return;
+  }
+
+  resultsElement.innerHTML = players.map(item => {
+    const username = adminEscapeHtml(item.username || '플레이어');
+    const gems = Number.isFinite(Number(item.gems)) ? Number(item.gems).toLocaleString() : '지갑 없음';
+    return `
+      <button class="admin-search-result" type="button" data-admin-user-id="${adminEscapeHtml(item.userId)}">
+        <strong>${username}</strong>
+        <small>💎 ${gems} · 최고 스테이지 ${Number(item.highestStage || 0)} · ${item.hasSave ? '저장 데이터 있음' : '저장 데이터 없음'}</small>
+      </button>
+    `;
+  }).join('');
+
+  resultsElement.querySelectorAll('[data-admin-user-id]').forEach(button => {
+    button.addEventListener('click', () => loadAdminPlayer(button.dataset.adminUserId));
+  });
+
+  setAdminStatus(`${players.length}명의 유저를 찾았습니다.`, 'good');
+}
+
+function renderAdminPlayer(data) {
+  adminSelectedUserId = data.userId;
+  adminSelectedUsernameValue = String(data.username || '플레이어');
+
+  const selected = document.querySelector('#adminSelectedPlayer');
+  const title = document.querySelector('#adminSelectedUsername');
+  const summary = document.querySelector('#adminPlayerSummary');
+  const unitsElement = document.querySelector('#adminOwnedUnits');
+  const diceElement = document.querySelector('#adminDiceInventory');
+
+  selected?.classList.remove('hidden');
+  if (title) title.textContent = `${adminSelectedUsernameValue} 관리`;
+
+  const gemsText = Number.isFinite(Number(data.gems))
+    ? Number(data.gems).toLocaleString()
+    : '지갑 없음';
+
+  summary.innerHTML = `
+    <div class="admin-summary-tile"><span>소환석</span><strong>${gemsText}</strong></div>
+    <div class="admin-summary-tile"><span>최고 스테이지</span><strong>${Number(data.highestStage || 0)}</strong></div>
+    <div class="admin-summary-tile"><span>게임 저장</span><strong>${data.hasSave ? '있음' : '없음'}</strong></div>
+    <div class="admin-summary-tile"><span>서버 지갑</span><strong>${data.hasWallet ? '있음' : '없음'}</strong></div>
+    <div class="admin-summary-tile"><span>가입</span><strong style="font-size:11px;">${adminEscapeHtml(formatAdminDate(data.createdAt))}</strong></div>
+    <div class="admin-summary-tile"><span>최근 로그인</span><strong style="font-size:11px;">${adminEscapeHtml(formatAdminDate(data.lastSignInAt))}</strong></div>
+  `;
+
+  const ownedUnits = data.ownedUnits && typeof data.ownedUnits === 'object'
+    ? data.ownedUnits
+    : {};
+
+  const unitChips = Object.entries(ownedUnits)
+    .filter(([unitId]) => UNIT_DATA[unitId])
+    .map(([unitId, owned]) => {
+      const unit = UNIT_DATA[unitId];
+      const copies = Math.max(1, Math.floor(Number(owned?.copies || 1)));
+      const level = Math.max(1, Math.floor(Number(owned?.level || 1)));
+      const fragments = Math.max(0, Math.floor(Number(owned?.fragments || 0)));
+      return `<span class="admin-chip">${unit.icon} ${adminEscapeHtml(unit.name)} X${copies} · Lv.${level} · 조각 ${fragments}</span>`;
+    });
+
+  unitsElement.innerHTML = unitChips.length
+    ? unitChips.join('')
+    : '<span class="muted">표시할 유닛이 없습니다.</span>';
+
+  const dice = data.diceInventory && typeof data.diceInventory === 'object'
+    ? data.diceInventory
+    : {};
+
+  diceElement.innerHTML = Object.values(DICE_DATA).map(item =>
+    `<span class="admin-chip">${adminEscapeHtml(item.rarity)} ${Math.max(0, Number(dice[item.key] || 0))}개</span>`
+  ).join('');
+}
+
+async function loadAdminPlayer(userId = adminSelectedUserId) {
+  if (!userId) return;
+
+  setAdminStatus('유저 정보를 불러오는 중...');
+  const { data, error } = await supabaseClient.rpc('admin_get_player', {
+    p_user_id: userId
+  });
+
+  if (error) {
+    console.error('관리자 유저 정보 조회 실패:', error);
+    setAdminStatus(`유저 정보 조회 실패: ${error.message}`, 'error');
+    return;
+  }
+
+  renderAdminPlayer(data || {});
+  setAdminStatus(`${data?.username || '유저'} 정보를 불러왔습니다.`, 'good');
+}
+
+async function applyAdminGemAdjustment() {
+  if (!adminSelectedUserId) {
+    setAdminStatus('먼저 관리할 유저를 선택하세요.', 'error');
+    return;
+  }
+
+  const delta = Math.trunc(Number(document.querySelector('#adminGemDeltaInput')?.value));
+  const reason = document.querySelector('#adminGemReasonInput')?.value?.trim() || '';
+
+  if (!Number.isFinite(delta) || delta === 0 || Math.abs(delta) > 100000) {
+    setAdminStatus('소환석 변경량을 -100000~100000 범위의 0이 아닌 정수로 입력하세요.', 'error');
+    return;
+  }
+
+  if (reason.length < 2) {
+    setAdminStatus('관리 사유를 2자 이상 입력하세요.', 'error');
+    return;
+  }
+
+  const actionText = delta > 0 ? `${delta.toLocaleString()}개 지급` : `${Math.abs(delta).toLocaleString()}개 회수`;
+  if (!confirm(`${adminSelectedUsernameValue}에게 소환석을 ${actionText}하시겠습니까?`)) return;
+
+  const button = document.querySelector('#adminGemApplyBtn');
+  button.disabled = true;
+  try {
+    const { data, error } = await supabaseClient.rpc('admin_adjust_gems', {
+      p_user_id: adminSelectedUserId,
+      p_delta: delta,
+      p_reason: reason
+    });
+
+    if (error) throw error;
+
+    setAdminStatus(`소환석 변경 완료 · 현재 ${Number(data?.gems || 0).toLocaleString()}개`, 'good');
+    document.querySelector('#adminGemDeltaInput').value = '';
+    await loadAdminPlayer();
+    await loadAdminLogs();
+
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (user?.id === adminSelectedUserId) {
+      await syncServerWallet();
+    }
+  } catch (error) {
+    console.error('관리자 소환석 변경 실패:', error);
+    setAdminStatus(`소환석 변경 실패: ${error.message}`, 'error');
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function grantAdminUnit() {
+  if (!adminSelectedUserId) {
+    setAdminStatus('먼저 관리할 유저를 선택하세요.', 'error');
+    return;
+  }
+
+  const unitId = document.querySelector('#adminUnitSelect')?.value;
+  const count = Math.trunc(Number(document.querySelector('#adminUnitCountInput')?.value));
+  const reason = document.querySelector('#adminUnitReasonInput')?.value?.trim() || '';
+  const unit = UNIT_DATA[unitId];
+
+  if (!unit || !Number.isFinite(count) || count < 1 || count > 100) {
+    setAdminStatus('지급할 유닛과 1~100 사이의 수량을 확인하세요.', 'error');
+    return;
+  }
+
+  if (reason.length < 2) {
+    setAdminStatus('관리 사유를 2자 이상 입력하세요.', 'error');
+    return;
+  }
+
+  if (!confirm(`${adminSelectedUsernameValue}에게 ${unit.name} ${count}개를 지급하시겠습니까?`)) return;
+
+  const button = document.querySelector('#adminUnitGrantBtn');
+  button.disabled = true;
+  try {
+    const { data, error } = await supabaseClient.rpc('admin_grant_unit', {
+      p_user_id: adminSelectedUserId,
+      p_unit_id: unitId,
+      p_count: count,
+      p_reason: reason
+    });
+
+    if (error) throw error;
+
+    setAdminStatus(`${unit.name} ${count}개 지급 완료 · 현재 X${Number(data?.copies || 0)}`, 'good');
+    await loadAdminPlayer();
+    await loadAdminLogs();
+  } catch (error) {
+    console.error('관리자 유닛 지급 실패:', error);
+    setAdminStatus(`유닛 지급 실패: ${error.message}`, 'error');
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function loadAdminRooms() {
+  const list = document.querySelector('#adminRoomList');
+  if (!list) return;
+  list.innerHTML = '<div class="muted">온라인 방 확인 중...</div>';
+
+  const { data, error } = await supabaseClient.rpc('admin_list_multiplayer_rooms');
+  if (error) {
+    list.innerHTML = `<div class="muted">조회 실패: ${adminEscapeHtml(error.message)}</div>`;
+    return;
+  }
+
+  const rooms = Array.isArray(data) ? data : [];
+  if (!rooms.length) {
+    list.innerHTML = '<div class="muted">현재 대기/진행 중인 온라인 방이 없습니다.</div>';
+    return;
+  }
+
+  list.innerHTML = rooms.map(room => `
+    <div class="admin-room-item">
+      <strong>${adminEscapeHtml(room.code)} · ${room.mode === 'coop' ? '협동' : '대결'}</strong>
+      <small>${adminEscapeHtml(room.hostName || 'HOST')} vs ${adminEscapeHtml(room.guestName || '대기 중')} · ${adminEscapeHtml(room.status)}</small>
+      <small>업데이트 ${adminEscapeHtml(formatAdminDate(room.updatedAt))}</small>
+      <div class="row">
+        <span class="muted">${adminEscapeHtml(room.roomId)}</span>
+        <button class="admin-danger-button" type="button" data-admin-close-room="${adminEscapeHtml(room.roomId)}" data-admin-room-code="${adminEscapeHtml(room.code)}">강제 종료</button>
+      </div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('[data-admin-close-room]').forEach(button => {
+    button.addEventListener('click', () => closeAdminRoom(
+      button.dataset.adminCloseRoom,
+      button.dataset.adminRoomCode
+    ));
+  });
+}
+
+async function closeAdminRoom(roomId, code) {
+  const reason = prompt(`${code} 방을 강제 종료하는 사유를 입력하세요.`, '관리자 강제 종료');
+  if (reason === null) return;
+  if (reason.trim().length < 2) {
+    setAdminStatus('방 종료 사유를 2자 이상 입력하세요.', 'error');
+    return;
+  }
+
+  if (!confirm(`${code} 방을 정말 강제 종료하시겠습니까?`)) return;
+
+  const { error } = await supabaseClient.rpc('admin_close_multiplayer_room', {
+    p_room_id: roomId,
+    p_reason: reason.trim()
+  });
+
+  if (error) {
+    setAdminStatus(`온라인 방 종료 실패: ${error.message}`, 'error');
+    return;
+  }
+
+  setAdminStatus(`${code} 방을 종료했습니다.`, 'good');
+  await loadAdminRooms();
+  await loadAdminLogs();
+}
+
+async function loadAdminLogs() {
+  const list = document.querySelector('#adminLogList');
+  if (!list) return;
+  list.innerHTML = '<div class="muted">작업 기록 불러오는 중...</div>';
+
+  const { data, error } = await supabaseClient.rpc('admin_recent_logs', {
+    p_limit: 30
+  });
+
+  if (error) {
+    list.innerHTML = `<div class="muted">조회 실패: ${adminEscapeHtml(error.message)}</div>`;
+    return;
+  }
+
+  const logs = Array.isArray(data) ? data : [];
+  if (!logs.length) {
+    list.innerHTML = '<div class="muted">아직 관리자 작업 기록이 없습니다.</div>';
+    return;
+  }
+
+  const actionNames = {
+    adjust_gems: '소환석 조정',
+    grant_unit: '유닛 지급',
+    close_multiplayer_room: '온라인 방 종료'
+  };
+
+  list.innerHTML = logs.map(log => {
+    const details = adminEscapeHtml(JSON.stringify(log.details || {}));
+    const target = log.targetName ? ` · 대상 ${adminEscapeHtml(log.targetName)}` : '';
+    return `
+      <div class="admin-log-item">
+        <strong>${adminEscapeHtml(actionNames[log.action] || log.action)}</strong>
+        <small>관리자 ${adminEscapeHtml(log.adminName || '-')} ${target}</small>
+        <small>${adminEscapeHtml(formatAdminDate(log.createdAt))}</small>
+        <small>${details}</small>
+      </div>
+    `;
+  }).join('');
+}
+
 async function logout() {
   await savePlayer();
 
@@ -5970,6 +6696,11 @@ async function logout() {
 
   currentUsername = null;
   player = null;
+  adminAccessKnown = false;
+  adminIsAuthorized = false;
+  adminSelectedUserId = null;
+  adminSelectedUsernameValue = '';
+  document.querySelector('#adminPanelBtn')?.classList.add('hidden');
 
   document.querySelector('#password').value = '';
   showScreen('auth');
@@ -6002,6 +6733,7 @@ async function logout() {
 
       applyStagePreview(selectedStage);
       showScreen('menu');
+      void refreshAdminAccess();
     }
 
     function getOwnedUnitIds() {
@@ -7329,14 +8061,14 @@ function requestGachaDraw(count) {
 
     function refreshInstallButton() {
       if (!installAppButton) return;
-      if (isStandaloneApp()) {
-        installAppButton.classList.add('hidden');
-        return;
-      }
 
       const isiOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-      if (deferredInstallPrompt || isiOS) {
+      const shouldKeepVisible = isMobileLikeDevice() || deferredInstallPrompt || isiOS || isStandaloneApp();
+
+      if (shouldKeepVisible) {
         installAppButton.classList.remove('hidden');
+      } else {
+        installAppButton.classList.add('hidden');
       }
     }
 
@@ -8993,8 +9725,12 @@ function requestGachaDraw(count) {
         // 뒤쪽 날개만 살짝 위·뒤로 빼서 두 날개가 완전히 겹치지 않게 표현한다.
         const wingSide = -1;
         const wingAngle = .10 + flap * .82 - recoveryFold * .18;
+        // 날개가 몸에 붙는 가장 안쪽 끝점을 회전축으로 고정한다.
+        // 확대/회전 중에도 이 한 점은 움직이지 않아 날개가 미끄러져 보이지 않는다.
         const rootX = -radius * .02 - (far ? radius * .08 : 0);
         const rootY = wingSide * radius * .08 - (far ? radius * .08 : 0);
+        const wingPivotX = radius * .22;
+        const wingPivotY = 0;
 
         ctx.save();
         if (far) ctx.globalAlpha *= .84;
@@ -9004,6 +9740,7 @@ function requestGachaDraw(count) {
           featherFan * (far ? .96 : 1),
           (.92 + Math.abs(flap) * .10) * (far ? .96 : 1)
         );
+        ctx.translate(-wingPivotX, -wingPivotY);
         side = wingSide;
 
         // 큰 날개판
@@ -10613,6 +11350,17 @@ function requestGachaDraw(count) {
     document.querySelector('#loginBtn').addEventListener('click', login);
     document.querySelector('#signupBtn').addEventListener('click', signup);
     document.querySelector('#logoutBtn').addEventListener('click', logout);
+    document.querySelector('#adminPanelBtn').addEventListener('click', openAdminPanel);
+    document.querySelector('#adminBackBtn').addEventListener('click', openMenu);
+    document.querySelector('#adminUserSearchBtn').addEventListener('click', searchAdminPlayers);
+    document.querySelector('#adminUserSearchInput').addEventListener('keydown', event => {
+      if (event.key === 'Enter') searchAdminPlayers();
+    });
+    document.querySelector('#adminRefreshPlayerBtn').addEventListener('click', () => loadAdminPlayer());
+    document.querySelector('#adminGemApplyBtn').addEventListener('click', applyAdminGemAdjustment);
+    document.querySelector('#adminUnitGrantBtn').addEventListener('click', grantAdminUnit);
+    document.querySelector('#adminRefreshRoomsBtn').addEventListener('click', loadAdminRooms);
+    document.querySelector('#adminRefreshLogsBtn').addEventListener('click', loadAdminLogs);
     document.querySelector('#openGachaBtn').addEventListener('click', openGacha);
     document.querySelector('#openDeckBtn').addEventListener('click', openDeck);
     document.querySelector('#openCollectionBtn').addEventListener('click', () => openCollection('units'));
@@ -10636,6 +11384,11 @@ function requestGachaDraw(count) {
         await deferredInstallPrompt.userChoice;
         deferredInstallPrompt = null;
         refreshInstallButton();
+        return;
+      }
+
+      if (isStandaloneApp()) {
+        alert('게임이 이미 홈 화면 앱으로 설치되어 있습니다. 설치 버튼은 계속 표시됩니다.');
         return;
       }
 
@@ -10821,12 +11574,14 @@ function requestGachaDraw(count) {
   }
 
   function mpBaseEnemyHp(wave) {
-    const steps = Math.floor(Math.max(1, wave) / 10);
+    const safeWave = Math.max(1, Math.floor(Number(wave) || 1));
+    const steps = Math.floor((safeWave - 1) / 10);
     return Math.round(100 * Math.pow(1.1, steps));
   }
 
-  function mpCheckpointReward(wave) {
-    return 100 + ((wave / 10) - 1) * 10;
+  function mpWaveReward(wave) {
+    const safeWave = Math.max(1, Math.floor(Number(wave) || 1));
+    return 100 + Math.floor((safeWave - 1) / 10) * 10;
   }
 
   function mpBossInfoForWave(wave, baseHp = mpBaseEnemyHp(wave)) {
@@ -11030,7 +11785,7 @@ function requestGachaDraw(count) {
           <li>왼쪽 → 오른쪽 일자 길 · 웨이브 제한 없음</li>
           <li>화면 아래쪽은 내 유닛, 위쪽은 상대 유닛 설치 구역</li>
           <li>적 기본 HP 100 · 10웨이브마다 10% 복리 증가 후 정수 반올림</li>
-          <li>10웨이브마다 보스 순환 · 10웨이브 100 소환석, 이후 +10</li>
+          <li>10웨이브마다 보스 순환 · 매 웨이브 소환석 지급 (1~10: 100개, 11~20: 110개, 이후 10웨이브마다 +10)</li>
         </ul>`
       : `<ul class="mp-rule-list">
           <li>각자 자신의 전체 기지를 플레이</li>
@@ -11042,10 +11797,28 @@ function requestGachaDraw(count) {
   }
 
   async function mpEnsureUser() {
-    const { data, error } = await supabaseClient.auth.getUser();
-    if (error || !data?.user) throw new Error('로그인이 필요합니다.');
-    mpUserId = data.user.id;
-    return data.user;
+    // 온라인 방을 나갔다 다시 들어올 때 getUser()가 순간적으로 실패해
+    // 로그인 화면으로 잘못 판단하던 문제를 피하기 위해 로컬 세션을 우선 사용합니다.
+    let session = null;
+
+    try {
+      const { data, error } = await supabaseClient.auth.getSession();
+      if (!error) session = data?.session || null;
+    } catch (_) {}
+
+    if (!session?.user) {
+      try {
+        const { data, error } = await supabaseClient.auth.refreshSession();
+        if (!error) session = data?.session || null;
+      } catch (_) {}
+    }
+
+    if (!session?.user) {
+      throw new Error('로그인이 필요합니다.');
+    }
+
+    mpUserId = session.user.id;
+    return session.user;
   }
 
   function mpShowWaitingRoom(room) {
@@ -11166,6 +11939,7 @@ function requestGachaDraw(count) {
     mpViewingOpponent = false;
     mpSelectedUnitId = null;
     multiplayerBattleActive = false;
+    mpClaimedRewards.clear();
 
     if (resetRoom) {
       mpRoom = null;
@@ -11468,6 +12242,9 @@ function requestGachaDraw(count) {
       fireInterval: Number(data.fireInterval),
       cooldown: 0,
       attackCount: 0,
+      attackAnimation: 0,
+      attackMode: 'idle',
+      angle: 0,
       stunUntil: 0,
       slowUntil: 0,
       animationOffset: Math.random() * Math.PI * 2
@@ -11626,11 +12403,12 @@ function requestGachaDraw(count) {
     mpState.lastCompletedWave = mpState.wave;
     mpState.nextWaveAt = Date.now() + 2400;
 
-    if (mpState.wave % 10 === 0) {
-      const reward = mpCheckpointReward(mpState.wave);
-      mpState.announcement = mpState.mode === 'coop'
-        ? `WAVE ${mpState.wave} 완료 · 각 플레이어에게 ${reward} 소환석 지급!`
-        : `WAVE ${mpState.wave} 완료 · 다음 보스 단계로 진행합니다.`;
+    if (mpState.mode === 'coop') {
+      const reward = mpWaveReward(mpState.wave);
+      mpState.announcement = `WAVE ${mpState.wave} 완료 · 각 플레이어에게 소환석 ${reward}개 지급!`;
+      mpState.announcementUntil = Date.now() + (mpState.wave % 10 === 0 ? 4200 : 2400);
+    } else if (mpState.wave % 10 === 0) {
+      mpState.announcement = `WAVE ${mpState.wave} 완료 · 다음 보스 단계로 진행합니다.`;
       mpState.announcementUntil = Date.now() + 4200;
     } else {
       mpState.announcement = `WAVE ${mpState.wave} 완료`;
@@ -11775,6 +12553,9 @@ function requestGachaDraw(count) {
     if (!data || !target || target.dead) return;
     unit.attackCount = (unit.attackCount || 0) + 1;
     const angle = Math.atan2(target.y - unit.y, target.x - unit.x);
+    unit.angle = angle;
+    unit.attackAnimation = 1;
+    unit.attackMode = 'ranged';
 
     if (unit.unitId === 'windRanger' && unit.attackCount % 3 === 0) {
       const hits = [...targetState.enemies].filter(enemy => {
@@ -11793,6 +12574,7 @@ function requestGachaDraw(count) {
     }
 
     if (unit.unitId === 'royalGuardian' && Math.hypot(target.x - unit.x, target.y - unit.y) <= (data.meleeRange || 120)) {
+      unit.attackMode = 'coneSlash';
       const half = ((data.coneAngle || 120) * Math.PI / 180) / 2;
       const victims = [...targetState.enemies].filter(enemy => {
         if (enemy.dead) return false;
@@ -11837,6 +12619,7 @@ function requestGachaDraw(count) {
   function mpUpdateUnits(targetState, dt, sideKey = null) {
     const now = Date.now();
     for (const unit of targetState.units) {
+      unit.attackAnimation = Math.max(0, Number(unit.attackAnimation || 0) - dt * 6.5);
       if (now < (unit.stunUntil || 0)) continue;
       const speedFactor = now < (unit.slowUntil || 0) ? .5 : 1;
       unit.cooldown = Math.max(0, (unit.cooldown || 0) - dt * speedFactor);
@@ -11954,8 +12737,8 @@ function requestGachaDraw(count) {
 
     if (mpRoom.mode === 'coop') {
       const completed = Number(mpState.lastCompletedWave || 0);
-      for (let wave = 10; wave <= completed; wave += 10) {
-        const key = `coop_${wave}`;
+      for (let wave = 1; wave <= completed; wave += 1) {
+        const key = `${mpRoom.id}:coop_${wave}`;
         if (mpClaimedRewards.has(key)) continue;
         mpClaimedRewards.add(key);
         try {
@@ -11968,7 +12751,9 @@ function requestGachaDraw(count) {
           if (data?.gems != null) {
             player.gems = Number(data.gems);
             document.querySelector('#mpBattleGemsLabel').textContent = player.gems.toLocaleString();
-            if (data.newly_claimed) mpSetMessage(`WAVE ${wave} 보상 · 소환석 ${data.amount}개 획득!`);
+            if (data.newly_claimed && wave === completed) {
+              mpSetMessage(`WAVE ${wave} 보상 · 소환석 ${data.amount}개 획득!`);
+            }
             void savePlayer();
           }
         } catch (error) {
@@ -11979,7 +12764,7 @@ function requestGachaDraw(count) {
     }
 
     if (mpRoom.mode === 'pvp' && mpRoom.status === 'finished' && mpRoom.winner_id === mpUserId) {
-      const key = 'pvp_win';
+      const key = `${mpRoom.id}:pvp_win`;
       if (mpClaimedRewards.has(key)) return;
       mpClaimedRewards.add(key);
       try {
@@ -12108,6 +12893,614 @@ function requestGachaDraw(count) {
     for (let y = MP_PATH_Y - 58; y < MP_PATH_Y + 55; y += 27) ctx.fillRect(MP_BASE_X + 7, y, 18, 12);
   }
 
+
+
+  /* ===== 싱글 전투와 동일한 고퀄리티 온라인 렌더러 ===== */
+  
+      function mpDetailCanvasPigeon(enemy, x, y, time) {
+        const radius = enemy.radius;
+        const cycle =
+          (time * .00245 + enemy.wingPhase / (Math.PI * 2)) % 1;
+        const powerStroke =
+          cycle < .38
+            ? Math.sin((cycle / .38) * Math.PI)
+            : -0.58 * Math.sin(((cycle - .38) / .62) * Math.PI);
+        const recoveryFold =
+          cycle < .38
+            ? 0
+            : Math.sin(((cycle - .38) / .62) * Math.PI);
+        const flap = powerStroke;
+        const featherFlutter =
+          Math.sin(time * .031 + enemy.wingPhase * 1.7) *
+          (.35 + recoveryFold * .65);
+        const featherFan = .90 + Math.max(0, powerStroke) * .22;
+        const bob =
+          -Math.max(0, powerStroke) * 4.6 +
+          Math.sin(time * .006 + enemy.wingPhase) * 1.4;
+        const isAwakened = enemy.type === 'awakenedKing';
+        const isKing = enemy.type === 'king' || isAwakened;
+  
+        mpCtx.save();
+        mpCtx.translate(x, y + bob);
+        mpCtx.rotate(enemy.heading || 0);
+  
+        mpCtx.save();
+        mpCtx.rotate(-(enemy.heading || 0));
+        mpCtx.beginPath();
+        mpCtx.ellipse(0, radius * .96, radius * 1.16, radius * .29, 0, 0, Math.PI * 2);
+        mpCtx.fillStyle = 'rgba(0, 0, 0, .24)';
+        mpCtx.fill();
+        mpCtx.restore();
+  
+        const bodyColor = isAwakened ? '#756e79' : isKing ? '#96949a' : '#8d98a3';
+        const outline = '#303944';
+        const featherDark = isAwakened ? '#514856' : '#56626d';
+        const featherMid = isAwakened ? '#685e6d' : '#6f7b87';
+        const featherLight = isAwakened ? '#95879b' : '#9da8b3';
+  
+        // 다섯 장의 꼬리깃과 깃대
+        for (let index = -2; index <= 2; index += 1) {
+          const spread = index * radius * .17;
+          mpCtx.save();
+          mpCtx.rotate(index * .075);
+          mpCtx.beginPath();
+          mpCtx.moveTo(-radius * .56, spread * .28);
+          mpCtx.quadraticCurveTo(-radius * 1.14, spread - radius * .16, -radius * 1.78, spread);
+          mpCtx.quadraticCurveTo(-radius * 1.18, spread + radius * .22, -radius * .48, spread * .34 + radius * .2);
+          mpCtx.closePath();
+          mpCtx.fillStyle = index % 2 === 0 ? featherMid : featherDark;
+          mpCtx.fill();
+          mpCtx.strokeStyle = outline;
+          mpCtx.lineWidth = Math.max(1, radius * .045);
+          mpCtx.stroke();
+          mpCtx.beginPath();
+          mpCtx.moveTo(-radius * .55, spread * .30 + radius * .08);
+          mpCtx.lineTo(-radius * 1.62, spread + radius * .04);
+          mpCtx.strokeStyle = 'rgba(225,232,240,.36)';
+          mpCtx.lineWidth = Math.max(.7, radius * .025);
+          mpCtx.stroke();
+          mpCtx.restore();
+        }
+  
+        function drawLayeredWing(side, far = false) {
+          // 메뉴 비둘기처럼 앞/뒤 날개가 같은 방향과 같은 각도로 움직이게 한다.
+          // 뒤쪽 날개만 살짝 위·뒤로 빼서 두 날개가 완전히 겹치지 않게 표현한다.
+          const wingSide = -1;
+          const wingAngle = .10 + flap * .82 - recoveryFold * .18;
+          // 협동/대결 비둘기도 날개의 몸쪽 끝점 하나를 회전축으로 고정한다.
+          // 날갯짓 중 날개 뿌리가 떠다니지 않아 훨씬 자연스럽게 보인다.
+          const rootX = -radius * .02 - (far ? radius * .08 : 0);
+          const rootY = wingSide * radius * .08 - (far ? radius * .08 : 0);
+          const wingPivotX = radius * .22;
+          const wingPivotY = 0;
+  
+          mpCtx.save();
+          if (far) mpCtx.globalAlpha *= .84;
+          mpCtx.translate(rootX, rootY);
+          mpCtx.rotate(wingAngle);
+          mpCtx.scale(
+            featherFan * (far ? .96 : 1),
+            (.92 + Math.abs(flap) * .10) * (far ? .96 : 1)
+          );
+          mpCtx.translate(-wingPivotX, -wingPivotY);
+          side = wingSide;
+  
+          // 큰 날개판
+          mpCtx.beginPath();
+          mpCtx.moveTo(radius * .18, 0);
+          mpCtx.bezierCurveTo(
+            -radius * .18,
+            side * radius * .12,
+            -radius * .78,
+            side * radius * .52,
+            -radius * 1.55,
+            side * radius * .80
+          );
+          mpCtx.bezierCurveTo(
+            -radius * 1.33,
+            side * radius * .25,
+            -radius * .64,
+            -side * radius * .10,
+            radius * .24,
+            0
+          );
+          mpCtx.closePath();
+          const wingGradient = mpCtx.createLinearGradient(-radius * 1.5, 0, radius * .2, 0);
+          wingGradient.addColorStop(0, featherDark);
+          wingGradient.addColorStop(.58, featherMid);
+          wingGradient.addColorStop(1, featherLight);
+          mpCtx.fillStyle = wingGradient;
+          mpCtx.fill();
+          mpCtx.strokeStyle = outline;
+          mpCtx.lineWidth = Math.max(1.1, radius * .06);
+          mpCtx.stroke();
+  
+          // 긴 1차 비행깃
+          for (let i = 0; i < 6; i += 1) {
+            const t = i / 5;
+            const baseX = -radius * (.34 + t * .42);
+            const baseY = side * radius * (.12 + t * .18);
+            const tipX = -radius * (1.30 + t * .34);
+            const tipY = side * radius * (.52 + t * .11 + featherFlutter * .045 * (i + 1) + recoveryFold * .035 * i);
+            mpCtx.beginPath();
+            mpCtx.moveTo(baseX, baseY);
+            mpCtx.quadraticCurveTo(
+              -radius * (.92 + t * .20),
+              side * radius * (.30 + t * .22),
+              tipX,
+              tipY
+            );
+            mpCtx.quadraticCurveTo(
+              -radius * (1.00 + t * .18),
+              side * radius * (.40 + t * .18),
+              baseX + radius * .18,
+              baseY + side * radius * .14
+            );
+            mpCtx.closePath();
+            mpCtx.fillStyle = i % 2 ? featherDark : featherMid;
+            mpCtx.fill();
+            mpCtx.strokeStyle = 'rgba(43,51,60,.78)';
+            mpCtx.lineWidth = Math.max(.8, radius * .032);
+            mpCtx.stroke();
+          }
+  
+          // 2차 깃과 덮깃
+          for (let i = 0; i < 4; i += 1) {
+            const t = i / 3;
+            mpCtx.beginPath();
+            mpCtx.moveTo(-radius * (.18 + t * .18), side * radius * (.04 + t * .06));
+            mpCtx.quadraticCurveTo(
+              -radius * (.52 + t * .18),
+              side * radius * (.22 + t * .10),
+              -radius * (.92 + t * .18),
+              side * radius * (.34 + t * .11)
+            );
+            mpCtx.quadraticCurveTo(
+              -radius * (.60 + t * .16),
+              side * radius * (.22 + t * .08),
+              -radius * (.08 + t * .14),
+              side * radius * (.12 + t * .04)
+            );
+            mpCtx.closePath();
+            mpCtx.fillStyle = `rgba(185,195,205,${.18 + i * .06})`;
+            mpCtx.fill();
+          }
+  
+          // 비둘기 특유의 두 줄 날개 띠
+          for (const bandOffset of [.18, .31]) {
+            mpCtx.beginPath();
+            mpCtx.moveTo(-radius * .20, side * radius * bandOffset);
+            mpCtx.quadraticCurveTo(
+              -radius * .70,
+              side * radius * (bandOffset + .20),
+              -radius * 1.14,
+              side * radius * (bandOffset + .27)
+            );
+            mpCtx.strokeStyle = 'rgba(45,53,62,.82)';
+            mpCtx.lineWidth = Math.max(1.2, radius * .075);
+            mpCtx.lineCap = 'round';
+            mpCtx.stroke();
+          }
+  
+          mpCtx.restore();
+        }
+  
+        drawLayeredWing(-1, true);
+  
+        // 몸통
+        const bodyGradient = mpCtx.createRadialGradient(radius * .32, -radius * .16, radius * .06, 0, 0, radius * 1.3);
+        bodyGradient.addColorStop(0, '#c4cbd1');
+        bodyGradient.addColorStop(.42, bodyColor);
+        bodyGradient.addColorStop(1, '#626d78');
+        mpCtx.beginPath();
+        mpCtx.ellipse(-radius * .03, 0, radius * 1.08, radius * .68, 0, 0, Math.PI * 2);
+        mpCtx.fillStyle = bodyGradient;
+        mpCtx.fill();
+        mpCtx.strokeStyle = outline;
+        mpCtx.lineWidth = Math.max(1.2, radius * .07);
+        mpCtx.stroke();
+  
+        // 몸통 깃 결
+        mpCtx.strokeStyle = 'rgba(235,240,244,.25)';
+        mpCtx.lineWidth = Math.max(.7, radius * .026);
+        for (let row = -1; row <= 1; row += 1) {
+          mpCtx.beginPath();
+          mpCtx.arc(-radius * .10, row * radius * .18, radius * (.60 - Math.abs(row) * .08), .12, Math.PI - .12);
+          mpCtx.stroke();
+        }
+  
+        drawLayeredWing(1, false);
+  
+        // 목과 금속광택
+        mpCtx.beginPath();
+        mpCtx.ellipse(radius * .68, 0, radius * .43, radius * .49, 0, 0, Math.PI * 2);
+        mpCtx.fillStyle = '#77838e';
+        mpCtx.fill();
+        const neckGlow = mpCtx.createRadialGradient(radius * .58, -radius * .16, 0, radius * .66, 0, radius * .48);
+        neckGlow.addColorStop(0, isAwakened ? 'rgba(255,90,90,.82)' : 'rgba(38,196,145,.84)');
+        neckGlow.addColorStop(.55, isAwakened ? 'rgba(210,147,255,.58)' : 'rgba(126,76,186,.68)');
+        neckGlow.addColorStop(1, 'rgba(90,105,118,0)');
+        mpCtx.beginPath();
+        mpCtx.ellipse(radius * .65, 0, radius * .34, radius * .43, -.10, 0, Math.PI * 2);
+        mpCtx.fillStyle = neckGlow;
+        mpCtx.fill();
+  
+        // 머리
+        const headGradient = mpCtx.createRadialGradient(radius * .92, -radius * .42, radius * .05, radius * 1.03, -radius * .18, radius * .55);
+        headGradient.addColorStop(0, '#bcc4cb');
+        headGradient.addColorStop(1, '#7b8792');
+        mpCtx.beginPath();
+        mpCtx.arc(radius * 1.04, -radius * .18, radius * .49, 0, Math.PI * 2);
+        mpCtx.fillStyle = headGradient;
+        mpCtx.fill();
+        mpCtx.strokeStyle = outline;
+        mpCtx.lineWidth = Math.max(1, radius * .055);
+        mpCtx.stroke();
+  
+        // 부리와 콧살
+        mpCtx.beginPath();
+        mpCtx.moveTo(radius * 1.38, -radius * .25);
+        mpCtx.lineTo(radius * 1.90, -radius * .04);
+        mpCtx.lineTo(radius * 1.37, radius * .09);
+        mpCtx.closePath();
+        mpCtx.fillStyle = '#d2a06e';
+        mpCtx.fill();
+        mpCtx.strokeStyle = '#765539';
+        mpCtx.lineWidth = Math.max(1, radius * .04);
+        mpCtx.stroke();
+        mpCtx.beginPath();
+        mpCtx.ellipse(radius * 1.39, -radius * .17, radius * .14, radius * .10, 0, 0, Math.PI * 2);
+        mpCtx.fillStyle = '#ece8e2';
+        mpCtx.fill();
+  
+        // 눈
+        mpCtx.beginPath();
+        mpCtx.arc(radius * 1.09, -radius * .35, radius * .13, 0, Math.PI * 2);
+        mpCtx.fillStyle = '#e17e43';
+        mpCtx.fill();
+        mpCtx.beginPath();
+        mpCtx.arc(radius * 1.09, -radius * .35, radius * .071, 0, Math.PI * 2);
+        mpCtx.fillStyle = '#10151b';
+        mpCtx.fill();
+        mpCtx.beginPath();
+        mpCtx.arc(radius * 1.12, -radius * .39, radius * .024, 0, Math.PI * 2);
+        mpCtx.fillStyle = '#ffffff';
+        mpCtx.fill();
+  
+        if (enemy.type === 'knight') {
+          mpCtx.beginPath();
+          mpCtx.moveTo(radius * .02, radius * .10);
+          mpCtx.lineTo(radius * .58, radius * .30);
+          mpCtx.lineTo(radius * .47, radius * .92);
+          mpCtx.lineTo(radius * .02, radius * 1.17);
+          mpCtx.lineTo(-radius * .42, radius * .92);
+          mpCtx.lineTo(-radius * .54, radius * .30);
+          mpCtx.closePath();
+          const shieldGradient = mpCtx.createLinearGradient(-radius * .4, 0, radius * .55, radius * 1.1);
+          shieldGradient.addColorStop(0, '#b9d7f4');
+          shieldGradient.addColorStop(.5, '#527ba8');
+          shieldGradient.addColorStop(1, '#294a70');
+          mpCtx.fillStyle = shieldGradient;
+          mpCtx.fill();
+          mpCtx.strokeStyle = '#e8f4ff';
+          mpCtx.lineWidth = Math.max(1.4, radius * .08);
+          mpCtx.stroke();
+        }
+  
+        if (isKing) {
+          const crownY = -radius * .90;
+          mpCtx.beginPath();
+          mpCtx.moveTo(radius * .67, crownY + radius * .27);
+          mpCtx.lineTo(radius * .72, crownY - radius * .18);
+          mpCtx.lineTo(radius * .94, crownY + radius * .02);
+          mpCtx.lineTo(radius * 1.10, crownY - radius * .30);
+          mpCtx.lineTo(radius * 1.29, crownY + radius * .03);
+          mpCtx.lineTo(radius * 1.50, crownY - radius * .16);
+          mpCtx.lineTo(radius * 1.45, crownY + radius * .32);
+          mpCtx.closePath();
+          const crownGradient = mpCtx.createLinearGradient(radius * .7, crownY, radius * 1.5, crownY + radius * .3);
+          crownGradient.addColorStop(0, '#fff4a8');
+          crownGradient.addColorStop(.5, isAwakened ? '#ff5b48' : '#facc15');
+          crownGradient.addColorStop(1, isAwakened ? '#b91c1c' : '#b77900');
+          mpCtx.fillStyle = crownGradient;
+          mpCtx.fill();
+          mpCtx.strokeStyle = isAwakened ? '#ffd2ca' : '#fff1a6';
+          mpCtx.lineWidth = Math.max(1, radius * .055);
+          mpCtx.stroke();
+        }
+  
+        if (isAwakened) {
+          mpCtx.strokeStyle = 'rgba(255, 92, 92, .88)';
+          mpCtx.lineWidth = Math.max(1.3, radius * .07);
+          for (const side of [-1, 1]) {
+            mpCtx.beginPath();
+            mpCtx.moveTo(-radius * .2, side * radius * .80);
+            mpCtx.lineTo(radius * .05, side * radius * 1.10);
+            mpCtx.lineTo(radius * .25, side * radius * .89);
+            mpCtx.stroke();
+          }
+        }
+  
+        mpCtx.restore();
+      }
+
+  
+      function mpDetailKnightPigeonArmor(enemy, x, y, time) {
+        if (enemy.type !== 'knight') return;
+  
+        const radius = enemy.radius;
+        const cycle = (time * .00245 + enemy.wingPhase / (Math.PI * 2)) % 1;
+        const powerStroke = cycle < .38
+          ? Math.sin((cycle / .38) * Math.PI)
+          : -0.58 * Math.sin(((cycle - .38) / .62) * Math.PI);
+        const bob = -Math.max(0, powerStroke) * 4.6 + Math.sin(time * .006 + enemy.wingPhase) * 1.4;
+  
+        mpCtx.save();
+        mpCtx.translate(x, y + bob);
+        mpCtx.rotate(enemy.heading || 0);
+  
+        // 겹판 흉갑
+        const plate = mpCtx.createLinearGradient(-radius, -radius, radius, radius);
+        plate.addColorStop(0, '#e8f2fc');
+        plate.addColorStop(.38, '#8da9c4');
+        plate.addColorStop(.72, '#476987');
+        plate.addColorStop(1, '#253f59');
+        mpCtx.beginPath();
+        mpCtx.moveTo(-radius * .72, -radius * .48);
+        mpCtx.quadraticCurveTo(0, -radius * .82, radius * .72, -radius * .44);
+        mpCtx.lineTo(radius * .64, radius * .45);
+        mpCtx.quadraticCurveTo(0, radius * .76, -radius * .68, radius * .43);
+        mpCtx.closePath();
+        mpCtx.fillStyle = plate;
+        mpCtx.fill();
+        mpCtx.strokeStyle = '#d9edff';
+        mpCtx.lineWidth = Math.max(1.6, radius * .07);
+        mpCtx.stroke();
+  
+        // 흉갑 세로 리브와 중앙 문장
+        for (const offset of [-.35, 0, .35]) {
+          mpCtx.beginPath();
+          mpCtx.moveTo(offset * radius, -radius * .52);
+          mpCtx.lineTo(offset * radius * .86, radius * .48);
+          mpCtx.strokeStyle = 'rgba(238,247,255,.55)';
+          mpCtx.lineWidth = Math.max(1, radius * .035);
+          mpCtx.stroke();
+        }
+        mpCtx.beginPath();
+        mpCtx.moveTo(0, -radius * .25);
+        mpCtx.lineTo(radius * .18, 0);
+        mpCtx.lineTo(0, radius * .28);
+        mpCtx.lineTo(-radius * .18, 0);
+        mpCtx.closePath();
+        mpCtx.fillStyle = '#f2c94c';
+        mpCtx.fill();
+  
+        // 날개 뿌리 견갑
+        for (const side of [-1, 1]) {
+          mpCtx.beginPath();
+          mpCtx.ellipse(-radius * .18, side * radius * .66, radius * .48, radius * .24, side * .18, 0, Math.PI * 2);
+          mpCtx.fillStyle = '#6f8da9';
+          mpCtx.fill();
+          mpCtx.strokeStyle = '#d7e9fa';
+          mpCtx.lineWidth = Math.max(1.2, radius * .05);
+          mpCtx.stroke();
+        }
+  
+        // 목 보호대
+        mpCtx.beginPath();
+        mpCtx.arc(radius * .62, 0, radius * .43, -1.2, 1.2);
+        mpCtx.strokeStyle = '#aec6dc';
+        mpCtx.lineWidth = radius * .20;
+        mpCtx.stroke();
+        mpCtx.beginPath();
+        mpCtx.arc(radius * .62, 0, radius * .43, -1.2, 1.2);
+        mpCtx.strokeStyle = '#344f69';
+        mpCtx.lineWidth = radius * .08;
+        mpCtx.stroke();
+  
+        // 완전한 투구와 눈가리개
+        const headX = radius * 1.04;
+        const headY = -radius * .18;
+        mpCtx.beginPath();
+        mpCtx.arc(headX, headY, radius * .57, Math.PI * .80, Math.PI * 2.12);
+        mpCtx.lineTo(headX + radius * .44, headY + radius * .36);
+        mpCtx.quadraticCurveTo(headX, headY + radius * .57, headX - radius * .40, headY + radius * .27);
+        mpCtx.closePath();
+        mpCtx.fillStyle = plate;
+        mpCtx.fill();
+        mpCtx.strokeStyle = '#edf7ff';
+        mpCtx.lineWidth = Math.max(1.4, radius * .06);
+        mpCtx.stroke();
+  
+        mpCtx.fillStyle = '#182838';
+        mpCtx.fillRect(headX + radius * .06, headY - radius * .28, radius * .54, radius * .13);
+        for (let index = 0; index < 4; index += 1) {
+          mpCtx.fillStyle = '#8aa4bb';
+          mpCtx.fillRect(
+            headX + radius * (.13 + index * .11),
+            headY - radius * .27,
+            radius * .035,
+            radius * .12
+          );
+        }
+  
+        // 투구 볏
+        mpCtx.beginPath();
+        mpCtx.moveTo(headX - radius * .25, headY - radius * .50);
+        mpCtx.quadraticCurveTo(headX, headY - radius * .95, headX + radius * .34, headY - radius * .50);
+        mpCtx.lineTo(headX + radius * .14, headY - radius * .35);
+        mpCtx.quadraticCurveTo(headX, headY - radius * .66, headX - radius * .19, headY - radius * .34);
+        mpCtx.closePath();
+        mpCtx.fillStyle = '#b51f36';
+        mpCtx.fill();
+        mpCtx.strokeStyle = '#ff8697';
+        mpCtx.lineWidth = Math.max(1, radius * .035);
+        mpCtx.stroke();
+  
+        mpCtx.restore();
+      }
+
+  
+      function mpDetailStandingUnitBody(unit, time) {
+        const id = unit.unitId;
+        const attackPulse = (unit.attackAnimation || 0) * .8;
+  
+        // 공통 그림자와 발
+        mpCtx.beginPath();
+        mpCtx.ellipse(0, 23, 20, 7, 0, 0, Math.PI * 2);
+        mpCtx.fillStyle = 'rgba(0,0,0,.31)';
+        mpCtx.fill();
+  
+        const drawBoots = (color, spread = 8) => {
+          mpCtx.fillStyle = color;
+          mpCtx.beginPath();
+          mpCtx.roundRect(-spread - 5, 13, 9, 13, 3);
+          mpCtx.roundRect(spread - 4, 13, 9, 13, 3);
+          mpCtx.fill();
+        };
+  
+        if (id === 'starterArcher') {
+          drawBoots('#493326', 7);
+          mpCtx.fillStyle = '#244b84';
+          mpCtx.beginPath();
+          mpCtx.moveTo(-14, 12); mpCtx.lineTo(-11, -10); mpCtx.lineTo(11, -10); mpCtx.lineTo(15, 12); mpCtx.closePath(); mpCtx.fill();
+          mpCtx.fillStyle = '#4d8fff';
+          mpCtx.fillRect(-12, -6, 24, 14);
+          mpCtx.fillStyle = '#d9b36c';
+          mpCtx.fillRect(-14, 3, 28, 4);
+          mpCtx.fillStyle = '#315f9f';
+          mpCtx.beginPath(); mpCtx.arc(0, -17, 12, Math.PI, 0); mpCtx.lineTo(10, -8); mpCtx.lineTo(-10, -8); mpCtx.closePath(); mpCtx.fill();
+          mpCtx.fillStyle = '#f0c39a'; mpCtx.beginPath(); mpCtx.arc(0, -14, 7.5, 0, Math.PI * 2); mpCtx.fill();
+          mpCtx.strokeStyle = '#7a4a26'; mpCtx.lineWidth = 3; mpCtx.beginPath(); mpCtx.moveTo(-12, -5); mpCtx.lineTo(-19, 15); mpCtx.stroke();
+          for (let i = 0; i < 3; i += 1) { mpCtx.strokeStyle = '#dcecff'; mpCtx.lineWidth = 1.3; mpCtx.beginPath(); mpCtx.moveTo(-18 + i * 3, -8); mpCtx.lineTo(-18 + i * 3, 8); mpCtx.stroke(); }
+        } else if (id === 'windRanger') {
+          drawBoots('#33452d', 8);
+          mpCtx.fillStyle = '#15583e';
+          mpCtx.beginPath(); mpCtx.moveTo(-18, 15); mpCtx.lineTo(-10, -11); mpCtx.lineTo(10, -11); mpCtx.lineTo(18, 15); mpCtx.lineTo(0, 9); mpCtx.closePath(); mpCtx.fill();
+          mpCtx.fillStyle = '#43d890'; mpCtx.beginPath(); mpCtx.moveTo(-12,-8); mpCtx.lineTo(12,-8); mpCtx.lineTo(9,9); mpCtx.lineTo(-9,9); mpCtx.closePath(); mpCtx.fill();
+          mpCtx.fillStyle = '#1f8c5e'; mpCtx.beginPath(); mpCtx.arc(0,-17,12,Math.PI,0); mpCtx.lineTo(9,-7); mpCtx.lineTo(-9,-7); mpCtx.closePath(); mpCtx.fill();
+          mpCtx.fillStyle = '#e7c39e'; mpCtx.beginPath(); mpCtx.arc(0,-14,7,0,Math.PI*2); mpCtx.fill();
+          mpCtx.fillStyle = '#b8ffd7';
+          for (const side of [-1,1]) { mpCtx.beginPath(); mpCtx.ellipse(side*13,-5,5,12,side*.45,0,Math.PI*2); mpCtx.fill(); }
+          mpCtx.beginPath(); mpCtx.moveTo(3,-28); mpCtx.quadraticCurveTo(15,-37,18,-23); mpCtx.quadraticCurveTo(10,-27,3,-20); mpCtx.closePath(); mpCtx.fill();
+        } else if (id === 'starterKnight') {
+          drawBoots('#283342', 9);
+          mpCtx.fillStyle = '#596575'; mpCtx.fillRect(-15,-7,30,23);
+          const metal = mpCtx.createLinearGradient(-15,-10,15,12); metal.addColorStop(0,'#edf4fa'); metal.addColorStop(.5,'#9ca8ba'); metal.addColorStop(1,'#4c5968');
+          mpCtx.fillStyle = metal; mpCtx.beginPath(); mpCtx.roundRect(-14,-10,28,25,6); mpCtx.fill();
+          mpCtx.fillStyle = '#748395'; for (const side of [-1,1]) { mpCtx.beginPath(); mpCtx.arc(side*16,-5,8,0,Math.PI*2); mpCtx.fill(); }
+          mpCtx.fillStyle = '#b8c3cf'; mpCtx.beginPath(); mpCtx.arc(0,-19,12,0,Math.PI*2); mpCtx.fill();
+          mpCtx.fillStyle = '#273545'; mpCtx.fillRect(-10,-22,20,5); mpCtx.fillRect(-2,-30,4,11);
+          mpCtx.strokeStyle = '#f7fbff'; mpCtx.lineWidth = 1.4; mpCtx.strokeRect(-13,-9,26,23);
+          mpCtx.fillStyle = '#426b91'; mpCtx.beginPath(); mpCtx.moveTo(-24,-5); mpCtx.lineTo(-11,-11); mpCtx.lineTo(-7,5); mpCtx.lineTo(-16,14); mpCtx.lineTo(-25,7); mpCtx.closePath(); mpCtx.fill();
+        } else if (id === 'royalGuardian') {
+          drawBoots('#4a3512', 10);
+          mpCtx.fillStyle = '#6d1e2a'; mpCtx.beginPath(); mpCtx.moveTo(-19,15); mpCtx.lineTo(-16,-13); mpCtx.lineTo(16,-13); mpCtx.lineTo(21,15); mpCtx.closePath(); mpCtx.fill();
+          const gold = mpCtx.createLinearGradient(-18,-12,18,15); gold.addColorStop(0,'#fff5b2'); gold.addColorStop(.38,'#ffd04a'); gold.addColorStop(1,'#986600');
+          mpCtx.fillStyle = gold; mpCtx.beginPath(); mpCtx.roundRect(-17,-11,34,28,7); mpCtx.fill();
+          for (const side of [-1,1]) { mpCtx.beginPath(); mpCtx.arc(side*19,-5,10,0,Math.PI*2); mpCtx.fill(); }
+          mpCtx.beginPath(); mpCtx.arc(0,-21,13,0,Math.PI*2); mpCtx.fill();
+          mpCtx.fillStyle = '#4d2f0a'; mpCtx.fillRect(-11,-23,22,5);
+          mpCtx.fillStyle = '#f7d65a'; mpCtx.beginPath(); mpCtx.moveTo(-8,-34); mpCtx.lineTo(-3,-27); mpCtx.lineTo(1,-36); mpCtx.lineTo(5,-27); mpCtx.lineTo(10,-34); mpCtx.lineTo(9,-25); mpCtx.lineTo(-9,-25); mpCtx.closePath(); mpCtx.fill();
+          mpCtx.fillStyle = '#b77900'; mpCtx.beginPath(); mpCtx.moveTo(-26,-7); mpCtx.lineTo(-12,-13); mpCtx.lineTo(-7,5); mpCtx.lineTo(-17,16); mpCtx.lineTo(-27,8); mpCtx.closePath(); mpCtx.fill();
+        } else if (id === 'starterMage') {
+          mpCtx.fillStyle = '#3d2467'; mpCtx.beginPath(); mpCtx.moveTo(-19,20); mpCtx.lineTo(-10,-10); mpCtx.lineTo(10,-10); mpCtx.lineTo(20,20); mpCtx.closePath(); mpCtx.fill();
+          mpCtx.fillStyle = '#9b64ff'; mpCtx.beginPath(); mpCtx.moveTo(-14,16); mpCtx.lineTo(-8,-8); mpCtx.lineTo(8,-8); mpCtx.lineTo(14,16); mpCtx.closePath(); mpCtx.fill();
+          mpCtx.fillStyle = '#f0c39a'; mpCtx.beginPath(); mpCtx.arc(0,-15,8,0,Math.PI*2); mpCtx.fill();
+          mpCtx.fillStyle = '#5b2fa4'; mpCtx.beginPath(); mpCtx.moveTo(-15,-17); mpCtx.quadraticCurveTo(-2,-38,8,-18); mpCtx.lineTo(18,-11); mpCtx.lineTo(-14,-10); mpCtx.closePath(); mpCtx.fill();
+          mpCtx.fillStyle = '#f3e8ff'; mpCtx.beginPath(); mpCtx.arc(-2,-25,2.2,0,Math.PI*2); mpCtx.fill();
+        } else if (id === 'flameWizard') {
+          mpCtx.fillStyle = '#6b1d18'; mpCtx.beginPath(); mpCtx.moveTo(-22,21); mpCtx.lineTo(-13,-9); mpCtx.lineTo(13,-9); mpCtx.lineTo(22,21); mpCtx.lineTo(10,15); mpCtx.lineTo(0,22); mpCtx.lineTo(-10,15); mpCtx.closePath(); mpCtx.fill();
+          const fireRobe = mpCtx.createLinearGradient(0,-10,0,21); fireRobe.addColorStop(0,'#ffb08f'); fireRobe.addColorStop(.45,'#ff6d42'); fireRobe.addColorStop(1,'#9f2415');
+          mpCtx.fillStyle = fireRobe; mpCtx.beginPath(); mpCtx.moveTo(-14,16); mpCtx.lineTo(-9,-8); mpCtx.lineTo(9,-8); mpCtx.lineTo(14,16); mpCtx.closePath(); mpCtx.fill();
+          mpCtx.fillStyle = '#d9421f'; mpCtx.beginPath(); mpCtx.arc(0,-16,10,0,Math.PI*2); mpCtx.fill();
+          mpCtx.fillStyle = '#ffe0bd'; mpCtx.beginPath(); mpCtx.arc(0,-14,6.5,0,Math.PI*2); mpCtx.fill();
+          for (const side of [-1,1]) { mpCtx.fillStyle = '#ffca54'; mpCtx.beginPath(); mpCtx.moveTo(side*5,-24); mpCtx.quadraticCurveTo(side*15,-38,side*13,-21); mpCtx.closePath(); mpCtx.fill(); }
+          mpCtx.fillStyle = '#ff7a2f'; for (const side of [-1,1]) { mpCtx.beginPath(); mpCtx.arc(side*14,-5,5+attackPulse,0,Math.PI*2); mpCtx.fill(); }
+        } else if (id === 'skyDragonKnight') {
+          drawBoots('#24171a', 10);
+          mpCtx.fillStyle = '#2b1218'; mpCtx.beginPath(); mpCtx.moveTo(-21,17); mpCtx.lineTo(-17,-13); mpCtx.lineTo(17,-13); mpCtx.lineTo(22,17); mpCtx.closePath(); mpCtx.fill();
+          const dragonArmor = mpCtx.createLinearGradient(-18,-12,18,15); dragonArmor.addColorStop(0,'#ffb28e'); dragonArmor.addColorStop(.32,'#ef4444'); dragonArmor.addColorStop(.72,'#8b1b24'); dragonArmor.addColorStop(1,'#3b1118');
+          mpCtx.fillStyle = dragonArmor; mpCtx.beginPath(); mpCtx.moveTo(-17,-10); mpCtx.lineTo(-10,-15); mpCtx.lineTo(10,-15); mpCtx.lineTo(17,-10); mpCtx.lineTo(14,16); mpCtx.lineTo(-14,16); mpCtx.closePath(); mpCtx.fill();
+          for (const side of [-1,1]) { mpCtx.beginPath(); mpCtx.moveTo(side*13,-10); mpCtx.lineTo(side*27,-17); mpCtx.lineTo(side*21,-2); mpCtx.closePath(); mpCtx.fill(); }
+          mpCtx.beginPath(); mpCtx.arc(0,-21,13,0,Math.PI*2); mpCtx.fill();
+          mpCtx.fillStyle = '#4a1119'; mpCtx.fillRect(-10,-23,20,5);
+          mpCtx.fillStyle = '#ff947c'; for (const side of [-1,1]) { mpCtx.beginPath(); mpCtx.moveTo(side*5,-32); mpCtx.lineTo(side*17,-42); mpCtx.lineTo(side*12,-25); mpCtx.closePath(); mpCtx.fill(); }
+          mpCtx.fillStyle = '#f9d26b'; mpCtx.beginPath(); mpCtx.moveTo(0,-4); mpCtx.lineTo(6,5); mpCtx.lineTo(0,11); mpCtx.lineTo(-6,5); mpCtx.closePath(); mpCtx.fill();
+        } else if (id === 'astralChronomancer') {
+          const hover = Math.sin(time*.004 + unit.animationOffset)*2;
+          mpCtx.save(); mpCtx.translate(0,hover);
+          mpCtx.fillStyle = '#2e2042'; mpCtx.beginPath(); mpCtx.moveTo(-22,20); mpCtx.lineTo(-11,-10); mpCtx.lineTo(11,-10); mpCtx.lineTo(22,20); mpCtx.quadraticCurveTo(0,13,-22,20); mpCtx.fill();
+          mpCtx.fillStyle = '#d8b4fe'; mpCtx.beginPath(); mpCtx.moveTo(-14,14); mpCtx.lineTo(-8,-8); mpCtx.lineTo(8,-8); mpCtx.lineTo(14,14); mpCtx.closePath(); mpCtx.fill();
+          mpCtx.strokeStyle = '#f3e8ff'; mpCtx.lineWidth = 2; mpCtx.beginPath(); mpCtx.arc(0,-20,16,0,Math.PI*2); mpCtx.stroke();
+          for (let i=0;i<8;i+=1){const a=time*.002+i*Math.PI/4;mpCtx.beginPath();mpCtx.moveTo(Math.cos(a)*13, -20+Math.sin(a)*13);mpCtx.lineTo(Math.cos(a)*18,-20+Math.sin(a)*18);mpCtx.stroke();}
+          mpCtx.fillStyle = '#f1c9a7'; mpCtx.beginPath(); mpCtx.arc(0,-18,7,0,Math.PI*2); mpCtx.fill();
+          mpCtx.restore();
+        }
+      }
+
+  
+      function mpDetailAimedUnitWeapon(unit, data, time) {
+        const attack = unit.attackAnimation || 0;
+        const recoil = attack * 5;
+        const baseAngle = unit.angle || 0;
+        let weaponAngle = baseAngle;
+        let weaponRecoil = recoil;
+  
+        if (unit.unitId === 'royalGuardian' && attack > 0) {
+          const motionProgress = 1 - attack;
+          weaponRecoil = 0;
+          if (unit.attackMode === 'coneSlash') {
+            weaponAngle += -1.05 + motionProgress * 2.10;
+          } else if (unit.attackMode === 'rangedSmash') {
+            weaponAngle += -1.48 + motionProgress * 1.72;
+          }
+        }
+  
+        mpCtx.save();
+        mpCtx.translate(1, -5);
+        mpCtx.rotate(weaponAngle);
+        mpCtx.translate(-weaponRecoil, 0);
+        mpCtx.lineCap = 'round';
+        mpCtx.lineJoin = 'round';
+  
+        if (unit.unitId === 'starterArcher' || unit.unitId === 'windRanger') {
+          const wind = unit.unitId === 'windRanger';
+          mpCtx.strokeStyle = wind ? '#8ff4bd' : '#d49a55';
+          mpCtx.lineWidth = 3;
+          mpCtx.beginPath(); mpCtx.arc(12,0,17,-1.18,1.18); mpCtx.stroke();
+          mpCtx.strokeStyle = '#f8fbff'; mpCtx.lineWidth = 1.1; mpCtx.beginPath(); mpCtx.moveTo(19,-15); mpCtx.lineTo(19,15); mpCtx.stroke();
+          mpCtx.strokeStyle = wind ? '#d7ffe8' : '#e7edf5'; mpCtx.lineWidth = 2; mpCtx.beginPath(); mpCtx.moveTo(-5,0); mpCtx.lineTo(35,0); mpCtx.stroke();
+          mpCtx.fillStyle = wind ? '#62e89c' : '#dbeafe'; mpCtx.beginPath(); mpCtx.moveTo(42,0); mpCtx.lineTo(33,-5); mpCtx.lineTo(33,5); mpCtx.closePath(); mpCtx.fill();
+        } else if (unit.unitId === 'starterKnight' || unit.unitId === 'royalGuardian') {
+          const royal = unit.unitId === 'royalGuardian';
+          const blade = mpCtx.createLinearGradient(0,0,46,0); blade.addColorStop(0,royal?'#8c5a00':'#596979'); blade.addColorStop(.38,'#ffffff'); blade.addColorStop(1,royal?'#ffe76b':'#b8d9f5');
+          mpCtx.fillStyle = blade; mpCtx.beginPath(); mpCtx.moveTo(0,-3); mpCtx.lineTo(39,-2.2); mpCtx.lineTo(50,0); mpCtx.lineTo(39,2.2); mpCtx.lineTo(0,3); mpCtx.closePath(); mpCtx.fill();
+          mpCtx.fillStyle = royal?'#b47a00':'#465565'; mpCtx.fillRect(-3,-8,5,16);
+          mpCtx.strokeStyle = royal?'#fff2a3':'#e8f2fb'; mpCtx.lineWidth=2; mpCtx.beginPath(); mpCtx.moveTo(-8,-8); mpCtx.lineTo(7,8); mpCtx.moveTo(-8,8); mpCtx.lineTo(7,-8); mpCtx.stroke();
+        } else if (unit.unitId === 'starterMage' || unit.unitId === 'flameWizard' || unit.unitId === 'astralChronomancer') {
+          const fire = unit.unitId === 'flameWizard';
+          const chrono = unit.unitId === 'astralChronomancer';
+          mpCtx.strokeStyle = fire?'#6f2916':chrono?'#70508d':'#4f3272'; mpCtx.lineWidth=5; mpCtx.beginPath(); mpCtx.moveTo(-5,4); mpCtx.lineTo(34,-1); mpCtx.stroke();
+          const orbX=39; const orbColor=fire?'#ff5a1f':chrono?'#d8b4fe':'#9b64ff';
+          const orb=mpCtx.createRadialGradient(orbX-3,-4,1,orbX,0,12); orb.addColorStop(0,'#fff'); orb.addColorStop(.3,orbColor); orb.addColorStop(1,'rgba(20,20,40,0)');
+          mpCtx.fillStyle=orb;mpCtx.beginPath();mpCtx.arc(orbX,0,11+attack*2,0,Math.PI*2);mpCtx.fill();
+          if (chrono){mpCtx.strokeStyle='#fff';mpCtx.lineWidth=1.4;mpCtx.beginPath();mpCtx.arc(orbX,0,15,0,Math.PI*2);mpCtx.stroke();}
+        } else if (unit.unitId === 'skyDragonKnight') {
+          // 황금 신화창: 이중 자루, 용날개 가드, 보석과 다층 창날
+          const shaft = mpCtx.createLinearGradient(-5,0,58,0); shaft.addColorStop(0,'#6a3c00'); shaft.addColorStop(.38,'#d99a16'); shaft.addColorStop(.68,'#fff2a6'); shaft.addColorStop(1,'#b86a00');
+          mpCtx.strokeStyle='rgba(255,221,105,.22)';mpCtx.lineWidth=10;mpCtx.beginPath();mpCtx.moveTo(-8,0);mpCtx.lineTo(58,0);mpCtx.stroke();
+          mpCtx.strokeStyle=shaft;mpCtx.lineWidth=5;mpCtx.beginPath();mpCtx.moveTo(-8,0);mpCtx.lineTo(55,0);mpCtx.stroke();
+          mpCtx.fillStyle='#8b4b00';mpCtx.beginPath();mpCtx.moveTo(10,0);mpCtx.lineTo(21,-10);mpCtx.lineTo(27,-2);mpCtx.lineTo(21,0);mpCtx.lineTo(27,2);mpCtx.lineTo(21,10);mpCtx.closePath();mpCtx.fill();
+          mpCtx.fillStyle='#ffe36e';mpCtx.beginPath();mpCtx.arc(23,0,4.5,0,Math.PI*2);mpCtx.fill();
+          const tip=mpCtx.createLinearGradient(50,-10,72,10);tip.addColorStop(0,'#fffbd1');tip.addColorStop(.35,'#ffe36e');tip.addColorStop(1,'#b56a00');
+          mpCtx.fillStyle=tip;mpCtx.beginPath();mpCtx.moveTo(49,-8);mpCtx.lineTo(66,-13);mpCtx.lineTo(78,0);mpCtx.lineTo(66,13);mpCtx.lineTo(49,8);mpCtx.lineTo(57,0);mpCtx.closePath();mpCtx.fill();
+          mpCtx.strokeStyle='#fff3a3';mpCtx.lineWidth=1.4;mpCtx.stroke();
+        }
+  
+        mpCtx.restore();
+      }
+
   function mpDrawUnit(unit, time) {
     const data = UNIT_DATA[unit.unitId];
     if (!data) return;
@@ -12117,24 +13510,30 @@ function requestGachaDraw(count) {
 
     mpCtx.save();
     mpCtx.translate(unit.x, y);
-    const pulse = 1 + Math.sin(time * .004 + unit.animationOffset) * .04;
-    mpCtx.scale(pulse, pulse);
+
+    // 소유 플레이어를 알아보기 쉬운 외곽 링
     mpCtx.beginPath();
-    mpCtx.arc(0, 0, 22, 0, Math.PI * 2);
-    mpCtx.fillStyle = data.color || '#fff';
-    mpCtx.globalAlpha = .92;
-    mpCtx.fill();
-    mpCtx.globalAlpha = 1;
-    mpCtx.strokeStyle = unit.ownerRole === mpRole ? '#fff4b5' : '#9ed4ff';
-    mpCtx.lineWidth = 3;
+    mpCtx.arc(0, 2, 35, 0, Math.PI * 2);
+    mpCtx.strokeStyle = unit.ownerRole === mpRole ? 'rgba(255,239,150,.92)' : 'rgba(142,207,255,.92)';
+    mpCtx.lineWidth = 2.2;
     mpCtx.stroke();
-    mpCtx.font = '22px Arial';
-    mpCtx.textAlign = 'center';
-    mpCtx.textBaseline = 'middle';
-    mpCtx.fillText(data.icon, 0, 1);
+
+    const auraPulse = .36 + Math.sin(time * .005 + unit.animationOffset) * .10;
+    mpCtx.beginPath();
+    mpCtx.arc(0, 2, 31, 0, Math.PI * 2);
+    const alphaHex = Math.round(auraPulse * 255).toString(16).padStart(2, '0');
+    mpCtx.strokeStyle = `${data.color}${alphaHex}`;
+    mpCtx.lineWidth = unit.unitId === 'skyDragonKnight' || unit.unitId === 'astralChronomancer' ? 3 : 1.5;
+    mpCtx.stroke();
+
+    mpDetailStandingUnitBody(unit, time);
+    mpDetailAimedUnitWeapon(unit, data, time);
+
     if (stunned || slowed) {
-      mpCtx.font = '13px Arial';
-      mpCtx.fillText(stunned ? '💫' : '🐌', 18, -19);
+      mpCtx.font = '18px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
+      mpCtx.textAlign = 'center';
+      mpCtx.textBaseline = 'middle';
+      mpCtx.fillText(stunned ? '💫' : '〰️', 0, -43);
     }
     mpCtx.restore();
   }
@@ -12143,86 +13542,45 @@ function requestGachaDraw(count) {
     const x = enemy.x;
     const y = mpState.mode === 'coop' ? mpDisplayY(enemy.y) : enemy.y;
     const r = enemy.radius;
-    const scale = r / 18;
-    const flap = Math.sin(time * .011 + enemy.wingPhase);
-    const wingAngle = -0.42 + flap * .68;
-    const bob = Math.sin(time * .006 + enemy.wingPhase) * 2;
+    const isBoss = enemy.type !== 'normal';
 
-    mpCtx.save();
-    mpCtx.translate(x, y + bob);
-    mpCtx.scale(scale, scale);
-
-    // 뒤쪽 날개도 앞날개와 같은 방향/비슷한 각도로 움직입니다.
-    mpCtx.save();
-    mpCtx.translate(-2, -3);
-    mpCtx.rotate(wingAngle - .10);
-    mpCtx.beginPath();
-    mpCtx.ellipse(-8, -11, 23, 8, -.35, 0, Math.PI * 2);
-    mpCtx.fillStyle = '#687582';
-    mpCtx.fill();
-    mpCtx.restore();
-
-    mpCtx.beginPath();
-    mpCtx.ellipse(0, 2, 20, 13, 0, 0, Math.PI * 2);
-    mpCtx.fillStyle = enemy.type === 'awakenedKing' ? '#5c4f80' : '#8995a1';
-    mpCtx.fill();
-
-    mpCtx.beginPath();
-    mpCtx.arc(16, -5, 9, 0, Math.PI * 2);
-    mpCtx.fillStyle = '#737f8b';
-    mpCtx.fill();
-
-    mpCtx.save();
-    mpCtx.translate(-1, 1);
-    mpCtx.rotate(wingAngle);
-    mpCtx.beginPath();
-    mpCtx.ellipse(-7, -11, 25, 9, -.35, 0, Math.PI * 2);
-    mpCtx.fillStyle = '#7b8793';
-    mpCtx.fill();
-    mpCtx.strokeStyle = '#53606c';
-    mpCtx.lineWidth = 1.2;
-    mpCtx.stroke();
-    mpCtx.restore();
-
-    mpCtx.beginPath();
-    mpCtx.moveTo(23, -4); mpCtx.lineTo(34, 0); mpCtx.lineTo(23, 3); mpCtx.closePath();
-    mpCtx.fillStyle = '#d59c63';
-    mpCtx.fill();
-    mpCtx.beginPath();
-    mpCtx.arc(18, -8, 2.2, 0, Math.PI * 2);
-    mpCtx.fillStyle = '#111';
-    mpCtx.fill();
-
-    if (enemy.type === 'knight') {
-      mpCtx.strokeStyle = '#d8e2ef';
-      mpCtx.lineWidth = 3;
-      mpCtx.beginPath(); mpCtx.arc(2, 2, 16, -1.5, 1.5); mpCtx.stroke();
-    }
     if (enemy.type === 'king' || enemy.type === 'awakenedKing') {
-      mpCtx.fillStyle = '#ffd04a';
       mpCtx.beginPath();
-      mpCtx.moveTo(7, -18); mpCtx.lineTo(12, -27); mpCtx.lineTo(17, -19); mpCtx.lineTo(22, -28); mpCtx.lineTo(27, -17); mpCtx.closePath();
+      mpCtx.arc(x, y, r + 15, 0, Math.PI * 2);
+      mpCtx.fillStyle = enemy.type === 'awakenedKing'
+        ? 'rgba(239,68,68,.20)'
+        : 'rgba(250,204,21,.18)';
       mpCtx.fill();
     }
-    if (enemy.type === 'brother') {
-      mpCtx.fillStyle = '#eef4ff';
-      mpCtx.font = '8px Arial';
-      mpCtx.fillText(String((enemy.groupIndex || 0) + 1), -1, 6);
-    }
-    mpCtx.restore();
+
+    mpDetailCanvasPigeon(enemy, x, y, time);
+    mpDetailKnightPigeonArmor(enemy, x, y, time);
 
     const ratio = mpClamp(enemy.hp / enemy.maxHp, 0, 1);
-    const barW = Math.max(34, r * 2.2);
-    const barY = y - r - 18;
-    mpCtx.fillStyle = 'rgba(0,0,0,.55)';
-    mpCtx.fillRect(x - barW / 2, barY, barW, 6);
-    mpCtx.fillStyle = enemy.forwarded ? '#ff9d5f' : '#69e694';
-    mpCtx.fillRect(x - barW / 2, barY, barW * ratio, 6);
-    if (enemy.type !== 'normal') {
-      mpCtx.font = '700 11px Arial';
+    const barW = isBoss ? 100 : 48;
+    const barH = isBoss ? 8 : 5;
+    const barY = y - r - (isBoss ? 42 : 30);
+
+    mpCtx.fillStyle = 'rgba(20,27,39,.88)';
+    mpCtx.fillRect(x - barW / 2, barY, barW, barH);
+    mpCtx.fillStyle = enemy.type === 'awakenedKing'
+      ? '#ef4444'
+      : enemy.type === 'king'
+        ? '#facc15'
+        : enemy.forwarded
+          ? '#ff9d5f'
+          : '#45df7d';
+    mpCtx.fillRect(x - barW / 2, barY, barW * ratio, barH);
+    mpCtx.strokeStyle = 'rgba(255,255,255,.28)';
+    mpCtx.lineWidth = 1;
+    mpCtx.strokeRect(x - barW / 2, barY, barW, barH);
+
+    if (isBoss) {
+      mpCtx.font = '700 12px Arial, sans-serif';
       mpCtx.fillStyle = '#fff';
       mpCtx.textAlign = 'center';
-      mpCtx.fillText(enemy.name, x, barY - 5);
+      mpCtx.textBaseline = 'middle';
+      mpCtx.fillText(enemy.name, x, barY - 10);
     }
   }
 

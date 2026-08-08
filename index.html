@@ -4062,6 +4062,377 @@ body {
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style id="multiplayerStyles">
+/* ===== 2인 온라인 협동 / 대결 ===== */
+.mp-lobby-screen,
+.mp-battle-screen {
+  width: min(1180px, 100%);
+}
+
+.mp-lobby-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(300px, .75fr);
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.mp-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.mp-mode-card {
+  min-height: 190px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(38, 51, 78, .92), rgba(24, 34, 54, .96));
+  color: var(--text);
+  text-align: left;
+}
+
+.mp-mode-card.active {
+  border-color: #ffd04a;
+  box-shadow: 0 0 0 2px rgba(255, 208, 74, .22) inset, 0 10px 30px rgba(0, 0, 0, .25);
+}
+
+.mp-mode-card .mp-mode-icon {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 34px;
+}
+
+.mp-mode-card strong {
+  display: block;
+  color: #fff;
+  font-size: 20px;
+}
+
+.mp-mode-card small {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.mp-room-actions {
+  display: grid;
+  gap: 12px;
+}
+
+.mp-room-card {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(21, 29, 47, .94);
+}
+
+.mp-room-card h3 {
+  margin: 0 0 8px;
+}
+
+.mp-room-card p {
+  margin: 4px 0 12px;
+}
+
+.mp-code-input {
+  width: 100%;
+  padding: 14px 12px;
+  border: 1px solid #4e6082;
+  border-radius: 12px;
+  outline: 0;
+  background: #0e1627;
+  color: #fff;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: .18em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.mp-code-input:focus {
+  border-color: #ffd04a;
+  box-shadow: 0 0 0 3px rgba(255, 208, 74, .14);
+}
+
+.mp-room-code-box {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid rgba(255, 208, 74, .42);
+  border-radius: 16px;
+  background: rgba(255, 208, 74, .08);
+  text-align: center;
+}
+
+.mp-room-code {
+  font-size: clamp(28px, 5vw, 46px);
+  font-weight: 1000;
+  letter-spacing: .18em;
+  color: #ffe993;
+}
+
+.mp-status {
+  min-height: 24px;
+  margin-top: 12px;
+  color: #c7d4e8;
+  line-height: 1.5;
+}
+
+.mp-status.error { color: #ff9ca7; }
+.mp-status.good { color: #75eba5; }
+
+.mp-rule-list {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  color: #c5d1e4;
+  line-height: 1.7;
+}
+
+.mp-battle-topbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.mp-battle-heading h2 {
+  margin: 0;
+}
+
+.mp-battle-heading small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+}
+
+.mp-battle-resources {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.mp-map-shell {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid #435675;
+  border-radius: 16px;
+  background: #213b2b;
+  box-shadow: 0 16px 45px rgba(0,0,0,.30);
+}
+
+#mpCanvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 5 / 3;
+  touch-action: none;
+}
+
+.mp-view-toggle {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  z-index: 4;
+  transform: translateY(-50%);
+  min-width: 54px;
+  min-height: 54px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: 14px;
+  background: rgba(13, 20, 34, .88);
+  color: #fff;
+  backdrop-filter: blur(7px);
+}
+
+.mp-view-toggle strong {
+  display: block;
+  font-size: 22px;
+}
+
+.mp-view-toggle small {
+  display: block;
+  margin-top: 2px;
+  font-size: 10px;
+  color: #b8c7dc;
+}
+
+.mp-battle-bottom {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.mp-deck-panel,
+.mp-info-panel {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(25, 34, 53, .96);
+}
+
+.mp-deck-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.mp-deck-heading strong { color: #fff; }
+.mp-deck-heading small { color: var(--muted); }
+
+.mp-deck {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mp-unit-button {
+  position: relative;
+  min-height: 86px;
+  padding: 9px 6px;
+  border: 1px solid #435571;
+  background: #222e45;
+  color: #fff;
+  text-align: center;
+}
+
+.mp-unit-button.active {
+  border-color: #ffd04a;
+  box-shadow: 0 0 0 2px rgba(255, 208, 74, .2) inset;
+  transform: translateY(-2px);
+}
+
+.mp-unit-button:disabled {
+  opacity: .42;
+}
+
+.mp-unit-button .icon {
+  display: block;
+  font-size: 25px;
+}
+
+.mp-unit-button strong {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: #fff;
+}
+
+.mp-unit-button small {
+  display: block;
+  margin-top: 2px;
+  color: #b8c7dc;
+  font-size: 10px;
+}
+
+.mp-message {
+  min-height: 42px;
+  margin: 0;
+  color: #cad6e8;
+  line-height: 1.5;
+}
+
+.mp-boss-cycle {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(255, 208, 74, .07);
+  color: #dce5f4;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.mp-waiting-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: #ffd04a;
+  animation: mpWaitingPulse .8s ease-in-out infinite alternate;
+}
+
+@keyframes mpWaitingPulse {
+  from { opacity: .3; transform: scale(.8); }
+  to { opacity: 1; transform: scale(1.25); }
+}
+
+@media (max-width: 820px) {
+  .mp-lobby-hero,
+  .mp-battle-bottom {
+    grid-template-columns: 1fr;
+  }
+
+  .mp-battle-topbar {
+    grid-template-columns: 1fr;
+  }
+
+  .mp-battle-resources {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 620px) {
+  .mp-mode-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mp-deck {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .mp-lobby-screen,
+  .mp-battle-screen {
+    padding: 14px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 620px) {
+  .mp-battle-screen {
+    width: 100%;
+    max-width: none;
+    padding: 5px 8px 8px;
+  }
+
+  .mp-battle-topbar {
+    margin-bottom: 4px;
+  }
+
+  .mp-battle-heading h2 { font-size: 17px; }
+  .mp-battle-heading small { font-size: 10px; }
+  .mp-battle-resources .resource { padding: 6px 8px; font-size: 11px; }
+
+  .mp-map-shell {
+    width: min(100%, calc((100vh - 178px) * 1.6667));
+    margin: 0 auto;
+  }
+
+  .mp-battle-bottom {
+    grid-template-columns: minmax(0, 1fr) 235px;
+    gap: 7px;
+    margin-top: 6px;
+  }
+
+  .mp-deck-panel,
+  .mp-info-panel { padding: 7px; }
+  .mp-unit-button { min-height: 56px; padding: 4px; }
+  .mp-unit-button .icon { font-size: 18px; }
+  .mp-unit-button strong { font-size: 9px; }
+  .mp-unit-button small { font-size: 8px; }
+  .mp-message { min-height: 28px; font-size: 10px; }
+  .mp-boss-cycle { display: none; }
+}
+</style>
+
 </head>
 
 <body>
@@ -4246,6 +4617,12 @@ body {
         <span class="defense-card-icon">🎒</span>
         <strong>인벤토리</strong>
         <small>유닛과 주사위를 관리하세요</small>
+      </button>
+
+      <button id="openMultiplayerBtn" class="defense-menu-card">
+        <span class="defense-card-icon">🌐</span>
+        <strong>온라인 2인</strong>
+        <small>친구와 협동하거나 1:1로 대결하세요</small>
       </button>
     </div>
 
@@ -4432,6 +4809,119 @@ body {
       </section>
     </div>
   </section>
+
+
+<section id="multiplayerLobbyScreen" class="screen hidden mp-lobby-screen">
+  <div class="between">
+    <div>
+      <span class="section-kicker">ONLINE DEFENSE</span>
+      <h2>2인 온라인</h2>
+      <p class="muted">협동하거나 1:1로 대결하세요. 방 코드는 8자리입니다.</p>
+    </div>
+    <button id="mpLobbyBackBtn" class="secondary" type="button">메뉴로</button>
+  </div>
+
+  <div class="mp-lobby-hero">
+    <div class="card">
+      <h3>모드 선택</h3>
+      <p class="muted">방을 만들 때 플레이 방식을 고릅니다. 방에 들어갈 때는 방 코드만 입력하면 모드가 자동으로 정해집니다.</p>
+
+      <div class="mp-mode-grid">
+        <button class="mp-mode-card active" type="button" data-mp-mode="coop">
+          <span class="mp-mode-icon">🤝</span>
+          <strong>2인 협동</strong>
+          <small>왼쪽 → 오른쪽 일자 길 · 위쪽은 상대, 아래쪽은 나의 설치 구역 · 웨이브 제한 없음 · 10웨이브마다 보스와 소환석 보상</small>
+        </button>
+
+        <button class="mp-mode-card" type="button" data-mp-mode="pvp">
+          <span class="mp-mode-icon">⚔️</span>
+          <strong>2인 대결</strong>
+          <small>각자 자신의 기지를 방어합니다. 내가 처음 등장한 적을 처치하면 그 적이 상대 기지에서 한 번 부활합니다. 승리 보상 2,500 소환석</small>
+        </button>
+      </div>
+
+      <div id="mpSelectedModeRules">
+        <ul class="mp-rule-list">
+          <li>적 기본 HP 100</li>
+          <li>10웨이브마다 HP가 10%씩 복리 증가하고 정수로 반올림</li>
+          <li>보스 순서: 비둘기 브라더스 → 기사 비둘기 → 킹 비둘기 → 각성한 킹 비둘기 → 반복</li>
+          <li>10웨이브 보상 100 소환석, 이후 10웨이브마다 +10</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mp-room-actions">
+      <div class="mp-room-card">
+        <h3>🏠 방 만들기</h3>
+        <p class="muted">선택한 모드로 새 방을 만들고 상대가 들어올 때까지 기다립니다.</p>
+        <button id="mpCreateRoomBtn" type="button">8자리 방 만들기</button>
+      </div>
+
+      <div class="mp-room-card">
+        <h3>🚪 방 들어가기</h3>
+        <p class="muted">상대에게 받은 8자리 방 코드를 입력하세요.</p>
+        <input id="mpJoinCodeInput" class="mp-code-input" maxlength="8" inputmode="text" autocomplete="off" placeholder="AB12CD34" />
+        <button id="mpJoinRoomBtn" type="button" style="width:100%; margin-top:10px;">방 들어가기</button>
+      </div>
+
+      <div id="mpWaitingRoomCard" class="mp-room-card hidden">
+        <h3>온라인 방</h3>
+        <div class="mp-room-code-box">
+          <span class="muted">방 코드</span>
+          <strong id="mpRoomCode" class="mp-room-code">--------</strong>
+          <small id="mpRoomModeLabel" class="muted">협동 모드</small>
+        </div>
+        <p id="mpWaitingText" class="mp-status"><span class="mp-waiting-dot"></span>상대를 기다리는 중...</p>
+        <button id="mpCopyCodeBtn" class="secondary" type="button" style="width:100%;">방 코드 복사</button>
+        <button id="mpLeaveWaitingBtn" class="danger" type="button" style="width:100%; margin-top:8px;">방 나가기</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="mpLobbyStatus" class="mp-status" aria-live="polite"></div>
+</section>
+
+<section id="multiplayerBattleScreen" class="screen hidden mp-battle-screen">
+  <div class="mp-battle-topbar">
+    <div class="mp-battle-heading">
+      <h2><span id="mpBattleModeTitle">2인 협동</span> · WAVE <span id="mpWaveLabel">1</span></h2>
+      <small>방 <strong id="mpBattleRoomCode">--------</strong> · <span id="mpRoleLabel">나</span></small>
+    </div>
+
+    <div class="mp-battle-resources">
+      <div class="resource">🪙 <strong id="mpGoldLabel">0</strong></div>
+      <div class="resource">🏰 <strong id="mpBaseHpLabel">2000 / 2000</strong></div>
+      <div class="resource">💎 <strong id="mpBattleGemsLabel">0</strong></div>
+      <button id="mpLeaveBattleBtn" class="danger" type="button">나가기</button>
+    </div>
+  </div>
+
+  <div class="mp-map-shell">
+    <canvas id="mpCanvas" width="1000" height="600"></canvas>
+    <button id="mpViewToggleBtn" class="mp-view-toggle hidden" type="button">
+      <strong>◀</strong>
+      <small>상대 기지</small>
+    </button>
+  </div>
+
+  <div class="mp-battle-bottom">
+    <div class="mp-deck-panel">
+      <div class="mp-deck-heading">
+        <strong>배치 유닛</strong>
+        <small id="mpPlacementGuide">아래쪽 설치 구역에 배치하세요.</small>
+      </div>
+      <div id="mpDeck" class="mp-deck"></div>
+    </div>
+
+    <aside class="mp-info-panel">
+      <p id="mpMessage" class="mp-message">상대와 연결 중입니다...</p>
+      <div class="mp-boss-cycle">
+        <strong>보스 순환</strong><br />
+        10: 비둘기 브라더스 → 20: 기사 비둘기 → 30: 킹 비둘기 → 40: 각성한 킹 비둘기 → 50부터 반복
+      </div>
+    </aside>
+  </div>
+</section>
 
 
   <div id="orientationGuard" class="orientation-guard hidden" role="alert" aria-live="assertive">
@@ -4975,7 +5465,9 @@ function applyStagePreview(stageId = selectedStage) {
       gacha: document.querySelector('#gachaScreen'),
       collection: document.querySelector('#collectionScreen'),
       deck: document.querySelector('#deckScreen'),
-      battle: document.querySelector('#battleScreen')
+      battle: document.querySelector('#battleScreen'),
+      multiplayerLobby: document.querySelector('#multiplayerLobbyScreen'),
+      multiplayerBattle: document.querySelector('#multiplayerBattleScreen')
     };
 
     let currentUsername = null;
@@ -4988,6 +5480,7 @@ function applyStagePreview(stageId = selectedStage) {
     let gachaConfirmTimer = null;
     let selectedStage = 1;
     let selectedDifficulty = 'normal';
+    let multiplayerBattleActive = false;
 
     function showScreen(name) {
       Object.values(screens).forEach(screen => screen.classList.add('hidden'));
@@ -6764,7 +7257,10 @@ function requestGachaDraw(count) {
         return;
       }
 
-      const battleActive = battle && !screens.battle.classList.contains('hidden');
+      const battleActive = Boolean(
+        (battle && !screens.battle.classList.contains('hidden')) ||
+        (multiplayerBattleActive && screens.multiplayerBattle && !screens.multiplayerBattle.classList.contains('hidden'))
+      );
       const isLandscape = window.innerWidth > window.innerHeight;
       const wrongOrientation = battleActive ? !isLandscape : isLandscape;
 
@@ -10230,5 +10726,1602 @@ function requestGachaDraw(count) {
     updateOrientationGuard();
     restoreSession();
   </script>
+<script id="multiplayerGameScript">
+(() => {
+  const mpCanvas = document.querySelector('#mpCanvas');
+  const mpCtx = mpCanvas.getContext('2d');
+
+  let mpModeChoice = 'coop';
+  let mpRoom = null;
+  let mpUserId = null;
+  let mpRole = null;
+  let mpState = null;
+  let mpChannel = null;
+  let mpRoomPollTimer = null;
+  let mpCommandPollTimer = null;
+  let mpLastCommandId = 0;
+  let mpHostRuntime = null;
+  let mpAnimationId = null;
+  let mpPreviousTime = 0;
+  let mpLastPublishAt = 0;
+  let mpPublishBusy = false;
+  let mpSelectedUnitId = null;
+  let mpViewingOpponent = false;
+  let mpBattleEntered = false;
+  let mpInitBusy = false;
+  let mpLastRoomUpdateAt = 0;
+  let mpLocalMessage = '';
+  const mpClaimedRewards = new Set();
+
+  const MP_WIDTH = 1000;
+  const MP_HEIGHT = 600;
+  const MP_PATH_Y = 300;
+  const MP_BASE_X = 955;
+  const MP_START_X = 40;
+  const MP_BASE_HP = 2000;
+  const MP_START_GOLD = 600;
+
+  function mpSetStatus(text, kind = '') {
+    const el = document.querySelector('#mpLobbyStatus');
+    if (!el) return;
+    el.textContent = text || '';
+    el.className = `mp-status${kind ? ` ${kind}` : ''}`;
+  }
+
+  function mpSetMessage(text) {
+    mpLocalMessage = text || '';
+    const el = document.querySelector('#mpMessage');
+    if (el) el.textContent = mpLocalMessage;
+  }
+
+  function mpModeName(mode = mpRoom?.mode || mpModeChoice) {
+    return mode === 'pvp' ? '2인 대결' : '2인 협동';
+  }
+
+  function mpOtherRole(role = mpRole) {
+    return role === 'host' ? 'guest' : 'host';
+  }
+
+  function mpRoleForUser(room, userId) {
+    if (!room || !userId) return null;
+    if (room.host_id === userId) return 'host';
+    if (room.guest_id === userId) return 'guest';
+    return null;
+  }
+
+  function mpNameForRole(role) {
+    if (!mpRoom) return role === 'host' ? 'HOST' : 'GUEST';
+    return role === 'host'
+      ? (mpRoom.host_name || 'HOST')
+      : (mpRoom.guest_name || 'GUEST');
+  }
+
+  function mpSafeState(value) {
+    if (!value) return null;
+    if (typeof value === 'string') {
+      try { return JSON.parse(value); } catch (_) { return null; }
+    }
+    return typeof value === 'object' ? value : null;
+  }
+
+  function mpMakeId(prefix = 'mp') {
+    if (crypto?.randomUUID) return `${prefix}_${crypto.randomUUID()}`;
+    return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`;
+  }
+
+  function mpClamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function mpAngleDelta(a, b) {
+    let d = a - b;
+    while (d > Math.PI) d -= Math.PI * 2;
+    while (d < -Math.PI) d += Math.PI * 2;
+    return d;
+  }
+
+  function mpBaseEnemyHp(wave) {
+    const steps = Math.floor(Math.max(1, wave) / 10);
+    return Math.round(100 * Math.pow(1.1, steps));
+  }
+
+  function mpCheckpointReward(wave) {
+    return 100 + ((wave / 10) - 1) * 10;
+  }
+
+  function mpBossInfoForWave(wave, baseHp = mpBaseEnemyHp(wave)) {
+    if (wave % 10 !== 0) return null;
+    const bossIndex = ((wave / 10) - 1) % 4;
+
+    if (bossIndex === 0) {
+      return {
+        name: '비둘기 브라더스',
+        specs: Array.from({ length: 5 }, (_, index) => ({
+          type: 'brother',
+          name: '비둘기 브라더스',
+          hp: Math.round(baseHp * 10),
+          speed: 50,
+          radius: 28,
+          reward: 90,
+          groupIndex: index
+        }))
+      };
+    }
+
+    if (bossIndex === 1) {
+      return {
+        name: '기사 비둘기',
+        specs: [{
+          type: 'knight',
+          name: '기사 비둘기',
+          hp: Math.round(baseHp * 50),
+          speed: 47,
+          radius: 31,
+          reward: 360,
+          abilityEvery: 12
+        }]
+      };
+    }
+
+    if (bossIndex === 2) {
+      return {
+        name: '킹 비둘기',
+        specs: [{
+          type: 'king',
+          name: '킹 비둘기',
+          hp: Math.round(baseHp * 150),
+          speed: 43,
+          radius: 35,
+          reward: 720,
+          abilityEvery: 5
+        }]
+      };
+    }
+
+    return {
+      name: '각성한 킹 비둘기',
+      specs: [{
+        type: 'awakenedKing',
+        name: '각성한 킹 비둘기',
+        hp: Math.round(baseHp * 225),
+        speed: 46,
+        radius: 39,
+        reward: 1200,
+        abilityEvery: 3
+      }]
+    };
+  }
+
+  function mpBuildWaveSpecs(wave) {
+    const baseHp = mpBaseEnemyHp(wave);
+    const isBossWave = wave % 10 === 0;
+    const count = isBossWave
+      ? Math.min(14, 4 + Math.floor(wave / 4))
+      : Math.min(28, 6 + Math.floor(wave / 2));
+
+    const specs = Array.from({ length: count }, () => ({
+      type: 'normal',
+      name: '비둘기',
+      hp: baseHp,
+      speed: Math.min(96, 52 + wave * .55),
+      radius: 18,
+      reward: 18 + Math.floor(wave / 5) * 2
+    }));
+
+    const boss = mpBossInfoForWave(wave, baseHp);
+    if (boss) specs.push(...boss.specs);
+    return { specs, bossName: boss?.name || null, baseHp };
+  }
+
+  function mpCreateEnemy(spec, wave, native = true, forwarded = false) {
+    const jitter = (Math.random() - .5) * 16;
+    const maxHp = Math.max(1, Math.round(spec.hp));
+    return {
+      id: mpMakeId('enemy'),
+      type: spec.type || 'normal',
+      name: spec.name || '비둘기',
+      wave,
+      x: MP_START_X,
+      y: MP_PATH_Y + jitter,
+      hp: maxHp,
+      maxHp,
+      speed: Number(spec.speed || 55),
+      radius: Number(spec.radius || 18),
+      reward: Number(spec.reward || 20),
+      native,
+      forwarded,
+      dead: false,
+      groupIndex: spec.groupIndex ?? 0,
+      wingPhase: Math.random() * Math.PI * 2,
+      abilityEvery: spec.abilityEvery || 0,
+      nextAbilityAt: spec.abilityEvery
+        ? Date.now() + spec.abilityEvery * 1000
+        : 0
+    };
+  }
+
+  function mpMakeSideState() {
+    return {
+      baseHp: MP_BASE_HP,
+      maxBaseHp: MP_BASE_HP,
+      gold: MP_START_GOLD,
+      kills: 0,
+      units: [],
+      enemies: [],
+      nativeRemaining: 0
+    };
+  }
+
+  function mpCreateInitialState(mode) {
+    const now = Date.now();
+    if (mode === 'pvp') {
+      return {
+        version: 1,
+        mode,
+        started: true,
+        wave: 0,
+        lastCompletedWave: 0,
+        waveInProgress: false,
+        nextWaveAt: now + 900,
+        announcement: '대결 준비! 자신의 기지를 지키세요.',
+        announcementUntil: now + 3500,
+        delayedAttacks: [],
+        fx: [],
+        sides: {
+          host: mpMakeSideState(),
+          guest: mpMakeSideState()
+        },
+        matchFinished: false,
+        winnerRole: null,
+        updatedAt: now
+      };
+    }
+
+    return {
+      version: 1,
+      mode: 'coop',
+      started: true,
+      wave: 0,
+      lastCompletedWave: 0,
+      waveInProgress: false,
+      nextWaveAt: now + 900,
+      announcement: '협동 방어 준비! 상대와 함께 길을 막으세요.',
+      announcementUntil: now + 3500,
+      delayedAttacks: [],
+      fx: [],
+      shared: {
+        baseHp: MP_BASE_HP,
+        maxBaseHp: MP_BASE_HP,
+        gold: { host: MP_START_GOLD, guest: MP_START_GOLD },
+        kills: { host: 0, guest: 0 },
+        units: [],
+        enemies: [],
+        nativeRemaining: 0
+      },
+      matchFinished: false,
+      winnerRole: null,
+      updatedAt: now
+    };
+  }
+
+  function mpResetHostRuntime() {
+    mpHostRuntime = {
+      spawnQueues: mpRoom?.mode === 'pvp'
+        ? { host: [], guest: [] }
+        : { shared: [] },
+      spawnTimers: mpRoom?.mode === 'pvp'
+        ? { host: 0, guest: 0 }
+        : { shared: 0 },
+      finishedPublished: false
+    };
+  }
+
+  function mpSelectMode(mode) {
+    mpModeChoice = mode === 'pvp' ? 'pvp' : 'coop';
+    document.querySelectorAll('[data-mp-mode]').forEach(button => {
+      button.classList.toggle('active', button.dataset.mpMode === mpModeChoice);
+    });
+
+    const rules = document.querySelector('#mpSelectedModeRules');
+    if (!rules) return;
+
+    rules.innerHTML = mpModeChoice === 'coop'
+      ? `<ul class="mp-rule-list">
+          <li>왼쪽 → 오른쪽 일자 길 · 웨이브 제한 없음</li>
+          <li>화면 아래쪽은 내 유닛, 위쪽은 상대 유닛 설치 구역</li>
+          <li>적 기본 HP 100 · 10웨이브마다 10% 복리 증가 후 정수 반올림</li>
+          <li>10웨이브마다 보스 순환 · 10웨이브 100 소환석, 이후 +10</li>
+        </ul>`
+      : `<ul class="mp-rule-list">
+          <li>각자 자신의 전체 기지를 플레이</li>
+          <li>왼쪽 ◀ 버튼으로 상대 기지 / 내 기지를 전환</li>
+          <li>처음 등장한 적을 죽이면 상대 기지에서 HP를 회복해 한 번 부활</li>
+          <li>상대에게 넘어온 부활 적은 다시 되돌아가지 않음</li>
+          <li>상대 기지를 먼저 무너뜨리면 승리 · 2,500 소환석</li>
+        </ul>`;
+  }
+
+  async function mpEnsureUser() {
+    const { data, error } = await supabaseClient.auth.getUser();
+    if (error || !data?.user) throw new Error('로그인이 필요합니다.');
+    mpUserId = data.user.id;
+    return data.user;
+  }
+
+  function mpShowWaitingRoom(room) {
+    const card = document.querySelector('#mpWaitingRoomCard');
+    card?.classList.remove('hidden');
+    document.querySelector('#mpRoomCode').textContent = room.code;
+    document.querySelector('#mpRoomModeLabel').textContent = mpModeName(room.mode);
+    document.querySelector('#mpWaitingText').innerHTML = room.status === 'waiting'
+      ? '<span class="mp-waiting-dot"></span>상대를 기다리는 중...'
+      : '<span class="mp-waiting-dot"></span>상대가 입장했습니다. 게임을 준비 중...';
+  }
+
+  async function mpOpenLobby() {
+    try {
+      await mpEnsureUser();
+    } catch (error) {
+      alert(error.message);
+      return;
+    }
+
+    mpCleanupConnection(false);
+    mpRoom = null;
+    mpRole = null;
+    mpState = null;
+    mpBattleEntered = false;
+    multiplayerBattleActive = false;
+    document.querySelector('#mpWaitingRoomCard')?.classList.add('hidden');
+    document.querySelector('#mpJoinCodeInput').value = '';
+    mpSetStatus('협동 또는 대결을 선택한 뒤 방을 만들거나, 8자리 코드를 입력하세요.');
+    showScreen('multiplayerLobby');
+    updateOrientationGuard();
+  }
+
+  async function mpCreateRoom() {
+    try {
+      await mpEnsureUser();
+      mpSetStatus('온라인 방을 만드는 중...');
+      const { data, error } = await supabaseClient.rpc('create_multiplayer_room', {
+        p_mode: mpModeChoice,
+        p_username: currentUsername || 'HOST'
+      });
+      if (error) throw error;
+      mpRoom = data;
+      mpRole = 'host';
+      mpShowWaitingRoom(mpRoom);
+      mpSetStatus('방이 만들어졌습니다. 상대에게 8자리 코드를 알려주세요.', 'good');
+      await mpAttachRoom(mpRoom);
+    } catch (error) {
+      console.error('온라인 방 만들기 실패:', error);
+      mpSetStatus(
+        error?.message?.includes('create_multiplayer_room')
+          ? '온라인 서버 설정이 필요합니다. multiplayer_setup.sql을 Supabase에서 먼저 실행하세요.'
+          : (error.message || '방 만들기에 실패했습니다.'),
+        'error'
+      );
+    }
+  }
+
+  async function mpJoinRoom() {
+    const input = document.querySelector('#mpJoinCodeInput');
+    const code = (input.value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    input.value = code;
+
+    if (code.length !== 8) {
+      mpSetStatus('8자리 방 코드를 정확히 입력하세요.', 'error');
+      return;
+    }
+
+    try {
+      await mpEnsureUser();
+      mpSetStatus('방에 들어가는 중...');
+      const { data, error } = await supabaseClient.rpc('join_multiplayer_room', {
+        p_code: code,
+        p_username: currentUsername || 'GUEST'
+      });
+      if (error) throw error;
+      mpRoom = data;
+      mpRole = 'guest';
+      mpModeChoice = mpRoom.mode;
+      mpSelectMode(mpRoom.mode);
+      mpShowWaitingRoom(mpRoom);
+      mpSetStatus(`${mpModeName(mpRoom.mode)} 방에 참가했습니다. 방장과 연결 중입니다.`, 'good');
+      await mpAttachRoom(mpRoom);
+      await mpHandleRoomUpdate(mpRoom);
+    } catch (error) {
+      console.error('온라인 방 참가 실패:', error);
+      mpSetStatus(error.message || '방에 들어가지 못했습니다.', 'error');
+    }
+  }
+
+  async function mpCopyCode() {
+    if (!mpRoom?.code) return;
+    try {
+      await navigator.clipboard.writeText(mpRoom.code);
+      mpSetStatus(`방 코드 ${mpRoom.code}를 복사했습니다.`, 'good');
+    } catch (_) {
+      mpSetStatus(`방 코드: ${mpRoom.code} · 길게 눌러 복사하세요.`, 'good');
+    }
+  }
+
+  function mpCleanupConnection(resetRoom = true) {
+    clearInterval(mpRoomPollTimer);
+    clearInterval(mpCommandPollTimer);
+    mpRoomPollTimer = null;
+    mpCommandPollTimer = null;
+
+    if (mpChannel) {
+      try { supabaseClient.removeChannel(mpChannel); } catch (_) {}
+      mpChannel = null;
+    }
+
+    cancelAnimationFrame(mpAnimationId);
+    mpAnimationId = null;
+    mpPreviousTime = 0;
+    mpBattleEntered = false;
+    mpHostRuntime = null;
+    mpLastCommandId = 0;
+    mpViewingOpponent = false;
+    mpSelectedUnitId = null;
+    multiplayerBattleActive = false;
+
+    if (resetRoom) {
+      mpRoom = null;
+      mpRole = null;
+      mpState = null;
+    }
+  }
+
+  async function mpLeaveRoom(goMenu = true) {
+    const roomId = mpRoom?.id;
+    try {
+      if (roomId) {
+        await supabaseClient.rpc('leave_multiplayer_room', { p_room_id: roomId });
+      }
+    } catch (error) {
+      console.warn('온라인 방 나가기 처리:', error?.message || error);
+    }
+
+    mpCleanupConnection(true);
+    void leaveBattlePresentation();
+    if (goMenu) openMenu();
+  }
+
+  async function mpAttachRoom(room) {
+    mpRoom = room;
+    mpRole = mpRoleForUser(room, mpUserId) || mpRole;
+    mpLastRoomUpdateAt = Date.now();
+
+    if (mpChannel) {
+      try { await supabaseClient.removeChannel(mpChannel); } catch (_) {}
+      mpChannel = null;
+    }
+
+    mpChannel = supabaseClient
+      .channel(`mp-room-${room.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'multiplayer_rooms',
+          filter: `id=eq.${room.id}`
+        },
+        payload => {
+          if (payload?.new) void mpHandleRoomUpdate(payload.new);
+        }
+      )
+      .subscribe();
+
+    clearInterval(mpRoomPollTimer);
+    mpRoomPollTimer = setInterval(async () => {
+      if (!mpRoom?.id) return;
+      if (Date.now() - mpLastRoomUpdateAt < 900 && mpBattleEntered) return;
+      const { data, error } = await supabaseClient
+        .from('multiplayer_rooms')
+        .select('*')
+        .eq('id', mpRoom.id)
+        .maybeSingle();
+      if (!error && data) await mpHandleRoomUpdate(data);
+    }, 1000);
+
+    if (room.status === 'playing') await mpHandleRoomUpdate(room);
+  }
+
+  async function mpHandleRoomUpdate(room) {
+    if (!room || !mpRoom || room.id !== mpRoom.id) return;
+    mpLastRoomUpdateAt = Date.now();
+    mpRoom = room;
+    mpRole = mpRoleForUser(room, mpUserId) || mpRole;
+    mpShowWaitingRoom(room);
+
+    const incomingState = mpSafeState(room.state);
+
+    if (room.status === 'playing') {
+      if (mpRole === 'host' && !incomingState?.started && !mpInitBusy) {
+        await mpInitializeHostGame();
+        return;
+      }
+
+      if (incomingState?.started) {
+        if (mpRole !== 'host' || !mpBattleEntered) {
+          mpState = incomingState;
+        }
+        if (!mpBattleEntered) mpEnterBattle();
+        if (mpRole !== 'host') {
+          mpState = incomingState;
+          mpMaybeClaimRewards();
+        }
+      }
+    }
+
+    if (room.status === 'finished' || room.status === 'abandoned') {
+      if (incomingState?.started && mpRole !== 'host') mpState = incomingState;
+      if (mpState) {
+        mpState.matchFinished = true;
+        if (room.mode === 'pvp') {
+          mpState.winnerRole = room.winner_id === room.host_id
+            ? 'host'
+            : room.winner_id === room.guest_id
+              ? 'guest'
+              : null;
+        }
+      }
+      mpHandleFinishedRoom();
+    }
+  }
+
+  async function mpInitializeHostGame() {
+    if (!mpRoom || mpRole !== 'host' || mpInitBusy) return;
+    mpInitBusy = true;
+    try {
+      mpState = mpCreateInitialState(mpRoom.mode);
+      mpResetHostRuntime();
+      const { data, error } = await supabaseClient.rpc('update_multiplayer_room_state', {
+        p_room_id: mpRoom.id,
+        p_state: mpState,
+        p_status: 'playing',
+        p_winner_id: null
+      });
+      if (error) throw error;
+      mpRoom = data;
+      mpState = mpSafeState(data.state) || mpState;
+      mpEnterBattle();
+    } catch (error) {
+      console.error('온라인 게임 초기화 실패:', error);
+      mpSetStatus(error.message || '게임 시작에 실패했습니다.', 'error');
+    } finally {
+      mpInitBusy = false;
+    }
+  }
+
+  function mpEnterBattle() {
+    if (!mpRoom || !mpState?.started) return;
+
+    const deck = (player?.deck || []).filter(id => id && UNIT_DATA[id]);
+    if (!deck.length) {
+      alert('온라인 전투에 사용할 덱이 없습니다. 먼저 덱을 편성해 주세요.');
+      void mpLeaveRoom(true);
+      return;
+    }
+
+    mpBattleEntered = true;
+    multiplayerBattleActive = true;
+    mpViewingOpponent = false;
+    mpSelectedUnitId = deck[0];
+    document.querySelector('#mpBattleModeTitle').textContent = mpModeName(mpRoom.mode);
+    document.querySelector('#mpBattleRoomCode').textContent = mpRoom.code;
+    document.querySelector('#mpRoleLabel').textContent = `${mpNameForRole(mpRole)} · ${mpRole === 'host' ? '방장' : '참가자'}`;
+    document.querySelector('#mpBattleGemsLabel').textContent = player?.gems ?? 0;
+
+    const toggle = document.querySelector('#mpViewToggleBtn');
+    toggle.classList.toggle('hidden', mpRoom.mode !== 'pvp');
+    mpUpdateViewToggle();
+    mpRenderDeck();
+    mpRefreshHud();
+    mpSetMessage(mpRoom.mode === 'coop'
+      ? '화면 아래쪽이 내 설치 구역입니다. 유닛을 선택하고 배치하세요.'
+      : '내 기지를 방어하세요. ◀ 버튼으로 상대 기지를 볼 수 있습니다.');
+
+    showScreen('multiplayerBattle');
+    void enterBattlePresentation();
+    updateOrientationGuard();
+
+    if (mpRole === 'host') {
+      if (!mpHostRuntime) mpResetHostRuntime();
+      mpStartCommandPolling();
+    }
+
+    mpPreviousTime = performance.now();
+    cancelAnimationFrame(mpAnimationId);
+    mpAnimationId = requestAnimationFrame(mpFrame);
+  }
+
+  function mpGetOwnGold() {
+    if (!mpState) return 0;
+    if (mpState.mode === 'coop') return Number(mpState.shared?.gold?.[mpRole] || 0);
+    return Number(mpState.sides?.[mpRole]?.gold || 0);
+  }
+
+  function mpGetViewedSideRole() {
+    if (mpRoom?.mode !== 'pvp') return mpRole;
+    return mpViewingOpponent ? mpOtherRole() : mpRole;
+  }
+
+  function mpRefreshHud() {
+    if (!mpState || !mpRoom) return;
+    document.querySelector('#mpWaveLabel').textContent = mpState.wave || 0;
+    document.querySelector('#mpGoldLabel').textContent = Math.floor(mpGetOwnGold()).toLocaleString();
+    document.querySelector('#mpBattleGemsLabel').textContent = Number(player?.gems || 0).toLocaleString();
+
+    if (mpState.mode === 'coop') {
+      const hp = Math.max(0, Math.round(mpState.shared.baseHp));
+      document.querySelector('#mpBaseHpLabel').textContent = `${hp} / ${mpState.shared.maxBaseHp}`;
+      document.querySelector('#mpPlacementGuide').textContent = '아래쪽은 나 · 위쪽은 상대 설치 구역';
+    } else {
+      const viewed = mpGetViewedSideRole();
+      const side = mpState.sides?.[viewed];
+      const hp = Math.max(0, Math.round(side?.baseHp || 0));
+      document.querySelector('#mpBaseHpLabel').textContent = `${hp} / ${side?.maxBaseHp || MP_BASE_HP}`;
+      document.querySelector('#mpPlacementGuide').textContent = mpViewingOpponent
+        ? '상대 기지를 보는 중 · 배치는 내 기지에서만 가능'
+        : '내 기지 전체에서 길을 제외한 곳에 배치';
+    }
+
+    mpRefreshDeckAffordability();
+  }
+
+  function mpRenderDeck() {
+    const deck = (player?.deck || []).filter(id => id && UNIT_DATA[id]);
+    const container = document.querySelector('#mpDeck');
+    container.innerHTML = deck.map(id => {
+      const unit = UNIT_DATA[id];
+      return `<button class="mp-unit-button ${id === mpSelectedUnitId ? 'active' : ''}" type="button" data-mp-unit="${id}">
+        <span class="icon">${unit.icon}</span>
+        <strong>${unit.name}</strong>
+        <small>${unit.cost} 골드</small>
+      </button>`;
+    }).join('');
+
+    container.querySelectorAll('[data-mp-unit]').forEach(button => {
+      button.addEventListener('click', () => {
+        mpSelectedUnitId = button.dataset.mpUnit;
+        mpRenderDeck();
+        const unit = UNIT_DATA[mpSelectedUnitId];
+        mpSetMessage(`${unit.name} 선택 · 맵에서 배치 위치를 누르세요.`);
+      });
+    });
+    mpRefreshDeckAffordability();
+  }
+
+  function mpRefreshDeckAffordability() {
+    const gold = mpGetOwnGold();
+    document.querySelectorAll('[data-mp-unit]').forEach(button => {
+      const unit = UNIT_DATA[button.dataset.mpUnit];
+      const blockedByView = mpRoom?.mode === 'pvp' && mpViewingOpponent;
+      button.disabled = !unit || gold < unit.cost || blockedByView || Boolean(mpState?.matchFinished);
+      button.classList.toggle('active', button.dataset.mpUnit === mpSelectedUnitId);
+    });
+  }
+
+  function mpUpdateViewToggle() {
+    const button = document.querySelector('#mpViewToggleBtn');
+    if (!button || mpRoom?.mode !== 'pvp') return;
+    button.innerHTML = mpViewingOpponent
+      ? '<strong>◀</strong><small>내 기지</small>'
+      : '<strong>◀</strong><small>상대 기지</small>';
+  }
+
+  function mpCanvasPoint(event) {
+    const rect = mpCanvas.getBoundingClientRect();
+    const x = (event.clientX - rect.left) * MP_WIDTH / rect.width;
+    const displayY = (event.clientY - rect.top) * MP_HEIGHT / rect.height;
+    const y = (mpRoom?.mode === 'coop' && mpRole === 'guest')
+      ? MP_HEIGHT - displayY
+      : displayY;
+    return { x, y, displayY };
+  }
+
+  function mpDisplayY(y) {
+    return (mpRoom?.mode === 'coop' && mpRole === 'guest')
+      ? MP_HEIGHT - y
+      : y;
+  }
+
+  function mpValidatePlacement(role, unitId, x, y) {
+    const unit = UNIT_DATA[unitId];
+    if (!unit) return { ok: false, reason: '알 수 없는 유닛입니다.' };
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return { ok: false, reason: '잘못된 위치입니다.' };
+    if (x < 75 || x > 900 || y < 45 || y > 555) return { ok: false, reason: '맵 안쪽에 배치하세요.' };
+
+    let units;
+    let gold;
+    if (mpState.mode === 'coop') {
+      const zoneOk = role === 'host' ? y >= 365 : y <= 235;
+      if (!zoneOk) return { ok: false, reason: '자신의 설치 구역에만 배치할 수 있습니다.' };
+      units = mpState.shared.units;
+      gold = Number(mpState.shared.gold[role] || 0);
+    } else {
+      if (Math.abs(y - MP_PATH_Y) < 72) return { ok: false, reason: '비둘기가 지나가는 길에는 배치할 수 없습니다.' };
+      units = mpState.sides[role].units;
+      gold = Number(mpState.sides[role].gold || 0);
+    }
+
+    if (gold < unit.cost) return { ok: false, reason: `골드가 부족합니다. 필요 골드: ${unit.cost}` };
+    if (units.filter(item => item.ownerRole === role).length >= 40) return { ok: false, reason: '한 플레이어가 배치할 수 있는 유닛 수는 40개까지입니다.' };
+    if (units.some(item => Math.hypot(item.x - x, item.y - y) < 48)) return { ok: false, reason: '다른 유닛과 조금 더 떨어뜨려 배치하세요.' };
+    return { ok: true };
+  }
+
+  function mpCreatePlacedUnit(role, unitId, x, y) {
+    const data = UNIT_DATA[unitId];
+    return {
+      id: mpMakeId('unit'),
+      ownerRole: role,
+      unitId,
+      x,
+      y,
+      damage: Number(data.damage),
+      range: Number(data.range),
+      fireInterval: Number(data.fireInterval),
+      cooldown: 0,
+      attackCount: 0,
+      stunUntil: 0,
+      slowUntil: 0,
+      animationOffset: Math.random() * Math.PI * 2
+    };
+  }
+
+  function mpProcessPlace(role, payload) {
+    if (!mpState || mpState.matchFinished || !['host', 'guest'].includes(role)) return;
+    const unitId = String(payload?.unitId || '');
+    const x = Number(payload?.x);
+    const y = Number(payload?.y);
+    const check = mpValidatePlacement(role, unitId, x, y);
+    if (!check.ok) {
+      if (role === mpRole) mpSetMessage(check.reason);
+      return;
+    }
+
+    const placed = mpCreatePlacedUnit(role, unitId, x, y);
+    const data = UNIT_DATA[unitId];
+    if (mpState.mode === 'coop') {
+      mpState.shared.gold[role] -= data.cost;
+      mpState.shared.units.push(placed);
+    } else {
+      mpState.sides[role].gold -= data.cost;
+      mpState.sides[role].units.push(placed);
+    }
+
+    if (role === mpRole) mpSetMessage(`${data.name}을 배치했습니다.`);
+    mpRefreshHud();
+  }
+
+  async function mpSendPlace(point) {
+    if (!mpState || mpState.matchFinished || !mpSelectedUnitId) return;
+    if (mpRoom.mode === 'pvp' && mpViewingOpponent) {
+      mpSetMessage('상대 기지를 보는 중에는 배치할 수 없습니다. ◀ 버튼으로 내 기지로 돌아오세요.');
+      return;
+    }
+
+    const check = mpValidatePlacement(mpRole, mpSelectedUnitId, point.x, point.y);
+    if (!check.ok) {
+      mpSetMessage(check.reason);
+      return;
+    }
+
+    if (mpRole === 'host') {
+      mpProcessPlace('host', { unitId: mpSelectedUnitId, x: point.x, y: point.y });
+      return;
+    }
+
+    mpSetMessage('방장에게 배치 요청을 보내는 중...');
+    const { error } = await supabaseClient
+      .from('multiplayer_commands')
+      .insert({
+        room_id: mpRoom.id,
+        sender_id: mpUserId,
+        command_type: 'place',
+        payload: { unitId: mpSelectedUnitId, x: point.x, y: point.y }
+      });
+
+    if (error) {
+      console.error('온라인 배치 요청 실패:', error);
+      mpSetMessage(error.message || '배치 요청을 보내지 못했습니다.');
+    }
+  }
+
+  function mpStartCommandPolling() {
+    clearInterval(mpCommandPollTimer);
+    mpCommandPollTimer = setInterval(mpPollCommands, 180);
+  }
+
+  async function mpPollCommands() {
+    if (!mpRoom?.id || mpRole !== 'host' || !mpBattleEntered) return;
+    const { data, error } = await supabaseClient
+      .from('multiplayer_commands')
+      .select('id,sender_id,command_type,payload')
+      .eq('room_id', mpRoom.id)
+      .gt('id', mpLastCommandId)
+      .order('id', { ascending: true })
+      .limit(100);
+
+    if (error || !data?.length) return;
+    for (const command of data) {
+      mpLastCommandId = Math.max(mpLastCommandId, Number(command.id));
+      const role = command.sender_id === mpRoom.host_id
+        ? 'host'
+        : command.sender_id === mpRoom.guest_id
+          ? 'guest'
+          : null;
+      if (!role) continue;
+      if (command.command_type === 'place') mpProcessPlace(role, command.payload || {});
+    }
+  }
+
+  function mpStartNextWave() {
+    if (!mpState || mpState.matchFinished) return;
+    const wave = (mpState.wave || 0) + 1;
+    const { specs, bossName, baseHp } = mpBuildWaveSpecs(wave);
+    mpState.wave = wave;
+    mpState.waveInProgress = true;
+
+    if (mpState.mode === 'coop') {
+      mpHostRuntime.spawnQueues.shared = specs.map(spec => ({ ...spec }));
+      mpHostRuntime.spawnTimers.shared = 0;
+      mpState.shared.nativeRemaining = specs.length;
+    } else {
+      mpHostRuntime.spawnQueues.host = specs.map(spec => ({ ...spec }));
+      mpHostRuntime.spawnQueues.guest = specs.map(spec => ({ ...spec }));
+      mpHostRuntime.spawnTimers.host = 0;
+      mpHostRuntime.spawnTimers.guest = 0;
+      mpState.sides.host.nativeRemaining = specs.length;
+      mpState.sides.guest.nativeRemaining = specs.length;
+    }
+
+    const hpText = baseHp.toLocaleString();
+    mpState.announcement = bossName
+      ? `⚠ WAVE ${wave} · ${bossName} 등장! · 일반 적 HP ${hpText}`
+      : `WAVE ${wave} 시작 · 적 HP ${hpText}`;
+    mpState.announcementUntil = Date.now() + (bossName ? 4200 : 2200);
+    if (bossName) {
+      try { showBossSpawnAlert(bossName); } catch (_) {}
+    }
+  }
+
+  function mpSpawnQueued(dt) {
+    const spawnFor = (key, target) => {
+      const queue = mpHostRuntime.spawnQueues[key];
+      if (!queue?.length) return;
+      mpHostRuntime.spawnTimers[key] -= dt;
+      if (mpHostRuntime.spawnTimers[key] > 0) return;
+      const spec = queue.shift();
+      target.enemies.push(mpCreateEnemy(spec, mpState.wave, true, false));
+      mpHostRuntime.spawnTimers[key] = spec.type === 'normal' ? .52 : .78;
+    };
+
+    if (mpState.mode === 'coop') {
+      spawnFor('shared', mpState.shared);
+    } else {
+      spawnFor('host', mpState.sides.host);
+      spawnFor('guest', mpState.sides.guest);
+    }
+  }
+
+  function mpNativeQueueEmpty() {
+    if (mpState.mode === 'coop') {
+      return mpHostRuntime.spawnQueues.shared.length === 0 && mpState.shared.nativeRemaining <= 0;
+    }
+    return mpHostRuntime.spawnQueues.host.length === 0
+      && mpHostRuntime.spawnQueues.guest.length === 0
+      && mpState.sides.host.nativeRemaining <= 0
+      && mpState.sides.guest.nativeRemaining <= 0;
+  }
+
+  function mpFinishWaveIfReady() {
+    if (!mpState.waveInProgress || !mpNativeQueueEmpty()) return;
+    mpState.waveInProgress = false;
+    mpState.lastCompletedWave = mpState.wave;
+    mpState.nextWaveAt = Date.now() + 2400;
+
+    if (mpState.wave % 10 === 0) {
+      const reward = mpCheckpointReward(mpState.wave);
+      mpState.announcement = mpState.mode === 'coop'
+        ? `WAVE ${mpState.wave} 완료 · 각 플레이어에게 ${reward} 소환석 지급!`
+        : `WAVE ${mpState.wave} 완료 · 다음 보스 단계로 진행합니다.`;
+      mpState.announcementUntil = Date.now() + 4200;
+    } else {
+      mpState.announcement = `WAVE ${mpState.wave} 완료`;
+      mpState.announcementUntil = Date.now() + 1800;
+    }
+  }
+
+  function mpGetUnitsForTarget(target) {
+    return target.units || [];
+  }
+
+  function mpApplyBossAbility(enemy, target) {
+    if (!enemy.abilityEvery || enemy.dead || Date.now() < enemy.nextAbilityAt) return;
+    enemy.nextAbilityAt = Date.now() + enemy.abilityEvery * 1000;
+    const units = mpGetUnitsForTarget(target).filter(unit => Math.abs(unit.x - enemy.x) < 270);
+
+    if (enemy.type === 'knight') {
+      const shuffled = [...units].sort(() => Math.random() - .5).slice(0, 3);
+      shuffled.forEach(unit => { unit.stunUntil = Math.max(unit.stunUntil || 0, Date.now() + 10000); });
+      mpState.announcement = `기사 비둘기가 유닛 ${shuffled.length}개를 10초 동안 기절시켰습니다!`;
+      mpState.announcementUntil = Date.now() + 2600;
+      return;
+    }
+
+    enemy.hp = Math.min(enemy.maxHp, enemy.hp + enemy.maxHp * .05);
+    if (enemy.type === 'king') {
+      units.filter(unit => Math.hypot(unit.x - enemy.x, unit.y - enemy.y) <= 190)
+        .forEach(unit => { unit.stunUntil = Math.max(unit.stunUntil || 0, Date.now() + 1000); });
+      mpState.announcement = '킹 비둘기가 체력을 회복하고 주변 유닛을 마비시켰습니다!';
+      mpState.announcementUntil = Date.now() + 2200;
+    } else if (enemy.type === 'awakenedKing') {
+      units.filter(unit => Math.hypot(unit.x - enemy.x, unit.y - enemy.y) <= 235)
+        .forEach(unit => { unit.slowUntil = Math.max(unit.slowUntil || 0, Date.now() + 2000); });
+      mpState.announcement = '각성한 킹 비둘기가 체력을 회복하고 주변 공격속도를 느리게 했습니다!';
+      mpState.announcementUntil = Date.now() + 2200;
+    }
+  }
+
+  function mpDamageBase(target, enemy, sideKey = null) {
+    const ratio = enemy.type === 'normal' ? .07 : enemy.type === 'brother' ? .12 : .18;
+    const damage = Math.max(10, Math.round(enemy.maxHp * ratio));
+    target.baseHp = Math.max(0, target.baseHp - damage);
+    enemy.dead = true;
+    if (enemy.native) target.nativeRemaining = Math.max(0, target.nativeRemaining - 1);
+
+    if (mpState.mode === 'coop') {
+      mpState.announcement = `${enemy.name}이 공동 기지에 도달했습니다! -${damage} HP`;
+    } else {
+      mpState.announcement = `${mpNameForRole(sideKey)} 기지가 ${damage} 피해를 받았습니다!`;
+    }
+    mpState.announcementUntil = Date.now() + 1800;
+  }
+
+  function mpForwardEnemy(originSideKey, enemy) {
+    if (mpState.mode !== 'pvp' || enemy.forwarded) return;
+    const targetKey = originSideKey === 'host' ? 'guest' : 'host';
+    const target = mpState.sides[targetKey];
+    const clone = {
+      ...enemy,
+      id: mpMakeId('revive'),
+      x: MP_START_X,
+      y: MP_PATH_Y + (Math.random() - .5) * 18,
+      hp: enemy.maxHp,
+      dead: false,
+      native: false,
+      forwarded: true,
+      speed: Math.min(115, enemy.speed * 1.05),
+      nextAbilityAt: enemy.abilityEvery ? Date.now() + enemy.abilityEvery * 1000 : 0,
+      wingPhase: Math.random() * Math.PI * 2
+    };
+    target.enemies.push(clone);
+  }
+
+  function mpRewardKill(target, ownerRole, enemy) {
+    if (mpState.mode === 'coop') {
+      mpState.shared.gold[ownerRole] = Number(mpState.shared.gold[ownerRole] || 0) + enemy.reward;
+      mpState.shared.kills[ownerRole] = Number(mpState.shared.kills[ownerRole] || 0) + 1;
+    } else {
+      target.gold += enemy.reward;
+      target.kills += 1;
+    }
+  }
+
+  function mpApplyDamage(target, enemy, damage, ownerRole, sideKey = null) {
+    if (!enemy || enemy.dead) return false;
+    enemy.hp -= Math.max(0, damage);
+    if (enemy.hp > 0) return false;
+    enemy.hp = 0;
+    enemy.dead = true;
+    if (enemy.native) target.nativeRemaining = Math.max(0, target.nativeRemaining - 1);
+    mpRewardKill(target, ownerRole, enemy);
+    if (mpState.mode === 'pvp') mpForwardEnemy(sideKey, enemy);
+    return true;
+  }
+
+  function mpUpdateEnemies(target, dt, sideKey = null) {
+    for (const enemy of target.enemies) {
+      if (enemy.dead) continue;
+      mpApplyBossAbility(enemy, target);
+      enemy.x += enemy.speed * dt;
+      if (enemy.x >= MP_BASE_X - 18) mpDamageBase(target, enemy, sideKey);
+    }
+    target.enemies = target.enemies.filter(enemy => !enemy.dead);
+  }
+
+  function mpFindTarget(unit, enemies) {
+    let target = null;
+    let bestX = -Infinity;
+    for (const enemy of enemies) {
+      if (enemy.dead) continue;
+      const d = Math.hypot(enemy.x - unit.x, enemy.y - unit.y);
+      if (d <= unit.range && enemy.x > bestX) {
+        target = enemy;
+        bestX = enemy.x;
+      }
+    }
+    return target;
+  }
+
+  function mpPushFx(x1, y1, x2, y2, color, size = 3, sideKey = null) {
+    mpState.fx ||= [];
+    mpState.fx.push({ id: mpMakeId('fx'), x1, y1, x2, y2, color, size, sideKey, ttl: .22 });
+    if (mpState.fx.length > 70) mpState.fx.splice(0, mpState.fx.length - 70);
+  }
+
+  function mpScheduleLightning(sideKey, target, damage, ownerRole) {
+    mpState.delayedAttacks ||= [];
+    mpState.delayedAttacks.push({
+      id: mpMakeId('lightning'),
+      sideKey,
+      x: target.x,
+      y: target.y,
+      damage,
+      radius: 20,
+      ownerRole,
+      at: Date.now() + 500
+    });
+  }
+
+  function mpPerformUnitAttack(targetState, sideKey, unit, target) {
+    const data = UNIT_DATA[unit.unitId];
+    if (!data || !target || target.dead) return;
+    unit.attackCount = (unit.attackCount || 0) + 1;
+    const angle = Math.atan2(target.y - unit.y, target.x - unit.x);
+
+    if (unit.unitId === 'windRanger' && unit.attackCount % 3 === 0) {
+      const hits = [...targetState.enemies].filter(enemy => {
+        if (enemy.dead) return false;
+        const dx = enemy.x - unit.x;
+        const dy = enemy.y - unit.y;
+        const forward = dx * Math.cos(angle) + dy * Math.sin(angle);
+        const side = Math.abs(-dx * Math.sin(angle) + dy * Math.cos(angle));
+        return forward >= 0 && forward <= unit.range && side <= 22 + enemy.radius * .35;
+      });
+      const endX = unit.x + Math.cos(angle) * unit.range;
+      const endY = unit.y + Math.sin(angle) * unit.range;
+      mpPushFx(unit.x, unit.y, endX, endY, '#77f2ba', 10, sideKey);
+      hits.forEach(enemy => mpApplyDamage(targetState, enemy, unit.damage, unit.ownerRole, sideKey));
+      return;
+    }
+
+    if (unit.unitId === 'royalGuardian' && Math.hypot(target.x - unit.x, target.y - unit.y) <= (data.meleeRange || 120)) {
+      const half = ((data.coneAngle || 120) * Math.PI / 180) / 2;
+      const victims = [...targetState.enemies].filter(enemy => {
+        if (enemy.dead) return false;
+        const dx = enemy.x - unit.x;
+        const dy = enemy.y - unit.y;
+        const d = Math.hypot(dx, dy);
+        if (d > (data.meleeRange || 120)) return false;
+        return Math.abs(mpAngleDelta(Math.atan2(dy, dx), angle)) <= half;
+      });
+      mpPushFx(unit.x, unit.y, target.x, target.y, '#ffd04a', 8, sideKey);
+      victims.forEach(enemy => mpApplyDamage(targetState, enemy, unit.damage, unit.ownerRole, sideKey));
+      return;
+    }
+
+    mpPushFx(unit.x, unit.y, target.x, target.y, data.color || '#fff', 3, sideKey);
+    mpApplyDamage(targetState, target, unit.damage, unit.ownerRole, sideKey);
+
+    if (unit.unitId === 'flameWizard') {
+      [...targetState.enemies].forEach(enemy => {
+        if (enemy.dead || enemy.id === target.id) return;
+        if (Math.hypot(enemy.x - target.x, enemy.y - target.y) <= 58) {
+          mpApplyDamage(targetState, enemy, unit.damage * .55, unit.ownerRole, sideKey);
+        }
+      });
+    }
+
+    if (unit.unitId === 'skyDragonKnight') {
+      if (Math.random() < (data.lightningChance || .5)) {
+        mpScheduleLightning(sideKey, target, unit.damage, unit.ownerRole);
+      }
+      if (unit.attackCount % (data.laneSweepEvery || 7) === 0) {
+        mpPushFx(0, MP_PATH_Y, MP_WIDTH, MP_PATH_Y, '#ffe072', 12, sideKey);
+        [...targetState.enemies].forEach(enemy => {
+          if (!enemy.dead && Math.abs(enemy.y - MP_PATH_Y) <= 45) {
+            mpApplyDamage(targetState, enemy, unit.damage * (data.laneSweepMultiplier || 5), unit.ownerRole, sideKey);
+          }
+        });
+      }
+    }
+  }
+
+  function mpUpdateUnits(targetState, dt, sideKey = null) {
+    const now = Date.now();
+    for (const unit of targetState.units) {
+      if (now < (unit.stunUntil || 0)) continue;
+      const speedFactor = now < (unit.slowUntil || 0) ? .5 : 1;
+      unit.cooldown = Math.max(0, (unit.cooldown || 0) - dt * speedFactor);
+      if (unit.cooldown > 0) continue;
+      const target = mpFindTarget(unit, targetState.enemies);
+      if (!target) continue;
+      mpPerformUnitAttack(targetState, sideKey, unit, target);
+      unit.cooldown = unit.fireInterval;
+    }
+  }
+
+  function mpProcessDelayedAttacks() {
+    const now = Date.now();
+    const remain = [];
+    for (const attack of mpState.delayedAttacks || []) {
+      if (attack.at > now) {
+        remain.push(attack);
+        continue;
+      }
+      const targetState = mpState.mode === 'coop'
+        ? mpState.shared
+        : mpState.sides[attack.sideKey];
+      if (!targetState) continue;
+      mpPushFx(attack.x, attack.y - 95, attack.x, attack.y + 20, '#fff4a5', 7, attack.sideKey);
+      [...targetState.enemies].forEach(enemy => {
+        if (!enemy.dead && Math.hypot(enemy.x - attack.x, enemy.y - attack.y) <= attack.radius + enemy.radius * .3) {
+          mpApplyDamage(targetState, enemy, attack.damage, attack.ownerRole, attack.sideKey);
+        }
+      });
+    }
+    mpState.delayedAttacks = remain;
+  }
+
+  function mpUpdateFx(dt) {
+    mpState.fx = (mpState.fx || []).map(fx => ({ ...fx, ttl: fx.ttl - dt })).filter(fx => fx.ttl > 0);
+  }
+
+  function mpCheckDefeat() {
+    if (mpState.matchFinished) return;
+    if (mpState.mode === 'coop') {
+      if (mpState.shared.baseHp <= 0) {
+        mpState.matchFinished = true;
+        mpState.announcement = '공동 기지가 무너졌습니다. 협동 방어 종료.';
+        mpState.announcementUntil = Date.now() + 10000;
+        void mpPublishState(true, 'finished', null);
+      }
+      return;
+    }
+
+    const hostDead = mpState.sides.host.baseHp <= 0;
+    const guestDead = mpState.sides.guest.baseHp <= 0;
+    if (!hostDead && !guestDead) return;
+    const winnerRole = hostDead && !guestDead ? 'guest' : guestDead && !hostDead ? 'host' : null;
+    mpState.matchFinished = true;
+    mpState.winnerRole = winnerRole;
+    mpState.announcement = winnerRole
+      ? `${mpNameForRole(winnerRole)} 승리! 승리 보상 2,500 소환석`
+      : '양쪽 기지가 동시에 무너져 무승부입니다.';
+    mpState.announcementUntil = Date.now() + 10000;
+    const winnerId = winnerRole === 'host' ? mpRoom.host_id : winnerRole === 'guest' ? mpRoom.guest_id : null;
+    void mpPublishState(true, 'finished', winnerId);
+  }
+
+  function mpStepHost(dt) {
+    if (!mpState || mpState.matchFinished) return;
+    const now = Date.now();
+    if (!mpState.waveInProgress && now >= (mpState.nextWaveAt || 0)) mpStartNextWave();
+    mpSpawnQueued(dt);
+
+    if (mpState.mode === 'coop') {
+      mpUpdateEnemies(mpState.shared, dt, null);
+      mpUpdateUnits(mpState.shared, dt, null);
+    } else {
+      mpUpdateEnemies(mpState.sides.host, dt, 'host');
+      mpUpdateEnemies(mpState.sides.guest, dt, 'guest');
+      mpUpdateUnits(mpState.sides.host, dt, 'host');
+      mpUpdateUnits(mpState.sides.guest, dt, 'guest');
+    }
+
+    mpProcessDelayedAttacks();
+    mpUpdateFx(dt);
+    mpFinishWaveIfReady();
+    mpCheckDefeat();
+    mpState.updatedAt = now;
+  }
+
+  async function mpPublishState(force = false, status = 'playing', winnerId = null) {
+    if (!mpRoom?.id || mpRole !== 'host' || !mpState || mpPublishBusy) return;
+    const now = performance.now();
+    if (!force && now - mpLastPublishAt < 260) return;
+    mpLastPublishAt = now;
+    mpPublishBusy = true;
+    try {
+      const { data, error } = await supabaseClient.rpc('update_multiplayer_room_state', {
+        p_room_id: mpRoom.id,
+        p_state: mpState,
+        p_status: status,
+        p_winner_id: winnerId
+      });
+      if (error) throw error;
+      mpRoom = data;
+      if (status === 'finished') {
+        mpHandleFinishedRoom();
+      }
+    } catch (error) {
+      console.error('온라인 상태 동기화 실패:', error);
+      mpSetMessage(`온라인 동기화 오류: ${error.message || '연결을 확인하세요.'}`);
+    } finally {
+      mpPublishBusy = false;
+    }
+  }
+
+  async function mpMaybeClaimRewards() {
+    if (!mpRoom || !mpState || !mpUserId) return;
+
+    if (mpRoom.mode === 'coop') {
+      const completed = Number(mpState.lastCompletedWave || 0);
+      for (let wave = 10; wave <= completed; wave += 10) {
+        const key = `coop_${wave}`;
+        if (mpClaimedRewards.has(key)) continue;
+        mpClaimedRewards.add(key);
+        try {
+          const { data, error } = await supabaseClient.rpc('claim_multiplayer_reward', {
+            p_room_id: mpRoom.id,
+            p_reward_kind: 'coop_wave',
+            p_wave: wave
+          });
+          if (error) throw error;
+          if (data?.gems != null) {
+            player.gems = Number(data.gems);
+            document.querySelector('#mpBattleGemsLabel').textContent = player.gems.toLocaleString();
+            if (data.newly_claimed) mpSetMessage(`WAVE ${wave} 보상 · 소환석 ${data.amount}개 획득!`);
+            void savePlayer();
+          }
+        } catch (error) {
+          console.warn(`협동 ${wave}웨이브 보상:`, error?.message || error);
+          mpClaimedRewards.delete(key);
+        }
+      }
+    }
+
+    if (mpRoom.mode === 'pvp' && mpRoom.status === 'finished' && mpRoom.winner_id === mpUserId) {
+      const key = 'pvp_win';
+      if (mpClaimedRewards.has(key)) return;
+      mpClaimedRewards.add(key);
+      try {
+        const { data, error } = await supabaseClient.rpc('claim_multiplayer_reward', {
+          p_room_id: mpRoom.id,
+          p_reward_kind: 'pvp_win',
+          p_wave: null
+        });
+        if (error) throw error;
+        if (data?.gems != null) {
+          player.gems = Number(data.gems);
+          document.querySelector('#mpBattleGemsLabel').textContent = player.gems.toLocaleString();
+          if (data.newly_claimed) mpSetMessage('승리 보상 · 소환석 2,500개를 획득했습니다!');
+          void savePlayer();
+        }
+      } catch (error) {
+        console.warn('대결 승리 보상:', error?.message || error);
+        mpClaimedRewards.delete(key);
+      }
+    }
+  }
+
+  function mpHandleFinishedRoom() {
+    if (!mpRoom) return;
+    void mpMaybeClaimRewards();
+    if (!mpBattleEntered) return;
+
+    if (mpRoom.mode === 'pvp') {
+      if (mpRoom.winner_id === mpUserId) {
+        mpSetMessage('🏆 승리! 소환석 2,500개 보상을 확인하고 있습니다.');
+      } else if (mpRoom.winner_id) {
+        mpSetMessage('상대 기지가 살아남았습니다. 대결 종료.');
+      } else {
+        mpSetMessage('대결이 종료되었습니다.');
+      }
+    } else {
+      mpSetMessage('협동 방어가 종료되었습니다.');
+    }
+    mpRefreshDeckAffordability();
+  }
+
+  function mpFrame(time) {
+    if (!mpBattleEntered || !mpState) return;
+    const dt = mpPreviousTime ? Math.min(.05, Math.max(0, (time - mpPreviousTime) / 1000)) : 0;
+    mpPreviousTime = time;
+
+    if (mpRole === 'host') {
+      mpStepHost(dt);
+      if (!mpState.matchFinished || mpRoom.status !== 'finished') {
+        void mpPublishState(false, mpState.matchFinished ? 'finished' : 'playing',
+          mpState.winnerRole === 'host' ? mpRoom.host_id : mpState.winnerRole === 'guest' ? mpRoom.guest_id : null);
+      }
+      void mpMaybeClaimRewards();
+    }
+
+    mpDraw(time);
+    mpRefreshHud();
+    if (mpState.announcement && Date.now() < (mpState.announcementUntil || 0)) {
+      document.querySelector('#mpMessage').textContent = mpState.announcement;
+    } else if (mpLocalMessage) {
+      document.querySelector('#mpMessage').textContent = mpLocalMessage;
+    }
+
+    mpAnimationId = requestAnimationFrame(mpFrame);
+  }
+
+  function mpDrawBackground(viewRole = mpRole) {
+    const ctx = mpCtx;
+    ctx.clearRect(0, 0, MP_WIDTH, MP_HEIGHT);
+    const gradient = ctx.createLinearGradient(0, 0, 0, MP_HEIGHT);
+    gradient.addColorStop(0, '#4d7f4b');
+    gradient.addColorStop(1, '#2f613b');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, MP_WIDTH, MP_HEIGHT);
+
+    ctx.globalAlpha = .16;
+    ctx.strokeStyle = '#d7f0bc';
+    ctx.lineWidth = 1;
+    for (let x = 0; x <= MP_WIDTH; x += 50) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, MP_HEIGHT); ctx.stroke();
+    }
+    for (let y = 0; y <= MP_HEIGHT; y += 50) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(MP_WIDTH, y); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    ctx.fillStyle = '#a9815e';
+    ctx.fillRect(0, MP_PATH_Y - 46, MP_WIDTH, 92);
+    ctx.fillStyle = '#d6b489';
+    ctx.fillRect(0, MP_PATH_Y - 35, MP_WIDTH, 70);
+    ctx.strokeStyle = 'rgba(91,61,39,.35)';
+    ctx.setLineDash([18, 16]);
+    ctx.beginPath(); ctx.moveTo(0, MP_PATH_Y); ctx.lineTo(MP_WIDTH, MP_PATH_Y); ctx.stroke();
+    ctx.setLineDash([]);
+
+    if (mpState.mode === 'coop') {
+      ctx.fillStyle = 'rgba(91, 157, 255, .09)';
+      ctx.fillRect(0, 0, MP_WIDTH, 240);
+      ctx.fillStyle = 'rgba(255, 208, 74, .08)';
+      ctx.fillRect(0, 360, MP_WIDTH, 240);
+      ctx.strokeStyle = 'rgba(255,255,255,.18)';
+      ctx.setLineDash([8, 8]);
+      ctx.beginPath(); ctx.moveTo(0, 240); ctx.lineTo(MP_WIDTH, 240); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, 360); ctx.lineTo(MP_WIDTH, 360); ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.font = '700 15px Arial';
+      ctx.fillStyle = 'rgba(255,255,255,.86)';
+      ctx.textAlign = 'left';
+      ctx.fillText(`상대방 · ${mpNameForRole(mpOtherRole())}`, 18, 28);
+      ctx.fillText(`나 · ${mpNameForRole(mpRole)}`, 18, MP_HEIGHT - 18);
+    } else {
+      ctx.fillStyle = 'rgba(14, 20, 34, .42)';
+      ctx.fillRect(12, 12, 220, 36);
+      ctx.font = '700 16px Arial';
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'left';
+      ctx.fillText(mpViewingOpponent ? `상대 기지 · ${mpNameForRole(viewRole)}` : `내 기지 · ${mpNameForRole(viewRole)}`, 24, 36);
+    }
+
+    ctx.fillStyle = '#5b4739';
+    ctx.fillRect(MP_BASE_X - 10, MP_PATH_Y - 52, 34, 104);
+    ctx.fillStyle = '#7789a6';
+    ctx.fillRect(MP_BASE_X, MP_PATH_Y - 68, 32, 136);
+    ctx.fillStyle = '#c9d3e2';
+    for (let y = MP_PATH_Y - 58; y < MP_PATH_Y + 55; y += 27) ctx.fillRect(MP_BASE_X + 7, y, 18, 12);
+  }
+
+  function mpDrawUnit(unit, time) {
+    const data = UNIT_DATA[unit.unitId];
+    if (!data) return;
+    const y = mpState.mode === 'coop' ? mpDisplayY(unit.y) : unit.y;
+    const stunned = Date.now() < (unit.stunUntil || 0);
+    const slowed = Date.now() < (unit.slowUntil || 0);
+
+    mpCtx.save();
+    mpCtx.translate(unit.x, y);
+    const pulse = 1 + Math.sin(time * .004 + unit.animationOffset) * .04;
+    mpCtx.scale(pulse, pulse);
+    mpCtx.beginPath();
+    mpCtx.arc(0, 0, 22, 0, Math.PI * 2);
+    mpCtx.fillStyle = data.color || '#fff';
+    mpCtx.globalAlpha = .92;
+    mpCtx.fill();
+    mpCtx.globalAlpha = 1;
+    mpCtx.strokeStyle = unit.ownerRole === mpRole ? '#fff4b5' : '#9ed4ff';
+    mpCtx.lineWidth = 3;
+    mpCtx.stroke();
+    mpCtx.font = '22px Arial';
+    mpCtx.textAlign = 'center';
+    mpCtx.textBaseline = 'middle';
+    mpCtx.fillText(data.icon, 0, 1);
+    if (stunned || slowed) {
+      mpCtx.font = '13px Arial';
+      mpCtx.fillText(stunned ? '💫' : '🐌', 18, -19);
+    }
+    mpCtx.restore();
+  }
+
+  function mpDrawPigeon(enemy, time) {
+    const x = enemy.x;
+    const y = mpState.mode === 'coop' ? mpDisplayY(enemy.y) : enemy.y;
+    const r = enemy.radius;
+    const scale = r / 18;
+    const flap = Math.sin(time * .011 + enemy.wingPhase);
+    const wingAngle = -0.42 + flap * .68;
+    const bob = Math.sin(time * .006 + enemy.wingPhase) * 2;
+
+    mpCtx.save();
+    mpCtx.translate(x, y + bob);
+    mpCtx.scale(scale, scale);
+
+    // 뒤쪽 날개도 앞날개와 같은 방향/비슷한 각도로 움직입니다.
+    mpCtx.save();
+    mpCtx.translate(-2, -3);
+    mpCtx.rotate(wingAngle - .10);
+    mpCtx.beginPath();
+    mpCtx.ellipse(-8, -11, 23, 8, -.35, 0, Math.PI * 2);
+    mpCtx.fillStyle = '#687582';
+    mpCtx.fill();
+    mpCtx.restore();
+
+    mpCtx.beginPath();
+    mpCtx.ellipse(0, 2, 20, 13, 0, 0, Math.PI * 2);
+    mpCtx.fillStyle = enemy.type === 'awakenedKing' ? '#5c4f80' : '#8995a1';
+    mpCtx.fill();
+
+    mpCtx.beginPath();
+    mpCtx.arc(16, -5, 9, 0, Math.PI * 2);
+    mpCtx.fillStyle = '#737f8b';
+    mpCtx.fill();
+
+    mpCtx.save();
+    mpCtx.translate(-1, 1);
+    mpCtx.rotate(wingAngle);
+    mpCtx.beginPath();
+    mpCtx.ellipse(-7, -11, 25, 9, -.35, 0, Math.PI * 2);
+    mpCtx.fillStyle = '#7b8793';
+    mpCtx.fill();
+    mpCtx.strokeStyle = '#53606c';
+    mpCtx.lineWidth = 1.2;
+    mpCtx.stroke();
+    mpCtx.restore();
+
+    mpCtx.beginPath();
+    mpCtx.moveTo(23, -4); mpCtx.lineTo(34, 0); mpCtx.lineTo(23, 3); mpCtx.closePath();
+    mpCtx.fillStyle = '#d59c63';
+    mpCtx.fill();
+    mpCtx.beginPath();
+    mpCtx.arc(18, -8, 2.2, 0, Math.PI * 2);
+    mpCtx.fillStyle = '#111';
+    mpCtx.fill();
+
+    if (enemy.type === 'knight') {
+      mpCtx.strokeStyle = '#d8e2ef';
+      mpCtx.lineWidth = 3;
+      mpCtx.beginPath(); mpCtx.arc(2, 2, 16, -1.5, 1.5); mpCtx.stroke();
+    }
+    if (enemy.type === 'king' || enemy.type === 'awakenedKing') {
+      mpCtx.fillStyle = '#ffd04a';
+      mpCtx.beginPath();
+      mpCtx.moveTo(7, -18); mpCtx.lineTo(12, -27); mpCtx.lineTo(17, -19); mpCtx.lineTo(22, -28); mpCtx.lineTo(27, -17); mpCtx.closePath();
+      mpCtx.fill();
+    }
+    if (enemy.type === 'brother') {
+      mpCtx.fillStyle = '#eef4ff';
+      mpCtx.font = '8px Arial';
+      mpCtx.fillText(String((enemy.groupIndex || 0) + 1), -1, 6);
+    }
+    mpCtx.restore();
+
+    const ratio = mpClamp(enemy.hp / enemy.maxHp, 0, 1);
+    const barW = Math.max(34, r * 2.2);
+    const barY = y - r - 18;
+    mpCtx.fillStyle = 'rgba(0,0,0,.55)';
+    mpCtx.fillRect(x - barW / 2, barY, barW, 6);
+    mpCtx.fillStyle = enemy.forwarded ? '#ff9d5f' : '#69e694';
+    mpCtx.fillRect(x - barW / 2, barY, barW * ratio, 6);
+    if (enemy.type !== 'normal') {
+      mpCtx.font = '700 11px Arial';
+      mpCtx.fillStyle = '#fff';
+      mpCtx.textAlign = 'center';
+      mpCtx.fillText(enemy.name, x, barY - 5);
+    }
+  }
+
+  function mpDrawFx() {
+    const viewedRole = mpState.mode === 'pvp' ? mpGetViewedSideRole() : null;
+    for (const fx of mpState.fx || []) {
+      if (mpState.mode === 'pvp' && fx.sideKey !== viewedRole) continue;
+      const y1 = mpState.mode === 'coop' ? mpDisplayY(fx.y1) : fx.y1;
+      const y2 = mpState.mode === 'coop' ? mpDisplayY(fx.y2) : fx.y2;
+      mpCtx.save();
+      mpCtx.globalAlpha = mpClamp(fx.ttl / .22, 0, 1);
+      mpCtx.strokeStyle = fx.color || '#fff';
+      mpCtx.lineWidth = fx.size || 3;
+      mpCtx.lineCap = 'round';
+      mpCtx.beginPath();
+      mpCtx.moveTo(fx.x1, y1);
+      mpCtx.lineTo(fx.x2, y2);
+      mpCtx.stroke();
+      mpCtx.restore();
+    }
+  }
+
+  function mpDraw(time) {
+    if (!mpState) return;
+    const viewRole = mpGetViewedSideRole();
+    mpDrawBackground(viewRole);
+
+    let units = [];
+    let enemies = [];
+    if (mpState.mode === 'coop') {
+      units = mpState.shared.units || [];
+      enemies = mpState.shared.enemies || [];
+    } else {
+      const side = mpState.sides?.[viewRole];
+      units = side?.units || [];
+      enemies = side?.enemies || [];
+    }
+
+    units.forEach(unit => mpDrawUnit(unit, time));
+    enemies.forEach(enemy => mpDrawPigeon(enemy, time));
+    mpDrawFx();
+
+    const wave = mpState.wave || 0;
+    const hp = mpBaseEnemyHp(Math.max(1, wave));
+    mpCtx.fillStyle = 'rgba(8, 15, 27, .72)';
+    mpCtx.fillRect(MP_WIDTH - 245, 14, 228, 50);
+    mpCtx.fillStyle = '#fff';
+    mpCtx.font = '700 15px Arial';
+    mpCtx.textAlign = 'left';
+    mpCtx.fillText(`WAVE ${wave} · 적 HP ${hp}`, MP_WIDTH - 232, 36);
+    mpCtx.font = '12px Arial';
+    mpCtx.fillStyle = '#d0d9e8';
+    mpCtx.fillText('10웨이브마다 HP ×1.1', MP_WIDTH - 232, 54);
+  }
+
+  mpCanvas.addEventListener('pointerup', event => {
+    if (!mpBattleEntered || !mpState || mpState.matchFinished) return;
+    event.preventDefault();
+    const point = mpCanvasPoint(event);
+    void mpSendPlace(point);
+  });
+
+  document.querySelectorAll('[data-mp-mode]').forEach(button => {
+    button.addEventListener('click', () => mpSelectMode(button.dataset.mpMode));
+  });
+
+  document.querySelector('#mpCreateRoomBtn')?.addEventListener('click', mpCreateRoom);
+  document.querySelector('#mpJoinRoomBtn')?.addEventListener('click', mpJoinRoom);
+  document.querySelector('#mpCopyCodeBtn')?.addEventListener('click', mpCopyCode);
+  document.querySelector('#mpJoinCodeInput')?.addEventListener('input', event => {
+    event.target.value = event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+  });
+  document.querySelector('#mpJoinCodeInput')?.addEventListener('keydown', event => {
+    if (event.key === 'Enter') void mpJoinRoom();
+  });
+  document.querySelector('#mpLeaveWaitingBtn')?.addEventListener('click', () => void mpLeaveRoom(true));
+  document.querySelector('#mpLobbyBackBtn')?.addEventListener('click', () => {
+    if (mpRoom) void mpLeaveRoom(true);
+    else openMenu();
+  });
+  document.querySelector('#mpViewToggleBtn')?.addEventListener('click', () => {
+    if (mpRoom?.mode !== 'pvp') return;
+    mpViewingOpponent = !mpViewingOpponent;
+    mpUpdateViewToggle();
+    mpRefreshHud();
+    mpRenderDeck();
+    mpSetMessage(mpViewingOpponent ? '상대 기지를 보는 중입니다.' : '내 기지로 돌아왔습니다.');
+  });
+  document.querySelector('#mpLeaveBattleBtn')?.addEventListener('click', () => {
+    const ok = confirm(mpRoom?.mode === 'pvp'
+      ? '대결에서 나가면 상대방이 승리 처리됩니다. 정말 나가시겠습니까?'
+      : '협동 방어를 종료하고 나가시겠습니까?');
+    if (ok) void mpLeaveRoom(true);
+  });
+
+  document.querySelector('#openMultiplayerBtn')?.addEventListener('click', mpOpenLobby);
+  mpSelectMode('coop');
+})();
+</script>
+
 </body>
 </html>

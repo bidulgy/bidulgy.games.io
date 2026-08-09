@@ -1,0 +1,2062 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>가챠 타워디펜스</title>
+  <style>
+    :root {
+      --bg: #101522;
+      --panel: #1a2233;
+      --panel2: #222d42;
+      --text: #f5f7fb;
+      --muted: #aeb9cb;
+      --accent: #ffd04a;
+      --danger: #ff6474;
+      --good: #4fe08b;
+      --line: #33425d;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #0c1120, #161f32);
+      color: var(--text);
+      font-family: Arial, "Noto Sans KR", sans-serif;
+    }
+
+    button, input { font: inherit; }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 11px 15px;
+      cursor: pointer;
+      font-weight: 700;
+      background: var(--accent);
+      color: #25210e;
+    }
+
+    button.secondary {
+      background: #35435e;
+      color: white;
+    }
+
+    button.danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    button:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .hidden { display: none !important; }
+
+    .screen {
+      width: min(1100px, 100%);
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .center-screen {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+    }
+
+    .card {
+      background: rgba(26, 34, 51, .96);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.3);
+    }
+
+    .auth-card {
+      width: min(430px, 100%);
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    .muted { color: var(--muted); }
+
+    .form-group {
+      margin: 14px 0;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--muted);
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 13px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: #111827;
+      color: white;
+      outline: none;
+    }
+
+    input:focus { border-color: var(--accent); }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .between {
+      display: flex;
+      gap: 14px;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .message {
+      min-height: 23px;
+      margin-top: 12px;
+      color: var(--muted);
+    }
+
+    .message.error { color: #ff9ca7; }
+    .message.success { color: #83efad; }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .menu-grid button {
+      min-height: 100px;
+      font-size: 18px;
+    }
+
+    .resource-bar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .resource {
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: var(--panel2);
+      border: 1px solid var(--line);
+    }
+
+    .unit-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .unit-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      background: var(--panel2);
+      position: relative;
+    }
+
+    .unit-card.selected {
+      outline: 3px solid var(--accent);
+    }
+
+    .unit-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 30px;
+      background: #111827;
+      margin-bottom: 10px;
+    }
+
+    .rarity-common { color: #d7dbe3; }
+    .rarity-rare { color: #58a7ff; }
+    .rarity-epic { color: #c985ff; }
+    .rarity-legend { color: #ffcc44; }
+
+    .deck-slots {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .deck-slot {
+      min-height: 120px;
+      border: 2px dashed #4d5e7c;
+      border-radius: 13px;
+      padding: 10px;
+      background: #151d2d;
+      text-align: center;
+    }
+
+    .deck-slot.filled {
+      border-style: solid;
+      border-color: var(--accent);
+    }
+
+    .gacha-result {
+      margin-top: 18px;
+      min-height: 120px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      border: 1px dashed #536482;
+      border-radius: 15px;
+      background: #131b2b;
+      padding: 18px;
+    }
+
+    .battle-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 240px;
+      gap: 14px;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: #70a64b;
+      border: 3px solid #435370;
+      border-radius: 14px;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    .battle-side {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .battle-deck {
+      display: grid;
+      gap: 8px;
+    }
+
+    .battle-unit-button {
+      width: 100%;
+      background: #33415a;
+      color: white;
+      text-align: left;
+    }
+
+    .battle-unit-button.selected {
+      outline: 3px solid var(--accent);
+    }
+
+    .selected-panel {
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+    }
+
+    @media (max-width: 820px) {
+      .battle-layout { grid-template-columns: 1fr; }
+      .battle-side { order: -1; }
+      .battle-deck {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .deck-slots {
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+      }
+    }
+    /* ==================================
+   비둘기 침공 메인 메뉴
+================================== */
+
+.invasion-menu {
+  position: relative;
+  width: 100%;
+  max-width: none;
+  min-height: 100vh;
+  padding: 28px clamp(22px, 6vw, 100px);
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 18% 30%,
+      rgba(47, 126, 206, 0.22),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 85% 18%,
+      rgba(255, 72, 72, 0.13),
+      transparent 26%
+    ),
+    linear-gradient(
+      145deg,
+      #07101f 0%,
+      #10223a 48%,
+      #151c2d 100%
+    );
+}
+
+.invasion-menu::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.2;
+  background-image:
+    linear-gradient(
+      rgba(255, 255, 255, 0.04) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.04) 1px,
+      transparent 1px
+    );
+  background-size: 55px 55px;
+}
+
+.invasion-topbar {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  width: min(1200px, 100%);
+  margin: 0 auto;
+}
+
+.commander-info {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.commander-icon {
+  display: grid;
+  place-items: center;
+  width: 55px;
+  height: 55px;
+  border: 1px solid rgba(125, 179, 236, 0.45);
+  border-radius: 17px;
+  background: rgba(29, 58, 94, 0.85);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+  font-size: 29px;
+}
+
+.commander-label {
+  display: block;
+  margin-bottom: 4px;
+  color: #8ba6c7;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.commander-name {
+  margin: 0;
+  color: white;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.invasion-resources {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.invasion-resource {
+  border-color: rgba(130, 168, 216, 0.28);
+  background: rgba(16, 36, 65, 0.85);
+  color: #dceaff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+}
+
+.invasion-resource strong {
+  color: white;
+}
+
+.invasion-logout {
+  min-height: 43px;
+  border: 1px solid rgba(143, 174, 215, 0.25);
+  background: rgba(61, 79, 112, 0.86);
+  color: white;
+  transition: 0.2s;
+}
+
+.invasion-logout:hover {
+  background: rgba(83, 105, 145, 1);
+  transform: translateY(-2px);
+}
+
+.invasion-content {
+  position: relative;
+  z-index: 3;
+  width: min(1020px, 100%);
+  margin: 65px auto 0;
+}
+
+.invasion-hero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(35px, 7vw, 90px);
+}
+
+.enemy-logo-area {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(210px, 28vw, 320px);
+  aspect-ratio: 1;
+  border: 2px solid rgba(255, 92, 92, 0.48);
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle,
+      rgba(255, 75, 75, 0.2),
+      rgba(25, 54, 88, 0.4) 48%,
+      rgba(7, 19, 37, 0.9) 72%
+    );
+  box-shadow:
+    0 0 70px rgba(255, 51, 51, 0.16),
+    inset 0 0 45px rgba(255, 255, 255, 0.05);
+}
+
+.target-ring {
+  position: absolute;
+  inset: 26px;
+  border: 1px dashed rgba(255, 113, 113, 0.5);
+  border-radius: 50%;
+  animation: targetRotate 13s linear infinite;
+}
+
+.target-ring::before,
+.target-ring::after {
+  content: "";
+  position: absolute;
+  background: rgba(255, 96, 96, 0.65);
+}
+
+.target-ring::before {
+  top: 50%;
+  left: -13px;
+  width: calc(100% + 26px);
+  height: 1px;
+}
+
+.target-ring::after {
+  top: -13px;
+  left: 50%;
+  width: 1px;
+  height: calc(100% + 26px);
+}
+
+.enemy-pigeon {
+  position: relative;
+  z-index: 2;
+  font-size: clamp(100px, 15vw, 160px);
+  filter:
+    drop-shadow(0 18px 12px rgba(0, 0, 0, 0.4))
+    drop-shadow(0 0 20px rgba(255, 86, 86, 0.2));
+  animation: enemyPigeonFloat 2.8s ease-in-out infinite;
+}
+
+.alert-symbol {
+  position: absolute;
+  z-index: 4;
+  top: 9%;
+  right: 11%;
+  color: #ffca45;
+  font-size: clamp(36px, 5vw, 55px);
+  font-weight: 900;
+  text-shadow: 0 0 20px rgba(255, 185, 45, 0.55);
+  animation: alertBlink 1.15s infinite;
+}
+
+.invasion-title-area {
+  max-width: 470px;
+}
+
+.invasion-subtitle {
+  color: #ff7878;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.32em;
+}
+
+.invasion-title-area h1 {
+  margin: 11px 0 18px;
+  color: white;
+  font-size: clamp(48px, 7vw, 80px);
+  line-height: 0.94;
+  letter-spacing: -0.07em;
+  text-shadow:
+    0 5px 0 rgba(0, 0, 0, 0.18),
+    0 17px 38px rgba(0, 0, 0, 0.35);
+}
+
+.invasion-title-area p {
+  margin: 0;
+  color: #a7bad3;
+  font-size: clamp(15px, 2vw, 18px);
+  line-height: 1.7;
+}
+
+.invasion-start-button {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  width: min(720px, 100%);
+  min-height: 91px;
+  margin: 55px auto 18px;
+  padding: 18px 27px;
+  border: 1px solid #ffe38b;
+  border-radius: 23px;
+  background: linear-gradient(135deg, #ffe170, #ffbb2f);
+  color: #302407;
+  box-shadow:
+    0 18px 42px rgba(255, 181, 36, 0.24),
+    inset 0 2px 0 rgba(255, 255, 255, 0.6);
+  transition: 0.2s;
+}
+
+.invasion-start-button:hover {
+  transform: translateY(-5px) scale(1.015);
+  box-shadow:
+    0 25px 55px rgba(255, 181, 36, 0.34),
+    inset 0 2px 0 rgba(255, 255, 255, 0.65);
+}
+
+.start-button-icon {
+  font-size: 38px;
+}
+
+.start-button-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+.start-button-text strong {
+  font-size: 25px;
+}
+
+.start-button-text small {
+  opacity: 0.67;
+  font-size: 13px;
+}
+
+.start-button-arrow {
+  font-size: 21px;
+}
+
+.defense-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+  width: min(900px, 100%);
+  margin: 0 auto;
+}
+
+.defense-menu-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 140px;
+  padding: 22px;
+  border: 1px solid rgba(143, 182, 231, 0.22);
+  border-radius: 21px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(37, 66, 104, 0.94),
+      rgba(20, 39, 68, 0.94)
+    );
+  color: white;
+  text-align: left;
+  box-shadow: 0 15px 34px rgba(0, 0, 0, 0.22);
+  transition: 0.2s;
+}
+
+.defense-menu-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(255, 199, 72, 0.68);
+  box-shadow: 0 22px 44px rgba(0, 0, 0, 0.32);
+}
+
+.defense-card-icon {
+  margin-bottom: 15px;
+  font-size: 30px;
+}
+
+.defense-menu-card strong {
+  margin-bottom: 5px;
+  font-size: 18px;
+}
+
+.defense-menu-card small {
+  color: #9db2cd;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.invasion-warning {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 24px;
+  color: #8399b6;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.warning-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff5858;
+  box-shadow: 0 0 12px #ff5858;
+  animation: alertBlink 1.15s infinite;
+}
+
+.enemy-flock {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  gap: 12px;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.enemy-flock span {
+  display: block;
+  animation: flyingPigeon 5s ease-in-out infinite;
+}
+
+.flock-one {
+  top: 18%;
+  left: -180px;
+  font-size: 45px;
+  animation: flockMove 18s linear infinite;
+}
+
+.flock-two {
+  top: 63%;
+  left: -150px;
+  font-size: 34px;
+  animation: flockMove 24s linear infinite 6s;
+}
+
+.warning-light {
+  position: absolute;
+  top: -130px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: rgba(255, 47, 47, 0.1);
+  filter: blur(45px);
+  animation: warningPulse 2s ease-in-out infinite;
+}
+
+.warning-light-left {
+  left: -80px;
+}
+
+.warning-light-right {
+  right: -80px;
+  animation-delay: 1s;
+}
+
+@keyframes enemyPigeonFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+
+  50% {
+    transform: translateY(-11px) rotate(2deg);
+  }
+}
+
+@keyframes targetRotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes alertBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes flyingPigeon {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-5deg);
+  }
+
+  50% {
+    transform: translateY(-18px) rotate(5deg);
+  }
+}
+
+@keyframes flockMove {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(100vw + 350px));
+  }
+}
+
+@keyframes warningPulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+@media (max-width: 800px) {
+  .invasion-menu {
+    padding: 20px;
+  }
+
+  .invasion-topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .invasion-resources {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .invasion-content {
+    margin-top: 45px;
+  }
+
+  .invasion-hero {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .defense-menu-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .defense-menu-card {
+    min-height: 110px;
+  }
+}
+  </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+  <section id="authScreen" class="screen center-screen">
+    <div class="card auth-card">
+      <h1>가챠 타워디펜스</h1>
+      <p class="muted">이 버전은 한 개의 HTML 파일로 실행됩니다.</p>
+
+      <div class="form-group">
+       <div class="form-group">
+  <label for="username">아이디</label>
+  <input
+    id="username"
+    type="text"
+    minlength="3"
+    maxlength="20"
+    autocomplete="username"
+    placeholder="영문 소문자·숫자·_ 3~20자"
+  />
+</div>
+      <div class="form-group">
+        <label for="password">비밀번호</label>
+        <input id="password" type="password" minlength="6" autocomplete="current-password" placeholder="6자 이상" />
+      </div>
+
+      <div class="row">
+        <button id="loginBtn">로그인</button>
+        <button id="signupBtn" class="secondary">회원가입</button>
+      </div>
+
+      <div id="authMessage" class="message"></div>
+      <p class="muted" style="font-size:13px;">
+        게임 데이터는 온라인 계정에 저장됩니다.
+      </p>
+    </div>
+  </section>
+
+<section id="menuScreen" class="screen hidden invasion-menu">
+  <div class="warning-light warning-light-left"></div>
+  <div class="warning-light warning-light-right"></div>
+
+  <div class="enemy-flock flock-one">
+    <span>🕊️</span>
+    <span>🕊️</span>
+    <span>🕊️</span>
+  </div>
+
+  <div class="enemy-flock flock-two">
+    <span>🕊️</span>
+    <span>🕊️</span>
+  </div>
+
+  <header class="invasion-topbar">
+    <div class="commander-info">
+      <div class="commander-icon">🛡️</div>
+
+      <div>
+        <span class="commander-label">수비대 지휘관</span>
+        <p id="welcomeText" class="commander-name"></p>
+      </div>
+    </div>
+
+    <div class="invasion-resources">
+      <div class="resource invasion-resource">
+        💎 소환석
+        <strong id="menuGems">0</strong>
+      </div>
+
+      <div class="resource invasion-resource">
+        🏆 최고 스테이지
+        <strong id="menuStage">0</strong>
+      </div>
+
+      <button id="logoutBtn" class="invasion-logout">
+        로그아웃
+      </button>
+    </div>
+  </header>
+
+  <main class="invasion-content">
+    <div class="invasion-hero">
+      <div class="enemy-logo-area">
+        <div class="alert-symbol">⚠</div>
+        <div class="enemy-pigeon">🕊️</div>
+        <div class="target-ring"></div>
+      </div>
+
+      <div class="invasion-title-area">
+        <span class="invasion-subtitle">
+          PIGEON INVASION
+        </span>
+
+        <h1>
+          가챠<br />
+          타워디펜스
+        </h1>
+
+        <p>
+          끝없이 몰려오는 비둘기 떼를 막고<br />
+          도시의 마지막 방어선을 지켜내세요!
+        </p>
+      </div>
+    </div>
+
+    <button id="startBattleBtn" class="invasion-start-button">
+      <span class="start-button-icon">⚔️</span>
+
+      <span class="start-button-text">
+        <strong>전투 시작</strong>
+        <small>비둘기 침공을 막으러 출격합니다</small>
+      </span>
+
+      <span class="start-button-arrow">▶</span>
+    </button>
+
+    <div class="defense-menu-grid">
+      <button id="openGachaBtn" class="defense-menu-card">
+        <span class="defense-card-icon">✨</span>
+        <strong>수비대 소환</strong>
+        <small>새로운 방어 유닛을 획득하세요</small>
+      </button>
+
+      <button id="openDeckBtn" class="defense-menu-card">
+        <span class="defense-card-icon">🧩</span>
+        <strong>덱 편성</strong>
+        <small>출전할 수비대원을 선택하세요</small>
+      </button>
+
+      <button id="openCollectionBtn" class="defense-menu-card">
+        <span class="defense-card-icon">📚</span>
+        <strong>수비대 도감</strong>
+        <small>보유한 방어 유닛을 확인하세요</small>
+      </button>
+    </div>
+
+    <div class="invasion-warning">
+      <span class="warning-dot"></span>
+      비둘기 떼 접근 중 · 방어선 전투 준비
+    </div>
+  </main>
+</section>
+
+  <section id="gachaScreen" class="screen hidden">
+    <div class="between">
+      <div>
+        <h2>캐릭터 소환</h2>
+        <p class="muted">1회 소환 비용: 소환석 100개</p>
+      </div>
+      <div class="row">
+        <div class="resource">💎 <strong id="gachaGems">0</strong></div>
+        <button class="secondary backToMenu">메뉴로</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <button id="summonBtn">1회 소환</button>
+      <div id="gachaResult" class="gacha-result">소환 버튼을 눌러 보세요.</div>
+    </div>
+  </section>
+
+  <section id="collectionScreen" class="screen hidden">
+    <div class="between">
+      <div>
+        <h2>보유 캐릭터</h2>
+        <p class="muted">중복 획득 시 조각이 증가합니다.</p>
+      </div>
+      <button class="secondary backToMenu">메뉴로</button>
+    </div>
+    <div id="collectionGrid" class="unit-grid"></div>
+  </section>
+
+  <section id="deckScreen" class="screen hidden">
+    <div class="between">
+      <div>
+        <h2>덱 편성</h2>
+        <p class="muted">아래 캐릭터를 클릭하고, 덱 슬롯을 눌러 배치하세요.</p>
+      </div>
+      <button class="secondary backToMenu">저장하고 메뉴로</button>
+    </div>
+
+    <div id="deckSlots" class="deck-slots"></div>
+    <h3 style="margin-top:24px;">보유 캐릭터</h3>
+    <div id="deckUnitGrid" class="unit-grid"></div>
+    <div id="deckMessage" class="message"></div>
+  </section>
+
+  <section id="battleScreen" class="screen hidden">
+    <div class="between">
+      <div>
+        <h2>스테이지 <span id="battleStage">1</span></h2>
+        <div class="resource-bar">
+          <div class="resource">🪙 전투 골드 <strong id="battleGold">0</strong></div>
+          <div class="resource">❤️ 생명 <strong id="battleLives">0</strong></div>
+          <div class="resource">🌊 웨이브 <strong id="battleWave">0</strong>/5</div>
+          <div class="resource">💀 처치 <strong id="battleKills">0</strong></div>
+        </div>
+      </div>
+      <button id="leaveBattleBtn" class="danger">전투 나가기</button>
+    </div>
+
+    <div class="battle-layout">
+      <canvas id="gameCanvas" width="900" height="520"></canvas>
+
+      <aside class="card battle-side">
+        <div>
+          <h3>배치할 유닛</h3>
+          <div id="battleDeck" class="battle-deck"></div>
+        </div>
+
+        <div id="selectedUnitPanel" class="selected-panel">
+          <h3>배치 유닛 정보</h3>
+          <p class="muted">지도에 배치된 유닛을 클릭하세요.</p>
+        </div>
+
+        <div id="battleMessage" class="message"></div>
+      </aside>
+    </div>
+  </section>
+
+  <script>
+    const SUPABASE_URL =
+  'https://gomwkcqkslaoypdbebid.supabase.co';
+
+const SUPABASE_PUBLISHABLE_KEY =
+  'sb_publishable_iuGd7i15GSv3nszxJhQt0Q_OkNbGbm7';
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
+function normalizeUsername(value) {
+  return value.trim().toLowerCase();
+}
+
+function usernameToInternalEmail(username) {
+  return `${username}@players.example.com`;
+}
+
+    const UNIT_DATA = {
+      starterArcher: {
+        id: 'starterArcher',
+        name: '견습 궁수',
+        icon: '🏹',
+        rarity: '일반',
+        rarityClass: 'rarity-common',
+        cost: 90,
+        damage: 18,
+        range: 145,
+        fireInterval: 0.48,
+        color: '#4d8fff'
+      },
+      starterKnight: {
+        id: 'starterKnight',
+        name: '견습 기사',
+        icon: '🗡️',
+        rarity: '일반',
+        rarityClass: 'rarity-common',
+        cost: 120,
+        damage: 34,
+        range: 95,
+        fireInterval: 0.82,
+        color: '#9ca8ba'
+      },
+      starterMage: {
+        id: 'starterMage',
+        name: '견습 마법사',
+        icon: '🔮',
+        rarity: '희귀',
+        rarityClass: 'rarity-rare',
+        cost: 165,
+        damage: 55,
+        range: 175,
+        fireInterval: 1.05,
+        color: '#9b64ff'
+      },
+      windRanger: {
+        id: 'windRanger',
+        name: '바람 사수',
+        icon: '🍃',
+        rarity: '희귀',
+        rarityClass: 'rarity-rare',
+        cost: 150,
+        damage: 28,
+        range: 185,
+        fireInterval: 0.38,
+        color: '#43d890'
+      },
+      flameWizard: {
+        id: 'flameWizard',
+        name: '화염 마도사',
+        icon: '🔥',
+        rarity: '영웅',
+        rarityClass: 'rarity-epic',
+        cost: 230,
+        damage: 88,
+        range: 190,
+        fireInterval: 1.12,
+        color: '#ff6d42'
+      },
+      royalGuardian: {
+        id: 'royalGuardian',
+        name: '왕실 수호자',
+        icon: '🛡️',
+        rarity: '전설',
+        rarityClass: 'rarity-legend',
+        cost: 300,
+        damage: 145,
+        range: 135,
+        fireInterval: 1.3,
+        color: '#ffd04a'
+      }
+    };
+
+    const GACHA_POOL = [
+      { id: 'starterArcher', weight: 30 },
+      { id: 'starterKnight', weight: 30 },
+      { id: 'starterMage', weight: 20 },
+      { id: 'windRanger', weight: 13 },
+      { id: 'flameWizard', weight: 6 },
+      { id: 'royalGuardian', weight: 1 }
+    ];
+
+    const screens = {
+      auth: document.querySelector('#authScreen'),
+      menu: document.querySelector('#menuScreen'),
+      gacha: document.querySelector('#gachaScreen'),
+      collection: document.querySelector('#collectionScreen'),
+      deck: document.querySelector('#deckScreen'),
+      battle: document.querySelector('#battleScreen')
+    };
+
+    let currentUsername = null;
+    let player = null;
+    let selectedDeckUnitId = null;
+    let selectedDeckSlot = null;
+
+    function showScreen(name) {
+      Object.values(screens).forEach(screen => screen.classList.add('hidden'));
+      screens[name].classList.remove('hidden');
+    }
+
+
+
+
+
+    function createDefaultPlayer() {
+      return {
+        gems: 500,
+        highestStage: 0,
+        ownedUnits: {
+          starterArcher: { level: 1, fragments: 0 },
+          starterKnight: { level: 1, fragments: 0 },
+          starterMage: { level: 1, fragments: 0 }
+        },
+        deck: [
+          'starterArcher',
+          'starterKnight',
+          'starterMage',
+          null,
+          null
+        ]
+      };
+    }
+
+   async function savePlayer() {
+  if (!player) {
+    return;
+  }
+
+  const {
+    data: { user },
+    error: userError
+  } = await supabaseClient.auth.getUser();
+
+  if (userError || !user) {
+    console.error('로그인 사용자 확인 실패:', userError);
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from('game_saves')
+    .upsert(
+      {
+        user_id: user.id,
+        save_data: player,
+        updated_at: new Date().toISOString()
+      },
+      {
+        onConflict: 'user_id'
+      }
+    );
+
+  if (error) {
+    console.error('게임 저장 실패:', error.message);
+  }
+}
+
+async function loadPlayer(user) {
+  const { data, error } = await supabaseClient
+    .from('game_saves')
+    .select('save_data')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error('게임 불러오기 실패:', error.message);
+
+    setAuthMessage(
+      '게임 데이터를 불러오지 못했습니다.',
+      'error'
+    );
+
+    return false;
+  }
+
+currentUsername =
+  user.user_metadata?.username ||
+  user.email?.split('@')[0] ||
+  '플레이어';
+
+  if (data?.save_data) {
+    player = data.save_data;
+  } else {
+    player = createDefaultPlayer();
+    await savePlayer();
+  }
+
+  return true;
+}
+
+    function setAuthMessage(text, type = '') {
+      const el = document.querySelector('#authMessage');
+      el.textContent = text;
+      el.className = `message ${type}`;
+    }
+
+async function signup() {
+  const username = normalizeUsername(
+    document.querySelector('#username').value
+  );
+
+  const password =
+    document.querySelector('#password').value;
+
+  if (!/^[a-z0-9_]{3,20}$/.test(username)) {
+    setAuthMessage(
+      '아이디는 영문 소문자, 숫자, 밑줄로 3~20자 입력하세요.',
+      'error'
+    );
+    return;
+  }
+
+  if (password.length < 6) {
+    setAuthMessage(
+      '비밀번호는 6자 이상이어야 합니다.',
+      'error'
+    );
+    return;
+  }
+
+  const internalEmail =
+    usernameToInternalEmail(username);
+
+  const { data, error } =
+    await supabaseClient.auth.signUp({
+      email: internalEmail,
+      password,
+      options: {
+        data: {
+          username: username
+        }
+      }
+    });
+
+  if (error) {
+    console.error('회원가입 실패:', error.message);
+
+    if (
+      error.message.toLowerCase().includes('already') ||
+      error.message.toLowerCase().includes('registered')
+    ) {
+      setAuthMessage(
+        '이미 사용 중인 아이디입니다.',
+        'error'
+      );
+    } else {
+      setAuthMessage(
+        `회원가입 실패: ${error.message}`,
+        'error'
+      );
+    }
+
+    return;
+  }
+
+  if (!data.user) {
+    setAuthMessage(
+      '계정을 만들지 못했습니다.',
+      'error'
+    );
+    return;
+  }
+
+  if (!data.session) {
+    setAuthMessage(
+      'Supabase의 이메일 확인 설정을 꺼야 합니다.',
+      'error'
+    );
+    return;
+  }
+
+  const loaded = await loadPlayer(data.user);
+
+  if (loaded) {
+    openMenu();
+  }
+}
+async function login() {
+  const username = normalizeUsername(
+    document.querySelector('#username').value
+  );
+
+  const password =
+    document.querySelector('#password').value;
+
+  if (!username || !password) {
+    setAuthMessage(
+      '아이디와 비밀번호를 입력하세요.',
+      'error'
+    );
+    return;
+  }
+
+  if (!/^[a-z0-9_]{3,20}$/.test(username)) {
+    setAuthMessage(
+      '아이디는 영문 소문자, 숫자, 밑줄로 3~20자 입력하세요.',
+      'error'
+    );
+    return;
+  }
+
+  const internalEmail =
+    usernameToInternalEmail(username);
+
+  const { data, error } =
+    await supabaseClient.auth.signInWithPassword({
+      email: internalEmail,
+      password: password
+    });
+
+  if (error) {
+    console.error('로그인 실패:', error.message);
+
+    setAuthMessage(
+      '아이디 또는 비밀번호를 확인하세요.',
+      'error'
+    );
+    return;
+  }
+
+  const loaded = await loadPlayer(data.user);
+
+  if (loaded) {
+    openMenu();
+  }
+}
+async function logout() {
+  await savePlayer();
+
+  const { error } =
+    await supabaseClient.auth.signOut();
+
+  if (error) {
+    console.error('로그아웃 실패:', error.message);
+    return;
+  }
+
+  currentUsername = null;
+  player = null;
+
+  document.querySelector('#password').value = '';
+  showScreen('auth');
+}
+
+  async function restoreSession() {
+  const {
+    data: { session },
+    error
+  } = await supabaseClient.auth.getSession();
+
+  if (error || !session) {
+    showScreen('auth');
+    return;
+  }
+
+  const loaded = await loadPlayer(session.user);
+
+  if (loaded) {
+    openMenu();
+  }
+}
+
+    function openMenu() {
+      savePlayer();
+      document.querySelector('#welcomeText').textContent = `${currentUsername}님의 계정`;
+      document.querySelector('#menuGems').textContent = player.gems;
+      document.querySelector('#menuStage').textContent = player.highestStage;
+      showScreen('menu');
+    }
+
+    function getOwnedUnitIds() {
+      return Object.keys(player.ownedUnits);
+    }
+
+    function unitCardHtml(unitId, ownedInfo, selectable = false) {
+      const unit = UNIT_DATA[unitId];
+      return `
+        <div class="unit-card ${selectable && selectedDeckUnitId === unitId ? 'selected' : ''}"
+             ${selectable ? `data-unit-id="${unitId}"` : ''}>
+          <div class="unit-icon">${unit.icon}</div>
+          <h3>${unit.name}</h3>
+          <p class="${unit.rarityClass}">${unit.rarity}</p>
+          <p class="muted">
+            공격 ${unit.damage} · 사거리 ${unit.range}<br>
+            배치 비용 ${unit.cost}
+          </p>
+          <strong>Lv.${ownedInfo.level}</strong>
+          <span class="muted"> · 조각 ${ownedInfo.fragments}</span>
+        </div>
+      `;
+    }
+
+    function openCollection() {
+      const grid = document.querySelector('#collectionGrid');
+      grid.innerHTML = getOwnedUnitIds()
+        .map(id => unitCardHtml(id, player.ownedUnits[id]))
+        .join('');
+      showScreen('collection');
+    }
+
+    function weightedRandomUnit() {
+      const total = GACHA_POOL.reduce((sum, item) => sum + item.weight, 0);
+      let roll = Math.random() * total;
+
+      for (const item of GACHA_POOL) {
+        roll -= item.weight;
+        if (roll <= 0) return item.id;
+      }
+
+      return GACHA_POOL[0].id;
+    }
+
+    function openGacha() {
+      document.querySelector('#gachaGems').textContent = player.gems;
+      document.querySelector('#gachaResult').textContent = '소환 버튼을 눌러 보세요.';
+      showScreen('gacha');
+    }
+
+    function summon() {
+      if (player.gems < 100) {
+        document.querySelector('#gachaResult').innerHTML =
+          '<span style="color:#ff9ca7;">소환석이 부족합니다.</span>';
+        return;
+      }
+
+      player.gems -= 100;
+      const unitId = weightedRandomUnit();
+      const unit = UNIT_DATA[unitId];
+      const isNew = !player.ownedUnits[unitId];
+
+      if (isNew) {
+        player.ownedUnits[unitId] = { level: 1, fragments: 0 };
+      } else {
+        player.ownedUnits[unitId].fragments += 10;
+      }
+
+      savePlayer();
+      document.querySelector('#gachaGems').textContent = player.gems;
+      document.querySelector('#gachaResult').innerHTML = `
+        <div>
+          <div style="font-size:52px;">${unit.icon}</div>
+          <h2>${unit.name}</h2>
+          <p class="${unit.rarityClass}">${unit.rarity}</p>
+          <strong>${isNew ? '새 캐릭터 획득!' : '중복 획득: 조각 +10'}</strong>
+        </div>
+      `;
+    }
+
+    function openDeck() {
+      selectedDeckUnitId = null;
+      selectedDeckSlot = null;
+      renderDeck();
+      showScreen('deck');
+    }
+
+    function renderDeck() {
+      const slots = document.querySelector('#deckSlots');
+      slots.innerHTML = player.deck.map((unitId, index) => {
+        if (!unitId) {
+          return `
+            <button class="deck-slot" data-slot="${index}">
+              ${index + 1}번 슬롯<br><span class="muted">비어 있음</span>
+            </button>
+          `;
+        }
+
+        const unit = UNIT_DATA[unitId];
+        return `
+          <button class="deck-slot filled" data-slot="${index}">
+            <div style="font-size:32px;">${unit.icon}</div>
+            <strong>${unit.name}</strong><br>
+            <span class="${unit.rarityClass}">${unit.rarity}</span>
+          </button>
+        `;
+      }).join('');
+
+      const unitGrid = document.querySelector('#deckUnitGrid');
+      unitGrid.innerHTML = getOwnedUnitIds()
+        .map(id => unitCardHtml(id, player.ownedUnits[id], true))
+        .join('');
+
+      unitGrid.querySelectorAll('[data-unit-id]').forEach(card => {
+        card.addEventListener('click', () => {
+          selectedDeckUnitId = card.dataset.unitId;
+          renderDeck();
+          document.querySelector('#deckMessage').textContent =
+            '이제 넣을 덱 슬롯을 누르세요.';
+        });
+      });
+
+      slots.querySelectorAll('[data-slot]').forEach(slot => {
+        slot.addEventListener('click', () => {
+          const slotIndex = Number(slot.dataset.slot);
+
+          if (selectedDeckUnitId) {
+            const existingIndex = player.deck.indexOf(selectedDeckUnitId);
+            if (existingIndex !== -1) player.deck[existingIndex] = null;
+            player.deck[slotIndex] = selectedDeckUnitId;
+            selectedDeckUnitId = null;
+            savePlayer();
+            renderDeck();
+            document.querySelector('#deckMessage').textContent =
+              '덱에 캐릭터를 배치했습니다.';
+          } else if (player.deck[slotIndex]) {
+            player.deck[slotIndex] = null;
+            savePlayer();
+            renderDeck();
+            document.querySelector('#deckMessage').textContent =
+              '슬롯에서 캐릭터를 제거했습니다.';
+          }
+        });
+      });
+    }
+
+    const canvas = document.querySelector('#gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const path = [
+      { x: -35, y: 270 },
+      { x: 200, y: 270 },
+      { x: 200, y: 100 },
+      { x: 560, y: 100 },
+      { x: 560, y: 420 },
+      { x: 935, y: 420 }
+    ];
+
+    let battle = null;
+    let animationId = null;
+    let previousTime = 0;
+
+    function createBattle() {
+      const deck = player.deck.filter(Boolean);
+
+      if (deck.length === 0) {
+        alert('덱에 캐릭터를 한 명 이상 넣어 주세요.');
+        openDeck();
+        return;
+      }
+
+      battle = {
+        stage: Math.max(1, player.highestStage + 1),
+        gold: 300,
+        lives: 20,
+        wave: 1,
+        maxWave: 5,
+        kills: 0,
+        enemiesSpawnedThisWave: 0,
+        enemiesPerWave: 7,
+        spawnTimer: 0,
+        waveDelay: 0,
+        enemies: [],
+        placedUnits: [],
+        shots: [],
+        selectedDeployUnitId: deck[0],
+        selectedPlacedUnit: null,
+        ended: false,
+        resultShown: false
+      };
+
+      renderBattleDeck();
+      updateBattleUi();
+      showScreen('battle');
+
+      previousTime = performance.now();
+      cancelAnimationFrame(animationId);
+      animationId = requestAnimationFrame(gameLoop);
+    }
+
+    function renderBattleDeck() {
+      const deckEl = document.querySelector('#battleDeck');
+      deckEl.innerHTML = player.deck.filter(Boolean).map(unitId => {
+        const unit = UNIT_DATA[unitId];
+        return `
+          <button class="battle-unit-button ${battle.selectedDeployUnitId === unitId ? 'selected' : ''}"
+                  data-battle-unit="${unitId}">
+            ${unit.icon} ${unit.name}<br>
+            <span style="font-weight:400;">${unit.cost} 골드</span>
+          </button>
+        `;
+      }).join('');
+
+      deckEl.querySelectorAll('[data-battle-unit]').forEach(button => {
+        button.addEventListener('click', () => {
+          battle.selectedDeployUnitId = button.dataset.battleUnit;
+          battle.selectedPlacedUnit = null;
+          renderBattleDeck();
+          renderSelectedPanel();
+          setBattleMessage('지도에서 길이 아닌 곳을 클릭해 배치하세요.');
+        });
+      });
+    }
+
+    function updateBattleUi() {
+      document.querySelector('#battleStage').textContent = battle.stage;
+      document.querySelector('#battleGold').textContent = battle.gold;
+      document.querySelector('#battleLives').textContent = battle.lives;
+      document.querySelector('#battleWave').textContent = battle.wave;
+      document.querySelector('#battleKills').textContent = battle.kills;
+    }
+
+    function setBattleMessage(text) {
+      document.querySelector('#battleMessage').textContent = text;
+    }
+
+    function renderSelectedPanel() {
+      const panel = document.querySelector('#selectedUnitPanel');
+      const placed = battle.selectedPlacedUnit;
+
+      if (!placed) {
+        panel.innerHTML = `
+          <h3>배치 유닛 정보</h3>
+          <p class="muted">지도에 배치된 유닛을 클릭하세요.</p>
+        `;
+        return;
+      }
+
+      const unit = UNIT_DATA[placed.unitId];
+      const refund = Math.floor(placed.totalInvestment * 0.7);
+
+      panel.innerHTML = `
+        <h3>${unit.icon} ${unit.name}</h3>
+        <p>공격력 ${placed.damage}<br>사거리 ${placed.range}</p>
+        <button id="sellUnitBtn" class="danger">판매 +${refund} 골드</button>
+      `;
+
+      document.querySelector('#sellUnitBtn').addEventListener('click', () => {
+        battle.gold += refund;
+        battle.placedUnits = battle.placedUnits.filter(item => item !== placed);
+        battle.selectedPlacedUnit = null;
+        updateBattleUi();
+        renderSelectedPanel();
+        setBattleMessage('유닛을 판매했습니다.');
+      });
+    }
+
+    function spawnEnemy() {
+      const health = 85 + battle.wave * 35 + battle.stage * 15;
+      battle.enemies.push({
+        x: path[0].x,
+        y: path[0].y,
+        targetIndex: 1,
+        speed: 58 + battle.wave * 4,
+        health,
+        maxHealth: health,
+        radius: 15,
+        reward: 20 + battle.wave * 3,
+        dead: false
+      });
+      battle.enemiesSpawnedThisWave += 1;
+    }
+
+    function updateEnemy(enemy, dt) {
+      const target = path[enemy.targetIndex];
+
+      if (!target) {
+        enemy.dead = true;
+        battle.lives -= 1;
+        if (battle.lives <= 0) {
+          battle.lives = 0;
+          endBattle(false);
+        }
+        return;
+      }
+
+      const dx = target.x - enemy.x;
+      const dy = target.y - enemy.y;
+      const distance = Math.hypot(dx, dy);
+      const movement = enemy.speed * dt;
+
+      if (distance <= movement) {
+        enemy.x = target.x;
+        enemy.y = target.y;
+        enemy.targetIndex += 1;
+      } else {
+        enemy.x += dx / distance * movement;
+        enemy.y += dy / distance * movement;
+      }
+    }
+
+    function updatePlacedUnit(placed, dt) {
+      placed.cooldown -= dt;
+      placed.attackAnimation = Math.max(0, placed.attackAnimation - dt * 5);
+
+      if (placed.cooldown > 0) return;
+
+      let target = null;
+      let bestProgress = -1;
+
+      for (const enemy of battle.enemies) {
+        if (enemy.dead) continue;
+        const distance = Math.hypot(enemy.x - placed.x, enemy.y - placed.y);
+        if (distance <= placed.range && enemy.targetIndex > bestProgress) {
+          target = enemy;
+          bestProgress = enemy.targetIndex;
+        }
+      }
+
+      if (!target) return;
+
+      target.health -= placed.damage;
+      placed.cooldown = placed.fireInterval;
+      placed.attackAnimation = 1;
+      placed.angle = Math.atan2(target.y - placed.y, target.x - placed.x);
+
+      battle.shots.push({
+        x1: placed.x,
+        y1: placed.y - 10,
+        x2: target.x,
+        y2: target.y,
+        life: 0.09,
+        color: UNIT_DATA[placed.unitId].color
+      });
+
+      if (target.health <= 0 && !target.dead) {
+        target.dead = true;
+        battle.gold += target.reward;
+        battle.kills += 1;
+      }
+    }
+
+    function updateBattle(dt) {
+      if (!battle || battle.ended) return;
+
+      const aliveEnemies = battle.enemies.filter(enemy => !enemy.dead);
+
+      if (battle.enemiesSpawnedThisWave < battle.enemiesPerWave) {
+        battle.spawnTimer -= dt;
+        if (battle.spawnTimer <= 0) {
+          spawnEnemy();
+          battle.spawnTimer = 0.9;
+        }
+      } else if (aliveEnemies.length === 0) {
+        battle.waveDelay += dt;
+
+        if (battle.wave >= battle.maxWave) {
+          endBattle(true);
+          return;
+        }
+
+        if (battle.waveDelay >= 1.3) {
+          battle.wave += 1;
+          battle.enemiesSpawnedThisWave = 0;
+          battle.enemiesPerWave += 2;
+          battle.spawnTimer = 0;
+          battle.waveDelay = 0;
+          battle.gold += 80;
+          setBattleMessage(`웨이브 ${battle.wave} 시작! 보너스 골드 +80`);
+        }
+      }
+
+      battle.enemies.forEach(enemy => updateEnemy(enemy, dt));
+      battle.placedUnits.forEach(unit => updatePlacedUnit(unit, dt));
+      battle.shots.forEach(shot => shot.life -= dt);
+
+      battle.enemies = battle.enemies.filter(enemy => !enemy.dead);
+      battle.shots = battle.shots.filter(shot => shot.life > 0);
+      updateBattleUi();
+    }
+
+    function drawBackground() {
+      ctx.fillStyle = '#72a84b';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.strokeStyle = 'rgba(255,255,255,.08)';
+      ctx.lineWidth = 1;
+
+      for (let x = 0; x < canvas.width; x += 40) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+
+      for (let y = 0; y < canvas.height; y += 40) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+    }
+
+    function drawPath() {
+      ctx.beginPath();
+      ctx.moveTo(path[0].x, path[0].y);
+      for (let i = 1; i < path.length; i++) ctx.lineTo(path[i].x, path[i].y);
+      ctx.lineWidth = 72;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = '#bd9568';
+      ctx.stroke();
+
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#e7c99b';
+      ctx.stroke();
+    }
+
+    function drawEnemy(enemy) {
+      ctx.beginPath();
+      ctx.arc(enemy.x, enemy.y, enemy.radius, 0, Math.PI * 2);
+      ctx.fillStyle = '#d84b50';
+      ctx.fill();
+
+      const ratio = Math.max(0, enemy.health / enemy.maxHealth);
+      ctx.fillStyle = '#202736';
+      ctx.fillRect(enemy.x - 20, enemy.y - 27, 40, 5);
+      ctx.fillStyle = '#45df7d';
+      ctx.fillRect(enemy.x - 20, enemy.y - 27, 40 * ratio, 5);
+    }
+
+    function drawPlacedUnit(unit, time) {
+      const data = UNIT_DATA[unit.unitId];
+      const bob = Math.sin(time * 0.004 + unit.animationOffset) * 3;
+      const recoil = unit.attackAnimation * 5;
+
+      ctx.save();
+      ctx.translate(
+        unit.x - Math.cos(unit.angle) * recoil,
+        unit.y + bob - Math.sin(unit.angle) * recoil
+      );
+
+      if (battle.selectedPlacedUnit === unit) {
+        ctx.beginPath();
+        ctx.arc(0, 0, 32, 0, Math.PI * 2);
+        ctx.strokeStyle = '#ffd04a';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+
+      ctx.beginPath();
+      ctx.arc(0, 2, 21, 0, Math.PI * 2);
+      ctx.fillStyle = data.color;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(0, -19, 12, 0, Math.PI * 2);
+      ctx.fillStyle = '#f1c9a8';
+      ctx.fill();
+
+      ctx.save();
+      ctx.rotate(unit.angle);
+      ctx.fillStyle = '#222b3b';
+      ctx.fillRect(5, -7, 27, 7);
+      ctx.restore();
+
+      ctx.font = '20px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(data.icon, 0, 8);
+      ctx.restore();
+    }
+
+    function drawShots() {
+      battle.shots.forEach(shot => {
+        ctx.beginPath();
+        ctx.moveTo(shot.x1, shot.y1);
+        ctx.lineTo(shot.x2, shot.y2);
+        ctx.strokeStyle = shot.color;
+        ctx.lineWidth = 4;
+        ctx.stroke();
+      });
+    }
+
+    function drawBattle(time) {
+      drawBackground();
+      drawPath();
+      battle.placedUnits.forEach(unit => drawPlacedUnit(unit, time));
+      battle.enemies.forEach(drawEnemy);
+      drawShots();
+
+      if (battle.ended) {
+        ctx.fillStyle = 'rgba(0,0,0,.68)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'white';
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 54px sans-serif';
+        ctx.fillText(battle.resultShown ? battle.resultText : '', canvas.width / 2, 245);
+        ctx.font = '22px sans-serif';
+        ctx.fillText('오른쪽의 메뉴 버튼을 눌러 돌아가세요.', canvas.width / 2, 290);
+      }
+    }
+
+    function gameLoop(time) {
+      if (!battle) return;
+
+      const dt = Math.min((time - previousTime) / 1000, 0.05);
+      previousTime = time;
+
+      updateBattle(dt);
+      drawBattle(time);
+
+      animationId = requestAnimationFrame(gameLoop);
+    }
+
+    function endBattle(victory) {
+      if (!battle || battle.ended) return;
+
+      battle.ended = true;
+      battle.resultShown = true;
+
+      if (victory) {
+        const gemReward = 120 + battle.stage * 10;
+        player.gems += gemReward;
+        player.highestStage = Math.max(player.highestStage, battle.stage);
+        battle.resultText = `승리! 소환석 +${gemReward}`;
+        setBattleMessage(`승리했습니다. 소환석 ${gemReward}개를 얻었습니다.`);
+      } else {
+        battle.resultText = '패배';
+        setBattleMessage('생명이 모두 소진되었습니다.');
+      }
+
+      savePlayer();
+    }
+
+    function distanceToSegment(point, start, end) {
+      const dx = end.x - start.x;
+      const dy = end.y - start.y;
+      const lengthSquared = dx * dx + dy * dy;
+
+      if (lengthSquared === 0) {
+        return Math.hypot(point.x - start.x, point.y - start.y);
+      }
+
+      let t = ((point.x - start.x) * dx + (point.y - start.y) * dy) / lengthSquared;
+      t = Math.max(0, Math.min(1, t));
+
+      const x = start.x + t * dx;
+      const y = start.y + t * dy;
+      return Math.hypot(point.x - x, point.y - y);
+    }
+
+    function isOnPath(point) {
+      for (let i = 0; i < path.length - 1; i++) {
+        if (distanceToSegment(point, path[i], path[i + 1]) < 56) return true;
+      }
+      return false;
+    }
+
+    function canvasPoint(event) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: (event.clientX - rect.left) * canvas.width / rect.width,
+        y: (event.clientY - rect.top) * canvas.height / rect.height
+      };
+    }
+
+    canvas.addEventListener('click', event => {
+      if (!battle || battle.ended) return;
+      const point = canvasPoint(event);
+
+      const clickedPlaced = [...battle.placedUnits].reverse().find(unit =>
+        Math.hypot(unit.x - point.x, unit.y - point.y) < 30
+      );
+
+      if (clickedPlaced) {
+        battle.selectedPlacedUnit = clickedPlaced;
+        battle.selectedDeployUnitId = null;
+        renderBattleDeck();
+        renderSelectedPanel();
+        return;
+      }
+
+      if (!battle.selectedDeployUnitId) {
+        setBattleMessage('먼저 오른쪽에서 배치할 유닛을 선택하세요.');
+        return;
+      }
+
+      const unitData = UNIT_DATA[battle.selectedDeployUnitId];
+
+      if (battle.gold < unitData.cost) {
+        setBattleMessage('전투 골드가 부족합니다.');
+        return;
+      }
+
+      if (isOnPath(point)) {
+        setBattleMessage('길 위에는 유닛을 배치할 수 없습니다.');
+        return;
+      }
+
+      const nearby = battle.placedUnits.some(unit =>
+        Math.hypot(unit.x - point.x, unit.y - point.y) < 58
+      );
+
+      if (nearby) {
+        setBattleMessage('다른 유닛과 너무 가깝습니다.');
+        return;
+      }
+
+      battle.placedUnits.push({
+        unitId: unitData.id,
+        x: point.x,
+        y: point.y,
+        damage: unitData.damage,
+        range: unitData.range,
+        fireInterval: unitData.fireInterval,
+        cooldown: 0,
+        totalInvestment: unitData.cost,
+        animationOffset: Math.random() * Math.PI * 2,
+        attackAnimation: 0,
+        angle: 0
+      });
+
+      battle.gold -= unitData.cost;
+      updateBattleUi();
+      setBattleMessage(`${unitData.name}을 배치했습니다.`);
+    });
+
+    document.querySelector('#loginBtn').addEventListener('click', login);
+    document.querySelector('#signupBtn').addEventListener('click', signup);
+    document.querySelector('#logoutBtn').addEventListener('click', logout);
+    document.querySelector('#openGachaBtn').addEventListener('click', openGacha);
+    document.querySelector('#openDeckBtn').addEventListener('click', openDeck);
+    document.querySelector('#openCollectionBtn').addEventListener('click', openCollection);
+    document.querySelector('#startBattleBtn').addEventListener('click', createBattle);
+    document.querySelector('#summonBtn').addEventListener('click', summon);
+
+    document.querySelectorAll('.backToMenu').forEach(button => {
+      button.addEventListener('click', openMenu);
+    });
+
+    document.querySelector('#leaveBattleBtn').addEventListener('click', () => {
+      if (!battle) return;
+
+      if (!battle.ended) {
+        const confirmed = confirm('전투를 중단하고 메뉴로 돌아갈까요?');
+        if (!confirmed) return;
+      }
+
+      cancelAnimationFrame(animationId);
+      battle = null;
+      openMenu();
+    });
+
+    document.querySelector('#password').addEventListener('keydown', event => {
+      if (event.key === 'Enter') login();
+    });
+
+    restoreSession();
+  </script>
+</body>
+</html>

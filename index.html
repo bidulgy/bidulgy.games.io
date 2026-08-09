@@ -5523,7 +5523,7 @@ body {
             <span><strong>50회 구매</strong><small>소환석 5,000개</small></span>
           </button>
         </div>
-        <p class="gacha-double-click-guide">구매 버튼은 한 번만 누릅니다. 이후 컷신에 나타나는 보급 상자를 두 번 눌러 결과를 확인하세요.</p>
+        <p class="gacha-double-click-guide">구매 버튼은 한 번만 누릅니다. 보급 상자를 두 번 눌러 개봉하고, 바로 한 번 더 빠르게 누르면 연출을 건너뛰고 확인 버튼이 즉시 나타납니다.</p>
 
         <div id="gachaResult" class="gacha-status">
           상자를 열면 획득한 주사위가 이곳에 표시됩니다.
@@ -7619,7 +7619,7 @@ async function logout() {
 
       document.querySelector('#gachaGems').textContent = player.gems;
       resultElement.textContent =
-        '구매 버튼을 누른 뒤, 나타나는 보급 상자를 두 번 눌러 결과를 확인하세요.';
+        '구매 버튼을 누른 뒤 보급 상자를 두 번 눌러 개봉하세요. 바로 한 번 더 빠르게 누르면 확인 버튼이 즉시 나타납니다.';
       refreshGachaButtons();
     }
 
@@ -7679,6 +7679,68 @@ async function logout() {
         clickTarget.addEventListener('pointerdown', activate);
         clickTarget.addEventListener('keydown', handleKeydown);
       });
+    }
+
+
+    // 상자를 두 번 눌러 연 뒤 0.9초 안에 한 번 더 누르면
+    // 남은 획득 연출 대기를 건너뛰고 확인 버튼을 빠르게 표시합니다.
+    function createGachaQuickThirdTap(target, windowMs = 900) {
+      let triggered = false;
+      let cleaned = false;
+      let resolveFastForward;
+      let expireTimer = null;
+      const startedAt = performance.now();
+      const acceptAfter = startedAt + 70;
+      const promise = new Promise(resolve => {
+        resolveFastForward = resolve;
+      });
+
+      const cleanup = () => {
+        if (cleaned) return;
+        cleaned = true;
+        if (expireTimer) clearTimeout(expireTimer);
+        target?.removeEventListener('pointerdown', handlePointer, true);
+        target?.removeEventListener('keydown', handleKeydown, true);
+      };
+
+      const trigger = event => {
+        if (triggered || cleaned) return;
+        if (event?.target?.closest?.('.cutscene-close-button')) return;
+        const now = performance.now();
+        if (now < acceptAfter) return;
+        if (now - startedAt > windowMs) {
+          cleanup();
+          return;
+        }
+        triggered = true;
+        cleanup();
+        resolveFastForward();
+      };
+
+      const handlePointer = event => trigger(event);
+      const handleKeydown = event => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        trigger(event);
+      };
+
+      target?.addEventListener('pointerdown', handlePointer, true);
+      target?.addEventListener('keydown', handleKeydown, true);
+      expireTimer = setTimeout(cleanup, windowMs);
+
+      return {
+        promise,
+        cleanup,
+        get triggered() { return triggered; }
+      };
+    }
+
+    async function waitWithGachaQuickSkip(milliseconds, quickTap) {
+      if (!quickTap || quickTap.triggered) return;
+      await Promise.race([
+        wait(milliseconds),
+        quickTap.promise
+      ]);
     }
 
     function setCutsceneTheme(dice) {
@@ -7759,6 +7821,7 @@ async function logout() {
       const instruction = document.querySelector('#chestClickInstruction');
 
       await waitForChestDoubleOpen(chest, instruction);
+      const quickTap = createGachaQuickThirdTap(overlay, 900);
 
       chest.classList.add('opened');
       particleBox.innerHTML = createParticleMarkup(
@@ -7767,9 +7830,10 @@ async function logout() {
 
       if (onReveal) await onReveal();
 
-      await wait(300);
+      await waitWithGachaQuickSkip(300, quickTap);
       rewardDie.classList.add('revealed');
-      await wait(1350);
+      await waitWithGachaQuickSkip(1350, quickTap);
+      quickTap.cleanup();
       panel.classList.add('visible');
 
       document.querySelector('#closeChestCutscene')
@@ -7862,6 +7926,7 @@ async function logout() {
       const instruction = document.querySelector('#chestClickInstruction');
 
       await waitForChestDoubleOpen(chest, instruction);
+      const quickTap = createGachaQuickThirdTap(overlay, 900);
 
       chest.classList.add('opened');
       particleBox.innerHTML = createParticleMarkup(
@@ -7870,9 +7935,10 @@ async function logout() {
 
       if (onReveal) await onReveal();
 
-      await wait(260);
+      await waitWithGachaQuickSkip(260, quickTap);
       burst.classList.add('revealed');
-      await wait(1250 + Math.min(700, rarityKeys.length * 25));
+      await waitWithGachaQuickSkip(1250 + Math.min(700, rarityKeys.length * 25), quickTap);
+      quickTap.cleanup();
       panel.classList.add('visible');
 
       document.querySelector('#closeChestCutscene')
@@ -8664,8 +8730,18 @@ function requestGachaDraw(count) {
     });
 
     if ('serviceWorker' in navigator) {
+      let serviceWorkerReloaded = false;
+
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (serviceWorkerReloaded) return;
+        serviceWorkerReloaded = true;
+        window.location.reload();
+      });
+
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js')
+        navigator.serviceWorker
+          .register('./service-worker.js?v=20260809-3', { updateViaCache: 'none' })
+          .then(registration => registration.update())
           .catch(error => console.error('서비스 워커 등록 실패:', error));
       });
     }
@@ -12380,6 +12456,8 @@ function requestGachaDraw(count) {
 (() => {
   const mpCanvas = document.querySelector('#mpCanvas');
   const mpCtx = mpCanvas.getContext('2d');
+  mpCtx.imageSmoothingEnabled = true;
+  try { mpCtx.imageSmoothingQuality = 'high'; } catch (_) {}
 
   let mpModeChoice = 'coop';
   let mpRoom = null;
@@ -12402,6 +12480,13 @@ function requestGachaDraw(count) {
   let mpLastRoomUpdateAt = 0;
   let mpLocalMessage = '';
   const mpClaimedRewards = new Set();
+  const mpEnemyVisuals = new Map();
+  let mpLastHudRefreshAt = 0;
+  let mpLastRewardCheckAt = 0;
+  let mpLastVisualPruneAt = 0;
+  const MP_HUD_REFRESH_MS = 100;
+  const MP_REWARD_CHECK_MS = 500;
+  const MP_GUEST_PREDICTION_MS = 220;
 
   const MP_WIDTH = 1000;
   const MP_HEIGHT = 600;
@@ -12840,6 +12925,10 @@ function requestGachaDraw(count) {
     mpSelectedUnitId = null;
     multiplayerBattleActive = false;
     mpClaimedRewards.clear();
+    mpEnemyVisuals.clear();
+    mpLastHudRefreshAt = 0;
+    mpLastRewardCheckAt = 0;
+    mpLastVisualPruneAt = 0;
     mpHideVictoryOverlay();
 
     if (resetRoom) {
@@ -13554,7 +13643,7 @@ function requestGachaDraw(count) {
       id: mpMakeId('fx'), x1, y1, x2, y2, color, size, sideKey, kind,
       ttl: duration, maxTtl: duration, seed: Math.random() * 1000, ...extras
     });
-    if (mpState.fx.length > 140) mpState.fx.splice(0, mpState.fx.length - 140);
+    if (mpState.fx.length > 96) mpState.fx.splice(0, mpState.fx.length - 96);
   }
 
   function mpAttackEffectKind(unitId) {
@@ -13983,15 +14072,22 @@ function requestGachaDraw(count) {
         void mpPublishState(false, mpState.matchFinished ? 'finished' : 'playing',
           mpState.winnerRole === 'host' ? mpRoom.host_id : mpState.winnerRole === 'guest' ? mpRoom.guest_id : null);
       }
-      void mpMaybeClaimRewards();
+      if (!mpLastRewardCheckAt || time - mpLastRewardCheckAt >= MP_REWARD_CHECK_MS) {
+        mpLastRewardCheckAt = time;
+        void mpMaybeClaimRewards();
+      }
     }
 
+    // 캔버스는 매 프레임 유지하고 HUD/버튼 DOM 갱신만 10fps로 제한합니다.
     mpDraw(time);
-    mpRefreshHud();
-    if (mpState.announcement && Date.now() < (mpState.announcementUntil || 0)) {
-      document.querySelector('#mpMessage').textContent = mpState.announcement;
-    } else if (mpLocalMessage) {
-      document.querySelector('#mpMessage').textContent = mpLocalMessage;
+    if (!mpLastHudRefreshAt || time - mpLastHudRefreshAt >= MP_HUD_REFRESH_MS) {
+      mpLastHudRefreshAt = time;
+      mpRefreshHud();
+      if (mpState.announcement && Date.now() < (mpState.announcementUntil || 0)) {
+        document.querySelector('#mpMessage').textContent = mpState.announcement;
+      } else if (mpLocalMessage) {
+        document.querySelector('#mpMessage').textContent = mpLocalMessage;
+      }
     }
 
     mpAnimationId = requestAnimationFrame(mpFrame);
@@ -14763,9 +14859,78 @@ function requestGachaDraw(count) {
     mpCtx.restore();
   }
 
-  function mpDrawPigeon(enemy, time) {
-    const x = enemy.x;
-    const y = mpState.mode === 'coop' ? mpDisplayY(enemy.y) : enemy.y;
+  function mpEnemyVisualKey(enemy, sideKey = 'shared') {
+    return `${sideKey}:${enemy.id}`;
+  }
+
+  function mpGetEnemyRenderPosition(enemy, time, sideKey = 'shared') {
+    const networkX = Number(enemy.x || 0);
+    const networkY = Number(enemy.y || MP_PATH_Y);
+
+    if (mpRole === 'host') return { x: networkX, y: networkY };
+
+    const key = mpEnemyVisualKey(enemy, sideKey);
+    let visual = mpEnemyVisuals.get(key);
+    if (!visual) {
+      visual = {
+        x: networkX,
+        y: networkY,
+        targetX: networkX,
+        targetY: networkY,
+        snapshotAt: time,
+        lastFrameAt: time,
+        lastSeenAt: time
+      };
+      mpEnemyVisuals.set(key, visual);
+      return { x: visual.x, y: visual.y };
+    }
+
+    if (networkX !== visual.targetX || networkY !== visual.targetY) {
+      visual.targetX = networkX;
+      visual.targetY = networkY;
+      visual.snapshotAt = time;
+    }
+
+    const dt = Math.min(.05, Math.max(0, (time - visual.lastFrameAt) / 1000));
+    visual.lastFrameAt = time;
+    visual.lastSeenAt = time;
+
+    const now = Date.now();
+    const frozen = now < Number(enemy.timeStunUntil || 0) || now < Number(enemy.timeFieldUntil || 0);
+    const snapshotAge = Math.min(MP_GUEST_PREDICTION_MS, Math.max(0, time - visual.snapshotAt)) / 1000;
+    const speed = Math.max(0, Number(enemy.speed || 0));
+
+    let targetX = visual.targetX;
+    if (!frozen && !enemy.dead) {
+      targetX += speed * snapshotAge * .88;
+      const maxAhead = Math.max(10, speed * .22);
+      targetX = Math.min(targetX, visual.targetX + maxAhead, MP_BASE_X - 18);
+    }
+
+    if (Math.abs(visual.x - visual.targetX) > 180 || Math.abs(visual.y - visual.targetY) > 90) {
+      visual.x = visual.targetX;
+      visual.y = visual.targetY;
+    } else {
+      const follow = 1 - Math.exp(-Math.max(.001, dt) * 15);
+      visual.x += (targetX - visual.x) * follow;
+      visual.y += (visual.targetY - visual.y) * follow;
+    }
+
+    return { x: visual.x, y: visual.y };
+  }
+
+  function mpPruneEnemyVisuals(time) {
+    if (time - mpLastVisualPruneAt < 2000) return;
+    mpLastVisualPruneAt = time;
+    for (const [key, visual] of mpEnemyVisuals) {
+      if (time - visual.lastSeenAt > 2500) mpEnemyVisuals.delete(key);
+    }
+  }
+
+  function mpDrawPigeon(enemy, time, sideKey = 'shared') {
+    const visualPosition = mpGetEnemyRenderPosition(enemy, time, sideKey);
+    const x = visualPosition.x;
+    const y = mpState.mode === 'coop' ? mpDisplayY(visualPosition.y) : visualPosition.y;
     const r = enemy.radius;
     const isBoss = enemy.type !== 'normal';
 
@@ -14969,7 +15134,9 @@ function requestGachaDraw(count) {
     }
 
     units.forEach(unit => mpDrawUnit(unit, time));
-    enemies.forEach(enemy => mpDrawPigeon(enemy, time));
+    const visualSideKey = mpState.mode === 'coop' ? 'shared' : viewRole;
+    enemies.forEach(enemy => mpDrawPigeon(enemy, time, visualSideKey));
+    mpPruneEnemyVisuals(time);
     mpDrawFx();
 
     const wave = mpState.wave || 0;

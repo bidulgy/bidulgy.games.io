@@ -12457,7 +12457,7 @@ function requestGachaDraw(count) {
   const mpCanvas = document.querySelector('#mpCanvas');
   const mpCtx = mpCanvas.getContext('2d');
   mpCtx.imageSmoothingEnabled = true;
-  try { mpCtx.imageSmoothingQuality = 'high'; } catch (_) {}
+  try { mpCtx.imageSmoothingQuality = 'medium'; } catch (_) {}
 
   let mpModeChoice = 'coop';
   let mpRoom = null;
@@ -12484,9 +12484,16 @@ function requestGachaDraw(count) {
   let mpLastHudRefreshAt = 0;
   let mpLastRewardCheckAt = 0;
   let mpLastVisualPruneAt = 0;
-  const MP_HUD_REFRESH_MS = 100;
-  const MP_REWARD_CHECK_MS = 500;
-  const MP_GUEST_PREDICTION_MS = 220;
+  let mpLastBroadcastAt = 0;
+  let mpLastDbPublishAt = 0;
+  let mpBroadcastBusy = false;
+  let mpHighLoadFrame = false;
+  let mpBackgroundCache = null;
+  const MP_HUD_REFRESH_MS = 180;
+  const MP_REWARD_CHECK_MS = 1000;
+  const MP_GUEST_PREDICTION_MS = 140;
+  const MP_BROADCAST_MS = 100;
+  const MP_DB_PUBLISH_MS = 900;
 
   const MP_WIDTH = 1000;
   const MP_HEIGHT = 600;
@@ -12537,6 +12544,46 @@ function requestGachaDraw(count) {
       try { return JSON.parse(value); } catch (_) { return null; }
     }
     return typeof value === 'object' ? value : null;
+  }
+
+
+  function mpBuildRealtimeState() {
+    if (!mpState) return null;
+
+    // 온라인 전송에는 화면에 필요한 최근 이펙트만 싣습니다.
+    // 적/유닛 정보는 그대로 유지해 판정은 동일하게 보이도록 합니다.
+    return {
+      ...mpState,
+      fx: (mpState.fx || []).slice(-32),
+      delayedAttacks: (mpState.delayedAttacks || []).slice(-24)
+    };
+  }
+
+  function mpMaybeCheckRewardsThrottled() {
+    const now = performance.now();
+    if (now - mpLastRewardCheckAt < MP_REWARD_CHECK_MS) return;
+    mpLastRewardCheckAt = now;
+    void mpMaybeClaimRewards();
+  }
+
+  function mpHandleBroadcastState(message) {
+    if (!message || mpRole === 'host' || !mpRoom) return;
+    const incomingState = mpSafeState(message.state);
+    if (!incomingState?.started) return;
+
+    mpLastRoomUpdateAt = Date.now();
+    mpState = incomingState;
+
+    if (message.status) mpRoom.status = message.status;
+    if ('winnerId' in message) mpRoom.winner_id = message.winnerId || null;
+
+    if (!mpBattleEntered) mpEnterBattle();
+    mpMaybeCheckRewardsThrottled();
+
+    if (message.status === 'finished') {
+      mpState.matchFinished = true;
+      mpHandleFinishedRoom();
+    }
   }
 
   function mpMakeId(prefix = 'mp') {
@@ -12929,6 +12976,9 @@ function requestGachaDraw(count) {
     mpLastHudRefreshAt = 0;
     mpLastRewardCheckAt = 0;
     mpLastVisualPruneAt = 0;
+    mpLastBroadcastAt = 0;
+    mpLastDbPublishAt = 0;
+    mpBroadcastBusy = false;
     mpHideVictoryOverlay();
 
     if (resetRoom) {
@@ -12977,6 +13027,11 @@ function requestGachaDraw(count) {
           if (payload?.new) void mpHandleRoomUpdate(payload.new);
         }
       )
+      .on(
+        'broadcast',
+        { event: 'state' },
+        payload => mpHandleBroadcastState(payload?.payload)
+      )
       .subscribe();
 
     clearInterval(mpRoomPollTimer);
@@ -13015,8 +13070,9 @@ function requestGachaDraw(count) {
         }
         if (!mpBattleEntered) mpEnterBattle();
         if (mpRole !== 'host') {
+          // DB 갱신은 복구용 스냅샷으로 사용합니다. 평소 움직임은 Broadcast가 담당합니다.
           mpState = incomingState;
-          mpMaybeClaimRewards();
+          mpMaybeCheckRewardsThrottled();
         }
       }
     }
@@ -13643,7 +13699,7 @@ function requestGachaDraw(count) {
       id: mpMakeId('fx'), x1, y1, x2, y2, color, size, sideKey, kind,
       ttl: duration, maxTtl: duration, seed: Math.random() * 1000, ...extras
     });
-    if (mpState.fx.length > 96) mpState.fx.splice(0, mpState.fx.length - 96);
+    if (mpState.fx.length > 64) mpState.fx.splice(0, mpState.fx.length - 64);
   }
 
   function mpAttackEffectKind(unitId) {
@@ -13941,23 +13997,44 @@ function requestGachaDraw(count) {
   }
 
   async function mpPublishState(force = false, status = 'playing', winnerId = null) {
-    if (!mpRoom?.id || mpRole !== 'host' || !mpState || mpPublishBusy) return;
+    if (!mpRoom?.id || mpRole !== 'host' || !mpState) return;
     const now = performance.now();
-    if (!force && now - mpLastPublishAt < 260) return;
-    mpLastPublishAt = now;
+    const realtimeState = mpBuildRealtimeState();
+
+    // 10Hz Broadcast: DB를 거치지 않고 상대 화면에 즉시 전달합니다.
+    if (mpChannel && (force || now - mpLastBroadcastAt >= MP_BROADCAST_MS) && !mpBroadcastBusy) {
+      mpLastBroadcastAt = now;
+      mpBroadcastBusy = true;
+      void mpChannel.send({
+        type: 'broadcast',
+        event: 'state',
+        payload: {
+          state: realtimeState,
+          status,
+          winnerId,
+          sentAt: Date.now()
+        }
+      }).catch(() => {}).finally(() => {
+        mpBroadcastBusy = false;
+      });
+    }
+
+    // DB는 재접속/복구용으로만 낮은 빈도로 저장합니다.
+    if (!force && now - mpLastDbPublishAt < MP_DB_PUBLISH_MS) return;
+    if (mpPublishBusy) return;
+
+    mpLastDbPublishAt = now;
     mpPublishBusy = true;
     try {
       const { data, error } = await supabaseClient.rpc('update_multiplayer_room_state', {
         p_room_id: mpRoom.id,
-        p_state: mpState,
+        p_state: realtimeState,
         p_status: status,
         p_winner_id: winnerId
       });
       if (error) throw error;
       mpRoom = data;
-      if (status === 'finished') {
-        mpHandleFinishedRoom();
-      }
+      if (status === 'finished') mpHandleFinishedRoom();
     } catch (error) {
       console.error('온라인 상태 동기화 실패:', error);
       mpSetMessage(`온라인 동기화 오류: ${error.message || '연결을 확인하세요.'}`);
@@ -14093,9 +14170,13 @@ function requestGachaDraw(count) {
     mpAnimationId = requestAnimationFrame(mpFrame);
   }
 
-  function mpDrawBackground(viewRole = mpRole) {
-    const ctx = mpCtx;
-    ctx.clearRect(0, 0, MP_WIDTH, MP_HEIGHT);
+  function mpEnsureBackgroundCache() {
+    if (mpBackgroundCache) return mpBackgroundCache;
+    const canvas = document.createElement('canvas');
+    canvas.width = MP_WIDTH;
+    canvas.height = MP_HEIGHT;
+    const ctx = canvas.getContext('2d');
+
     const gradient = ctx.createLinearGradient(0, 0, 0, MP_HEIGHT);
     gradient.addColorStop(0, '#4d7f4b');
     gradient.addColorStop(1, '#2f613b');
@@ -14122,6 +14203,22 @@ function requestGachaDraw(count) {
     ctx.beginPath(); ctx.moveTo(0, MP_PATH_Y); ctx.lineTo(MP_WIDTH, MP_PATH_Y); ctx.stroke();
     ctx.setLineDash([]);
 
+    ctx.fillStyle = '#5b4739';
+    ctx.fillRect(MP_BASE_X - 10, MP_PATH_Y - 52, 34, 104);
+    ctx.fillStyle = '#7789a6';
+    ctx.fillRect(MP_BASE_X, MP_PATH_Y - 68, 32, 136);
+    ctx.fillStyle = '#c9d3e2';
+    for (let y = MP_PATH_Y - 58; y < MP_PATH_Y + 55; y += 27) ctx.fillRect(MP_BASE_X + 7, y, 18, 12);
+
+    mpBackgroundCache = canvas;
+    return canvas;
+  }
+
+  function mpDrawBackground(viewRole = mpRole) {
+    const ctx = mpCtx;
+    ctx.clearRect(0, 0, MP_WIDTH, MP_HEIGHT);
+    ctx.drawImage(mpEnsureBackgroundCache(), 0, 0);
+
     if (mpState.mode === 'coop') {
       ctx.fillStyle = 'rgba(91, 157, 255, .09)';
       ctx.fillRect(0, 0, MP_WIDTH, 240);
@@ -14132,7 +14229,6 @@ function requestGachaDraw(count) {
       ctx.beginPath(); ctx.moveTo(0, 240); ctx.lineTo(MP_WIDTH, 240); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(0, 360); ctx.lineTo(MP_WIDTH, 360); ctx.stroke();
       ctx.setLineDash([]);
-
       ctx.font = '700 15px Arial';
       ctx.fillStyle = 'rgba(255,255,255,.86)';
       ctx.textAlign = 'left';
@@ -14146,13 +14242,6 @@ function requestGachaDraw(count) {
       ctx.textAlign = 'left';
       ctx.fillText(mpViewingOpponent ? `상대 기지 · ${mpNameForRole(viewRole)}` : `내 기지 · ${mpNameForRole(viewRole)}`, 24, 36);
     }
-
-    ctx.fillStyle = '#5b4739';
-    ctx.fillRect(MP_BASE_X - 10, MP_PATH_Y - 52, 34, 104);
-    ctx.fillStyle = '#7789a6';
-    ctx.fillRect(MP_BASE_X, MP_PATH_Y - 68, 32, 136);
-    ctx.fillStyle = '#c9d3e2';
-    for (let y = MP_PATH_Y - 58; y < MP_PATH_Y + 55; y += 27) ctx.fillRect(MP_BASE_X + 7, y, 18, 12);
   }
 
 
@@ -14927,6 +15016,78 @@ function requestGachaDraw(count) {
     }
   }
 
+  function mpDrawFastPigeon(enemy, x, y, time) {
+    const r = enemy.radius;
+    const flap = Math.sin(time * .011 + Number(enemy.wingPhase || 0));
+    const bob = Math.sin(time * .006 + Number(enemy.wingPhase || 0)) * 1.6;
+
+    mpCtx.save();
+    mpCtx.translate(x, y + bob);
+    mpCtx.rotate(Number(enemy.heading || 0));
+
+    // 그림자
+    mpCtx.save();
+    mpCtx.rotate(-Number(enemy.heading || 0));
+    mpCtx.globalAlpha = .18;
+    mpCtx.fillStyle = '#000';
+    mpCtx.beginPath();
+    mpCtx.ellipse(0, r * .88, r * 1.05, r * .25, 0, 0, Math.PI * 2);
+    mpCtx.fill();
+    mpCtx.restore();
+
+    // 날개: 복잡한 깃털 수십 개 대신 큰 면 두 장으로 유지
+    for (const side of [-1, 1]) {
+      mpCtx.save();
+      mpCtx.rotate(side * (.12 + flap * .48));
+      mpCtx.fillStyle = side < 0 ? '#6d7883' : '#7f8a95';
+      mpCtx.strokeStyle = '#36404a';
+      mpCtx.lineWidth = Math.max(1, r * .045);
+      mpCtx.beginPath();
+      mpCtx.moveTo(-r * .1, 0);
+      mpCtx.quadraticCurveTo(-r * .75, side * r * .45, -r * 1.45, side * r * .66);
+      mpCtx.quadraticCurveTo(-r * .72, side * r * .08, r * .18, 0);
+      mpCtx.closePath();
+      mpCtx.fill();
+      mpCtx.stroke();
+      mpCtx.restore();
+    }
+
+    // 몸통
+    mpCtx.fillStyle = '#929da7';
+    mpCtx.strokeStyle = '#303944';
+    mpCtx.lineWidth = Math.max(1.2, r * .06);
+    mpCtx.beginPath();
+    mpCtx.ellipse(0, 0, r * 1.05, r * .66, 0, 0, Math.PI * 2);
+    mpCtx.fill();
+    mpCtx.stroke();
+
+    // 목/머리
+    mpCtx.fillStyle = '#77848f';
+    mpCtx.beginPath();
+    mpCtx.ellipse(r * .67, 0, r * .4, r * .46, 0, 0, Math.PI * 2);
+    mpCtx.fill();
+    mpCtx.fillStyle = '#98a3ad';
+    mpCtx.beginPath();
+    mpCtx.arc(r * 1.02, -r * .18, r * .46, 0, Math.PI * 2);
+    mpCtx.fill();
+    mpCtx.stroke();
+
+    // 부리/눈
+    mpCtx.fillStyle = '#d3a16e';
+    mpCtx.beginPath();
+    mpCtx.moveTo(r * 1.35, -r * .20);
+    mpCtx.lineTo(r * 1.82, -r * .03);
+    mpCtx.lineTo(r * 1.35, r * .08);
+    mpCtx.closePath();
+    mpCtx.fill();
+    mpCtx.fillStyle = '#e17e43';
+    mpCtx.beginPath(); mpCtx.arc(r * 1.09, -r * .34, r * .11, 0, Math.PI * 2); mpCtx.fill();
+    mpCtx.fillStyle = '#111';
+    mpCtx.beginPath(); mpCtx.arc(r * 1.09, -r * .34, r * .055, 0, Math.PI * 2); mpCtx.fill();
+
+    mpCtx.restore();
+  }
+
   function mpDrawPigeon(enemy, time, sideKey = 'shared') {
     const visualPosition = mpGetEnemyRenderPosition(enemy, time, sideKey);
     const x = visualPosition.x;
@@ -14943,8 +15104,12 @@ function requestGachaDraw(count) {
       mpCtx.fill();
     }
 
-    mpDetailCanvasPigeon(enemy, x, y, time);
-    mpDetailKnightPigeonArmor(enemy, x, y, time);
+    if (enemy.type === 'normal' && mpHighLoadFrame) {
+      mpDrawFastPigeon(enemy, x, y, time);
+    } else {
+      mpDetailCanvasPigeon(enemy, x, y, time);
+      mpDetailKnightPigeonArmor(enemy, x, y, time);
+    }
 
     const now = Date.now();
     if (now < Number(enemy.timeFieldUntil || 0)) {
@@ -15031,7 +15196,9 @@ function requestGachaDraw(count) {
     const clamp01 = value => Math.max(0, Math.min(1, value));
     const lerp = (a, b, t) => a + (b - a) * t;
 
-    for (const fx of mpState.fx || []) {
+    const allFx = mpState.fx || [];
+    const visibleFx = mpHighLoadFrame && allFx.length > 40 ? allFx.slice(-40) : allFx;
+    for (const fx of visibleFx) {
       if (mpState.mode === 'pvp' && fx.sideKey !== viewedRole) continue;
       const y1 = mpState.mode === 'coop' ? mpDisplayY(fx.y1) : fx.y1;
       const y2 = mpState.mode === 'coop' ? mpDisplayY(fx.y2) : fx.y2;
@@ -15132,6 +15299,8 @@ function requestGachaDraw(count) {
       units = side?.units || [];
       enemies = side?.enemies || [];
     }
+
+    mpHighLoadFrame = enemies.length > 9 || units.length > 10 || (mpState.fx?.length || 0) > 36;
 
     units.forEach(unit => mpDrawUnit(unit, time));
     const visualSideKey = mpState.mode === 'coop' ? 'shared' : viewRole;

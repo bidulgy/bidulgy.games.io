@@ -12479,6 +12479,8 @@ function requestGachaDraw(count) {
   let mpInitBusy = false;
   let mpLastRoomUpdateAt = 0;
   let mpLocalMessage = '';
+  let mpAccessToken = null;
+  let mpCoopExitHandled = false;
   const mpClaimedRewards = new Set();
   const mpEnemyVisuals = new Map();
   let mpLastHudRefreshAt = 0;
@@ -12849,6 +12851,7 @@ function requestGachaDraw(count) {
     }
 
     mpUserId = session.user.id;
+    mpAccessToken = session.access_token || mpAccessToken;
     return session.user;
   }
 
@@ -12988,8 +12991,50 @@ function requestGachaDraw(count) {
     }
   }
 
+  function mpEndCoopForEveryone(message = '상대방이 협동방을 나가 방이 종료되었습니다.') {
+    if (mpCoopExitHandled) return;
+    if (!mpRoom || mpRoom.mode !== 'coop') return;
+
+    mpCoopExitHandled = true;
+    mpCleanupConnection(true);
+    void leaveBattlePresentation();
+    openMenu();
+
+    // 화면 전환 뒤 사용자에게 종료 이유를 알려 줍니다.
+    setTimeout(() => {
+      alert(message);
+    }, 0);
+  }
+
+  function mpHandleCoopRoomDeleted(payload) {
+    const deletedRoomId = payload?.old?.id || payload?.id || null;
+    if (!mpRoom || mpRoom.mode !== 'coop') return;
+    if (deletedRoomId && deletedRoomId !== mpRoom.id) return;
+    mpEndCoopForEveryone('상대방이 협동방을 나가 방이 종료되었습니다.');
+  }
+
+  function mpHandleCoopLeaveBroadcast(payload) {
+    if (!mpRoom || mpRoom.mode !== 'coop') return;
+    if (payload?.roomId && payload.roomId !== mpRoom.id) return;
+    if (payload?.userId && payload.userId === mpUserId) return;
+    mpEndCoopForEveryone('상대방이 협동방을 나가 방이 종료되었습니다.');
+  }
+
   async function mpLeaveRoom(goMenu = true) {
     const roomId = mpRoom?.id;
+    const roomMode = mpRoom?.mode;
+
+    // 협동방은 상대방에게 먼저 즉시 퇴장 신호를 보냅니다.
+    if (roomId && roomMode === 'coop' && mpChannel) {
+      try {
+        await mpChannel.send({
+          type: 'broadcast',
+          event: 'leave',
+          payload: { roomId, userId: mpUserId, at: Date.now() }
+        });
+      } catch (_) {}
+    }
+
     try {
       if (roomId) {
         await supabaseClient.rpc('leave_multiplayer_room', { p_room_id: roomId });
@@ -12998,12 +13043,42 @@ function requestGachaDraw(count) {
       console.warn('온라인 방 나가기 처리:', error?.message || error);
     }
 
+    mpCoopExitHandled = roomMode === 'coop';
     mpCleanupConnection(true);
     void leaveBattlePresentation();
     if (goMenu) openMenu();
   }
 
+  function mpLeaveRoomOnPageExit() {
+    const roomId = mpRoom?.id;
+    if (!roomId || mpRoom?.mode !== 'coop' || !mpAccessToken) return;
+
+    // 새로고침/탭 닫기에서도 상대방 화면이 즉시 종료되도록 Broadcast를 먼저 보냅니다.
+    try {
+      mpChannel?.send({
+        type: 'broadcast',
+        event: 'leave',
+        payload: { roomId, userId: mpUserId, at: Date.now() }
+      });
+    } catch (_) {}
+
+    // 일반 await 요청은 페이지 종료 중 취소될 수 있으므로 keepalive fetch를 사용합니다.
+    try {
+      fetch(`${SUPABASE_URL}/rest/v1/rpc/leave_multiplayer_room`, {
+        method: 'POST',
+        keepalive: true,
+        headers: {
+          'apikey': SUPABASE_PUBLISHABLE_KEY,
+          'Authorization': `Bearer ${mpAccessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ p_room_id: roomId })
+      }).catch(() => {});
+    } catch (_) {}
+  }
+
   async function mpAttachRoom(room) {
+    mpCoopExitHandled = false;
     mpRoom = room;
     mpRole = mpRoleForUser(room, mpUserId) || mpRole;
     mpLastRoomUpdateAt = Date.now();
@@ -13028,9 +13103,23 @@ function requestGachaDraw(count) {
         }
       )
       .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'multiplayer_rooms'
+        },
+        payload => mpHandleCoopRoomDeleted(payload)
+      )
+      .on(
         'broadcast',
         { event: 'state' },
         payload => mpHandleBroadcastState(payload?.payload)
+      )
+      .on(
+        'broadcast',
+        { event: 'leave' },
+        payload => mpHandleCoopLeaveBroadcast(payload?.payload)
       )
       .subscribe();
 
@@ -13043,7 +13132,12 @@ function requestGachaDraw(count) {
         .select('*')
         .eq('id', mpRoom.id)
         .maybeSingle();
-      if (!error && data) await mpHandleRoomUpdate(data);
+      if (!error && data) {
+        await mpHandleRoomUpdate(data);
+      } else if (!error && !data && mpRoom?.mode === 'coop') {
+        // DELETE Realtime 이벤트를 놓쳐도 방이 사라졌다면 둘 다 즉시 종료합니다.
+        mpEndCoopForEveryone('상대방이 협동방을 나가 방이 종료되었습니다.');
+      }
     }, 1000);
 
     if (room.status === 'playing') await mpHandleRoomUpdate(room);
@@ -13078,6 +13172,12 @@ function requestGachaDraw(count) {
     }
 
     if (room.status === 'finished' || room.status === 'abandoned') {
+      // 새 SQL을 아직 적용하지 않은 경우에도 협동방은 한 명이 나가면 둘 다 종료합니다.
+      if (room.mode === 'coop') {
+        mpEndCoopForEveryone('상대방이 협동방을 나가 방이 종료되었습니다.');
+        return;
+      }
+
       if (incomingState?.started && mpRole !== 'host') mpState = incomingState;
       if (mpState) {
         mpState.matchFinished = true;
@@ -15367,6 +15467,15 @@ function requestGachaDraw(count) {
   });
 
   document.querySelector('#openMultiplayerBtn')?.addEventListener('click', mpOpenLobby);
+
+  // 장시간 플레이 중 토큰이 갱신되어도 새로고침 퇴장 요청이 인증되도록 최신 토큰을 유지합니다.
+  supabaseClient.auth.onAuthStateChange((_event, session) => {
+    mpAccessToken = session?.access_token || null;
+  });
+
+  // 새로고침, 탭 닫기, 다른 페이지 이동 시 협동방을 서버에서 정리합니다.
+  window.addEventListener('pagehide', mpLeaveRoomOnPageExit);
+
   mpSelectMode('coop');
 })();
 </script>

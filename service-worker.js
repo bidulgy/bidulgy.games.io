@@ -1,58 +1,116 @@
-const CACHE_NAME = 'pigeon-invasion-mobile-v1';
-const APP_ASSETS = [
+const CACHE_NAME = 'bidulgy-games-v20260809-3';
+
+const APP_SHELL = [
   './',
   './index.html',
-  './manifest.webmanifest',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/apple-touch-icon.png'
+  './manifest.webmanifest'
 ];
 
 self.addEventListener('install', event => {
+  self.skipWaiting();
+
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(APP_ASSETS))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then(async cache => {
+      for (const url of APP_SHELL) {
+        try {
+          const response = await fetch(url, { cache: 'reload' });
+
+          if (response && response.ok) {
+            await cache.put(url, response.clone());
+          }
+        } catch (_) {
+          // 설치 시 일부 파일을 못 받아도 서비스 워커 자체는 활성화한다.
+        }
+      }
+    })
   );
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(
-        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
-      ))
-      .then(() => self.clients.claim())
-  );
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+
+    await Promise.all(
+      keys
+        .filter(
+          key =>
+            key !== CACHE_NAME &&
+            /bidulgy|pigeon|tower|game/i.test(key)
+        )
+        .map(key => caches.delete(key))
+    );
+
+    await self.clients.claim();
+  })());
 });
 
-self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
+async function networkFirst(request) {
+  const cache = await caches.open(CACHE_NAME);
 
-  const requestUrl = new URL(event.request.url);
-  if (requestUrl.origin !== self.location.origin) return;
+  try {
+    const response = await fetch(request, {
+      cache: 'no-store'
+    });
 
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request)
-        .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put('./index.html', copy));
-          return response;
-        })
-        .catch(() => caches.match('./index.html'))
+    if (
+      response &&
+      response.ok &&
+      request.method === 'GET'
+    ) {
+      await cache.put(
+        request,
+        response.clone()
+      );
+    }
+
+    return response;
+
+  } catch (error) {
+    const cached = await cache.match(
+      request,
+      {
+        ignoreSearch: false
+      }
     );
+
+    if (cached) {
+      return cached;
+    }
+
+    if (request.mode === 'navigate') {
+      const fallback =
+        await cache.match('./index.html');
+
+      if (fallback) {
+        return fallback;
+      }
+    }
+
+    throw error;
+  }
+}
+
+self.addEventListener('fetch', event => {
+  const request = event.request;
+
+  if (request.method !== 'GET') {
     return;
   }
 
+  const url = new URL(request.url);
+
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  // 온라인 상태에서는 항상 서버의 최신 파일을 먼저 사용한다.
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(response => {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
-        return response;
-      });
-    })
+    networkFirst(request)
   );
+});
+
+self.addEventListener('message', event => {
+  if (event.data === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });

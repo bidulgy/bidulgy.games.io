@@ -4264,6 +4264,107 @@ body {
   color: #b8c7dc;
 }
 
+/* ===== 대결 승리 오버레이 ===== */
+.mp-victory-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background:
+    radial-gradient(circle at 50% 34%, rgba(255, 228, 113, .24), transparent 34%),
+    linear-gradient(180deg, rgba(8, 14, 28, .66), rgba(5, 9, 19, .91));
+  backdrop-filter: blur(5px);
+  animation: mpVictoryFadeIn .35s ease-out both;
+}
+
+.mp-victory-overlay.hidden {
+  display: none;
+}
+
+.mp-victory-card {
+  width: min(480px, 92%);
+  padding: 22px 22px 24px;
+  border: 1px solid rgba(255, 223, 105, .68);
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(43, 49, 75, .96), rgba(17, 23, 40, .98));
+  box-shadow:
+    0 0 0 3px rgba(255, 208, 74, .10) inset,
+    0 22px 70px rgba(0, 0, 0, .55),
+    0 0 58px rgba(255, 198, 44, .16);
+  text-align: center;
+  animation: mpVictoryCardPop .52s cubic-bezier(.18,.86,.25,1.18) both;
+}
+
+.mp-victory-image {
+  display: block;
+  width: min(280px, 78%);
+  height: auto;
+  margin: 0 auto 6px;
+  filter: drop-shadow(0 12px 18px rgba(0,0,0,.35));
+}
+
+.mp-victory-title {
+  margin: 2px 0 4px;
+  color: #ffe171;
+  font-size: clamp(34px, 7vw, 58px);
+  font-weight: 1000;
+  line-height: 1;
+  letter-spacing: .06em;
+  text-shadow: 0 3px 0 #76540d, 0 0 24px rgba(255, 212, 62, .45);
+}
+
+.mp-victory-subtitle {
+  margin: 10px 0 16px;
+  color: #e8eef9;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.mp-victory-reward {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 18px;
+  padding: 9px 14px;
+  border: 1px solid rgba(119, 210, 255, .34);
+  border-radius: 999px;
+  background: rgba(61, 141, 194, .14);
+  color: #bfe8ff;
+  font-weight: 900;
+}
+
+.mp-victory-exit {
+  display: block;
+  min-width: 180px;
+  margin: 0 auto;
+  padding: 13px 26px;
+  border: 1px solid rgba(255, 232, 143, .7);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffd95a, #eaa928);
+  color: #302000;
+  font-size: 17px;
+  font-weight: 1000;
+  box-shadow: 0 9px 24px rgba(0,0,0,.28);
+}
+
+.mp-victory-exit:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+@keyframes mpVictoryFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes mpVictoryCardPop {
+  0% { opacity: 0; transform: scale(.72) translateY(24px); }
+  70% { opacity: 1; transform: scale(1.035) translateY(-3px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
 .mp-battle-bottom {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
@@ -5223,6 +5324,39 @@ body {
       <strong>◀</strong>
       <small>상대 기지</small>
     </button>
+
+    <div id="mpVictoryOverlay" class="mp-victory-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="mpVictoryTitle">
+      <div class="mp-victory-card">
+        <svg class="mp-victory-image" viewBox="0 0 360 210" aria-hidden="true">
+          <defs>
+            <linearGradient id="mpVictoryGold" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#fff3a7"/>
+              <stop offset=".48" stop-color="#ffd447"/>
+              <stop offset="1" stop-color="#d38b12"/>
+            </linearGradient>
+            <radialGradient id="mpVictoryGlow" cx="50%" cy="45%" r="55%">
+              <stop offset="0" stop-color="#fff8c7" stop-opacity=".95"/>
+              <stop offset="1" stop-color="#ffd23f" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <ellipse cx="180" cy="104" rx="145" ry="88" fill="url(#mpVictoryGlow)"/>
+          <path d="M132 92 C87 56 42 55 18 77 C55 79 72 91 92 110 C58 105 34 112 22 132 C62 125 94 133 132 155 Z" fill="url(#mpVictoryGold)" stroke="#9e690e" stroke-width="4"/>
+          <path d="M228 92 C273 56 318 55 342 77 C305 79 288 91 268 110 C302 105 326 112 338 132 C298 125 266 133 228 155 Z" fill="url(#mpVictoryGold)" stroke="#9e690e" stroke-width="4"/>
+          <path d="M139 58 L160 73 L180 40 L200 73 L221 58 L213 111 L147 111 Z" fill="url(#mpVictoryGold)" stroke="#8f5f0b" stroke-width="4" stroke-linejoin="round"/>
+          <circle cx="180" cy="126" r="58" fill="#29344e" stroke="#ffd953" stroke-width="6"/>
+          <path d="M180 89 C205 89 222 104 222 128 C222 153 203 168 178 168 C153 168 137 151 137 128 C137 105 154 89 180 89 Z" fill="#738197"/>
+          <circle cx="198" cy="115" r="13" fill="#3a4350"/>
+          <circle cx="202" cy="112" r="4" fill="#fff"/>
+          <path d="M213 124 L239 132 L214 141 Z" fill="#e8a34e"/>
+          <path d="M151 141 C169 154 194 156 211 141" fill="none" stroke="#9faabd" stroke-width="7" stroke-linecap="round"/>
+          <path d="M161 177 L180 194 L199 177" fill="none" stroke="#ffd953" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h2 id="mpVictoryTitle" class="mp-victory-title">VICTORY</h2>
+        <p id="mpVictorySubtitle" class="mp-victory-subtitle">대결에서 승리했습니다!</p>
+        <div class="mp-victory-reward">💎 승리 보상 <strong>2,500</strong> 소환석</div>
+        <button id="mpVictoryExitBtn" class="mp-victory-exit" type="button">나가기</button>
+      </div>
+    </div>
   </div>
 
   <div class="mp-battle-bottom">
@@ -5699,7 +5833,16 @@ function applyStagePreview(stageId = selectedStage) {
         damage: 330,
         range: 235,
         fireInterval: 0.92,
-        color: '#d8b4fe'
+        multiShot2Chance: 0.50,
+        multiShot3Chance: 0.25,
+        multiShot4Chance: 0.10,
+        goldenShotChance: 0.20,
+        goldenStunDuration: 2,
+        timeFieldEvery: 30,
+        timeFieldRange: 400,
+        timeFieldDuration: 5,
+        color: '#d8b4fe',
+        skillText: '공격할 때 50% 확률로 2발, 25% 확률로 3발, 10% 확률로 4발을 서로 다른 적에게 발사합니다(나머지 15%는 1발). 남는 탄환은 유닛 주위를 공전하다 새 적이 사거리 안에 들어오면 발사됩니다. 각 탄환은 독립적으로 20% 확률로 황금 탄환이 되어 명중한 적을 2초 기절시킵니다. 30번 공격할 때마다 사거리 400의 시간 영역을 5초간 펼쳐 영역 안의 적 이동을 멈춥니다.'
       }
     };
 
@@ -8670,6 +8813,7 @@ function requestGachaDraw(count) {
       const maxHealth = spec.health;
       battle.enemies.push({
         ...spec,
+        id: spec.id || `enemy-${waveState.wave}-${waveState.spawned}-${Math.random().toString(36).slice(2, 9)}`,
         waveNumber: waveState.wave,
         x: path[0].x,
         y: path[0].y,
@@ -8682,7 +8826,10 @@ function requestGachaDraw(count) {
         pulseKind: '',
         abilityTimer: spec.abilityTimer ?? 0,
         wingPhase: Math.random() * Math.PI * 2,
-        heading: 0
+        heading: 0,
+        timeStunRemaining: 0,
+        timeStunDuration: 2,
+        timeFieldRemaining: 0
       });
 
       waveState.spawned += 1;
@@ -8755,14 +8902,23 @@ function requestGachaDraw(count) {
       if (enemy.dead) return;
 
       enemy.pulseEffect = Math.max(0, (enemy.pulseEffect || 0) - dt);
+      enemy.timeStunRemaining = Math.max(0, (enemy.timeStunRemaining || 0) - dt);
+      enemy.timeFieldRemaining = Math.max(0, (enemy.timeFieldRemaining || 0) - dt);
 
-      if (enemy.abilityInterval) {
+      const timeStunned = enemy.timeStunRemaining > 0;
+      const timeFieldFrozen = enemy.timeFieldRemaining > 0;
+
+      // 황금 시간탄의 '기절' 중에는 이동과 보스 능력을 모두 멈춘다.
+      // 30회 공격 시간영역은 '이동 불가' 효과이므로 보스 능력 자체는 유지한다.
+      if (!timeStunned && enemy.abilityInterval) {
         enemy.abilityTimer -= dt;
         if (enemy.abilityTimer <= 0) {
           useBossAbility(enemy);
           enemy.abilityTimer += enemy.abilityInterval;
         }
       }
+
+      if (timeStunned || timeFieldFrozen) return;
 
       const target = path[enemy.targetIndex];
 
@@ -8862,7 +9018,8 @@ function requestGachaDraw(count) {
         dragonLaneCast: .38,
         dragonLaneSweep: .72,
         skyLightning: .44,
-        timeRift: .48
+        timeRift: .48,
+        timeRiftGolden: .52
       };
 
       return durations[effect] || .34;
@@ -9202,12 +9359,153 @@ function requestGachaDraw(count) {
       }
     }
 
+    function getChronoVolleyCount() {
+      const roll = Math.random();
+      // 요청 확률은 상호 배타적으로 적용: 4발 10% / 3발 25% / 2발 50% / 1발 15%.
+      if (roll < 0.10) return 4;
+      if (roll < 0.35) return 3;
+      if (roll < 0.85) return 2;
+      return 1;
+    }
+
+    function getChronoTargetsInRange(placed) {
+      return battle.enemies
+        .filter(enemy => !enemy.dead && Math.hypot(enemy.x - placed.x, enemy.y - placed.y) <= placed.range)
+        .sort((a, b) => {
+          const progress = (b.targetIndex || 0) - (a.targetIndex || 0);
+          if (progress !== 0) return progress;
+          return Math.hypot(a.x - placed.x, a.y - placed.y) - Math.hypot(b.x - placed.x, b.y - placed.y);
+        });
+    }
+
+    function fireChronoProjectile(placed, enemy, golden = false, orbitSeed = null) {
+      if (!enemy || enemy.dead) return false;
+      const data = UNIT_DATA.astralChronomancer;
+      const angle = Math.atan2(enemy.y - placed.y, enemy.x - placed.x);
+      const seed = orbitSeed ?? Math.random() * Math.PI * 2;
+      const orbitRadius = 43;
+      const x1 = orbitSeed == null ? placed.x + Math.cos(angle) * 27 : placed.x + Math.cos(seed) * orbitRadius;
+      const y1 = orbitSeed == null ? placed.y - 7 + Math.sin(angle) * 27 : placed.y + Math.sin(seed) * orbitRadius;
+      const effect = golden ? 'timeRiftGolden' : 'timeRift';
+      const duration = getAttackEffectDuration(effect);
+
+      battle.shots.push({
+        x1,
+        y1,
+        x2: enemy.x,
+        y2: enemy.y,
+        life: duration,
+        maxLife: duration,
+        color: golden ? '#ffd84f' : data.color,
+        effect,
+        angle,
+        seed: Math.random() * 1000,
+        golden
+      });
+
+      applyDamageToEnemy(enemy, placed.damage);
+      if (golden && !enemy.dead) {
+        const stunSeconds = data.goldenStunDuration || 2;
+        enemy.timeStunDuration = stunSeconds;
+        enemy.timeStunRemaining = Math.max(enemy.timeStunRemaining || 0, stunSeconds);
+      }
+      return true;
+    }
+
+    function updateChronoOrbitingShots(placed) {
+      const orbiting = Array.isArray(placed.chronoOrbitingShots) ? placed.chronoOrbitingShots : [];
+      placed.chronoOrbitingShots = orbiting;
+      if (!orbiting.length) return;
+
+      const candidates = getChronoTargetsInRange(placed);
+      if (!candidates.length) return;
+
+      const usedTargetIds = new Set();
+      const remaining = [];
+
+      for (const orb of orbiting) {
+        const blocked = new Set(Array.isArray(orb.blockedEnemyIds) ? orb.blockedEnemyIds : []);
+        const target = candidates.find(enemy => !blocked.has(enemy.id) && !usedTargetIds.has(enemy.id));
+        if (!target) {
+          remaining.push(orb);
+          continue;
+        }
+
+        usedTargetIds.add(target.id);
+        fireChronoProjectile(placed, target, !!orb.golden, orb.phase || 0);
+
+        // 같은 시점에 공전 중이던 다른 탄환은 방금 매칭된 적을 다시 고르지 않는다.
+        for (const other of orbiting) {
+          other.blockedEnemyIds ||= [];
+          if (!other.blockedEnemyIds.includes(target.id)) other.blockedEnemyIds.push(target.id);
+        }
+      }
+
+      placed.chronoOrbitingShots = remaining;
+    }
+
+    function activateChronoTimeField(placed) {
+      const data = UNIT_DATA.astralChronomancer;
+      placed.chronoFieldRemaining = data.timeFieldDuration || 5;
+      setBattleMessage('별빛 시간술사가 시간 영역을 펼쳤습니다! 사거리 400 안의 적 이동이 5초간 멈춥니다.');
+    }
+
+    function updateChronoTimeField(placed, dt) {
+      placed.chronoFieldRemaining = Math.max(0, (placed.chronoFieldRemaining || 0) - dt);
+      if (placed.chronoFieldRemaining <= 0) return;
+
+      const range = UNIT_DATA.astralChronomancer.timeFieldRange || 400;
+      battle.enemies.forEach(enemy => {
+        if (enemy.dead) return;
+        if (Math.hypot(enemy.x - placed.x, enemy.y - placed.y) <= range) {
+          // 영역이 남은 시간만큼 지속적으로 갱신해, 뒤늦게 들어온 적도 남은 시간 동안 멈춘다.
+          enemy.timeFieldRemaining = Math.max(enemy.timeFieldRemaining || 0, placed.chronoFieldRemaining);
+        }
+      });
+    }
+
+    function performChronoAttack(placed) {
+      const data = UNIT_DATA.astralChronomancer;
+      const targets = getChronoTargetsInRange(placed);
+      if (!targets.length) return;
+
+      placed.chronoAttackCount = (placed.chronoAttackCount || 0) + 1;
+      const shotCount = getChronoVolleyCount();
+      const directTargets = targets.slice(0, shotCount);
+      const existingIds = targets.map(enemy => enemy.id);
+
+      directTargets.forEach(enemy => {
+        const golden = Math.random() < (data.goldenShotChance || .20);
+        fireChronoProjectile(placed, enemy, golden);
+      });
+
+      const extraCount = Math.max(0, shotCount - directTargets.length);
+      for (let index = 0; index < extraCount; index += 1) {
+        placed.chronoOrbitingShots ||= [];
+        placed.chronoOrbitingShots.push({
+          golden: Math.random() < (data.goldenShotChance || .20),
+          phase: Math.random() * Math.PI * 2,
+          blockedEnemyIds: [...existingIds]
+        });
+      }
+
+      const fieldEvery = data.timeFieldEvery || 30;
+      if (placed.chronoAttackCount % fieldEvery === 0) {
+        activateChronoTimeField(placed);
+      }
+    }
+
     function updatePlacedUnit(placed, dt) {
       placed.stunRemaining = Math.max(0, (placed.stunRemaining || 0) - dt);
       placed.attackSlowRemaining = Math.max(0, (placed.attackSlowRemaining || 0) - dt);
       placed.cooldown -= dt;
       const animationSpeed = placed.unitId === 'royalGuardian' ? 2.8 : 5.5;
       placed.attackAnimation = Math.max(0, placed.attackAnimation - dt * animationSpeed);
+
+      if (placed.unitId === 'astralChronomancer') {
+        updateChronoTimeField(placed, dt);
+        updateChronoOrbitingShots(placed);
+      }
 
       if (placed.stunRemaining > 0 || placed.cooldown > 0) return;
 
@@ -9239,6 +9537,11 @@ function requestGachaDraw(count) {
       placed.cooldown = placed.fireInterval * slowMultiplier;
       placed.attackAnimation = 1;
       placed.attackMode = 'normal';
+
+      if (placed.unitId === 'astralChronomancer') {
+        performChronoAttack(placed);
+        return;
+      }
 
       const isWindRanger = placed.unitId === 'windRanger';
       let isWindPiercingShot = false;
@@ -10136,6 +10439,56 @@ function requestGachaDraw(count) {
       drawCanvasPigeon(enemy, drawX, drawY, time);
       drawKnightPigeonArmor(enemy, drawX, drawY, time);
 
+      if (enemy.timeFieldRemaining > 0) {
+        ctx.beginPath();
+        ctx.arc(drawX, drawY, enemy.radius + 8, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(216,180,254,.72)';
+        ctx.lineWidth = 2.2;
+        ctx.setLineDash([5, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      if (enemy.timeStunRemaining > 0) {
+        const duration = enemy.timeStunDuration || 2;
+        const elapsed = Math.max(0, duration - enemy.timeStunRemaining);
+        const handAngle = -Math.PI / 2 + (elapsed / duration) * Math.PI * 2;
+        const clockX = drawX;
+        const clockY = drawY - enemy.radius - (isBoss ? 64 : 47);
+        const clockR = isBoss ? 15 : 12;
+        ctx.save();
+        ctx.shadowBlur = 14;
+        ctx.shadowColor = '#ffd84f';
+        ctx.fillStyle = 'rgba(25,28,42,.90)';
+        ctx.strokeStyle = '#ffd84f';
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.arc(clockX, clockY, clockR, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        for (let i = 0; i < 12; i += 1) {
+          const a = i * Math.PI * 2 / 12;
+          const r1 = clockR - (i % 3 === 0 ? 4.5 : 3);
+          ctx.strokeStyle = i % 3 === 0 ? '#fff1a1' : 'rgba(255,232,113,.72)';
+          ctx.lineWidth = i % 3 === 0 ? 1.5 : 1;
+          ctx.beginPath();
+          ctx.moveTo(clockX + Math.cos(a) * r1, clockY + Math.sin(a) * r1);
+          ctx.lineTo(clockX + Math.cos(a) * (clockR - 1.5), clockY + Math.sin(a) * (clockR - 1.5));
+          ctx.stroke();
+        }
+        ctx.strokeStyle = '#fff5c2';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(clockX, clockY);
+        ctx.lineTo(clockX + Math.cos(handAngle) * (clockR - 4), clockY + Math.sin(handAngle) * (clockR - 4));
+        ctx.stroke();
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(clockX, clockY, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
       const barWidth = isBoss ? 100 : 44;
       const barHeight = isBoss ? 8 : 5;
       const barY = drawY - enemy.radius - (isBoss ? 40 : 28);
@@ -10711,6 +11064,9 @@ function requestGachaDraw(count) {
         attackMode: 'idle',
         spearThrowCount: 0,
         windAttackCount: 0,
+        chronoAttackCount: 0,
+        chronoOrbitingShots: [],
+        chronoFieldRemaining: 0,
         angle: 0,
         stunRemaining: 0,
         attackSlowRemaining: 0
@@ -10752,8 +11108,68 @@ function requestGachaDraw(count) {
         ctx.setLineDash([]);
       }
 
+      if (unit.unitId === 'astralChronomancer' && unit.chronoFieldRemaining > 0) {
+        const fieldRange = UNIT_DATA.astralChronomancer.timeFieldRange || 400;
+        const pulse = .78 + Math.sin(time * .006) * .10;
+        const fieldGradient = ctx.createRadialGradient(0, 0, 30, 0, 0, fieldRange);
+        fieldGradient.addColorStop(0, 'rgba(216,180,254,.15)');
+        fieldGradient.addColorStop(.55, 'rgba(128,90,213,.075)');
+        fieldGradient.addColorStop(1, 'rgba(216,180,254,0)');
+        ctx.fillStyle = fieldGradient;
+        ctx.beginPath();
+        ctx.arc(0, 0, fieldRange, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = `rgba(230,210,255,${.48 * pulse})`;
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        ctx.arc(0, 0, fieldRange, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.save();
+        ctx.rotate(time * .00018);
+        for (let i = 0; i < 24; i += 1) {
+          const a = i * Math.PI * 2 / 24;
+          const inner = fieldRange - (i % 6 === 0 ? 18 : 9);
+          ctx.strokeStyle = i % 6 === 0 ? 'rgba(255,236,166,.58)' : 'rgba(229,213,255,.38)';
+          ctx.lineWidth = i % 6 === 0 ? 2.4 : 1.2;
+          ctx.beginPath();
+          ctx.moveTo(Math.cos(a) * inner, Math.sin(a) * inner);
+          ctx.lineTo(Math.cos(a) * fieldRange, Math.sin(a) * fieldRange);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
       // 몸은 항상 똑바로 서 있고 무기만 unit.angle 방향으로 회전한다.
       drawDetailedUnitSprite(unit, time);
+
+      if (unit.unitId === 'astralChronomancer' && Array.isArray(unit.chronoOrbitingShots)) {
+        const count = unit.chronoOrbitingShots.length;
+        unit.chronoOrbitingShots.forEach((orb, index) => {
+          const a = (orb.phase || 0) + time * .0032 + index * (Math.PI * 2 / Math.max(1, count));
+          const radius = 44 + Math.sin(time * .006 + index) * 3;
+          const ox = Math.cos(a) * radius;
+          const oy = Math.sin(a) * radius;
+          ctx.save();
+          ctx.translate(ox, oy);
+          ctx.rotate(a + Math.PI / 2);
+          ctx.shadowBlur = orb.golden ? 18 : 12;
+          ctx.shadowColor = orb.golden ? '#ffd84f' : '#d8b4fe';
+          ctx.fillStyle = orb.golden ? '#ffd84f' : '#eadcff';
+          ctx.beginPath();
+          ctx.arc(0, 0, 7.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = orb.golden ? '#fff2a6' : '#ffffff';
+          ctx.lineWidth = 1.6;
+          ctx.beginPath();
+          ctx.arc(0, 0, 10.5, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(0, -6);
+          ctx.stroke();
+          ctx.restore();
+        });
+      }
 
       if (unit.stunRemaining > 0) {
         ctx.fillStyle = 'rgba(38, 93, 170, .28)';
@@ -11034,8 +11450,14 @@ function requestGachaDraw(count) {
           ctx.beginPath();
           ctx.arc(shot.x2, shot.y2, lightningRadius, 0, Math.PI * 2);
           ctx.fill();
-        } else if (shot.effect === 'timeRift') {
-          const orbit=progress*Math.PI*5;ctx.strokeStyle=`rgba(216,180,254,${.68*fade})`;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.bezierCurveTo(shot.x1+dx*.28+nx*26,shot.y1+dy*.28+ny*26,shot.x1+dx*.72-nx*26,shot.y1+dy*.72-ny*26,x,y);ctx.stroke();ctx.save();ctx.translate(x,y);ctx.rotate(orbit);ctx.strokeStyle='#f7edff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,14,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(0,0,9,0,Math.PI*2);ctx.stroke();for(let i=0;i<8;i+=1){const a=i*Math.PI/4;ctx.beginPath();ctx.moveTo(Math.cos(a)*10,Math.sin(a)*10);ctx.lineTo(Math.cos(a)*15,Math.sin(a)*15);ctx.stroke();}ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-8);ctx.moveTo(0,0);ctx.lineTo(7,3);ctx.stroke();ctx.restore();if(progress>.62){const p=(progress-.62)/.38;for(let i=0;i<3;i+=1){ctx.strokeStyle=`rgba(216,180,254,${(1-p)*(.8-i*.18)})`;ctx.lineWidth=4-i;ctx.beginPath();ctx.ellipse(shot.x2,shot.y2,12+p*(30+i*10),6+p*(14+i*5),shot.angle+i*.4,0,Math.PI*2);ctx.stroke();}}
+        } else if (shot.effect === 'timeRift' || shot.effect === 'timeRiftGolden') {
+          const golden = shot.effect === 'timeRiftGolden' || shot.golden;
+          const primary = golden ? '255,216,79' : '216,180,254';
+          const bright = golden ? '#fff4ad' : '#f7edff';
+          const orbit=progress*Math.PI*5;
+          ctx.shadowBlur = golden ? 22 : 10;
+          ctx.shadowColor = golden ? '#ffd84f' : '#d8b4fe';
+          ctx.strokeStyle=`rgba(${primary},${.78*fade})`;ctx.lineWidth=golden?5:4;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.bezierCurveTo(shot.x1+dx*.28+nx*26,shot.y1+dy*.28+ny*26,shot.x1+dx*.72-nx*26,shot.y1+dy*.72-ny*26,x,y);ctx.stroke();ctx.save();ctx.translate(x,y);ctx.rotate(orbit);ctx.strokeStyle=bright;ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,golden?16:14,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(0,0,golden?10:9,0,Math.PI*2);ctx.stroke();for(let i=0;i<8;i+=1){const a=i*Math.PI/4;ctx.beginPath();ctx.moveTo(Math.cos(a)*10,Math.sin(a)*10);ctx.lineTo(Math.cos(a)*(golden?17:15),Math.sin(a)*(golden?17:15));ctx.stroke();}ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-8);ctx.moveTo(0,0);ctx.lineTo(7,3);ctx.stroke();ctx.restore();if(progress>.62){const p=(progress-.62)/.38;for(let i=0;i<3;i+=1){ctx.strokeStyle=`rgba(${primary},${(1-p)*(.86-i*.18)})`;ctx.lineWidth=(golden?5:4)-i;ctx.beginPath();ctx.ellipse(shot.x2,shot.y2,12+p*(30+i*10),6+p*(14+i*5),shot.angle+i*.4,0,Math.PI*2);ctx.stroke();}}
         }
 
         ctx.restore();
@@ -11210,6 +11632,10 @@ function requestGachaDraw(count) {
         attackAnimation: 0,
         attackMode: 'idle',
         spearThrowCount: 0,
+        windAttackCount: 0,
+        chronoAttackCount: 0,
+        chronoOrbitingShots: [],
+        chronoFieldRemaining: 0,
         angle: 0,
         stunRemaining: 0,
         attackSlowRemaining: 0
@@ -11691,7 +12117,9 @@ function requestGachaDraw(count) {
       abilityEvery: spec.abilityEvery || 0,
       nextAbilityAt: spec.abilityEvery
         ? Date.now() + spec.abilityEvery * 1000
-        : 0
+        : 0,
+      timeStunUntil: 0,
+      timeFieldUntil: 0
     };
   }
 
@@ -11840,6 +12268,7 @@ function requestGachaDraw(count) {
     }
 
     mpCleanupConnection(false);
+    mpHideVictoryOverlay();
     mpRoom = null;
     mpRole = null;
     mpState = null;
@@ -11940,6 +12369,7 @@ function requestGachaDraw(count) {
     mpSelectedUnitId = null;
     multiplayerBattleActive = false;
     mpClaimedRewards.clear();
+    mpHideVictoryOverlay();
 
     if (resetRoom) {
       mpRoom = null;
@@ -12083,6 +12513,7 @@ function requestGachaDraw(count) {
 
     mpBattleEntered = true;
     multiplayerBattleActive = true;
+    mpHideVictoryOverlay();
     mpViewingOpponent = false;
     mpSelectedUnitId = deck[0];
     document.querySelector('#mpBattleModeTitle').textContent = mpModeName(mpRoom.mode);
@@ -12247,6 +12678,8 @@ function requestGachaDraw(count) {
       angle: 0,
       stunUntil: 0,
       slowUntil: 0,
+      chronoOrbitingShots: [],
+      chronoFieldUntil: 0,
       animationOffset: Math.random() * Math.PI * 2
     };
   }
@@ -12477,7 +12910,9 @@ function requestGachaDraw(count) {
       forwarded: true,
       speed: Math.min(115, enemy.speed * 1.05),
       nextAbilityAt: enemy.abilityEvery ? Date.now() + enemy.abilityEvery * 1000 : 0,
-      wingPhase: Math.random() * Math.PI * 2
+      wingPhase: Math.random() * Math.PI * 2,
+      timeStunUntil: 0,
+      timeFieldUntil: 0
     };
     target.enemies.push(clone);
   }
@@ -12505,9 +12940,13 @@ function requestGachaDraw(count) {
   }
 
   function mpUpdateEnemies(target, dt, sideKey = null) {
+    const now = Date.now();
     for (const enemy of target.enemies) {
       if (enemy.dead) continue;
-      mpApplyBossAbility(enemy, target);
+      const timeStunned = now < Number(enemy.timeStunUntil || 0);
+      const timeFieldFrozen = now < Number(enemy.timeFieldUntil || 0);
+      if (!timeStunned) mpApplyBossAbility(enemy, target);
+      if (timeStunned || timeFieldFrozen) continue;
       enemy.x += enemy.speed * dt;
       if (enemy.x >= MP_BASE_X - 18) mpDamageBase(target, enemy, sideKey);
     }
@@ -12528,10 +12967,10 @@ function requestGachaDraw(count) {
     return target;
   }
 
-  function mpPushFx(x1, y1, x2, y2, color, size = 3, sideKey = null) {
+  function mpPushFx(x1, y1, x2, y2, color, size = 3, sideKey = null, kind = 'line') {
     mpState.fx ||= [];
-    mpState.fx.push({ id: mpMakeId('fx'), x1, y1, x2, y2, color, size, sideKey, ttl: .22 });
-    if (mpState.fx.length > 70) mpState.fx.splice(0, mpState.fx.length - 70);
+    mpState.fx.push({ id: mpMakeId('fx'), x1, y1, x2, y2, color, size, sideKey, kind, ttl: kind === 'chronoGolden' ? .42 : kind === 'chrono' ? .36 : .22 });
+    if (mpState.fx.length > 100) mpState.fx.splice(0, mpState.fx.length - 100);
   }
 
   function mpScheduleLightning(sideKey, target, damage, ownerRole) {
@@ -12548,6 +12987,92 @@ function requestGachaDraw(count) {
     });
   }
 
+  function mpChronoTargets(unit, targetState) {
+    return [...targetState.enemies]
+      .filter(enemy => !enemy.dead && Math.hypot(enemy.x - unit.x, enemy.y - unit.y) <= unit.range)
+      .sort((a, b) => b.x - a.x);
+  }
+
+  function mpFireChronoShot(targetState, sideKey, unit, enemy, golden = false, orbitPhase = null) {
+    if (!enemy || enemy.dead) return false;
+    const phase = orbitPhase ?? Math.atan2(enemy.y - unit.y, enemy.x - unit.x);
+    const radius = orbitPhase == null ? 0 : 43;
+    const x1 = unit.x + Math.cos(phase) * radius;
+    const y1 = unit.y + Math.sin(phase) * radius;
+    mpPushFx(x1, y1, enemy.x, enemy.y, golden ? '#ffd84f' : '#d8b4fe', golden ? 6 : 4, sideKey, golden ? 'chronoGolden' : 'chrono');
+    mpApplyDamage(targetState, enemy, unit.damage, unit.ownerRole, sideKey);
+    if (golden && !enemy.dead) {
+      enemy.timeStunUntil = Math.max(Number(enemy.timeStunUntil || 0), Date.now() + (UNIT_DATA.astralChronomancer.goldenStunDuration || 2) * 1000);
+    }
+    return true;
+  }
+
+  function mpUpdateChronoUnit(targetState, sideKey, unit) {
+    const now = Date.now();
+    const data = UNIT_DATA.astralChronomancer;
+
+    if (now < Number(unit.chronoFieldUntil || 0)) {
+      const range = data.timeFieldRange || 400;
+      for (const enemy of targetState.enemies) {
+        if (!enemy.dead && Math.hypot(enemy.x - unit.x, enemy.y - unit.y) <= range) {
+          enemy.timeFieldUntil = Math.max(Number(enemy.timeFieldUntil || 0), Number(unit.chronoFieldUntil || 0));
+        }
+      }
+    }
+
+    const orbiting = Array.isArray(unit.chronoOrbitingShots) ? unit.chronoOrbitingShots : [];
+    unit.chronoOrbitingShots = orbiting;
+    if (!orbiting.length) return;
+    const candidates = mpChronoTargets(unit, targetState);
+    if (!candidates.length) return;
+    const used = new Set();
+    const remaining = [];
+    for (const orb of orbiting) {
+      const blocked = new Set(Array.isArray(orb.blockedEnemyIds) ? orb.blockedEnemyIds : []);
+      const target = candidates.find(enemy => !blocked.has(enemy.id) && !used.has(enemy.id));
+      if (!target) {
+        remaining.push(orb);
+        continue;
+      }
+      used.add(target.id);
+      mpFireChronoShot(targetState, sideKey, unit, target, !!orb.golden, orb.phase || 0);
+      for (const other of orbiting) {
+        other.blockedEnemyIds ||= [];
+        if (!other.blockedEnemyIds.includes(target.id)) other.blockedEnemyIds.push(target.id);
+      }
+    }
+    unit.chronoOrbitingShots = remaining;
+  }
+
+  function mpPerformChronoAttack(targetState, sideKey, unit) {
+    const data = UNIT_DATA.astralChronomancer;
+    const targets = mpChronoTargets(unit, targetState);
+    if (!targets.length) return;
+    const shotCount = getChronoVolleyCount();
+    const directTargets = targets.slice(0, shotCount);
+    const existingIds = targets.map(enemy => enemy.id);
+
+    directTargets.forEach(enemy => {
+      mpFireChronoShot(targetState, sideKey, unit, enemy, Math.random() < (data.goldenShotChance || .20));
+    });
+
+    const extra = Math.max(0, shotCount - directTargets.length);
+    for (let i = 0; i < extra; i += 1) {
+      unit.chronoOrbitingShots ||= [];
+      unit.chronoOrbitingShots.push({
+        golden: Math.random() < (data.goldenShotChance || .20),
+        phase: Math.random() * Math.PI * 2,
+        blockedEnemyIds: [...existingIds]
+      });
+    }
+
+    if (unit.attackCount % (data.timeFieldEvery || 30) === 0) {
+      unit.chronoFieldUntil = Date.now() + (data.timeFieldDuration || 5) * 1000;
+      mpState.announcement = '🌌 별빛 시간술사: 시간 영역 전개! 사거리 400 안의 적 이동이 5초간 정지합니다.';
+      mpState.announcementUntil = Date.now() + 2800;
+    }
+  }
+
   function mpPerformUnitAttack(targetState, sideKey, unit, target) {
     const data = UNIT_DATA[unit.unitId];
     if (!data || !target || target.dead) return;
@@ -12556,6 +13081,11 @@ function requestGachaDraw(count) {
     unit.angle = angle;
     unit.attackAnimation = 1;
     unit.attackMode = 'ranged';
+
+    if (unit.unitId === 'astralChronomancer') {
+      mpPerformChronoAttack(targetState, sideKey, unit);
+      return;
+    }
 
     if (unit.unitId === 'windRanger' && unit.attackCount % 3 === 0) {
       const hits = [...targetState.enemies].filter(enemy => {
@@ -12620,6 +13150,7 @@ function requestGachaDraw(count) {
     const now = Date.now();
     for (const unit of targetState.units) {
       unit.attackAnimation = Math.max(0, Number(unit.attackAnimation || 0) - dt * 6.5);
+      if (unit.unitId === 'astralChronomancer') mpUpdateChronoUnit(targetState, sideKey, unit);
       if (now < (unit.stunUntil || 0)) continue;
       const speedFactor = now < (unit.slowUntil || 0) ? .5 : 1;
       unit.cooldown = Math.max(0, (unit.cooldown || 0) - dt * speedFactor);
@@ -12787,6 +13318,24 @@ function requestGachaDraw(count) {
     }
   }
 
+  function mpHideVictoryOverlay() {
+    document.querySelector('#mpVictoryOverlay')?.classList.add('hidden');
+  }
+
+  function mpShowVictoryOverlay() {
+    const overlay = document.querySelector('#mpVictoryOverlay');
+    if (!overlay || !mpRoom || mpRoom.mode !== 'pvp' || mpRoom.winner_id !== mpUserId) return;
+
+    const subtitle = document.querySelector('#mpVictorySubtitle');
+    if (subtitle) {
+      subtitle.textContent = '상대 기지를 무너뜨렸거나 상대가 퇴장하여 승리했습니다!';
+    }
+
+    if (overlay.classList.contains('hidden')) {
+      overlay.classList.remove('hidden');
+    }
+  }
+
   function mpHandleFinishedRoom() {
     if (!mpRoom) return;
     void mpMaybeClaimRewards();
@@ -12795,12 +13344,15 @@ function requestGachaDraw(count) {
     if (mpRoom.mode === 'pvp') {
       if (mpRoom.winner_id === mpUserId) {
         mpSetMessage('🏆 승리! 소환석 2,500개 보상을 확인하고 있습니다.');
+        mpShowVictoryOverlay();
       } else if (mpRoom.winner_id) {
+        mpHideVictoryOverlay();
         mpSetMessage('상대 기지가 살아남았습니다. 대결 종료.');
       } else {
         mpSetMessage('대결이 종료되었습니다.');
       }
     } else {
+      mpHideVictoryOverlay();
       mpSetMessage('협동 방어가 종료되었습니다.');
     }
     mpRefreshDeckAffordability();
@@ -13511,6 +14063,24 @@ function requestGachaDraw(count) {
     mpCtx.save();
     mpCtx.translate(unit.x, y);
 
+    if (unit.unitId === 'astralChronomancer' && Date.now() < Number(unit.chronoFieldUntil || 0)) {
+      const fieldRange = UNIT_DATA.astralChronomancer.timeFieldRange || 400;
+      const pulse = .78 + Math.sin(time * .006) * .10;
+      const gradient = mpCtx.createRadialGradient(0, 0, 35, 0, 0, fieldRange);
+      gradient.addColorStop(0, 'rgba(216,180,254,.13)');
+      gradient.addColorStop(.60, 'rgba(119,86,190,.06)');
+      gradient.addColorStop(1, 'rgba(216,180,254,0)');
+      mpCtx.fillStyle = gradient;
+      mpCtx.beginPath();
+      mpCtx.arc(0, 0, fieldRange, 0, Math.PI * 2);
+      mpCtx.fill();
+      mpCtx.strokeStyle = `rgba(229,211,255,${.50 * pulse})`;
+      mpCtx.lineWidth = 2.4;
+      mpCtx.beginPath();
+      mpCtx.arc(0, 0, fieldRange, 0, Math.PI * 2);
+      mpCtx.stroke();
+    }
+
     // 소유 플레이어를 알아보기 쉬운 외곽 링
     mpCtx.beginPath();
     mpCtx.arc(0, 2, 35, 0, Math.PI * 2);
@@ -13528,6 +14098,30 @@ function requestGachaDraw(count) {
 
     mpDetailStandingUnitBody(unit, time);
     mpDetailAimedUnitWeapon(unit, data, time);
+
+    if (unit.unitId === 'astralChronomancer' && Array.isArray(unit.chronoOrbitingShots)) {
+      const count = unit.chronoOrbitingShots.length;
+      unit.chronoOrbitingShots.forEach((orb, index) => {
+        const a = (orb.phase || 0) + time * .0032 + index * (Math.PI * 2 / Math.max(1, count));
+        const radius = 44 + Math.sin(time * .006 + index) * 3;
+        const ox = Math.cos(a) * radius;
+        const oy = Math.sin(a) * radius;
+        mpCtx.save();
+        mpCtx.translate(ox, oy);
+        mpCtx.shadowBlur = orb.golden ? 18 : 11;
+        mpCtx.shadowColor = orb.golden ? '#ffd84f' : '#d8b4fe';
+        mpCtx.fillStyle = orb.golden ? '#ffd84f' : '#eadcff';
+        mpCtx.beginPath();
+        mpCtx.arc(0, 0, 7, 0, Math.PI * 2);
+        mpCtx.fill();
+        mpCtx.strokeStyle = orb.golden ? '#fff2a6' : '#fff';
+        mpCtx.lineWidth = 1.5;
+        mpCtx.beginPath();
+        mpCtx.arc(0, 0, 10, 0, Math.PI * 2);
+        mpCtx.stroke();
+        mpCtx.restore();
+      });
+    }
 
     if (stunned || slowed) {
       mpCtx.font = '18px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
@@ -13555,6 +14149,57 @@ function requestGachaDraw(count) {
 
     mpDetailCanvasPigeon(enemy, x, y, time);
     mpDetailKnightPigeonArmor(enemy, x, y, time);
+
+    const now = Date.now();
+    if (now < Number(enemy.timeFieldUntil || 0)) {
+      mpCtx.beginPath();
+      mpCtx.arc(x, y, r + 8, 0, Math.PI * 2);
+      mpCtx.strokeStyle = 'rgba(216,180,254,.72)';
+      mpCtx.lineWidth = 2.2;
+      mpCtx.setLineDash([5, 4]);
+      mpCtx.stroke();
+      mpCtx.setLineDash([]);
+    }
+
+    if (now < Number(enemy.timeStunUntil || 0)) {
+      const remaining = Math.max(0, Number(enemy.timeStunUntil || 0) - now);
+      const elapsed = Math.max(0, 2000 - remaining);
+      const handAngle = -Math.PI / 2 + (elapsed / 2000) * Math.PI * 2;
+      const clockX = x;
+      const clockY = y - r - (isBoss ? 65 : 48);
+      const clockR = isBoss ? 15 : 12;
+      mpCtx.save();
+      mpCtx.shadowBlur = 14;
+      mpCtx.shadowColor = '#ffd84f';
+      mpCtx.fillStyle = 'rgba(25,28,42,.90)';
+      mpCtx.strokeStyle = '#ffd84f';
+      mpCtx.lineWidth = 2.2;
+      mpCtx.beginPath();
+      mpCtx.arc(clockX, clockY, clockR, 0, Math.PI * 2);
+      mpCtx.fill();
+      mpCtx.stroke();
+      for (let i = 0; i < 12; i += 1) {
+        const a = i * Math.PI * 2 / 12;
+        const inner = clockR - (i % 3 === 0 ? 4.5 : 3);
+        mpCtx.strokeStyle = i % 3 === 0 ? '#fff1a1' : 'rgba(255,232,113,.72)';
+        mpCtx.lineWidth = i % 3 === 0 ? 1.5 : 1;
+        mpCtx.beginPath();
+        mpCtx.moveTo(clockX + Math.cos(a) * inner, clockY + Math.sin(a) * inner);
+        mpCtx.lineTo(clockX + Math.cos(a) * (clockR - 1.5), clockY + Math.sin(a) * (clockR - 1.5));
+        mpCtx.stroke();
+      }
+      mpCtx.strokeStyle = '#fff5c2';
+      mpCtx.lineWidth = 2;
+      mpCtx.beginPath();
+      mpCtx.moveTo(clockX, clockY);
+      mpCtx.lineTo(clockX + Math.cos(handAngle) * (clockR - 4), clockY + Math.sin(handAngle) * (clockR - 4));
+      mpCtx.stroke();
+      mpCtx.fillStyle = '#fff';
+      mpCtx.beginPath();
+      mpCtx.arc(clockX, clockY, 2, 0, Math.PI * 2);
+      mpCtx.fill();
+      mpCtx.restore();
+    }
 
     const ratio = mpClamp(enemy.hp / enemy.maxHp, 0, 1);
     const barW = isBoss ? 100 : 48;
@@ -13591,14 +14236,41 @@ function requestGachaDraw(count) {
       const y1 = mpState.mode === 'coop' ? mpDisplayY(fx.y1) : fx.y1;
       const y2 = mpState.mode === 'coop' ? mpDisplayY(fx.y2) : fx.y2;
       mpCtx.save();
-      mpCtx.globalAlpha = mpClamp(fx.ttl / .22, 0, 1);
+      const maxTtl = fx.kind === 'chronoGolden' ? .42 : fx.kind === 'chrono' ? .36 : .22;
+      const alpha = mpClamp(fx.ttl / maxTtl, 0, 1);
+      mpCtx.globalAlpha = alpha;
       mpCtx.strokeStyle = fx.color || '#fff';
       mpCtx.lineWidth = fx.size || 3;
       mpCtx.lineCap = 'round';
-      mpCtx.beginPath();
-      mpCtx.moveTo(fx.x1, y1);
-      mpCtx.lineTo(fx.x2, y2);
-      mpCtx.stroke();
+      if (fx.kind === 'chrono' || fx.kind === 'chronoGolden') {
+        const golden = fx.kind === 'chronoGolden';
+        const dx = fx.x2 - fx.x1;
+        const dy = y2 - y1;
+        const len = Math.max(1, Math.hypot(dx, dy));
+        const nx = -dy / len;
+        const ny = dx / len;
+        mpCtx.shadowBlur = golden ? 20 : 11;
+        mpCtx.shadowColor = golden ? '#ffd84f' : '#d8b4fe';
+        mpCtx.beginPath();
+        mpCtx.moveTo(fx.x1, y1);
+        mpCtx.bezierCurveTo(fx.x1 + dx * .28 + nx * 20, y1 + dy * .28 + ny * 20, fx.x1 + dx * .72 - nx * 20, y1 + dy * .72 - ny * 20, fx.x2, y2);
+        mpCtx.stroke();
+        mpCtx.translate(fx.x2, y2);
+        mpCtx.strokeStyle = golden ? '#fff3a3' : '#f7edff';
+        mpCtx.lineWidth = 2;
+        mpCtx.beginPath();
+        mpCtx.arc(0, 0, golden ? 13 : 11, 0, Math.PI * 2);
+        mpCtx.stroke();
+        mpCtx.beginPath();
+        mpCtx.moveTo(0, 0);
+        mpCtx.lineTo(0, -7);
+        mpCtx.stroke();
+      } else {
+        mpCtx.beginPath();
+        mpCtx.moveTo(fx.x1, y1);
+        mpCtx.lineTo(fx.x2, y2);
+        mpCtx.stroke();
+      }
       mpCtx.restore();
     }
   }
@@ -13669,6 +14341,10 @@ function requestGachaDraw(count) {
     mpRenderDeck();
     mpSetMessage(mpViewingOpponent ? '상대 기지를 보는 중입니다.' : '내 기지로 돌아왔습니다.');
   });
+  document.querySelector('#mpVictoryExitBtn')?.addEventListener('click', () => {
+    void mpLeaveRoom(true);
+  });
+
   document.querySelector('#mpLeaveBattleBtn')?.addEventListener('click', () => {
     const ok = confirm(mpRoom?.mode === 'pvp'
       ? '대결에서 나가면 상대방이 승리 처리됩니다. 정말 나가시겠습니까?'

@@ -4744,6 +4744,422 @@ body {
 
 </style>
 
+
+<style id="premiumChestVisualUpgrade">
+/* ===== 보급 상자 프리미엄 비주얼 업그레이드 ===== */
+.gacha-preview-chest {
+  width: 246px;
+  height: 188px;
+  filter:
+    drop-shadow(0 34px 25px rgba(0, 0, 0, .48))
+    drop-shadow(0 0 18px rgba(255, 203, 82, .20));
+  perspective: 780px;
+}
+
+.preview-chest-body,
+.preview-chest-lid,
+.cinematic-chest-body,
+.cinematic-chest-lid {
+  isolation: isolate;
+  overflow: hidden;
+  border-color: #3b210d;
+  background:
+    radial-gradient(circle at 12px 12px, #fff0aa 0 2px, #8f5b11 2.4px 4px, transparent 4.5px),
+    radial-gradient(circle at calc(100% - 12px) 12px, #fff0aa 0 2px, #8f5b11 2.4px 4px, transparent 4.5px),
+    linear-gradient(90deg,
+      transparent 0 15%,
+      #5c360f 15% 16.5%,
+      #f4ca61 16.5% 19%,
+      #9c6419 19% 22%,
+      #ffe38a 22% 23.3%,
+      #744714 23.3% 25%,
+      transparent 25% 75%,
+      #744714 75% 76.7%,
+      #ffe38a 76.7% 78%,
+      #9c6419 78% 81%,
+      #f4ca61 81% 83.5%,
+      #5c360f 83.5% 85%,
+      transparent 85%),
+    repeating-linear-gradient(2deg,
+      rgba(255,255,255,.055) 0 2px,
+      rgba(74,31,10,.10) 2px 5px,
+      transparent 5px 13px),
+    linear-gradient(180deg, #c57b2d 0%, #9b5520 34%, #743a17 70%, #51270f 100%);
+  box-shadow:
+    inset 0 3px 0 rgba(255, 230, 150, .32),
+    inset 0 -9px 16px rgba(36, 13, 3, .44),
+    inset 10px 0 18px rgba(255, 195, 75, .06),
+    inset -10px 0 18px rgba(0, 0, 0, .20),
+    0 0 0 1px rgba(255, 210, 104, .12);
+}
+
+.preview-chest-body {
+  left: 13px;
+  width: 220px;
+  height: 112px;
+  border-width: 6px;
+  border-radius: 9px 9px 20px 20px;
+}
+
+.preview-chest-lid {
+  left: 13px;
+  width: 220px;
+  height: 84px;
+  border-width: 6px;
+  border-radius: 96px 96px 12px 12px;
+}
+
+.preview-chest-body::before,
+.cinematic-chest-body::before {
+  content: '';
+  position: absolute;
+  inset: 17px 29px 15px;
+  z-index: 1;
+  border: 2px solid rgba(255, 214, 108, .72);
+  border-radius: 10px 10px 16px 16px;
+  background:
+    radial-gradient(circle at 9px 9px, #fff3b0 0 1.7px, #9e6215 2px 3.8px, transparent 4px),
+    radial-gradient(circle at calc(100% - 9px) 9px, #fff3b0 0 1.7px, #9e6215 2px 3.8px, transparent 4px),
+    radial-gradient(circle at 9px calc(100% - 9px), #fff3b0 0 1.7px, #9e6215 2px 3.8px, transparent 4px),
+    radial-gradient(circle at calc(100% - 9px) calc(100% - 9px), #fff3b0 0 1.7px, #9e6215 2px 3.8px, transparent 4px),
+    linear-gradient(145deg, rgba(255, 208, 98, .10), rgba(29, 9, 2, .14));
+  box-shadow:
+    inset 0 0 0 2px rgba(81, 38, 9, .72),
+    inset 0 0 14px rgba(255, 196, 65, .10),
+    0 1px 0 rgba(255, 238, 175, .22);
+  pointer-events: none;
+}
+
+.preview-chest-body::after,
+.cinematic-chest-body::after {
+  content: '';
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  bottom: 8px;
+  height: 9px;
+  z-index: 2;
+  border-radius: 5px;
+  background:
+    linear-gradient(180deg, #fff0a0 0%, #e2ac3d 26%, #8b5615 72%, #4e2b0a 100%);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.25),
+    0 -2px 7px rgba(255, 210, 94, .20),
+    0 3px 5px rgba(22, 7, 1, .35);
+  pointer-events: none;
+}
+
+.preview-chest-lid::before,
+.cinematic-chest-lid::before {
+  content: '';
+  position: absolute;
+  left: 21px;
+  right: 21px;
+  top: 14px;
+  height: 53%;
+  z-index: 1;
+  border: 3px solid rgba(255, 222, 125, .76);
+  border-bottom-color: rgba(116, 66, 13, .82);
+  border-radius: 70px 70px 12px 12px;
+  background:
+    linear-gradient(150deg, rgba(255,255,255,.16), transparent 34%),
+    repeating-linear-gradient(92deg, rgba(255,225,150,.07) 0 3px, transparent 3px 14px);
+  box-shadow:
+    inset 0 0 0 2px rgba(91, 47, 10, .52),
+    inset 0 8px 14px rgba(255, 212, 103, .08);
+  pointer-events: none;
+}
+
+.preview-chest-lid::after,
+.cinematic-chest-lid::after {
+  content: '✦';
+  position: absolute;
+  left: 50%;
+  top: 24%;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 2px solid #ffe69a;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 28%, #fff9d9 0 8%, #ffd76a 9% 30%, #a86417 55%, #543009 100%);
+  color: #fff8c4;
+  font-size: 18px;
+  text-shadow: 0 0 8px #fff2a5;
+  box-shadow:
+    0 0 0 3px rgba(77, 40, 8, .72),
+    0 0 14px rgba(255, 216, 93, .48),
+    inset 0 0 8px rgba(255,255,255,.32);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.preview-chest-lock,
+.cinematic-chest-lock {
+  overflow: visible;
+  border-color: #4a2a08;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.68) 0 7%, transparent 8% 28%),
+    linear-gradient(180deg, #fff4ad 0%, #f0bd42 30%, #b87314 68%, #7b470d 100%);
+  color: #5a3308;
+  font-weight: 1000;
+  text-shadow: 0 1px 0 rgba(255,255,255,.55);
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.64),
+    inset 0 -7px 12px rgba(90,45,5,.30),
+    0 4px 0 #3a2107,
+    0 8px 14px rgba(0,0,0,.38),
+    0 0 15px rgba(255,203,73,.28);
+}
+
+.preview-chest-lock {
+  left: 98px;
+  top: 77px;
+  width: 50px;
+  height: 55px;
+}
+
+.preview-chest-lock::before,
+.cinematic-chest-lock::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -26px;
+  width: 46%;
+  height: 31px;
+  border: 5px solid #8f5915;
+  border-bottom: 0;
+  border-radius: 22px 22px 0 0;
+  box-shadow:
+    inset 2px 0 0 #f5d477,
+    inset -2px 0 0 #543009,
+    0 0 8px rgba(255, 209, 83, .28);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.preview-chest-lock::after,
+.cinematic-chest-lock::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  width: 7px;
+  height: 12px;
+  border-radius: 6px 6px 3px 3px;
+  background: #4c2a07;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.25);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.preview-chest-glow {
+  bottom: 14px;
+  width: 160px;
+  height: 105px;
+  background:
+    radial-gradient(circle, rgba(255,224,114,.48) 0%, rgba(110,190,255,.26) 38%, rgba(89,175,255,0) 72%);
+  filter: blur(18px);
+  mix-blend-mode: screen;
+}
+
+.gacha-preview-chest::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: 50%;
+  width: 290px;
+  height: 290px;
+  border: 1px solid rgba(255, 222, 121, .25);
+  border-radius: 50%;
+  background:
+    conic-gradient(from 0deg,
+      transparent 0 8%, rgba(255,231,144,.23) 8% 9%, transparent 9% 20%,
+      rgba(116,194,255,.20) 20% 21%, transparent 21% 42%, rgba(255,231,144,.18) 42% 43%,
+      transparent 43% 68%, rgba(116,194,255,.18) 68% 69%, transparent 69% 100%);
+  box-shadow: inset 0 0 36px rgba(94, 181, 255, .08), 0 0 34px rgba(255, 205, 79, .06);
+  transform: translate(-50%, -50%);
+  animation: premiumChestHaloSpin 18s linear infinite;
+  pointer-events: none;
+}
+
+/* 컷신 상자: 더 깊은 입체감과 금속/목재 디테일 */
+.chest-scene::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  width: min(620px, 88vw);
+  height: 330px;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at center, color-mix(in srgb, var(--scene-color) 24%, transparent) 0%, rgba(255,205,93,.08) 35%, transparent 70%);
+  filter: blur(9px);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.cinematic-chest {
+  filter:
+    drop-shadow(0 38px 31px rgba(0,0,0,.62))
+    drop-shadow(0 0 16px rgba(255,211,92,.18));
+}
+
+.cinematic-chest::before {
+  content: '';
+  position: absolute;
+  z-index: -2;
+  left: 50%;
+  top: 52%;
+  width: 355px;
+  height: 355px;
+  border-radius: 50%;
+  background:
+    conic-gradient(from 20deg,
+      transparent 0 7%, color-mix(in srgb, var(--scene-color) 54%, white) 7% 8%, transparent 8% 17%,
+      rgba(255,226,125,.38) 17% 18.2%, transparent 18.2% 38%,
+      color-mix(in srgb, var(--scene-color) 38%, transparent) 38% 39.2%, transparent 39.2% 61%,
+      rgba(255,226,125,.30) 61% 62%, transparent 62% 82%,
+      color-mix(in srgb, var(--scene-color) 42%, transparent) 82% 83.2%, transparent 83.2% 100%);
+  border: 1px solid color-mix(in srgb, var(--scene-color) 38%, transparent);
+  box-shadow:
+    inset 0 0 40px color-mix(in srgb, var(--scene-color) 10%, transparent),
+    0 0 28px rgba(255,218,100,.08);
+  transform: translate(-50%, -50%);
+  animation: premiumChestHaloSpin 13s linear infinite;
+  pointer-events: none;
+}
+
+.cinematic-chest::after {
+  content: '';
+  position: absolute;
+  z-index: -3;
+  left: 50%;
+  bottom: -34px;
+  width: 260px;
+  height: 48px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0,0,0,.62) 0%, rgba(0,0,0,.28) 48%, transparent 72%);
+  filter: blur(7px);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.cinematic-chest-body,
+.cinematic-chest-lid {
+  border-width: 7px;
+  border-color: #3a210c;
+}
+
+.cinematic-chest-body::before {
+  inset: 20px 34px 17px;
+  border-width: 3px;
+}
+
+.cinematic-chest-lid::before {
+  left: 25px;
+  right: 25px;
+  top: 17px;
+}
+
+.cinematic-chest-lid::after {
+  width: 42px;
+  height: 42px;
+  font-size: 22px;
+}
+
+.cinematic-chest-lock {
+  border-width: 6px;
+  border-radius: 14px 14px 17px 17px;
+  box-shadow:
+    inset 0 3px 0 rgba(255,255,255,.65),
+    inset 0 -10px 16px rgba(91,45,4,.34),
+    0 5px 0 #382006,
+    0 12px 18px rgba(0,0,0,.42),
+    0 0 24px color-mix(in srgb, var(--scene-color) 34%, rgba(255,207,79,.36));
+}
+
+.cinematic-chest-lock::before {
+  top: -33px;
+  height: 38px;
+  border-width: 6px;
+  border-bottom: 0;
+}
+
+.cinematic-chest.chest-clickable:hover,
+.cinematic-chest.chest-clickable:focus-visible,
+.cinematic-chest.chest-armed {
+  filter:
+    drop-shadow(0 40px 34px rgba(0,0,0,.60))
+    drop-shadow(0 0 18px rgba(255,220,110,.30))
+    drop-shadow(0 0 38px var(--scene-glow));
+}
+
+.cinematic-chest.chest-armed .cinematic-chest-lock {
+  animation: premiumLockCharge .55s ease-in-out infinite alternate;
+}
+
+.cinematic-chest.opened .cinematic-chest-lid {
+  transform: rotateX(-121deg) translateY(-13px);
+  filter: brightness(1.14) saturate(1.08);
+}
+
+.cinematic-chest.opened .cinematic-chest-body {
+  box-shadow:
+    inset 0 26px 38px color-mix(in srgb, var(--scene-color) 30%, rgba(255,238,165,.34)),
+    inset 0 -10px 18px rgba(26,8,1,.44),
+    0 0 24px color-mix(in srgb, var(--scene-color) 22%, transparent);
+}
+
+.cinematic-chest.opened .chest-beam {
+  width: 285px;
+  opacity: 1;
+  background:
+    linear-gradient(to top,
+      rgba(255,255,235,.94) 0%,
+      color-mix(in srgb, var(--scene-color) 82%, white) 19%,
+      color-mix(in srgb, var(--scene-color) 50%, transparent) 48%,
+      transparent 82%);
+  filter: blur(3px) drop-shadow(0 0 18px var(--scene-glow));
+}
+
+/* 금속 표면을 가로지르는 은은한 광택 */
+.cinematic-chest-lid > *,
+.cinematic-chest-body > * { pointer-events: none; }
+
+@keyframes premiumChestHaloSpin {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes premiumLockCharge {
+  from { transform: translateY(0) scale(1); filter: brightness(1); }
+  to { transform: translateY(-1px) scale(1.035); filter: brightness(1.22); }
+}
+
+@media (max-width: 560px) {
+  .gacha-preview-chest {
+    transform: scale(.92);
+    margin-bottom: 24px;
+  }
+
+  .cinematic-chest::before {
+    width: 310px;
+    height: 310px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gacha-preview-chest::before,
+  .cinematic-chest::before,
+  .cinematic-chest.chest-armed .cinematic-chest-lock {
+    animation: none !important;
+  }
+}
+</style>
+
 </head>
 
 <body>
@@ -5822,6 +6238,25 @@ function applyStagePreview(stageId = selectedStage) {
         color: '#ef4444',
         skillText: '창 명중 후 50% 확률로 0.5초 뒤 명중 지점에 반지름 20의 번개가 떨어져 범위 안의 모든 적에게 일반 공격과 같은 피해를 줍니다. 창을 7번 던질 때마다 자신이 배치된 위치에서 가장 가까운 가로 길을 황금 거대창으로 쓸어 일반 공격의 5배 피해를 줍니다.'
       },
+      moneyTree: {
+        id: 'moneyTree',
+        name: '돈나무',
+        icon: '🌳',
+        rarity: '신화',
+        rarityKey: 'mythic',
+        rarityClass: 'rarity-mythic',
+        cost: 200,
+        damage: 0,
+        range: 0,
+        fireInterval: 1,
+        incomeAmount: 15,
+        incomeInterval: 1,
+        upgrade1Income: 25,
+        upgrade2Interval: 0.7,
+        upgradeCosts: [67, 100],
+        color: '#f4c542',
+        skillText: '공격하지 않는 경제 유닛입니다. 기본 상태에서는 1초마다 15골드를 생산합니다. 1단계 업그레이드 시 1초마다 25골드, 2단계 업그레이드 시 0.7초마다 25골드를 생산합니다.'
+      },
       astralChronomancer: {
         id: 'astralChronomancer',
         name: '별빛 시간술사',
@@ -5838,11 +6273,12 @@ function applyStagePreview(stageId = selectedStage) {
         multiShot4Chance: 0.10,
         goldenShotChance: 0.20,
         goldenStunDuration: 2,
+        goldenBossStunDuration: 0.5,
         timeFieldEvery: 30,
-        timeFieldRange: 400,
+        timeFieldRange: 300,
         timeFieldDuration: 5,
         color: '#d8b4fe',
-        skillText: '공격할 때 50% 확률로 2발, 25% 확률로 3발, 10% 확률로 4발을 서로 다른 적에게 발사합니다(나머지 15%는 1발). 남는 탄환은 유닛 주위를 공전하다 새 적이 사거리 안에 들어오면 발사됩니다. 각 탄환은 독립적으로 20% 확률로 황금 탄환이 되어 명중한 적을 2초 기절시킵니다. 30번 공격할 때마다 사거리 400의 시간 영역을 5초간 펼쳐 영역 안의 적 이동을 멈춥니다.'
+        skillText: '공격할 때 50% 확률로 2발, 25% 확률로 3발, 10% 확률로 4발을 서로 다른 적에게 발사합니다(나머지 15%는 1발). 남는 탄환은 유닛 주위를 공전하다 새 적이 사거리 안에 들어오면 발사됩니다. 각 탄환은 독립적으로 20% 확률로 황금 탄환이 되어 일반 적은 2초, 보스는 0.5초 기절시킵니다. 30번 공격할 때마다 사거리 300의 시간 영역을 5초간 펼쳐 일반 적의 이동을 멈추며 보스에게는 적용되지 않습니다.'
       }
     };
 
@@ -6931,8 +7367,9 @@ async function logout() {
           <h3>${unit.name}</h3>
           <p class="${unit.rarityClass}">${unit.rarity}</p>
           <p class="muted">
-            공격 ${unit.damage} · 사거리 ${unit.range}<br>
-            배치 비용 ${unit.cost}
+            ${unit.id === 'moneyTree'
+              ? `생산 ${unit.incomeAmount}골드 / ${unit.incomeInterval}초<br>배치 비용 ${unit.cost}`
+              : `공격 ${unit.damage} · 사거리 ${unit.range}<br>배치 비용 ${unit.cost}`}
           </p>
           <strong>Lv.${ownedInfo.level}</strong>
           <span class="muted"> · 조각 ${fragments}</span>
@@ -7193,38 +7630,35 @@ async function logout() {
     function waitForChestDoubleOpen(chest, instruction) {
       return new Promise(resolve => {
         let clickCount = 0;
-        let acceptingClick = true;
         let finished = false;
+        const overlay = document.querySelector('#cutsceneOverlay');
+        const clickTarget = overlay || chest;
 
         chest.classList.add('chest-clickable');
-        chest.setAttribute('role', 'button');
-        chest.setAttribute('tabindex', '0');
-        chest.setAttribute('aria-label', '보급 상자. 두 번 눌러 개방');
+        clickTarget.setAttribute('role', 'button');
+        clickTarget.setAttribute('tabindex', '0');
+        clickTarget.setAttribute('aria-label', '화면 아무 곳이나 두 번 눌러 보급 상자 개방');
 
         const cleanup = () => {
-          chest.removeEventListener('click', activate);
-          chest.removeEventListener('keydown', handleKeydown);
-          chest.classList.remove('chest-clickable', 'chest-armed');
-          chest.removeAttribute('role');
-          chest.removeAttribute('tabindex');
-          chest.removeAttribute('aria-label');
+          clickTarget.removeEventListener('pointerdown', activate);
+          clickTarget.removeEventListener('keydown', handleKeydown);
+          chest.classList.remove('chest-clickable', 'chest-armed', 'shaking');
+          clickTarget.removeAttribute('role');
+          clickTarget.removeAttribute('tabindex');
+          clickTarget.removeAttribute('aria-label');
         };
 
-        const activate = () => {
-          if (finished || !acceptingClick) return;
-
+        const activate = event => {
+          if (finished) return;
+          if (event?.target?.closest?.('.cutscene-close-button')) return;
           clickCount += 1;
+          chest.classList.remove('shaking');
+          void chest.offsetWidth;
 
           if (clickCount === 1) {
-            acceptingClick = false;
             chest.classList.add('shaking', 'chest-armed');
-            instruction.textContent = '잠금 해제! 상자를 한 번 더 눌러 개방하세요. (2/2)';
+            instruction.textContent = '잠금 해제! 화면 아무 곳이나 한 번 더 눌러 개방하세요. (2/2)';
             instruction.classList.add('armed');
-
-            window.setTimeout(() => {
-              chest.classList.remove('shaking');
-              acceptingClick = true;
-            }, 720);
             return;
           }
 
@@ -7239,11 +7673,11 @@ async function logout() {
         const handleKeydown = event => {
           if (event.key !== 'Enter' && event.key !== ' ') return;
           event.preventDefault();
-          activate();
+          activate(event);
         };
 
-        chest.addEventListener('click', activate);
-        chest.addEventListener('keydown', handleKeydown);
+        clickTarget.addEventListener('pointerdown', activate);
+        clickTarget.addEventListener('keydown', handleKeydown);
       });
     }
 
@@ -7305,7 +7739,7 @@ async function logout() {
           </div>
 
           <div id="chestParticles" class="cutscene-particles"></div>
-          <p id="chestClickInstruction" class="chest-click-instruction">보급 상자를 눌러 잠금을 해제하세요. (1/2)</p>
+          <p id="chestClickInstruction" class="chest-click-instruction">화면 아무 곳이나 눌러 잠금을 해제하세요. (1/2)</p>
 
           <div id="chestRewardPanel" class="reward-panel">
             <span class="section-kicker">DICE ACQUIRED</span>
@@ -7324,7 +7758,6 @@ async function logout() {
       const panel = document.querySelector('#chestRewardPanel');
       const instruction = document.querySelector('#chestClickInstruction');
 
-      await wait(500);
       await waitForChestDoubleOpen(chest, instruction);
 
       chest.classList.add('opened');
@@ -7408,7 +7841,7 @@ async function logout() {
             <div class="cinematic-chest-lock">◆</div>
           </div>
           <div id="chestParticles" class="cutscene-particles"></div>
-          <p id="chestClickInstruction" class="chest-click-instruction">보급 상자를 눌러 잠금을 해제하세요. (1/2)</p>
+          <p id="chestClickInstruction" class="chest-click-instruction">화면 아무 곳이나 눌러 잠금을 해제하세요. (1/2)</p>
           <div id="batchDiceBurst" class="batch-dice-burst">
             ${diceMarkup}
             ${rarityKeys.length > visibleKeys.length ? `<div class="batch-extra-count">+${rarityKeys.length - visibleKeys.length}</div>` : ''}
@@ -7428,7 +7861,6 @@ async function logout() {
       const panel = document.querySelector('#chestRewardPanel');
       const instruction = document.querySelector('#chestClickInstruction');
 
-      await wait(500);
       await waitForChestDoubleOpen(chest, instruction);
 
       chest.classList.add('opened');
@@ -8701,71 +9133,60 @@ function requestGachaDraw(count) {
       }
 
       infoSection?.classList.remove('is-empty');
-
       const unit = UNIT_DATA[placed.unitId];
       placed.baseDamage ??= unit.damage;
       placed.upgradeLevel ??= 0;
-
+      const isMoneyTree = placed.unitId === 'moneyTree';
       const refund = Math.floor(placed.totalInvestment * 0.7);
-      const cooldownText = `${placed.fireInterval.toFixed(2)}초`;
-      const attacksPerSecond = (1 / placed.fireInterval).toFixed(2);
-      const damageText = Number.isInteger(placed.damage)
-        ? placed.damage
-        : Number(placed.damage.toFixed(2));
-      const rangeText = placed.unitId === 'royalGuardian'
-        ? `베기 ${unit.meleeRange || 120} / 검기 ${placed.range}`
-        : `${placed.range}`;
       const skillHtml = unit.skillText
         ? `<div class="unit-skill-note"><strong>고유 능력</strong><p>${unit.skillText}</p></div>`
         : '';
-
       const upgradeLevel = placed.upgradeLevel;
       const isMaxUpgrade = upgradeLevel >= 2;
       const nextUpgradeLevel = upgradeLevel + 1;
-      const nextMultiplier = upgradeLevel === 0 ? 1.25 : 1.5;
-      const upgradeCost = upgradeLevel === 0
-        ? Math.ceil(unit.cost / 3)
-        : Math.ceil(unit.cost / 2);
-      const nextDamage = Number((placed.baseDamage * nextMultiplier).toFixed(2));
 
-      const upgradeHtml = isMaxUpgrade
-        ? `
-          <div class="unit-upgrade-box">
-            <div class="unit-upgrade-title">
-              <strong>공격력 업그레이드</strong>
-              <span class="unit-upgrade-level">2 / 2단계</span>
-            </div>
-            <div class="unit-upgrade-complete">최대 업그레이드 완료 · 기본 데미지의 1.5배</div>
-          </div>
-        `
-        : `
-          <div class="unit-upgrade-box">
-            <div class="unit-upgrade-title">
-              <strong>공격력 업그레이드</strong>
-              <span class="unit-upgrade-level">${upgradeLevel} / 2단계</span>
-            </div>
-            <p>
-              ${nextUpgradeLevel}단계 적용 시 데미지
-              <strong>${nextDamage}</strong>
-              · 기본 데미지의 ${nextMultiplier}배
-            </p>
-            <button id="upgradeUnitBtn" class="unit-upgrade-button">
-              ${nextUpgradeLevel}단계 업그레이드 · ${upgradeCost} 골드
-            </button>
-          </div>
-        `;
+      let statsHtml = '';
+      let upgradeHtml = '';
+      let upgradeCost = 0;
+      let nextDamage = null;
+
+      if (isMoneyTree) {
+        placed.incomeAmount ||= unit.incomeAmount;
+        placed.incomeInterval ||= unit.incomeInterval;
+        const perSecond = (placed.incomeAmount / placed.incomeInterval).toFixed(1);
+        statsHtml = `
+          <div class="selected-unit-stats">
+            <div><span>생산 골드</span><strong>${placed.incomeAmount}</strong></div>
+            <div><span>생산 주기</span><strong>${placed.incomeInterval.toFixed(1)}초</strong></div>
+            <div><span>초당 생산</span><strong>${perSecond}</strong></div>
+            <div><span>공격 범위</span><strong>없음</strong></div>
+          </div>`;
+        upgradeCost = (unit.upgradeCosts || [Math.ceil(unit.cost / 3), Math.ceil(unit.cost / 2)])[upgradeLevel] || 0;
+        const nextDescription = upgradeLevel === 0
+          ? `1초마다 <strong>${unit.upgrade1Income}골드</strong> 생산`
+          : `<strong>${unit.upgrade2Interval}초</strong>마다 ${unit.upgrade1Income}골드 생산`;
+        upgradeHtml = isMaxUpgrade
+          ? `<div class="unit-upgrade-box"><div class="unit-upgrade-title"><strong>돈나무 업그레이드</strong><span class="unit-upgrade-level">2 / 2단계</span></div><div class="unit-upgrade-complete">최대 업그레이드 완료 · 0.7초마다 25골드</div></div>`
+          : `<div class="unit-upgrade-box"><div class="unit-upgrade-title"><strong>돈나무 업그레이드</strong><span class="unit-upgrade-level">${upgradeLevel} / 2단계</span></div><p>${nextUpgradeLevel}단계 적용 시 ${nextDescription}</p><button id="upgradeUnitBtn" class="unit-upgrade-button">${nextUpgradeLevel}단계 업그레이드 · ${upgradeCost} 골드</button></div>`;
+      } else {
+        const cooldownText = `${placed.fireInterval.toFixed(2)}초`;
+        const attacksPerSecond = (1 / placed.fireInterval).toFixed(2);
+        const damageText = Number.isInteger(placed.damage) ? placed.damage : Number(placed.damage.toFixed(2));
+        const rangeText = placed.unitId === 'royalGuardian'
+          ? `베기 ${unit.meleeRange || 120} / 검기 ${placed.range}`
+          : `${placed.range}`;
+        statsHtml = `<div class="selected-unit-stats"><div><span>데미지</span><strong>${damageText}</strong></div><div><span>공격 쿨타임</span><strong>${cooldownText}</strong></div><div><span>초당 공격</span><strong>${attacksPerSecond}회</strong></div><div><span>공격 범위</span><strong>${rangeText}</strong></div></div>`;
+        const nextMultiplier = upgradeLevel === 0 ? 1.25 : 1.5;
+        upgradeCost = upgradeLevel === 0 ? Math.ceil(unit.cost / 3) : Math.ceil(unit.cost / 2);
+        nextDamage = Number((placed.baseDamage * nextMultiplier).toFixed(2));
+        upgradeHtml = isMaxUpgrade
+          ? `<div class="unit-upgrade-box"><div class="unit-upgrade-title"><strong>공격력 업그레이드</strong><span class="unit-upgrade-level">2 / 2단계</span></div><div class="unit-upgrade-complete">최대 업그레이드 완료 · 기본 데미지의 1.5배</div></div>`
+          : `<div class="unit-upgrade-box"><div class="unit-upgrade-title"><strong>공격력 업그레이드</strong><span class="unit-upgrade-level">${upgradeLevel} / 2단계</span></div><p>${nextUpgradeLevel}단계 적용 시 데미지 <strong>${nextDamage}</strong> · 기본 데미지의 ${nextMultiplier}배</p><button id="upgradeUnitBtn" class="unit-upgrade-button">${nextUpgradeLevel}단계 업그레이드 · ${upgradeCost} 골드</button></div>`;
+      }
 
       panel.innerHTML = `
-        <div class="selected-panel-header">
-          <h3>${unit.icon} ${unit.name}</h3>
-          <button id="closeBattleInfoBtn" class="close-battle-info-button" type="button" aria-label="유닛 정보 닫기">×</button>
-        </div>
-        <div class="selected-unit-stats">
-          <div><span>데미지</span><strong>${damageText}</strong></div>
-          <div><span>공격 쿨타임</span><strong>${cooldownText}</strong></div>
-          <div><span>초당 공격</span><strong>${attacksPerSecond}회</strong></div>
-          <div><span>공격 범위</span><strong>${rangeText}</strong></div>
-        </div>
+        <div class="selected-panel-header"><h3>${unit.icon} ${unit.name}</h3><button id="closeBattleInfoBtn" class="close-battle-info-button" type="button" aria-label="유닛 정보 닫기">×</button></div>
+        ${statsHtml}
         ${skillHtml}
         ${upgradeHtml}
         <button id="sellUnitBtn" class="danger">판매 +${refund} 골드</button>
@@ -8783,16 +9204,26 @@ function requestGachaDraw(count) {
             setBattleMessage(`업그레이드에 필요한 골드가 부족합니다. 필요 골드: ${upgradeCost}`);
             return;
           }
-
           battle.gold -= upgradeCost;
           placed.upgradeLevel = nextUpgradeLevel;
-          placed.damage = placed.baseDamage * nextMultiplier;
           placed.totalInvestment += upgradeCost;
+
+          if (isMoneyTree) {
+            if (nextUpgradeLevel === 1) {
+              placed.incomeAmount = unit.upgrade1Income;
+            } else {
+              placed.incomeAmount = unit.upgrade1Income;
+              placed.incomeInterval = unit.upgrade2Interval;
+              placed.incomeCooldown = Math.min(placed.incomeCooldown || placed.incomeInterval, placed.incomeInterval);
+            }
+            setBattleMessage(`${unit.name} ${nextUpgradeLevel}단계 업그레이드 완료! ${placed.incomeInterval}초마다 ${placed.incomeAmount}골드 생산`);
+          } else {
+            const nextMultiplier = nextUpgradeLevel === 1 ? 1.25 : 1.5;
+            placed.damage = placed.baseDamage * nextMultiplier;
+            setBattleMessage(`${unit.name} ${nextUpgradeLevel}단계 업그레이드 완료! 데미지 ${nextDamage}`);
+          }
           updateBattleUi();
           renderSelectedPanel();
-          setBattleMessage(
-            `${unit.name} ${nextUpgradeLevel}단계 업그레이드 완료! 데미지 ${nextDamage}`
-          );
         });
       }
 
@@ -9405,7 +9836,10 @@ function requestGachaDraw(count) {
 
       applyDamageToEnemy(enemy, placed.damage);
       if (golden && !enemy.dead) {
-        const stunSeconds = data.goldenStunDuration || 2;
+        const isBoss = enemy.type !== 'normal';
+        const stunSeconds = isBoss
+          ? (data.goldenBossStunDuration || 0.5)
+          : (data.goldenStunDuration || 2);
         enemy.timeStunDuration = stunSeconds;
         enemy.timeStunRemaining = Math.max(enemy.timeStunRemaining || 0, stunSeconds);
       }
@@ -9447,18 +9881,18 @@ function requestGachaDraw(count) {
     function activateChronoTimeField(placed) {
       const data = UNIT_DATA.astralChronomancer;
       placed.chronoFieldRemaining = data.timeFieldDuration || 5;
-      setBattleMessage('별빛 시간술사가 시간 영역을 펼쳤습니다! 사거리 400 안의 적 이동이 5초간 멈춥니다.');
+      setBattleMessage('별빛 시간술사가 시간 영역을 펼쳤습니다! 사거리 300 안의 일반 적 이동이 5초간 멈춥니다. 보스는 면역입니다.');
     }
 
     function updateChronoTimeField(placed, dt) {
       placed.chronoFieldRemaining = Math.max(0, (placed.chronoFieldRemaining || 0) - dt);
       if (placed.chronoFieldRemaining <= 0) return;
 
-      const range = UNIT_DATA.astralChronomancer.timeFieldRange || 400;
+      const range = UNIT_DATA.astralChronomancer.timeFieldRange || 300;
       battle.enemies.forEach(enemy => {
-        if (enemy.dead) return;
+        if (enemy.dead || enemy.type !== 'normal') return;
         if (Math.hypot(enemy.x - placed.x, enemy.y - placed.y) <= range) {
-          // 영역이 남은 시간만큼 지속적으로 갱신해, 뒤늦게 들어온 적도 남은 시간 동안 멈춘다.
+          // 보스는 시간 영역에 면역. 일반 적만 남은 시간만큼 이동을 봉쇄한다.
           enemy.timeFieldRemaining = Math.max(enemy.timeFieldRemaining || 0, placed.chronoFieldRemaining);
         }
       });
@@ -9505,6 +9939,20 @@ function requestGachaDraw(count) {
       if (placed.unitId === 'astralChronomancer') {
         updateChronoTimeField(placed, dt);
         updateChronoOrbitingShots(placed);
+      }
+
+      if (placed.unitId === 'moneyTree') {
+        if (placed.stunRemaining > 0) return;
+        placed.incomeAmount ||= UNIT_DATA.moneyTree.incomeAmount;
+        placed.incomeInterval ||= UNIT_DATA.moneyTree.incomeInterval;
+        placed.incomeCooldown = Number.isFinite(placed.incomeCooldown) ? placed.incomeCooldown - dt : placed.incomeInterval;
+        while (placed.incomeCooldown <= 0) {
+          battle.gold += placed.incomeAmount;
+          placed.incomeCooldown += placed.incomeInterval;
+          placed.moneyPulse = 1;
+        }
+        placed.moneyPulse = Math.max(0, (placed.moneyPulse || 0) - dt * 2.4);
+        return;
       }
 
       if (placed.stunRemaining > 0 || placed.cooldown > 0) return;
@@ -10898,6 +11346,17 @@ function requestGachaDraw(count) {
         ctx.fillStyle = '#4a1119'; ctx.fillRect(-10,-23,20,5);
         ctx.fillStyle = '#ff947c'; for (const side of [-1,1]) { ctx.beginPath(); ctx.moveTo(side*5,-32); ctx.lineTo(side*17,-42); ctx.lineTo(side*12,-25); ctx.closePath(); ctx.fill(); }
         ctx.fillStyle = '#f9d26b'; ctx.beginPath(); ctx.moveTo(0,-4); ctx.lineTo(6,5); ctx.lineTo(0,11); ctx.lineTo(-6,5); ctx.closePath(); ctx.fill();
+      } else if (id === 'moneyTree') {
+        const sway = Math.sin(time * .0026 + unit.animationOffset) * .045;
+        ctx.save(); ctx.rotate(sway);
+        const trunk = ctx.createLinearGradient(-8, 0, 9, 24); trunk.addColorStop(0, '#7a451d'); trunk.addColorStop(.5, '#b8752c'); trunk.addColorStop(1, '#4d2a13');
+        ctx.fillStyle = trunk; ctx.beginPath(); ctx.roundRect(-7, -1, 14, 25, 5); ctx.fill();
+        ctx.strokeStyle = '#5b3518'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(-2, 4); ctx.lineTo(-15, -8); ctx.moveTo(3, 2); ctx.lineTo(17, -10); ctx.stroke();
+        const crown = ctx.createRadialGradient(-5, -20, 3, 0, -14, 30); crown.addColorStop(0, '#b9ff8a'); crown.addColorStop(.45, '#4fca63'); crown.addColorStop(1, '#12663b');
+        ctx.fillStyle = crown; for (const [x,y,r] of [[-15,-16,15],[0,-25,18],[16,-15,15],[-3,-8,18]]) { ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill(); }
+        const pulse = .88 + Math.sin(time * .006) * .12; ctx.shadowBlur = 12 * pulse; ctx.shadowColor = '#ffd84f'; ctx.fillStyle = '#ffd84f'; ctx.strokeStyle = '#8f6100'; ctx.lineWidth = 1.2;
+        for (const [x,y] of [[-14,-20],[7,-30],[17,-10],[-3,-7],[3,-17]]) { ctx.beginPath(); ctx.arc(x,y,4.2,0,Math.PI*2); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#fff1a6'; ctx.beginPath(); ctx.arc(x-1.2,y-1.3,1.2,0,Math.PI*2); ctx.fill(); ctx.fillStyle = '#ffd84f'; }
+        ctx.restore();
       } else if (id === 'astralChronomancer') {
         const hover = Math.sin(time*.004 + unit.animationOffset)*2;
         ctx.save(); ctx.translate(0,hover);
@@ -11067,6 +11526,9 @@ function requestGachaDraw(count) {
         chronoAttackCount: 0,
         chronoOrbitingShots: [],
         chronoFieldRemaining: 0,
+        incomeAmount: unitId === 'moneyTree' ? data.incomeAmount : 0,
+        incomeInterval: unitId === 'moneyTree' ? data.incomeInterval : 0,
+        incomeCooldown: unitId === 'moneyTree' ? data.incomeInterval : 0,
         angle: 0,
         stunRemaining: 0,
         attackSlowRemaining: 0
@@ -11109,7 +11571,7 @@ function requestGachaDraw(count) {
       }
 
       if (unit.unitId === 'astralChronomancer' && unit.chronoFieldRemaining > 0) {
-        const fieldRange = UNIT_DATA.astralChronomancer.timeFieldRange || 400;
+        const fieldRange = UNIT_DATA.astralChronomancer.timeFieldRange || 300;
         const pulse = .78 + Math.sin(time * .006) * .10;
         const fieldGradient = ctx.createRadialGradient(0, 0, 30, 0, 0, fieldRange);
         fieldGradient.addColorStop(0, 'rgba(216,180,254,.15)');
@@ -11169,6 +11631,12 @@ function requestGachaDraw(count) {
           ctx.stroke();
           ctx.restore();
         });
+      }
+
+      if (unit.unitId === 'moneyTree' && unit.moneyPulse > 0) {
+        const moneyRise = 1 - unit.moneyPulse;
+        ctx.save(); ctx.globalAlpha = Math.max(0, unit.moneyPulse); ctx.font = 'bold 16px Arial, sans-serif'; ctx.fillStyle = '#ffe36e'; ctx.textAlign = 'center';
+        ctx.fillText(`+${unit.incomeAmount || UNIT_DATA.moneyTree.incomeAmount}`, 0, -48 - moneyRise * 18); ctx.restore();
       }
 
       if (unit.stunRemaining > 0) {
@@ -11636,6 +12104,9 @@ function requestGachaDraw(count) {
         chronoAttackCount: 0,
         chronoOrbitingShots: [],
         chronoFieldRemaining: 0,
+        incomeAmount: unitData.id === 'moneyTree' ? unitData.incomeAmount : 0,
+        incomeInterval: unitData.id === 'moneyTree' ? unitData.incomeInterval : 0,
+        incomeCooldown: unitData.id === 'moneyTree' ? unitData.incomeInterval : 0,
         angle: 0,
         stunRemaining: 0,
         attackSlowRemaining: 0
@@ -12680,8 +13151,96 @@ function requestGachaDraw(count) {
       slowUntil: 0,
       chronoOrbitingShots: [],
       chronoFieldUntil: 0,
+      upgradeLevel: 0,
+      incomeAmount: unitId === 'moneyTree' ? Number(data.incomeAmount) : 0,
+      incomeInterval: unitId === 'moneyTree' ? Number(data.incomeInterval) : 0,
+      incomeCooldown: unitId === 'moneyTree' ? Number(data.incomeInterval) : 0,
+      moneyPulseUntil: 0,
       animationOffset: Math.random() * Math.PI * 2
     };
+  }
+
+  function mpMoneyTreeUpgradeCost(level) {
+    const costs = UNIT_DATA.moneyTree?.upgradeCosts || [67, 100];
+    return Number(costs[Math.max(0, Math.min(1, Number(level) || 0))] || 0);
+  }
+
+  function mpRoleTarget(role) {
+    if (!mpState) return null;
+    return mpState.mode === 'coop' ? mpState.shared : mpState.sides?.[role];
+  }
+
+  function mpProcessMoneyTreeUpgrade(role, payload) {
+    if (!mpState || mpState.matchFinished || !['host', 'guest'].includes(role)) return false;
+    const target = mpRoleTarget(role);
+    if (!target) return false;
+    const unit = (target.units || []).find(item => item.id === payload?.unitId && item.ownerRole === role && item.unitId === 'moneyTree');
+    if (!unit) return false;
+    unit.upgradeLevel = Math.max(0, Number(unit.upgradeLevel || 0));
+    if (unit.upgradeLevel >= 2) {
+      if (role === mpRole) mpSetMessage('돈나무는 이미 최대 업그레이드 상태입니다.');
+      return true;
+    }
+    const cost = mpMoneyTreeUpgradeCost(unit.upgradeLevel);
+    const gold = mpState.mode === 'coop' ? Number(mpState.shared.gold[role] || 0) : Number(mpState.sides[role].gold || 0);
+    if (gold < cost) {
+      if (role === mpRole) mpSetMessage(`돈나무 업그레이드에 ${cost}골드가 필요합니다.`);
+      return true;
+    }
+    if (mpState.mode === 'coop') mpState.shared.gold[role] -= cost;
+    else mpState.sides[role].gold -= cost;
+    unit.upgradeLevel += 1;
+    if (unit.upgradeLevel === 1) {
+      unit.incomeAmount = UNIT_DATA.moneyTree.upgrade1Income;
+      unit.incomeInterval = UNIT_DATA.moneyTree.incomeInterval;
+    } else {
+      unit.incomeAmount = UNIT_DATA.moneyTree.upgrade1Income;
+      unit.incomeInterval = UNIT_DATA.moneyTree.upgrade2Interval;
+      unit.incomeCooldown = Math.min(Number(unit.incomeCooldown || unit.incomeInterval), unit.incomeInterval);
+    }
+    unit.moneyPulseUntil = Date.now() + 800;
+    if (role === mpRole) mpSetMessage(`돈나무 ${unit.upgradeLevel}단계 완료 · ${unit.incomeInterval}초마다 ${unit.incomeAmount}골드`);
+    mpRefreshHud();
+    return true;
+  }
+
+  function mpFindOwnMoneyTree(point) {
+    const target = mpRoleTarget(mpRole);
+    if (!target || (mpRoom?.mode === 'pvp' && mpViewingOpponent)) return null;
+    let best = null;
+    let bestDistance = 46;
+    for (const unit of target.units || []) {
+      if (unit.ownerRole !== mpRole || unit.unitId !== 'moneyTree') continue;
+      const d = Math.hypot(unit.x - point.x, unit.y - point.y);
+      if (d < bestDistance) { best = unit; bestDistance = d; }
+    }
+    return best;
+  }
+
+  async function mpTryUpgradeMoneyTreeAt(point) {
+    const unit = mpFindOwnMoneyTree(point);
+    if (!unit) return false;
+    const level = Number(unit.upgradeLevel || 0);
+    if (level >= 2) {
+      mpSetMessage('돈나무는 이미 최대 업그레이드 상태입니다.');
+      return true;
+    }
+    const cost = mpMoneyTreeUpgradeCost(level);
+    const nextText = level === 0 ? '1초마다 25골드' : '0.7초마다 25골드';
+    if (!confirm(`돈나무를 ${level + 1}단계로 업그레이드할까요?\n${nextText}\n필요 골드: ${cost}`)) return true;
+    if (mpRole === 'host') {
+      mpProcessMoneyTreeUpgrade('host', { unitId: unit.id });
+      return true;
+    }
+    const { error } = await supabaseClient.from('multiplayer_commands').insert({
+      room_id: mpRoom.id,
+      sender_id: mpUserId,
+      command_type: 'upgrade_money_tree',
+      payload: { unitId: unit.id }
+    });
+    if (error) mpSetMessage(error.message || '돈나무 업그레이드 요청에 실패했습니다.');
+    else mpSetMessage('방장에게 돈나무 업그레이드를 요청했습니다.');
+    return true;
   }
 
   function mpProcessPlace(role, payload) {
@@ -12768,6 +13327,7 @@ function requestGachaDraw(count) {
           : null;
       if (!role) continue;
       if (command.command_type === 'place') mpProcessPlace(role, command.payload || {});
+      if (command.command_type === 'upgrade_money_tree') mpProcessMoneyTreeUpgrade(role, command.payload || {});
     }
   }
 
@@ -12967,10 +13527,47 @@ function requestGachaDraw(count) {
     return target;
   }
 
-  function mpPushFx(x1, y1, x2, y2, color, size = 3, sideKey = null, kind = 'line') {
+  function mpFxDuration(kind) {
+    const durations = {
+      arrow: .30,
+      windArrow: .38,
+      windPiercing: .50,
+      steelSlash: .28,
+      royalCone: .44,
+      royalWave: .46,
+      arcane: .40,
+      fireball: .48,
+      dragonLance: .36,
+      dragonLane: .72,
+      lightning: .48,
+      chrono: .40,
+      chronoGolden: .46,
+      line: .24
+    };
+    return durations[kind] || .28;
+  }
+
+  function mpPushFx(x1, y1, x2, y2, color, size = 3, sideKey = null, kind = 'line', extras = {}) {
     mpState.fx ||= [];
-    mpState.fx.push({ id: mpMakeId('fx'), x1, y1, x2, y2, color, size, sideKey, kind, ttl: kind === 'chronoGolden' ? .42 : kind === 'chrono' ? .36 : .22 });
-    if (mpState.fx.length > 100) mpState.fx.splice(0, mpState.fx.length - 100);
+    const duration = mpFxDuration(kind);
+    mpState.fx.push({
+      id: mpMakeId('fx'), x1, y1, x2, y2, color, size, sideKey, kind,
+      ttl: duration, maxTtl: duration, seed: Math.random() * 1000, ...extras
+    });
+    if (mpState.fx.length > 140) mpState.fx.splice(0, mpState.fx.length - 140);
+  }
+
+  function mpAttackEffectKind(unitId) {
+    const kinds = {
+      starterArcher: 'arrow',
+      windRanger: 'windArrow',
+      starterKnight: 'steelSlash',
+      royalGuardian: 'royalWave',
+      starterMage: 'arcane',
+      flameWizard: 'fireball',
+      skyDragonKnight: 'dragonLance'
+    };
+    return kinds[unitId] || 'line';
   }
 
   function mpScheduleLightning(sideKey, target, damage, ownerRole) {
@@ -13002,7 +13599,12 @@ function requestGachaDraw(count) {
     mpPushFx(x1, y1, enemy.x, enemy.y, golden ? '#ffd84f' : '#d8b4fe', golden ? 6 : 4, sideKey, golden ? 'chronoGolden' : 'chrono');
     mpApplyDamage(targetState, enemy, unit.damage, unit.ownerRole, sideKey);
     if (golden && !enemy.dead) {
-      enemy.timeStunUntil = Math.max(Number(enemy.timeStunUntil || 0), Date.now() + (UNIT_DATA.astralChronomancer.goldenStunDuration || 2) * 1000);
+      const isBoss = enemy.type !== 'normal';
+      const stunSeconds = isBoss
+        ? (UNIT_DATA.astralChronomancer.goldenBossStunDuration || 0.5)
+        : (UNIT_DATA.astralChronomancer.goldenStunDuration || 2);
+      enemy.timeStunDurationMs = stunSeconds * 1000;
+      enemy.timeStunUntil = Math.max(Number(enemy.timeStunUntil || 0), Date.now() + stunSeconds * 1000);
     }
     return true;
   }
@@ -13012,9 +13614,9 @@ function requestGachaDraw(count) {
     const data = UNIT_DATA.astralChronomancer;
 
     if (now < Number(unit.chronoFieldUntil || 0)) {
-      const range = data.timeFieldRange || 400;
+      const range = data.timeFieldRange || 300;
       for (const enemy of targetState.enemies) {
-        if (!enemy.dead && Math.hypot(enemy.x - unit.x, enemy.y - unit.y) <= range) {
+        if (!enemy.dead && enemy.type === 'normal' && Math.hypot(enemy.x - unit.x, enemy.y - unit.y) <= range) {
           enemy.timeFieldUntil = Math.max(Number(enemy.timeFieldUntil || 0), Number(unit.chronoFieldUntil || 0));
         }
       }
@@ -13068,7 +13670,7 @@ function requestGachaDraw(count) {
 
     if (unit.attackCount % (data.timeFieldEvery || 30) === 0) {
       unit.chronoFieldUntil = Date.now() + (data.timeFieldDuration || 5) * 1000;
-      mpState.announcement = '🌌 별빛 시간술사: 시간 영역 전개! 사거리 400 안의 적 이동이 5초간 정지합니다.';
+      mpState.announcement = '🌌 별빛 시간술사: 시간 영역 전개! 사거리 300 안의 일반 적 이동이 5초간 정지합니다. 보스는 면역입니다.';
       mpState.announcementUntil = Date.now() + 2800;
     }
   }
@@ -13098,7 +13700,7 @@ function requestGachaDraw(count) {
       });
       const endX = unit.x + Math.cos(angle) * unit.range;
       const endY = unit.y + Math.sin(angle) * unit.range;
-      mpPushFx(unit.x, unit.y, endX, endY, '#77f2ba', 10, sideKey);
+      mpPushFx(unit.x, unit.y, endX, endY, '#77f2ba', 10, sideKey, 'windPiercing');
       hits.forEach(enemy => mpApplyDamage(targetState, enemy, unit.damage, unit.ownerRole, sideKey));
       return;
     }
@@ -13114,12 +13716,12 @@ function requestGachaDraw(count) {
         if (d > (data.meleeRange || 120)) return false;
         return Math.abs(mpAngleDelta(Math.atan2(dy, dx), angle)) <= half;
       });
-      mpPushFx(unit.x, unit.y, target.x, target.y, '#ffd04a', 8, sideKey);
+      mpPushFx(unit.x, unit.y, target.x, target.y, '#ffd04a', 8, sideKey, 'royalCone', { angle, radius: data.meleeRange || 120, coneAngle: data.coneAngle || 120 });
       victims.forEach(enemy => mpApplyDamage(targetState, enemy, unit.damage, unit.ownerRole, sideKey));
       return;
     }
 
-    mpPushFx(unit.x, unit.y, target.x, target.y, data.color || '#fff', 3, sideKey);
+    mpPushFx(unit.x, unit.y, target.x, target.y, data.color || '#fff', 3, sideKey, mpAttackEffectKind(unit.unitId));
     mpApplyDamage(targetState, target, unit.damage, unit.ownerRole, sideKey);
 
     if (unit.unitId === 'flameWizard') {
@@ -13136,7 +13738,7 @@ function requestGachaDraw(count) {
         mpScheduleLightning(sideKey, target, unit.damage, unit.ownerRole);
       }
       if (unit.attackCount % (data.laneSweepEvery || 7) === 0) {
-        mpPushFx(0, MP_PATH_Y, MP_WIDTH, MP_PATH_Y, '#ffe072', 12, sideKey);
+        mpPushFx(0, MP_PATH_Y, MP_WIDTH, MP_PATH_Y, '#ffe072', 12, sideKey, 'dragonLane');
         [...targetState.enemies].forEach(enemy => {
           if (!enemy.dead && Math.abs(enemy.y - MP_PATH_Y) <= 45) {
             mpApplyDamage(targetState, enemy, unit.damage * (data.laneSweepMultiplier || 5), unit.ownerRole, sideKey);
@@ -13152,6 +13754,18 @@ function requestGachaDraw(count) {
       unit.attackAnimation = Math.max(0, Number(unit.attackAnimation || 0) - dt * 6.5);
       if (unit.unitId === 'astralChronomancer') mpUpdateChronoUnit(targetState, sideKey, unit);
       if (now < (unit.stunUntil || 0)) continue;
+      if (unit.unitId === 'moneyTree') {
+        unit.incomeAmount ||= UNIT_DATA.moneyTree.incomeAmount;
+        unit.incomeInterval ||= UNIT_DATA.moneyTree.incomeInterval;
+        unit.incomeCooldown = Number.isFinite(unit.incomeCooldown) ? unit.incomeCooldown - dt : unit.incomeInterval;
+        while (unit.incomeCooldown <= 0) {
+          if (mpState.mode === 'coop') mpState.shared.gold[unit.ownerRole] = Number(mpState.shared.gold[unit.ownerRole] || 0) + unit.incomeAmount;
+          else mpState.sides[unit.ownerRole].gold = Number(mpState.sides[unit.ownerRole].gold || 0) + unit.incomeAmount;
+          unit.incomeCooldown += unit.incomeInterval;
+          unit.moneyPulseUntil = Date.now() + 650;
+        }
+        continue;
+      }
       const speedFactor = now < (unit.slowUntil || 0) ? .5 : 1;
       unit.cooldown = Math.max(0, (unit.cooldown || 0) - dt * speedFactor);
       if (unit.cooldown > 0) continue;
@@ -13174,7 +13788,7 @@ function requestGachaDraw(count) {
         ? mpState.shared
         : mpState.sides[attack.sideKey];
       if (!targetState) continue;
-      mpPushFx(attack.x, attack.y - 95, attack.x, attack.y + 20, '#fff4a5', 7, attack.sideKey);
+      mpPushFx(attack.x, attack.y - 120, attack.x, attack.y + 20, '#fff4a5', 7, attack.sideKey, 'lightning', { radius: attack.radius });
       [...targetState.enemies].forEach(enemy => {
         if (!enemy.dead && Math.hypot(enemy.x - attack.x, enemy.y - attack.y) <= attack.radius + enemy.radius * .3) {
           mpApplyDamage(targetState, enemy, attack.damage, attack.ownerRole, attack.sideKey);
@@ -13979,6 +14593,17 @@ function requestGachaDraw(count) {
           mpCtx.fillStyle = '#4a1119'; mpCtx.fillRect(-10,-23,20,5);
           mpCtx.fillStyle = '#ff947c'; for (const side of [-1,1]) { mpCtx.beginPath(); mpCtx.moveTo(side*5,-32); mpCtx.lineTo(side*17,-42); mpCtx.lineTo(side*12,-25); mpCtx.closePath(); mpCtx.fill(); }
           mpCtx.fillStyle = '#f9d26b'; mpCtx.beginPath(); mpCtx.moveTo(0,-4); mpCtx.lineTo(6,5); mpCtx.lineTo(0,11); mpCtx.lineTo(-6,5); mpCtx.closePath(); mpCtx.fill();
+        } else if (id === 'moneyTree') {
+          const sway = Math.sin(time * .0026 + unit.animationOffset) * .045;
+          mpCtx.save(); mpCtx.rotate(sway);
+          const trunk = mpCtx.createLinearGradient(-8,0,9,24); trunk.addColorStop(0,'#7a451d'); trunk.addColorStop(.5,'#b8752c'); trunk.addColorStop(1,'#4d2a13');
+          mpCtx.fillStyle=trunk; mpCtx.beginPath(); mpCtx.roundRect(-7,-1,14,25,5); mpCtx.fill();
+          mpCtx.strokeStyle='#5b3518'; mpCtx.lineWidth=4; mpCtx.beginPath(); mpCtx.moveTo(-2,4); mpCtx.lineTo(-15,-8); mpCtx.moveTo(3,2); mpCtx.lineTo(17,-10); mpCtx.stroke();
+          const crown=mpCtx.createRadialGradient(-5,-20,3,0,-14,30); crown.addColorStop(0,'#b9ff8a'); crown.addColorStop(.45,'#4fca63'); crown.addColorStop(1,'#12663b'); mpCtx.fillStyle=crown;
+          for(const [x,y,r] of [[-15,-16,15],[0,-25,18],[16,-15,15],[-3,-8,18]]){mpCtx.beginPath();mpCtx.arc(x,y,r,0,Math.PI*2);mpCtx.fill();}
+          mpCtx.shadowBlur=12;mpCtx.shadowColor='#ffd84f';mpCtx.fillStyle='#ffd84f';mpCtx.strokeStyle='#8f6100';mpCtx.lineWidth=1.2;
+          for(const [x,y] of [[-14,-20],[7,-30],[17,-10],[-3,-7],[3,-17]]){mpCtx.beginPath();mpCtx.arc(x,y,4.2,0,Math.PI*2);mpCtx.fill();mpCtx.stroke();}
+          mpCtx.restore();
         } else if (id === 'astralChronomancer') {
           const hover = Math.sin(time*.004 + unit.animationOffset)*2;
           mpCtx.save(); mpCtx.translate(0,hover);
@@ -14064,7 +14689,7 @@ function requestGachaDraw(count) {
     mpCtx.translate(unit.x, y);
 
     if (unit.unitId === 'astralChronomancer' && Date.now() < Number(unit.chronoFieldUntil || 0)) {
-      const fieldRange = UNIT_DATA.astralChronomancer.timeFieldRange || 400;
+      const fieldRange = UNIT_DATA.astralChronomancer.timeFieldRange || 300;
       const pulse = .78 + Math.sin(time * .006) * .10;
       const gradient = mpCtx.createRadialGradient(0, 0, 35, 0, 0, fieldRange);
       gradient.addColorStop(0, 'rgba(216,180,254,.13)');
@@ -14123,6 +14748,12 @@ function requestGachaDraw(count) {
       });
     }
 
+    if (unit.unitId === 'moneyTree' && Date.now() < Number(unit.moneyPulseUntil || 0)) {
+      const remain = Math.max(0, Number(unit.moneyPulseUntil || 0) - Date.now()) / 650;
+      mpCtx.save(); mpCtx.globalAlpha = Math.min(1, remain); mpCtx.fillStyle = '#ffe36e'; mpCtx.font = 'bold 16px Arial, sans-serif'; mpCtx.textAlign = 'center';
+      mpCtx.fillText(`+${unit.incomeAmount || UNIT_DATA.moneyTree.incomeAmount}`, 0, -48 - (1-remain)*16); mpCtx.restore();
+    }
+
     if (stunned || slowed) {
       mpCtx.font = '18px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
       mpCtx.textAlign = 'center';
@@ -14163,8 +14794,9 @@ function requestGachaDraw(count) {
 
     if (now < Number(enemy.timeStunUntil || 0)) {
       const remaining = Math.max(0, Number(enemy.timeStunUntil || 0) - now);
-      const elapsed = Math.max(0, 2000 - remaining);
-      const handAngle = -Math.PI / 2 + (elapsed / 2000) * Math.PI * 2;
+      const durationMs = Number(enemy.timeStunDurationMs || (isBoss ? 500 : 2000));
+      const elapsed = Math.max(0, durationMs - remaining);
+      const handAngle = -Math.PI / 2 + (elapsed / durationMs) * Math.PI * 2;
       const clockX = x;
       const clockY = y - r - (isBoss ? 65 : 48);
       const clockR = isBoss ? 15 : 12;
@@ -14231,45 +14863,90 @@ function requestGachaDraw(count) {
 
   function mpDrawFx() {
     const viewedRole = mpState.mode === 'pvp' ? mpGetViewedSideRole() : null;
+    const clamp01 = value => Math.max(0, Math.min(1, value));
+    const lerp = (a, b, t) => a + (b - a) * t;
+
     for (const fx of mpState.fx || []) {
       if (mpState.mode === 'pvp' && fx.sideKey !== viewedRole) continue;
       const y1 = mpState.mode === 'coop' ? mpDisplayY(fx.y1) : fx.y1;
       const y2 = mpState.mode === 'coop' ? mpDisplayY(fx.y2) : fx.y2;
+      const maxTtl = Number(fx.maxTtl || mpFxDuration(fx.kind));
+      const progress = clamp01(1 - Number(fx.ttl || 0) / maxTtl);
+      const travel = 1 - Math.pow(1 - progress, 3);
+      const fade = clamp01(1 - progress);
+      const dx = fx.x2 - fx.x1;
+      const dy = y2 - y1;
+      const len = Math.max(1, Math.hypot(dx, dy));
+      const ux = dx / len;
+      const uy = dy / len;
+      const nx = -uy;
+      const ny = ux;
+      const x = lerp(fx.x1, fx.x2, travel);
+      const y = lerp(y1, y2, travel);
+      const angle = Math.atan2(dy, dx);
+
       mpCtx.save();
-      const maxTtl = fx.kind === 'chronoGolden' ? .42 : fx.kind === 'chrono' ? .36 : .22;
-      const alpha = mpClamp(fx.ttl / maxTtl, 0, 1);
-      mpCtx.globalAlpha = alpha;
-      mpCtx.strokeStyle = fx.color || '#fff';
-      mpCtx.lineWidth = fx.size || 3;
       mpCtx.lineCap = 'round';
-      if (fx.kind === 'chrono' || fx.kind === 'chronoGolden') {
-        const golden = fx.kind === 'chronoGolden';
-        const dx = fx.x2 - fx.x1;
-        const dy = y2 - y1;
-        const len = Math.max(1, Math.hypot(dx, dy));
-        const nx = -dy / len;
-        const ny = dx / len;
-        mpCtx.shadowBlur = golden ? 20 : 11;
-        mpCtx.shadowColor = golden ? '#ffd84f' : '#d8b4fe';
-        mpCtx.beginPath();
-        mpCtx.moveTo(fx.x1, y1);
-        mpCtx.bezierCurveTo(fx.x1 + dx * .28 + nx * 20, y1 + dy * .28 + ny * 20, fx.x1 + dx * .72 - nx * 20, y1 + dy * .72 - ny * 20, fx.x2, y2);
-        mpCtx.stroke();
-        mpCtx.translate(fx.x2, y2);
-        mpCtx.strokeStyle = golden ? '#fff3a3' : '#f7edff';
-        mpCtx.lineWidth = 2;
-        mpCtx.beginPath();
-        mpCtx.arc(0, 0, golden ? 13 : 11, 0, Math.PI * 2);
-        mpCtx.stroke();
-        mpCtx.beginPath();
-        mpCtx.moveTo(0, 0);
-        mpCtx.lineTo(0, -7);
-        mpCtx.stroke();
+      mpCtx.lineJoin = 'round';
+
+      if (fx.kind === 'arrow') {
+        const tailX = x - ux * 27, tailY = y - uy * 27;
+        const g = mpCtx.createLinearGradient(tailX - ux*18, tailY - uy*18, x, y);
+        g.addColorStop(0,'rgba(160,205,255,0)'); g.addColorStop(1,`rgba(235,247,255,${.9*fade})`);
+        mpCtx.strokeStyle=g; mpCtx.lineWidth=7; mpCtx.beginPath(); mpCtx.moveTo(tailX-ux*18,tailY-uy*18); mpCtx.lineTo(x,y); mpCtx.stroke();
+        mpCtx.strokeStyle='#eef7ff'; mpCtx.lineWidth=2; mpCtx.beginPath(); mpCtx.moveTo(tailX,tailY); mpCtx.lineTo(x,y); mpCtx.stroke();
+        mpCtx.translate(x,y); mpCtx.rotate(angle); mpCtx.fillStyle='#fff'; mpCtx.beginPath(); mpCtx.moveTo(11,0); mpCtx.lineTo(-3,-5); mpCtx.lineTo(1,0); mpCtx.lineTo(-3,5); mpCtx.closePath(); mpCtx.fill();
+      } else if (fx.kind === 'windArrow' || fx.kind === 'windPiercing') {
+        const big = fx.kind === 'windPiercing';
+        const layers = big ? 5 : 4;
+        const mult = big ? 1.8 : 1;
+        for(let layer=0;layer<layers;layer+=1){
+          const amp=(7+layer*4)*mult; const wave=Math.sin(progress*Math.PI*9+fx.seed+layer*1.7)*amp;
+          mpCtx.strokeStyle=layer===0?`rgba(225,255,238,${.92*fade})`:`rgba(54,222,143,${(.58-layer*.07)*fade})`;
+          mpCtx.lineWidth=(big?7:4)-layer*.55; mpCtx.beginPath(); mpCtx.moveTo(fx.x1,y1);
+          mpCtx.bezierCurveTo(fx.x1+dx*.28+nx*wave,y1+dy*.28+ny*wave,fx.x1+dx*.68-nx*wave,y1+dy*.68-ny*wave,x,y); mpCtx.stroke();
+        }
+        mpCtx.save(); mpCtx.translate(x,y); mpCtx.rotate(angle); mpCtx.scale(big?2.5:1, big?2.5:1); mpCtx.fillStyle='#dcffea'; mpCtx.strokeStyle='#55e69c'; mpCtx.lineWidth=1.2;
+        mpCtx.beginPath(); mpCtx.moveTo(13,0); mpCtx.lineTo(-6,-7); mpCtx.lineTo(-2,0); mpCtx.lineTo(-6,7); mpCtx.closePath(); mpCtx.fill(); mpCtx.stroke(); mpCtx.restore();
+      } else if (fx.kind === 'steelSlash' || fx.kind === 'royalWave') {
+        const royal = fx.kind === 'royalWave';
+        const pulse=Math.sin(progress*Math.PI);
+        mpCtx.translate(fx.x2,y2); mpCtx.rotate(angle);
+        for(let i=0;i<4;i+=1){mpCtx.strokeStyle=royal?`rgba(255,${232-i*12},${115-i*12},${pulse*(.95-i*.15)})`:`rgba(${210+i*12},${230+i*8},255,${pulse*(.9-i*.18)})`;mpCtx.lineWidth=8-i*1.6;mpCtx.beginPath();mpCtx.arc(-i*3,0,24+i*8,-1.05,1.05);mpCtx.stroke();}
+      } else if (fx.kind === 'royalCone') {
+        const pulse=Math.sin(progress*Math.PI); const radius=fx.radius||120; const half=((fx.coneAngle||120)*Math.PI/180)/2;
+        mpCtx.translate(fx.x1,y1); mpCtx.rotate(fx.angle||angle);
+        const g=mpCtx.createRadialGradient(0,0,18,0,0,radius); g.addColorStop(0,`rgba(255,255,220,${.62*pulse})`);g.addColorStop(.55,`rgba(255,214,60,${.34*pulse})`);g.addColorStop(1,'rgba(255,170,0,0)');
+        mpCtx.fillStyle=g;mpCtx.beginPath();mpCtx.moveTo(0,0);mpCtx.arc(0,0,radius,-half,half);mpCtx.closePath();mpCtx.fill();
+        for(let i=0;i<3;i+=1){mpCtx.strokeStyle=`rgba(255,239,130,${pulse*(.9-i*.2)})`;mpCtx.lineWidth=7-i*1.7;mpCtx.beginPath();mpCtx.arc(0,0,radius*(.62+i*.15),-half,half);mpCtx.stroke();}
+      } else if (fx.kind === 'arcane') {
+        const wave=Math.sin(progress*Math.PI*7+fx.seed)*18;
+        mpCtx.shadowBlur=14;mpCtx.shadowColor='#9b64ff';
+        for(let i=0;i<3;i+=1){mpCtx.strokeStyle=`rgba(${190+i*18},${135+i*22},255,${(.78-i*.16)*fade})`;mpCtx.lineWidth=5-i*1.2;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.bezierCurveTo(fx.x1+dx*.3+nx*(wave+i*6),y1+dy*.3+ny*(wave+i*6),fx.x1+dx*.7-nx*(wave+i*6),y1+dy*.7-ny*(wave+i*6),x,y);mpCtx.stroke();}
+        mpCtx.fillStyle='#f4eaff';mpCtx.beginPath();mpCtx.arc(x,y,6,0,Math.PI*2);mpCtx.fill();
+      } else if (fx.kind === 'fireball') {
+        const tailX=x-ux*35,tailY=y-uy*35;
+        const g=mpCtx.createLinearGradient(tailX,tailY,x,y);g.addColorStop(0,'rgba(255,65,20,0)');g.addColorStop(.45,`rgba(255,96,28,${.55*fade})`);g.addColorStop(1,`rgba(255,230,120,${.9*fade})`);
+        mpCtx.strokeStyle=g;mpCtx.lineWidth=12;mpCtx.beginPath();mpCtx.moveTo(tailX,tailY);mpCtx.lineTo(x,y);mpCtx.stroke();
+        const orb=mpCtx.createRadialGradient(x-3,y-3,1,x,y,14);orb.addColorStop(0,'#fff7c2');orb.addColorStop(.3,'#ffcc4a');orb.addColorStop(.7,'#ff5a1f');orb.addColorStop(1,'rgba(180,25,5,0)');mpCtx.fillStyle=orb;mpCtx.beginPath();mpCtx.arc(x,y,14,0,Math.PI*2);mpCtx.fill();
+        if(progress>.66){const p=(progress-.66)/.34;mpCtx.strokeStyle=`rgba(255,137,48,${1-p})`;mpCtx.lineWidth=5;mpCtx.beginPath();mpCtx.arc(fx.x2,y2,12+p*34,0,Math.PI*2);mpCtx.stroke();}
+      } else if (fx.kind === 'dragonLance') {
+        const tailX=x-ux*42,tailY=y-uy*42;mpCtx.shadowBlur=16;mpCtx.shadowColor='#ffe36e';mpCtx.strokeStyle=`rgba(255,223,91,${.8*fade})`;mpCtx.lineWidth=9;mpCtx.beginPath();mpCtx.moveTo(tailX,tailY);mpCtx.lineTo(x,y);mpCtx.stroke();
+        mpCtx.save();mpCtx.translate(x,y);mpCtx.rotate(angle);const spear=mpCtx.createLinearGradient(-28,0,18,0);spear.addColorStop(0,'#8a4a00');spear.addColorStop(.55,'#ffd84f');spear.addColorStop(1,'#fff7bf');mpCtx.strokeStyle=spear;mpCtx.lineWidth=4;mpCtx.beginPath();mpCtx.moveTo(-28,0);mpCtx.lineTo(16,0);mpCtx.stroke();mpCtx.fillStyle='#fff1a1';mpCtx.beginPath();mpCtx.moveTo(24,0);mpCtx.lineTo(11,-7);mpCtx.lineTo(11,7);mpCtx.closePath();mpCtx.fill();mpCtx.restore();
+      } else if (fx.kind === 'dragonLane') {
+        const pulse=Math.sin(progress*Math.PI);mpCtx.shadowBlur=28;mpCtx.shadowColor='#ffe36e';
+        for(let i=0;i<5;i+=1){mpCtx.strokeStyle=`rgba(255,${225-i*10},${90-i*10},${pulse*(.82-i*.11)})`;mpCtx.lineWidth=18-i*3;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.lineTo(fx.x2,y2);mpCtx.stroke();}
+        const sweepX=lerp(fx.x1,fx.x2,progress);mpCtx.fillStyle=`rgba(255,250,200,${pulse})`;mpCtx.beginPath();mpCtx.ellipse(sweepX,y1,34,13,0,0,Math.PI*2);mpCtx.fill();
+      } else if (fx.kind === 'lightning') {
+        const flash=Math.sin(progress*Math.PI);mpCtx.shadowBlur=24;mpCtx.shadowColor='#fff3a3';
+        for(let layer=0;layer<3;layer+=1){mpCtx.strokeStyle=layer===0?`rgba(255,255,240,${flash})`:`rgba(255,215,50,${flash*(.7-layer*.18)})`;mpCtx.lineWidth=7-layer*2;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);for(let i=1;i<=7;i+=1){const t=i/7;mpCtx.lineTo(lerp(fx.x1,fx.x2,t)+(Math.random()-.5)*16,lerp(y1,y2,t));}mpCtx.stroke();}
+        const radius=fx.radius||20;const g=mpCtx.createRadialGradient(fx.x2,y2,0,fx.x2,y2,radius*1.7);g.addColorStop(0,`rgba(255,255,235,${flash})`);g.addColorStop(.45,`rgba(255,224,70,${flash*.65})`);g.addColorStop(1,'rgba(255,190,0,0)');mpCtx.fillStyle=g;mpCtx.beginPath();mpCtx.arc(fx.x2,y2,radius*1.7,0,Math.PI*2);mpCtx.fill();
+      } else if (fx.kind === 'chrono' || fx.kind === 'chronoGolden') {
+        const golden=fx.kind==='chronoGolden';const primary=golden?'255,216,79':'216,180,254';const wave=Math.sin(progress*Math.PI*8+fx.seed)*22;
+        mpCtx.shadowBlur=golden?22:13;mpCtx.shadowColor=golden?'#ffd84f':'#d8b4fe';mpCtx.strokeStyle=`rgba(${primary},${.82*fade})`;mpCtx.lineWidth=golden?5:4;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.bezierCurveTo(fx.x1+dx*.28+nx*wave,y1+dy*.28+ny*wave,fx.x1+dx*.72-nx*wave,y1+dy*.72-ny*wave,x,y);mpCtx.stroke();
+        mpCtx.save();mpCtx.translate(x,y);mpCtx.rotate(progress*Math.PI*5);mpCtx.strokeStyle=golden?'#fff3a3':'#f7edff';mpCtx.lineWidth=2;mpCtx.beginPath();mpCtx.arc(0,0,golden?15:13,0,Math.PI*2);mpCtx.stroke();for(let i=0;i<8;i+=1){const a=i*Math.PI/4;mpCtx.beginPath();mpCtx.moveTo(Math.cos(a)*8,Math.sin(a)*8);mpCtx.lineTo(Math.cos(a)*14,Math.sin(a)*14);mpCtx.stroke();}mpCtx.beginPath();mpCtx.moveTo(0,0);mpCtx.lineTo(0,-7);mpCtx.stroke();mpCtx.restore();
       } else {
-        mpCtx.beginPath();
-        mpCtx.moveTo(fx.x1, y1);
-        mpCtx.lineTo(fx.x2, y2);
-        mpCtx.stroke();
+        mpCtx.globalAlpha=fade;mpCtx.strokeStyle=fx.color||'#fff';mpCtx.lineWidth=fx.size||3;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.lineTo(fx.x2,y2);mpCtx.stroke();
       }
       mpCtx.restore();
     }
@@ -14308,10 +14985,11 @@ function requestGachaDraw(count) {
     mpCtx.fillText('10웨이브마다 HP ×1.1', MP_WIDTH - 232, 54);
   }
 
-  mpCanvas.addEventListener('pointerup', event => {
+  mpCanvas.addEventListener('pointerup', async event => {
     if (!mpBattleEntered || !mpState || mpState.matchFinished) return;
     event.preventDefault();
     const point = mpCanvasPoint(event);
+    if (await mpTryUpgradeMoneyTreeAt(point)) return;
     void mpSendPlace(point);
   });
 

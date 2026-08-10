@@ -6244,7 +6244,7 @@ function applyStagePreview(stageId = selectedStage) {
         rarityKey: 'legendary',
         rarityClass: 'rarity-legend',
         cost: 300,
-        damage: 145,
+        damage: 150,
         range: 250,
         meleeRange: 120,
         coneAngle: 120,
@@ -6308,12 +6308,14 @@ function applyStagePreview(stageId = selectedStage) {
         spinSlashEvery: 4,
         spinSlashMultiplier: 3,
         spinSlashStunDuration: 1,
+        spinSlashRadius: 90,
+        spinSlashRadiusGrowth: 0.05,
         stunImmune: true,
         footprintRadius: 116,
         multiplayerFootprintRadius: 96,
         maxPlaced: 1,
         color: '#ff355d',
-        skillText: '양손에 붉은 빛이 흐르는 장검을 듭니다. 적을 처치할 때마다 5% 확률로 일식이 떠오르며 그 순간의 공격력과 공격속도가 각각 2% 영구 증가합니다. 평타가 적중할 때마다 5% 확률로 3초 동안 블랙홀을 생성해 반경 150 안의 적을 끌어당긴 뒤 폭발하며 생성 당시 평타와 같은 피해를 줍니다. 4번 벨 때마다 사거리 안의 가장 가까운 적 위에 장검이 검끝을 위로 향한 채 나타나 반시계방향으로 아주 빠르게 한 바퀴 회전하며 베고 현재 평타의 3배 피해를 준 뒤 1초간 기절시킵니다. 이클립스는 모든 기절 효과에 면역입니다. 유닛 크기는 같지만 주변을 도는 일식 구체 때문에 일반 유닛의 2배 가로·세로 공간을 차지하며 전장에는 한 번에 1명만 배치할 수 있습니다.'
+        skillText: '양손에 붉은 빛이 흐르는 장검을 듭니다. 적을 처치할 때마다 5% 확률로 일식이 떠오르며 그 순간의 공격력과 공격속도가 각각 2% 영구 증가하고 월식 회전참의 범위도 5% 영구 증가합니다. 평타가 적중할 때마다 5% 확률로 3초 동안 블랙홀을 생성해 반경 150 안의 적을 끌어당긴 뒤 폭발하며 생성 당시 평타와 같은 피해를 줍니다. 4번 벨 때마다 사거리 안의 가장 가까운 적 위에 장검이 검끝을 위로 향한 채 나타나 반시계방향으로 아주 빠르게 한 바퀴 회전합니다. 회전참은 기본 반경 90의 범위 공격이며 범위 안 모든 적에게 현재 평타의 3배 피해를 주고 1초간 기절시킵니다. 이클립스는 모든 기절 효과에 면역입니다. 유닛 크기는 같지만 주변을 도는 일식 구체 때문에 일반 유닛의 2배 가로·세로 공간을 차지하며 전장에는 한 번에 1명만 배치할 수 있습니다.'
       },
       astralChronomancer: {
         id: 'astralChronomancer',
@@ -10328,7 +10330,8 @@ function requestGachaDraw(count) {
         maxLife: 1.35,
         stack: placed.eclipseGrowthStacks
       });
-      setBattleMessage(`🌑 일식 각성! 이클립스 공격력·공격속도 +2% · 누적 ${placed.eclipseGrowthStacks}회`);
+      const spinRadius = (data.spinSlashRadius || 90) * Math.pow(1 + (data.spinSlashRadiusGrowth || .05), placed.eclipseGrowthStacks);
+      setBattleMessage(`🌑 일식 각성! 공격력·공격속도 +2% · 회전참 범위 +5% · 누적 ${placed.eclipseGrowthStacks}회 · 반경 ${Math.round(spinRadius)}`);
       return true;
     }
 
@@ -10467,6 +10470,10 @@ function requestGachaDraw(count) {
           placed.attackMode = 'eclipseSpin';
           placed.attackAnimation = 1;
           const duration = .42;
+          const spinRadius = (eclipseData.spinSlashRadius || 90) * Math.pow(
+            1 + (eclipseData.spinSlashRadiusGrowth || .05),
+            Number(placed.eclipseGrowthStacks || 0)
+          );
           battle.shots.push({
             x1: placed.x,
             y1: placed.y,
@@ -10477,19 +10484,28 @@ function requestGachaDraw(count) {
             color: eclipseData.color,
             effect: 'eclipseSpin',
             angle: spinAngle,
+            radius: spinRadius,
             seed: Math.random() * 1000
           });
-          const killed = applyDamageToEnemy(
-            spinTarget,
-            Number(placed.damage || eclipseData.damage) * (eclipseData.spinSlashMultiplier || 3)
+
+          // 회전참은 발동 순간 계산된 범위 안의 모든 적을 동시에 베며,
+          // 공격 중 일식 성장이 발동해도 이번 타격의 범위는 변하지 않습니다.
+          const spinVictims = battle.enemies.filter(enemy =>
+            !enemy.dead && Math.hypot(enemy.x - spinTarget.x, enemy.y - spinTarget.y) <= spinRadius
           );
-          if (!spinTarget.dead) {
-            const stunSeconds = eclipseData.spinSlashStunDuration || 1;
-            spinTarget.timeStunDuration = stunSeconds;
-            spinTarget.timeStunRemaining = Math.max(spinTarget.timeStunRemaining || 0, stunSeconds);
-          }
-          if (killed) triggerEclipseGrowth(placed, spinTarget);
-          setBattleMessage('🌑 이클립스 · 월식 회전참! 평타의 3배 피해 + 1초 기절');
+          const spinDamage = Number(placed.damage || eclipseData.damage) * (eclipseData.spinSlashMultiplier || 3);
+          const stunSeconds = eclipseData.spinSlashStunDuration || 1;
+          let spinHits = 0;
+          spinVictims.forEach(enemy => {
+            const killed = applyDamageToEnemy(enemy, spinDamage);
+            spinHits += 1;
+            if (!enemy.dead) {
+              enemy.timeStunDuration = stunSeconds;
+              enemy.timeStunRemaining = Math.max(enemy.timeStunRemaining || 0, stunSeconds);
+            }
+            if (killed) triggerEclipseGrowth(placed, enemy);
+          });
+          setBattleMessage(`🌑 이클립스 · 월식 회전참! 반경 ${Math.round(spinRadius)} 범위 ${spinHits}명 · 평타 3배 피해 + 1초 기절`);
           return;
         }
 
@@ -12789,18 +12805,29 @@ function requestGachaDraw(count) {
         } else if (shot.effect === 'eclipseSpin') {
           const pulse = Math.sin(progress * Math.PI);
           const spin = -progress * Math.PI * 2; // 캔버스 좌표계에서 음수 회전 = 반시계방향
+          const spinRadius = Math.max(62, Number(shot.radius || 90));
           ctx.save();
           ctx.translate(shot.x2, shot.y2);
           ctx.globalCompositeOperation = 'lighter';
+
+          // 실제 범위와 동일한 월식 경계. 일식 성장 횟수에 따라 함께 커집니다.
+          ctx.setLineDash([9, 7]);
+          ctx.strokeStyle = `rgba(255,78,108,${.52 * pulse})`;
+          ctx.lineWidth = 2.4;
+          ctx.beginPath();
+          ctx.arc(0, 0, spinRadius, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
 
           // 빠르게 한 바퀴 도는 붉은 월식 궤적
           ctx.shadowBlur = 34;
           ctx.shadowColor = '#ff234f';
           for (let ring = 0; ring < 4; ring += 1) {
+            const ringRadius = spinRadius * (.55 + ring * .10);
             ctx.strokeStyle = `rgba(255,${54 + ring * 22},${86 + ring * 16},${(.78 - ring * .12) * pulse})`;
             ctx.lineWidth = 10 - ring * 1.7;
             ctx.beginPath();
-            ctx.arc(0, 0, 42 + ring * 7, spin - Math.PI * 1.55, spin + .28);
+            ctx.arc(0, 0, ringRadius, spin - Math.PI * 1.55, spin + .28);
             ctx.stroke();
           }
 
@@ -12834,13 +12861,13 @@ function requestGachaDraw(count) {
           ctx.fill();
 
           ctx.rotate(-spin);
-          const impact = ctx.createRadialGradient(0, 0, 1, 0, 0, 62);
+          const impact = ctx.createRadialGradient(0, 0, 1, 0, 0, spinRadius);
           impact.addColorStop(0, `rgba(255,248,250,${.62 * pulse})`);
           impact.addColorStop(.25, `rgba(255,45,78,${.38 * pulse})`);
           impact.addColorStop(1, 'rgba(255,0,40,0)');
           ctx.fillStyle = impact;
           ctx.beginPath();
-          ctx.arc(0, 0, 62, 0, Math.PI * 2);
+          ctx.arc(0, 0, spinRadius, 0, Math.PI * 2);
           ctx.fill();
           ctx.restore();
         } else if (shot.effect === 'eclipseSlash') {
@@ -14861,7 +14888,7 @@ function requestGachaDraw(count) {
     }
   }
 
-  function mpTriggerEclipseGrowth(unit, enemy) {
+  function mpTriggerEclipseGrowth(unit, enemy, sideKey = null) {
     const data = UNIT_DATA.eclipse;
     if (!unit || unit.unitId !== 'eclipse' || Math.random() >= (data.killGrowthChance || .05)) return false;
     unit.damage = Number(unit.damage || data.damage) * 1.02;
@@ -14869,7 +14896,8 @@ function requestGachaDraw(count) {
     unit.eclipseGrowthStacks = Number(unit.eclipseGrowthStacks || 0) + 1;
     mpState.eclipseBursts ||= [];
     mpState.eclipseBursts.push({ id: mpMakeId('eclipse'), x: enemy.x, y: enemy.y - 42, ttl: 1.35, maxTtl: 1.35, sideKey, stack: unit.eclipseGrowthStacks });
-    mpState.announcement = `🌑 ${mpNameForRole(unit.ownerRole)}의 이클립스 각성 · 공격력·공격속도 +2% · 누적 ${unit.eclipseGrowthStacks}회`;
+    const spinRadius = (data.spinSlashRadius || 90) * Math.pow(1 + (data.spinSlashRadiusGrowth || .05), unit.eclipseGrowthStacks);
+    mpState.announcement = `🌑 ${mpNameForRole(unit.ownerRole)}의 이클립스 각성 · 공격력·공격속도 +2% · 회전참 범위 +5% · 누적 ${unit.eclipseGrowthStacks}회 · 반경 ${Math.round(spinRadius)}`;
     mpState.announcementUntil = Date.now() + 1900;
     return true;
   }
@@ -14904,7 +14932,7 @@ function requestGachaDraw(count) {
       for (const enemy of targetState.enemies || []) {
         if (enemy.dead || Math.hypot(enemy.x-hole.x,enemy.y-hole.y)>hole.radius) continue;
         const killed=mpApplyDamage(targetState, enemy, hole.damage, hole.ownerRole, hole.sideKey);
-        if (killed && owner) mpTriggerEclipseGrowth(owner, enemy);
+        if (killed && owner) mpTriggerEclipseGrowth(owner, enemy, hole.sideKey);
       }
       mpState.eclipseBursts.push({id:mpMakeId('bhboom'),x:hole.x,y:hole.y,ttl:.72,maxTtl:.72,sideKey:hole.sideKey,explosion:true});
     }
@@ -14934,28 +14962,35 @@ function requestGachaDraw(count) {
           .sort((a, b) => Math.hypot(a.x - unit.x, a.y - unit.y) - Math.hypot(b.x - unit.x, b.y - unit.y))[0] || target;
         unit.angle = Math.atan2(nearest.y - unit.y, nearest.x - unit.x);
         unit.attackMode = 'eclipseSpin';
-        mpPushFx(unit.x, unit.y, nearest.x, nearest.y, '#ff355d', 10, sideKey, 'eclipseSpin');
-        const killed = mpApplyDamage(
-          targetState,
-          nearest,
-          Number(unit.damage || eclipseData.damage) * (eclipseData.spinSlashMultiplier || 3),
-          unit.ownerRole,
-          sideKey
+        const spinRadius = (eclipseData.spinSlashRadius || 90) * Math.pow(
+          1 + (eclipseData.spinSlashRadiusGrowth || .05),
+          Number(unit.eclipseGrowthStacks || 0)
         );
-        if (!nearest.dead) {
-          const stunMs = (eclipseData.spinSlashStunDuration || 1) * 1000;
-          nearest.timeStunDurationMs = stunMs;
-          nearest.timeStunUntil = Math.max(Number(nearest.timeStunUntil || 0), Date.now() + stunMs);
-        }
-        if (killed) mpTriggerEclipseGrowth(unit, nearest);
-        mpState.announcement = `🌑 ${mpNameForRole(unit.ownerRole)}의 이클립스 · 월식 회전참! 평타 3배 피해 + 1초 기절`;
-        mpState.announcementUntil = Date.now() + 1700;
+        mpPushFx(unit.x, unit.y, nearest.x, nearest.y, '#ff355d', 10, sideKey, 'eclipseSpin', { radius: spinRadius });
+        const spinVictims = [...targetState.enemies].filter(enemy =>
+          !enemy.dead && Math.hypot(enemy.x - nearest.x, enemy.y - nearest.y) <= spinRadius
+        );
+        const spinDamage = Number(unit.damage || eclipseData.damage) * (eclipseData.spinSlashMultiplier || 3);
+        const stunMs = (eclipseData.spinSlashStunDuration || 1) * 1000;
+        const stunUntil = Date.now() + stunMs;
+        let spinHits = 0;
+        spinVictims.forEach(enemy => {
+          const killed = mpApplyDamage(targetState, enemy, spinDamage, unit.ownerRole, sideKey);
+          spinHits += 1;
+          if (!enemy.dead) {
+            enemy.timeStunDurationMs = stunMs;
+            enemy.timeStunUntil = Math.max(Number(enemy.timeStunUntil || 0), stunUntil);
+          }
+          if (killed) mpTriggerEclipseGrowth(unit, enemy, sideKey);
+        });
+        mpState.announcement = `🌑 ${mpNameForRole(unit.ownerRole)}의 이클립스 · 월식 회전참! 반경 ${Math.round(spinRadius)} 범위 ${spinHits}명 · 평타 3배 + 1초 기절`;
+        mpState.announcementUntil = Date.now() + 1900;
         return;
       }
 
       mpPushFx(unit.x, unit.y, target.x, target.y, '#ff355d', 7, sideKey, 'eclipseSlash');
       const killed = mpApplyDamage(targetState, target, unit.damage, unit.ownerRole, sideKey);
-      if (killed) mpTriggerEclipseGrowth(unit, target);
+      if (killed) mpTriggerEclipseGrowth(unit, target, sideKey);
       if (Math.random() < (eclipseData.hitBlackHoleChance || .05)) mpCreateEclipseBlackHole(targetState, sideKey, unit, target);
       return;
     }
@@ -16425,15 +16460,17 @@ function requestGachaDraw(count) {
       } else if (fx.kind === 'eclipseSpin') {
         const pulse=Math.sin(progress*Math.PI);
         const spin=-progress*Math.PI*2;
+        const spinRadius=Math.max(62,Number(fx.radius||90));
         mpCtx.save();mpCtx.translate(fx.x2,y2);mpCtx.globalCompositeOperation='lighter';
+        mpCtx.setLineDash([9,7]);mpCtx.strokeStyle=`rgba(255,78,108,${.52*pulse})`;mpCtx.lineWidth=2.4;mpCtx.beginPath();mpCtx.arc(0,0,spinRadius,0,Math.PI*2);mpCtx.stroke();mpCtx.setLineDash([]);
         mpCtx.shadowBlur=mpHighLoadFrame?24:34;mpCtx.shadowColor='#ff234f';
         const ringCount=mpHighLoadFrame?3:4;
-        for(let ring=0;ring<ringCount;ring+=1){mpCtx.strokeStyle=`rgba(255,${54+ring*22},${86+ring*16},${(.78-ring*.12)*pulse})`;mpCtx.lineWidth=10-ring*1.7;mpCtx.beginPath();mpCtx.arc(0,0,42+ring*7,spin-Math.PI*1.55,spin+.28);mpCtx.stroke();}
+        for(let ring=0;ring<ringCount;ring+=1){const rr=spinRadius*(.55+ring*.10);mpCtx.strokeStyle=`rgba(255,${54+ring*22},${86+ring*16},${(.78-ring*.12)*pulse})`;mpCtx.lineWidth=10-ring*1.7;mpCtx.beginPath();mpCtx.arc(0,0,rr,spin-Math.PI*1.55,spin+.28);mpCtx.stroke();}
         mpCtx.rotate(spin);
         const blade=mpCtx.createLinearGradient(0,34,0,-55);blade.addColorStop(0,'#4b0712');blade.addColorStop(.35,'#b20d2d');blade.addColorStop(.72,'#ff4568');blade.addColorStop(1,'#fff0f4');
         mpCtx.shadowBlur=mpHighLoadFrame?18:26;mpCtx.shadowColor='#ff183f';mpCtx.strokeStyle='#ff3a5e';mpCtx.lineWidth=3.2;mpCtx.fillStyle=blade;mpCtx.beginPath();mpCtx.moveTo(0,-58);mpCtx.lineTo(8,-39);mpCtx.lineTo(5,23);mpCtx.lineTo(-5,23);mpCtx.lineTo(-8,-39);mpCtx.closePath();mpCtx.fill();mpCtx.stroke();
         mpCtx.fillStyle='#160208';mpCtx.fillRect(-16,23,32,6);mpCtx.fillStyle='#8c1028';mpCtx.fillRect(-4,29,8,20);mpCtx.beginPath();mpCtx.arc(0,52,6,0,Math.PI*2);mpCtx.fill();
-        mpCtx.rotate(-spin);const impact=mpCtx.createRadialGradient(0,0,1,0,0,62);impact.addColorStop(0,`rgba(255,248,250,${.62*pulse})`);impact.addColorStop(.25,`rgba(255,45,78,${.38*pulse})`);impact.addColorStop(1,'rgba(255,0,40,0)');mpCtx.fillStyle=impact;mpCtx.beginPath();mpCtx.arc(0,0,62,0,Math.PI*2);mpCtx.fill();mpCtx.restore();
+        mpCtx.rotate(-spin);const impact=mpCtx.createRadialGradient(0,0,1,0,0,spinRadius);impact.addColorStop(0,`rgba(255,248,250,${.62*pulse})`);impact.addColorStop(.25,`rgba(255,45,78,${.38*pulse})`);impact.addColorStop(1,'rgba(255,0,40,0)');mpCtx.fillStyle=impact;mpCtx.beginPath();mpCtx.arc(0,0,spinRadius,0,Math.PI*2);mpCtx.fill();mpCtx.restore();
       } else if (fx.kind === 'eclipseSlash') {
         const pulse=Math.sin(progress*Math.PI);mpCtx.save();mpCtx.translate(fx.x2,y2);mpCtx.rotate(angle);mpCtx.globalCompositeOperation='lighter';mpCtx.shadowBlur=mpHighLoadFrame?20:30;mpCtx.shadowColor='#ff234f';
         const layers=mpHighLoadFrame?3:5;for(let layer=0;layer<layers;layer+=1){const r=31+layer*8;mpCtx.strokeStyle=layer===0?`rgba(255,236,241,${.92*pulse})`:`rgba(255,${70+layer*14},${100+layer*11},${(.72-layer*.09)*pulse})`;mpCtx.lineWidth=8-layer*1.25;mpCtx.beginPath();mpCtx.arc(0,-7,r,-1.22,.98);mpCtx.stroke();mpCtx.beginPath();mpCtx.arc(0,7,r,-.98,1.22);mpCtx.stroke();}

@@ -5443,6 +5443,17 @@ body {
                 <button id="adminUnitGrantBtn" type="button">지급</button>
               </div>
             </div>
+
+            <div class="admin-action-box">
+              <strong>🎲 주사위 지급</strong>
+              <select id="adminDiceGrantSelect"></select>
+              <input id="adminDiceGrantCountInput" type="number" inputmode="numeric" min="1" max="1000" step="1" value="1" />
+              <input id="adminDiceGrantReasonInput" type="text" maxlength="120" placeholder="사유 (필수)" value="관리자 주사위 지급" />
+              <div class="admin-action-row">
+                <span class="muted">갤럭시 포함 · 1~1,000개</span>
+                <button id="adminDiceGrantBtn" type="button">지급</button>
+              </div>
+            </div>
           </div>
 
           <div style="margin-top:14px;">
@@ -5476,12 +5487,13 @@ body {
         <div class="admin-card">
           <h3>🎲 현재 가챠 확률</h3>
           <div class="admin-dice-list">
-            <span class="admin-chip">일반 56.67%</span>
+            <span class="admin-chip">일반 56.66%</span>
             <span class="admin-chip">희귀 29%</span>
             <span class="admin-chip">영웅 11.85%</span>
             <span class="admin-chip">전설 2%</span>
             <span class="admin-chip">신화 0.4%</span>
             <span class="admin-chip">비밀 0.08%</span>
+            <span class="admin-chip rarity-galaxy">갤럭시 0.01%</span>
           </div>
         </div>
       </div>
@@ -5570,6 +5582,15 @@ body {
     </div>
 
     <div id="inventoryUnitsPanel" class="inventory-panel">
+      <div id="adminInventoryUnitTool" class="admin-action-box hidden" style="margin-bottom:14px;">
+        <strong>🛠️ 관리자 유닛 꺼내기</strong>
+        <p class="muted" style="margin:6px 0 10px;">관리자 전용 · 원하는 유닛을 선택하면 자기 계정에 서버 저장 후 1개 지급됩니다.</p>
+        <div class="admin-action-row">
+          <select id="adminInventoryUnitSelect" style="flex:1;"></select>
+          <button id="adminInventoryUnitTakeBtn" type="button">1개 꺼내기</button>
+        </div>
+        <p id="adminInventoryUnitStatus" class="muted" style="margin:8px 0 0;"></p>
+      </div>
       <div id="collectionGrid" class="unit-grid"></div>
     </div>
 
@@ -6280,15 +6301,19 @@ function applyStagePreview(stageId = selectedStage) {
         damage: 500,
         range: 230,
         fireInterval: 0.75,
-        killGrowthChance: 0.02,
+        killGrowthChance: 0.05,
         hitBlackHoleChance: 0.05,
         blackHoleRadius: 150,
         blackHoleDuration: 3,
+        spinSlashEvery: 4,
+        spinSlashMultiplier: 3,
+        spinSlashStunDuration: 1,
+        stunImmune: true,
         footprintRadius: 116,
         multiplayerFootprintRadius: 96,
         maxPlaced: 1,
         color: '#ff355d',
-        skillText: '양손에 붉은 빛이 흐르는 장검을 듭니다. 적을 처치할 때마다 2% 확률로 일식이 떠오르며 그 순간의 공격력과 공격속도가 각각 2% 영구 증가합니다. 평타가 적중할 때마다 5% 확률로 3초 동안 블랙홀을 생성해 반경 150 안의 적을 끌어당긴 뒤 폭발하며 생성 당시 평타와 같은 피해를 줍니다. 유닛 크기는 같지만 주변을 도는 일식 구체 때문에 일반 유닛의 2배 가로·세로 공간을 차지하며 전장에는 한 번에 1명만 배치할 수 있습니다.'
+        skillText: '양손에 붉은 빛이 흐르는 장검을 듭니다. 적을 처치할 때마다 5% 확률로 일식이 떠오르며 그 순간의 공격력과 공격속도가 각각 2% 영구 증가합니다. 평타가 적중할 때마다 5% 확률로 3초 동안 블랙홀을 생성해 반경 150 안의 적을 끌어당긴 뒤 폭발하며 생성 당시 평타와 같은 피해를 줍니다. 4번 벨 때마다 사거리 안의 가장 가까운 적 위에 장검이 검끝을 위로 향한 채 나타나 반시계방향으로 아주 빠르게 한 바퀴 회전하며 베고 현재 평타의 3배 피해를 준 뒤 1초간 기절시킵니다. 이클립스는 모든 기절 효과에 면역입니다. 유닛 크기는 같지만 주변을 도는 일식 구체 때문에 일반 유닛의 2배 가로·세로 공간을 차지하며 전장에는 한 번에 1명만 배치할 수 있습니다.'
       },
       astralChronomancer: {
         id: 'astralChronomancer',
@@ -6933,6 +6958,19 @@ function formatAdminDate(value) {
   return date.toLocaleString('ko-KR');
 }
 
+function isLocalAdminCandidate(user) {
+  const username = String(
+    user?.user_metadata?.username ||
+    user?.email?.split('@')[0] ||
+    currentUsername ||
+    ''
+  ).trim().toLowerCase();
+  const email = String(user?.email || '').trim().toLowerCase();
+  return username === 'bidulgy' || email === 'bidulgy@players.example.com';
+}
+
+let adminAccessRetryTimer = null;
+
 async function refreshAdminAccess(force = false) {
   const button = document.querySelector('#adminPanelBtn');
 
@@ -6949,15 +6987,34 @@ async function refreshAdminAccess(force = false) {
     return false;
   }
 
-  const { data, error } = await supabaseClient.rpc('is_game_admin');
-  adminAccessKnown = true;
-  adminIsAuthorized = !error && data === true;
-  button?.classList.toggle('hidden', !adminIsAuthorized);
+  const localCandidate = isLocalAdminCandidate(user);
 
-  if (error) {
-    console.warn('관리자 권한 확인 실패:', error.message);
+  // 관리자 계정은 서버 확인이 진행되는 동안 버튼이 갑자기 사라지지 않게 유지합니다.
+  if (localCandidate) {
+    button?.classList.remove('hidden');
   }
 
+  const { data, error } = await supabaseClient.rpc('is_game_admin');
+
+  if (error) {
+    // 일시적인 네트워크/RPC 실패를 "관리자 아님"으로 영구 기억하지 않습니다.
+    adminAccessKnown = false;
+    adminIsAuthorized = localCandidate;
+    button?.classList.toggle('hidden', !localCandidate);
+    console.warn('관리자 권한 확인 실패 - 잠시 후 다시 확인합니다:', error.message);
+
+    if (adminAccessRetryTimer) clearTimeout(adminAccessRetryTimer);
+    adminAccessRetryTimer = setTimeout(() => {
+      adminAccessRetryTimer = null;
+      void refreshAdminAccess(true);
+    }, 1500);
+
+    return localCandidate;
+  }
+
+  adminAccessKnown = true;
+  adminIsAuthorized = data === true;
+  button?.classList.toggle('hidden', !adminIsAuthorized);
   return adminIsAuthorized;
 }
 
@@ -6989,6 +7046,39 @@ function populateAdminUnitSelect() {
   });
 }
 
+function populateAdminDiceGrantSelect() {
+  const select = document.querySelector('#adminDiceGrantSelect');
+  if (!select) return;
+  select.innerHTML = '';
+  Object.values(DICE_DATA).forEach(dice => {
+    const option = document.createElement('option');
+    option.value = dice.key;
+    option.textContent = `🎲 ${dice.rarity} 주사위`;
+    select.appendChild(option);
+  });
+}
+
+function populateAdminInventoryUnitSelect() {
+  const select = document.querySelector('#adminInventoryUnitSelect');
+  if (!select) return;
+  select.innerHTML = '';
+  Object.values(UNIT_DATA).forEach(unit => {
+    const option = document.createElement('option');
+    option.value = unit.id;
+    option.textContent = `${unit.icon} ${unit.name} · ${unit.rarity}`;
+    select.appendChild(option);
+  });
+}
+
+async function refreshAdminInventoryUnitTool(force = false) {
+  const tool = document.querySelector('#adminInventoryUnitTool');
+  if (!tool) return false;
+  const allowed = await refreshAdminAccess(force);
+  tool.classList.toggle('hidden', !allowed);
+  if (allowed) populateAdminInventoryUnitSelect();
+  return allowed;
+}
+
 async function openAdminPanel() {
   const allowed = await refreshAdminAccess(true);
   if (!allowed) {
@@ -6997,6 +7087,7 @@ async function openAdminPanel() {
   }
 
   populateAdminUnitSelect();
+  populateAdminDiceGrantSelect();
   showScreen('admin');
   setAdminStatus('서버에서 관리자 권한이 확인되었습니다.', 'good');
   await Promise.all([
@@ -7221,6 +7312,109 @@ async function grantAdminUnit() {
   }
 }
 
+async function grantAdminDice() {
+  if (!adminSelectedUserId) {
+    setAdminStatus('먼저 관리할 유저를 선택하세요.', 'error');
+    return;
+  }
+
+  const rarityKey = document.querySelector('#adminDiceGrantSelect')?.value;
+  const count = Math.trunc(Number(document.querySelector('#adminDiceGrantCountInput')?.value));
+  const reason = document.querySelector('#adminDiceGrantReasonInput')?.value?.trim() || '';
+  const dice = DICE_DATA[rarityKey];
+
+  if (!dice || !Number.isFinite(count) || count < 1 || count > 1000) {
+    setAdminStatus('지급할 주사위와 1~1000 사이의 수량을 확인하세요.', 'error');
+    return;
+  }
+  if (reason.length < 2) {
+    setAdminStatus('관리 사유를 2자 이상 입력하세요.', 'error');
+    return;
+  }
+  if (!confirm(`${adminSelectedUsernameValue}에게 ${dice.rarity} 주사위 ${count}개를 지급하시겠습니까?`)) return;
+
+  const button = document.querySelector('#adminDiceGrantBtn');
+  button.disabled = true;
+  try {
+    const { data, error } = await supabaseClient.rpc('admin_grant_dice', {
+      p_user_id: adminSelectedUserId,
+      p_rarity: rarityKey,
+      p_count: count,
+      p_reason: reason
+    });
+    if (error) throw error;
+
+    setAdminStatus(`${dice.rarity} 주사위 ${count}개 지급 완료 · 서버 보유 ${Number(data?.amount || 0)}개`, 'good');
+    await loadAdminPlayer();
+    await loadAdminLogs();
+
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (user?.id === adminSelectedUserId) {
+      const { data: saveRow } = await supabaseClient
+        .from('game_saves')
+        .select('save_data')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (saveRow?.save_data) {
+        player = saveRow.save_data;
+        ensurePlayerData();
+      }
+    }
+  } catch (error) {
+    console.error('관리자 주사위 지급 실패:', error);
+    setAdminStatus(`주사위 지급 실패: ${error.message}`, 'error');
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function takeAdminInventoryUnit() {
+  const status = document.querySelector('#adminInventoryUnitStatus');
+  const button = document.querySelector('#adminInventoryUnitTakeBtn');
+  const unitId = document.querySelector('#adminInventoryUnitSelect')?.value;
+  const unit = UNIT_DATA[unitId];
+
+  if (!unit) return;
+  const allowed = await refreshAdminAccess(true);
+  if (!allowed) {
+    if (status) status.textContent = '관리자 권한을 확인할 수 없습니다.';
+    return;
+  }
+
+  button.disabled = true;
+  if (status) status.textContent = `${unit.name} 서버 지급 중...`;
+  try {
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    if (userError || !user) throw userError || new Error('로그인이 필요합니다.');
+
+    const { error } = await supabaseClient.rpc('admin_grant_unit', {
+      p_user_id: user.id,
+      p_unit_id: unitId,
+      p_count: 1,
+      p_reason: '관리자 인벤토리 직접 꺼내기'
+    });
+    if (error) throw error;
+
+    const { data: saveRow, error: saveError } = await supabaseClient
+      .from('game_saves')
+      .select('save_data')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (saveError) throw saveError;
+    if (saveRow?.save_data) {
+      player = saveRow.save_data;
+      ensurePlayerData();
+    }
+    if (status) status.textContent = `${unit.icon} ${unit.name} 1개를 서버에 저장했습니다.`;
+    renderInventory();
+  } catch (error) {
+    console.error('관리자 인벤토리 유닛 지급 실패:', error);
+    if (status) status.textContent = `지급 실패: ${error.message}`;
+  } finally {
+    button.disabled = false;
+  }
+}
+
 async function loadAdminRooms() {
   const list = document.querySelector('#adminRoomList');
   if (!list) return;
@@ -7373,7 +7567,7 @@ async function logout() {
 
       applyStagePreview(selectedStage);
       showScreen('menu');
-      void refreshAdminAccess();
+      void refreshAdminAccess(true);
     }
 
     function getOwnedUnitIds() {
@@ -7443,6 +7637,7 @@ async function logout() {
       activeInventoryTab = tab;
       renderInventory();
       showScreen('collection');
+      void refreshAdminInventoryUnitTool(true);
     }
 
     function renderInventory() {
@@ -8554,6 +8749,22 @@ function requestGachaDraw(count) {
         }, { once: true });
     }
 
+    async function commitDiceRollToServer(rarityKey, rollResults) {
+      const unitIds = rollResults.map(result => result.winningUnit.id);
+      const { data, error } = await supabaseClient.rpc('consume_dice_and_grant_units', {
+        p_rarity: rarityKey,
+        p_unit_ids: unitIds
+      });
+
+      if (error) throw error;
+      if (!data || !Number.isFinite(Number(data.remainingDice))) {
+        throw new Error('서버가 주사위 결과를 저장하지 못했습니다.');
+      }
+
+      player.diceInventory[rarityKey] = Math.max(0, Number(data.remainingDice));
+      return data;
+    }
+
     async function rollDice(rarityKey, requestedCount = 1) {
       if (cutsceneRunning) return;
 
@@ -8588,10 +8799,19 @@ function requestGachaDraw(count) {
         };
       });
 
-      player.diceInventory[rarityKey] = available - count;
-      await savePlayer();
-
-      await playMultiDiceRollCutscene(rarityKey, rollResults);
+      cutsceneRunning = true;
+      try {
+        // 유닛 결과를 보여주기 전에 서버가 주사위 차감 + 유닛 지급을 원자적으로 확정합니다.
+        // 이 단계가 끝나면 컷신 중 새로고침해도 이클립스/다른 유닛이 서버에 남습니다.
+        await commitDiceRollToServer(rarityKey, rollResults);
+        await playMultiDiceRollCutscene(rarityKey, rollResults);
+      } catch (error) {
+        console.error('주사위 서버 확정 저장 실패:', error);
+        cutsceneRunning = false;
+        closeCutscene();
+        alert(`서버 저장에 실패했습니다. 주사위와 유닛은 변경되지 않았습니다.\n${error.message}`);
+        renderInventory();
+      }
     }
 
     function openDeck() {
@@ -9067,7 +9287,8 @@ function requestGachaDraw(count) {
     }
 
     function stunRandomPlacedUnits(count, seconds) {
-      const candidates = [...battle.placedUnits];
+      // 이클립스는 모든 기절 효과에 면역입니다.
+      const candidates = battle.placedUnits.filter(unit => unit.unitId !== 'eclipse');
 
       for (let index = candidates.length - 1; index > 0; index -= 1) {
         const randomIndex = Math.floor(Math.random() * (index + 1));
@@ -9449,6 +9670,7 @@ function requestGachaDraw(count) {
         if (distance > enemy.abilityRange) return;
 
         if (effect === 'stun') {
+          if (unit.unitId === 'eclipse') return;
           unit.stunRemaining = Math.max(unit.stunRemaining || 0, seconds);
         } else if (effect === 'slow') {
           unit.attackSlowRemaining = Math.max(
@@ -10092,7 +10314,7 @@ function requestGachaDraw(count) {
 
     function triggerEclipseGrowth(placed, enemy) {
       const data = UNIT_DATA.eclipse;
-      if (!placed || placed.unitId !== 'eclipse' || Math.random() >= (data.killGrowthChance || .02)) return false;
+      if (!placed || placed.unitId !== 'eclipse' || Math.random() >= (data.killGrowthChance || .05)) return false;
 
       placed.baseDamage = Number(placed.baseDamage || placed.damage || data.damage) * 1.02;
       placed.damage = Number(placed.damage || data.damage) * 1.02;
@@ -10169,7 +10391,8 @@ function requestGachaDraw(count) {
     }
 
     function updatePlacedUnit(placed, dt) {
-      placed.stunRemaining = Math.max(0, (placed.stunRemaining || 0) - dt);
+      if (placed.unitId === 'eclipse') placed.stunRemaining = 0;
+      else placed.stunRemaining = Math.max(0, (placed.stunRemaining || 0) - dt);
       placed.attackSlowRemaining = Math.max(0, (placed.attackSlowRemaining || 0) - dt);
       placed.cooldown -= dt;
       const animationSpeed = placed.unitId === 'royalGuardian' ? 2.8 : 5.5;
@@ -10231,6 +10454,45 @@ function requestGachaDraw(count) {
       }
 
       if (placed.unitId === 'eclipse') {
+        const eclipseData = UNIT_DATA.eclipse;
+        placed.eclipseAttackCount = Number(placed.eclipseAttackCount || 0) + 1;
+        const spinEvery = eclipseData.spinSlashEvery || 4;
+
+        if (placed.eclipseAttackCount % spinEvery === 0) {
+          // 4타째에는 진행도가 아니라 실제 거리 기준으로 가장 가까운 적을 다시 고릅니다.
+          const closestInfo = getClosestEnemyToUnit(placed, placed.range);
+          const spinTarget = closestInfo?.enemy || target;
+          const spinAngle = Math.atan2(spinTarget.y - placed.y, spinTarget.x - placed.x);
+          placed.angle = spinAngle;
+          placed.attackMode = 'eclipseSpin';
+          placed.attackAnimation = 1;
+          const duration = .42;
+          battle.shots.push({
+            x1: placed.x,
+            y1: placed.y,
+            x2: spinTarget.x,
+            y2: spinTarget.y,
+            life: duration,
+            maxLife: duration,
+            color: eclipseData.color,
+            effect: 'eclipseSpin',
+            angle: spinAngle,
+            seed: Math.random() * 1000
+          });
+          const killed = applyDamageToEnemy(
+            spinTarget,
+            Number(placed.damage || eclipseData.damage) * (eclipseData.spinSlashMultiplier || 3)
+          );
+          if (!spinTarget.dead) {
+            const stunSeconds = eclipseData.spinSlashStunDuration || 1;
+            spinTarget.timeStunDuration = stunSeconds;
+            spinTarget.timeStunRemaining = Math.max(spinTarget.timeStunRemaining || 0, stunSeconds);
+          }
+          if (killed) triggerEclipseGrowth(placed, spinTarget);
+          setBattleMessage('🌑 이클립스 · 월식 회전참! 평타의 3배 피해 + 1초 기절');
+          return;
+        }
+
         const effect = getAttackEffectType(placed.unitId);
         const duration = getAttackEffectDuration(effect);
         battle.shots.push({
@@ -10240,14 +10502,14 @@ function requestGachaDraw(count) {
           y2: target.y,
           life: duration,
           maxLife: duration,
-          color: UNIT_DATA.eclipse.color,
+          color: eclipseData.color,
           effect,
           angle: targetAngle,
           seed: Math.random() * 1000
         });
         const killed = applyDamageToEnemy(target, placed.damage);
         if (killed) triggerEclipseGrowth(placed, target);
-        if (Math.random() < (UNIT_DATA.eclipse.hitBlackHoleChance || .05)) {
+        if (Math.random() < (eclipseData.hitBlackHoleChance || .05)) {
           createEclipseBlackHole(placed, target);
         }
         return;
@@ -11523,6 +11785,329 @@ function requestGachaDraw(count) {
       }
     }
 
+
+    // 갤럭시 등급 이클립스 전용 고품질 렌더링.
+    // 한 맵에 하나만 존재하므로 디테일을 높이되, 랜덤 생성 없이 시간 기반 애니메이션을 사용해 렉을 억제합니다.
+    function drawEclipseGalaxyAuraArt(g, time, unit, quality = 1) {
+      const t = time * .001;
+      const pulse = .84 + Math.sin(t * 3.1 + (unit.animationOffset || 0)) * .12;
+      const growth = Math.min(10, Number(unit.eclipseGrowthStacks || 0));
+      const boost = 1 + growth * .025;
+
+      g.save();
+      g.globalCompositeOperation = 'source-over';
+
+      // 발밑의 어두운 중력장 + 은은한 붉은 은하 후광
+      const floor = g.createRadialGradient(0, 10, 4, 0, 10, 76);
+      floor.addColorStop(0, `rgba(255,58,91,${.14 * pulse})`);
+      floor.addColorStop(.26, 'rgba(79,9,30,.12)');
+      floor.addColorStop(.58, 'rgba(25,3,16,.13)');
+      floor.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = floor;
+      g.beginPath();
+      g.ellipse(0, 12, 78, 35, 0, 0, Math.PI * 2);
+      g.fill();
+
+      // 일식의 사건지평선 링. 서로 다른 속도로 천천히 역회전합니다.
+      g.save();
+      g.rotate(t * .22);
+      for (let i = 0; i < 3; i += 1) {
+        g.strokeStyle = `rgba(${255-i*24},${42+i*12},${78+i*14},${(.22-i*.045)*pulse})`;
+        g.lineWidth = 2.7 - i * .55;
+        g.setLineDash([18 + i * 5, 10 + i * 3]);
+        g.beginPath();
+        g.ellipse(0, 6, 58 + i * 8, 23 + i * 4, i * .42, 0, Math.PI * 2);
+        g.stroke();
+      }
+      g.setLineDash([]);
+      g.restore();
+
+      // 머리 뒤 코로나. 작은 광선들이 느리게 맥동합니다.
+      g.save();
+      g.translate(0, -21);
+      g.rotate(-t * .13);
+      g.shadowColor = '#ff2f58';
+      g.shadowBlur = 11 * quality;
+      const rayCount = quality >= .8 ? 16 : 10;
+      for (let i = 0; i < rayCount; i += 1) {
+        const a = i * Math.PI * 2 / rayCount;
+        const ray = (i % 4 === 0 ? 12 : 6) * pulse * boost;
+        g.strokeStyle = i % 4 === 0 ? 'rgba(255,109,130,.72)' : 'rgba(255,45,78,.34)';
+        g.lineWidth = i % 4 === 0 ? 2 : 1;
+        g.beginPath();
+        g.moveTo(Math.cos(a) * 22, Math.sin(a) * 22);
+        g.lineTo(Math.cos(a) * (28 + ray), Math.sin(a) * (28 + ray));
+        g.stroke();
+      }
+      g.restore();
+
+      // 작은 별/에너지 입자. 좌표는 수식으로 고정해 프레임마다 튀지 않습니다.
+      const starCount = quality >= .8 ? 9 : 5;
+      g.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < starCount; i += 1) {
+        const a = t * (.18 + (i % 3) * .045) + i * 2.399;
+        const r = 38 + (i % 4) * 9;
+        const sx = Math.cos(a) * r;
+        const sy = -9 + Math.sin(a * 1.31) * (18 + (i % 3) * 5);
+        const alpha = .26 + .26 * (0.5 + 0.5 * Math.sin(t * 3 + i));
+        g.fillStyle = i % 3 === 0 ? `rgba(255,210,221,${alpha})` : `rgba(255,52,88,${alpha})`;
+        g.beginPath();
+        g.arc(sx, sy, i % 3 === 0 ? 1.8 : 1.1, 0, Math.PI * 2);
+        g.fill();
+      }
+      g.restore();
+    }
+
+    function drawEclipseGalaxyBodyArt(g, time, unit, quality = 1) {
+      const t = time * .001;
+      const attack = Number(unit.attackAnimation || 0);
+      const breathe = Math.sin(t * 2.7 + (unit.animationOffset || 0)) * 1.2;
+      const redShift = 350 + Math.sin(t * .7) * 12;
+
+      g.save();
+
+      // 뒤로 흘러내리는 이중 망토
+      const cape = g.createLinearGradient(-25, -14, 24, 27);
+      cape.addColorStop(0, '#050208');
+      cape.addColorStop(.36, '#1a0814');
+      cape.addColorStop(.68, '#320c1b');
+      cape.addColorStop(1, '#070309');
+      g.fillStyle = cape;
+      g.shadowColor = 'rgba(255,30,72,.25)';
+      g.shadowBlur = 10;
+      g.beginPath();
+      g.moveTo(-23, 20);
+      g.quadraticCurveTo(-22, -9, -13, -15);
+      g.lineTo(13, -15);
+      g.quadraticCurveTo(23, -8, 24, 20);
+      g.quadraticCurveTo(13 + Math.sin(t*2)*2, 13, 7, 24 + breathe*.25);
+      g.lineTo(0, 16);
+      g.lineTo(-7, 24 - breathe*.25);
+      g.quadraticCurveTo(-14 + Math.cos(t*1.8)*2, 13, -23, 20);
+      g.closePath();
+      g.fill();
+      g.shadowBlur = 0;
+
+      // 흑철 갑옷 본체
+      const armor = g.createLinearGradient(-17, -14, 18, 18);
+      armor.addColorStop(0, '#64162a');
+      armor.addColorStop(.18, '#24121c');
+      armor.addColorStop(.47, '#09070c');
+      armor.addColorStop(.72, '#2b0c18');
+      armor.addColorStop(1, '#6c1428');
+      g.fillStyle = armor;
+      g.beginPath();
+      g.moveTo(-15, -12);
+      g.lineTo(-19, -3);
+      g.lineTo(-14, 17);
+      g.lineTo(0, 21);
+      g.lineTo(14, 17);
+      g.lineTo(19, -3);
+      g.lineTo(15, -12);
+      g.closePath();
+      g.fill();
+
+      // 갑옷 판금 절개선 / 붉은 에너지 홈
+      g.shadowColor = `hsl(${redShift} 100% 58%)`;
+      g.shadowBlur = 9;
+      g.strokeStyle = `hsla(${redShift},100%,67%,.88)`;
+      g.lineWidth = 1.35;
+      g.beginPath();
+      g.moveTo(-11,-7); g.lineTo(-5,2); g.lineTo(0,15); g.lineTo(5,2); g.lineTo(11,-7);
+      g.stroke();
+      g.shadowBlur = 0;
+
+      // 견갑: 초승달 형태의 블랙 메탈
+      for (const side of [-1, 1]) {
+        g.save();
+        g.translate(side * 18, -6);
+        g.scale(side, 1);
+        const shoulder = g.createLinearGradient(-9,-8,10,8);
+        shoulder.addColorStop(0,'#7b1b31');
+        shoulder.addColorStop(.42,'#1b0b13');
+        shoulder.addColorStop(1,'#050207');
+        g.fillStyle = shoulder;
+        g.beginPath();
+        g.moveTo(-8,7); g.quadraticCurveTo(-5,-10,9,-9); g.quadraticCurveTo(14,-1,8,9); g.quadraticCurveTo(1,3,-8,7); g.closePath();
+        g.fill();
+        g.strokeStyle='rgba(255,77,107,.75)'; g.lineWidth=1.2; g.stroke();
+        g.restore();
+      }
+
+      // 가슴 중앙의 작은 일식 코어
+      const corePulse = .75 + Math.sin(t * 4.2) * .22;
+      g.save();
+      g.translate(0, 2);
+      g.shadowColor = '#ff3158';
+      g.shadowBlur = 15 * corePulse;
+      const core = g.createRadialGradient(-2,-2,1,0,0,10);
+      core.addColorStop(0,'#fff1f5');
+      core.addColorStop(.22,'#ff5b78');
+      core.addColorStop(.48,'#7f102b');
+      core.addColorStop(.66,'#050105');
+      core.addColorStop(.80,'#ff3158');
+      core.addColorStop(1,'rgba(255,49,88,0)');
+      g.fillStyle=core; g.beginPath(); g.arc(0,0,10,0,Math.PI*2); g.fill();
+      g.restore();
+
+      // 투구 뒤의 완전한 일식 원반
+      g.save();
+      g.translate(0,-22);
+      const corona = g.createRadialGradient(0,0,10,0,0,24);
+      corona.addColorStop(0,'#000');
+      corona.addColorStop(.52,'#020102');
+      corona.addColorStop(.64,'#ff395d');
+      corona.addColorStop(.73,'rgba(255,73,102,.68)');
+      corona.addColorStop(1,'rgba(255,40,80,0)');
+      g.fillStyle=corona; g.beginPath(); g.arc(0,0,24,0,Math.PI*2); g.fill();
+      g.restore();
+
+      // 투구와 얼굴
+      const helmet = g.createLinearGradient(-13,-34,13,-10);
+      helmet.addColorStop(0,'#5a1325');
+      helmet.addColorStop(.25,'#161018');
+      helmet.addColorStop(.65,'#050407');
+      helmet.addColorStop(1,'#3e0d1d');
+      g.fillStyle=helmet;
+      g.beginPath();
+      g.moveTo(-12,-24); g.quadraticCurveTo(-8,-37,0,-38); g.quadraticCurveTo(9,-36,13,-24); g.lineTo(10,-12); g.lineTo(-10,-12); g.closePath(); g.fill();
+      g.strokeStyle='rgba(255,75,104,.72)'; g.lineWidth=1.2; g.stroke();
+
+      // V자 바이저와 붉은 눈빛
+      g.fillStyle='#020103';
+      g.beginPath(); g.moveTo(-10,-25); g.lineTo(0,-18); g.lineTo(10,-25); g.lineTo(8,-17); g.lineTo(0,-14); g.lineTo(-8,-17); g.closePath(); g.fill();
+      g.shadowColor='#ff2e56'; g.shadowBlur=12;
+      g.strokeStyle='rgba(255,84,111,.98)'; g.lineWidth=2;
+      g.beginPath(); g.moveTo(-7,-21); g.lineTo(-1,-19); g.moveTo(1,-19); g.lineTo(7,-21); g.stroke();
+      g.shadowBlur=0;
+
+      // 이마의 갤럭시 문양
+      g.strokeStyle='rgba(255,184,198,.82)'; g.lineWidth=1.2;
+      g.beginPath(); g.arc(0,-29,4.6,-1.15,1.15); g.stroke();
+      g.fillStyle='#ff4769'; g.beginPath(); g.arc(2,-29,1.4,0,Math.PI*2); g.fill();
+
+      // 공격 순간 갑옷에서 잠깐 빛이 솟습니다.
+      if (attack > .05) {
+        g.globalCompositeOperation='lighter';
+        g.globalAlpha=Math.min(.55, attack*.7);
+        const flash=g.createRadialGradient(0,-2,0,0,-2,34);
+        flash.addColorStop(0,'rgba(255,210,220,.55)');
+        flash.addColorStop(.35,'rgba(255,48,82,.28)');
+        flash.addColorStop(1,'rgba(255,0,50,0)');
+        g.fillStyle=flash; g.beginPath(); g.arc(0,-2,34,0,Math.PI*2); g.fill();
+      }
+
+      g.restore();
+    }
+
+    function drawEclipseTwinBladesArt(g, time, unit, attack, quality = 1) {
+      const t = time * .001;
+      const swing = attack > 0 ? Math.sin((1 - Math.min(1, attack)) * Math.PI) : 0;
+      const hues = [348 + Math.sin(t*.9)*9, 5 + Math.cos(t*.77)*8];
+
+      for (let bladeIndex = 0; bladeIndex < 2; bladeIndex += 1) {
+        const side = bladeIndex === 0 ? -1 : 1;
+        g.save();
+        g.translate(-5, side * 9);
+        g.rotate(side * (.08 + swing * .22));
+
+        const edgeColor = `hsl(${hues[bladeIndex]} 100% 62%)`;
+        g.shadowColor = edgeColor;
+        g.shadowBlur = 21 * quality;
+
+        // 외곽 에너지 글로우
+        g.strokeStyle = `hsla(${hues[bladeIndex]},100%,62%,.20)`;
+        g.lineWidth = 9;
+        g.beginPath(); g.moveTo(2,0); g.lineTo(71,0); g.stroke();
+
+        // 검날: 흑요석/메탈의 다층 그라데이션
+        const metal = g.createLinearGradient(0,-6,72,6);
+        metal.addColorStop(0,'#3c0a16');
+        metal.addColorStop(.16,'#11060a');
+        metal.addColorStop(.46,'#2a0a12');
+        metal.addColorStop(.70,'#050204');
+        metal.addColorStop(.88,'#24060e');
+        metal.addColorStop(1,'#010001');
+        g.fillStyle=metal;
+        g.beginPath();
+        g.moveTo(0,-4.8); g.lineTo(18,-5.5); g.lineTo(53,-4); g.lineTo(69,-1.5); g.lineTo(77,0);
+        g.lineTo(69,1.5); g.lineTo(53,4); g.lineTo(18,5.5); g.lineTo(0,4.8); g.lineTo(5,0); g.closePath();
+        g.fill();
+
+        // 칼등의 어두운 홈
+        g.strokeStyle='rgba(255,213,221,.18)'; g.lineWidth=1;
+        g.beginPath(); g.moveTo(11,-1.4); g.lineTo(63,-.8); g.stroke();
+
+        // 붉은 계열 색이 테두리를 천천히 돌아가는 느낌의 상/하단 에너지선
+        const edge = g.createLinearGradient(0,0,77,0);
+        edge.addColorStop(0,`hsl(${hues[bladeIndex]} 100% 64%)`);
+        edge.addColorStop(.28,`hsl(${(hues[bladeIndex]+18)%360} 100% 72%)`);
+        edge.addColorStop(.56,`hsl(${(hues[bladeIndex]-12+360)%360} 100% 52%)`);
+        edge.addColorStop(.80,'#ffd0da');
+        edge.addColorStop(1,`hsl(${hues[bladeIndex]} 100% 62%)`);
+        g.strokeStyle=edge; g.lineWidth=2.4;
+        g.beginPath(); g.moveTo(2,-4.4); g.lineTo(18,-5.1); g.lineTo(54,-3.6); g.lineTo(77,0); g.lineTo(54,3.6); g.lineTo(18,5.1); g.lineTo(2,4.4); g.stroke();
+
+        // 검을 따라 흐르는 에너지 점들
+        const nodeCount = quality >= .8 ? 5 : 3;
+        g.globalCompositeOperation='lighter';
+        for (let i=0;i<nodeCount;i+=1) {
+          const travel = ((t*.11 + i/nodeCount + bladeIndex*.27) % 1);
+          const nx = 10 + travel*58;
+          const ny = (i%2===0?-1:1) * (3.8 - travel*1.4);
+          g.fillStyle = i%2===0 ? 'rgba(255,225,232,.95)' : 'rgba(255,54,88,.90)';
+          g.beginPath(); g.arc(nx,ny,1.1+(i%2)*.45,0,Math.PI*2); g.fill();
+        }
+        g.globalCompositeOperation='source-over';
+
+        // 가드 / 손잡이 / 붉은 보석
+        const guard=g.createLinearGradient(-9,-9,5,9); guard.addColorStop(0,'#a8233d');guard.addColorStop(.45,'#2b0a13');guard.addColorStop(1,'#d73352');
+        g.fillStyle=guard; g.beginPath(); g.moveTo(-3,-10);g.lineTo(4,-4);g.lineTo(9,0);g.lineTo(4,4);g.lineTo(-3,10);g.lineTo(0,3);g.lineTo(-7,0);g.lineTo(0,-3);g.closePath();g.fill();
+        g.strokeStyle='rgba(255,145,164,.78)';g.lineWidth=1;g.stroke();
+        g.fillStyle='#100509';g.beginPath();g.roundRect(-18,-3,-9+18,6,2);g.fill();
+        g.strokeStyle='#7d1a30';g.lineWidth=2;for(let x=-16;x<=-3;x+=4){g.beginPath();g.moveTo(x,-3);g.lineTo(x+3,3);g.stroke();}
+        g.shadowBlur=10;g.shadowColor='#ff385d';g.fillStyle='#ff385d';g.beginPath();g.arc(1,0,3.1,0,Math.PI*2);g.fill();
+        g.restore();
+      }
+    }
+
+    function drawEclipseOrbitArt(g, time, unit, quality = 1) {
+      const t = time * .001;
+      const orbitRadius = 58;
+      const points = [];
+      for (let i=0;i<3;i+=1) {
+        const a = t * .78 + i * Math.PI * 2 / 3;
+        points.push({a, x:Math.cos(a)*orbitRadius, y:Math.sin(a)*orbitRadius*.47});
+      }
+      points.sort((a,b)=>a.y-b.y);
+
+      g.save();
+      // 궤적 자체도 보이게 해서 유닛이 차지하는 큰 영역을 시각적으로 설명합니다.
+      g.strokeStyle='rgba(255,55,91,.20)';g.lineWidth=1.4;g.setLineDash([5,8]);
+      g.beginPath();g.ellipse(0,0,orbitRadius,orbitRadius*.47,-t*.08,0,Math.PI*2);g.stroke();g.setLineDash([]);
+
+      for (let index=0;index<points.length;index+=1) {
+        const orb=points[index];
+        const size=9.5+Math.sin(t*2.4+index)*1.2;
+        g.save();g.translate(orb.x,orb.y);
+
+        // 꼬리
+        g.rotate(orb.a + Math.PI/2);
+        const tail=g.createLinearGradient(0,0,-24,0);tail.addColorStop(0,'rgba(255,58,91,.45)');tail.addColorStop(1,'rgba(255,58,91,0)');
+        g.strokeStyle=tail;g.lineWidth=3;g.beginPath();g.moveTo(-2,0);g.quadraticCurveTo(-12,4,-25,0);g.stroke();
+        g.rotate(-(orb.a + Math.PI/2));
+
+        // 미니 일식 구체
+        g.shadowColor='#ff3158';g.shadowBlur=18*quality;
+        const corona=g.createRadialGradient(0,0,size*.35,0,0,size*1.7);corona.addColorStop(0,'#000');corona.addColorStop(.55,'#010001');corona.addColorStop(.66,'rgba(255,52,88,.96)');corona.addColorStop(.78,'rgba(255,111,132,.50)');corona.addColorStop(1,'rgba(255,30,70,0)');
+        g.fillStyle=corona;g.beginPath();g.arc(0,0,size*1.7,0,Math.PI*2);g.fill();
+        g.fillStyle='#010001';g.beginPath();g.arc(0,0,size,0,Math.PI*2);g.fill();
+        g.strokeStyle='rgba(255,214,224,.55)';g.lineWidth=1;g.beginPath();g.arc(-size*.2,-size*.15,size*.42,-1.4,.5);g.stroke();
+        g.restore();
+      }
+      g.restore();
+    }
+
     function drawStandingUnitBody(unit, time) {
       const id = unit.unitId;
       const attackPulse = (unit.attackAnimation || 0) * .8;
@@ -11621,15 +12206,8 @@ function requestGachaDraw(count) {
         for (const [x,y] of [[-14,-20],[7,-30],[17,-10],[-3,-7],[3,-17]]) { ctx.beginPath(); ctx.arc(x,y,4.2,0,Math.PI*2); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#fff1a6'; ctx.beginPath(); ctx.arc(x-1.2,y-1.3,1.2,0,Math.PI*2); ctx.fill(); ctx.fillStyle = '#ffd84f'; }
         ctx.restore();
       } else if (id === 'eclipse') {
-        drawBoots('#15070b', 9);
-        const cloak = ctx.createLinearGradient(-20,-12,20,20); cloak.addColorStop(0,'#0b0710'); cloak.addColorStop(.45,'#24101b'); cloak.addColorStop(1,'#050307');
-        ctx.fillStyle = cloak; ctx.beginPath(); ctx.moveTo(-22,18); ctx.lineTo(-15,-12); ctx.lineTo(15,-12); ctx.lineTo(22,18); ctx.lineTo(0,12); ctx.closePath(); ctx.fill();
-        const armor = ctx.createRadialGradient(-5,-8,2,0,0,27); armor.addColorStop(0,'#5b1a2b'); armor.addColorStop(.35,'#24131e'); armor.addColorStop(1,'#09070c');
-        ctx.fillStyle = armor; ctx.beginPath(); ctx.roundRect(-16,-12,32,30,8); ctx.fill();
-        ctx.strokeStyle = '#ff355d'; ctx.lineWidth = 1.8; ctx.shadowBlur = 11; ctx.shadowColor = '#ff355d'; ctx.strokeRect(-13,-9,26,24); ctx.shadowBlur = 0;
-        for (const side of [-1,1]) { ctx.fillStyle='#3b1420';ctx.beginPath();ctx.arc(side*18,-6,9,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#8b223a';ctx.stroke(); }
-        ctx.fillStyle='#16101a';ctx.beginPath();ctx.arc(0,-21,13,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#ff4b68';ctx.lineWidth=1.6;ctx.stroke();
-        ctx.fillStyle='#ff506d';ctx.beginPath();ctx.arc(4,-23,2,0,Math.PI*2);ctx.fill();
+        drawBoots('#100408', 9);
+        drawEclipseGalaxyBodyArt(ctx, time, unit, 1);
       } else if (id === 'astralChronomancer') {
         const hover = Math.sin(time*.004 + unit.animationOffset)*2;
         ctx.save(); ctx.translate(0,hover);
@@ -11689,27 +12267,7 @@ function requestGachaDraw(count) {
         ctx.fillStyle=orb;ctx.beginPath();ctx.arc(orbX,0,11+attack*2,0,Math.PI*2);ctx.fill();
         if (chrono){ctx.strokeStyle='#fff';ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(orbX,0,15,0,Math.PI*2);ctx.stroke();}
       } else if (unit.unitId === 'eclipse') {
-        const phase = time * .00075;
-        const redA = `hsl(${350 + Math.sin(phase) * 9} 100% 62%)`;
-        const redB = `hsl(${5 + Math.cos(phase * 1.17) * 8} 100% 55%)`;
-        for (const side of [-1, 1]) {
-          ctx.save();
-          ctx.translate(-3, side * 8);
-          ctx.rotate(side * .075 + (attack > 0 ? side * (1 - attack) * .18 : 0));
-          ctx.shadowBlur = 17;
-          ctx.shadowColor = side > 0 ? redA : redB;
-          const blade = ctx.createLinearGradient(0, -5, 66, 5);
-          blade.addColorStop(0, '#17070b');
-          blade.addColorStop(.42, '#2a0b12');
-          blade.addColorStop(.72, '#0b0508');
-          blade.addColorStop(1, '#020102');
-          ctx.fillStyle = blade;
-          ctx.beginPath(); ctx.moveTo(0,-4.2);ctx.lineTo(55,-3.2);ctx.lineTo(70,0);ctx.lineTo(55,3.2);ctx.lineTo(0,4.2);ctx.closePath();ctx.fill();
-          const edge = ctx.createLinearGradient(0,0,70,0); edge.addColorStop(0,redA);edge.addColorStop(.5,redB);edge.addColorStop(1,redA);
-          ctx.strokeStyle=edge;ctx.lineWidth=2.4;ctx.stroke();
-          ctx.shadowBlur=8;ctx.fillStyle='#551321';ctx.fillRect(-7,-8,7,16);ctx.fillStyle='#ff4666';ctx.fillRect(-10,-1.5,14,3);
-          ctx.restore();
-        }
+        drawEclipseTwinBladesArt(ctx, time, unit, attack, 1);
       } else if (unit.unitId === 'skyDragonKnight') {
         // 황금 신화창: 이중 자루, 용날개 가드, 보석과 다층 창날
         const shaft = ctx.createLinearGradient(-5,0,58,0); shaft.addColorStop(0,'#6a3c00'); shaft.addColorStop(.38,'#d99a16'); shaft.addColorStop(.68,'#fff2a6'); shaft.addColorStop(1,'#b86a00');
@@ -11727,6 +12285,7 @@ function requestGachaDraw(count) {
 
     function drawDetailedUnitSprite(unit, time) {
       const data = UNIT_DATA[unit.unitId];
+      if (unit.unitId === 'eclipse') drawEclipseGalaxyAuraArt(ctx, time, unit, 1);
       const auraPulse = .36 + Math.sin(time * .005 + unit.animationOffset) * .10;
       ctx.beginPath();
       ctx.arc(0, 2, 31, 0, Math.PI * 2);
@@ -11830,6 +12389,7 @@ function requestGachaDraw(count) {
         chronoOrbitingShots: [],
         chronoFieldRemaining: 0,
         eclipseGrowthStacks: 0,
+        eclipseAttackCount: 0,
         incomeAmount: unitId === 'moneyTree' ? data.incomeAmount : 0,
         incomeInterval: unitId === 'moneyTree' ? data.incomeInterval : 0,
         incomeCooldown: unitId === 'moneyTree' ? data.incomeInterval : 0,
@@ -11938,15 +12498,7 @@ function requestGachaDraw(count) {
       }
 
       if (unit.unitId === 'eclipse') {
-        const orbitRadius = 54;
-        for (let index = 0; index < 3; index += 1) {
-          const a = time * .00115 + index * Math.PI * 2 / 3;
-          const ox = Math.cos(a) * orbitRadius;
-          const oy = Math.sin(a) * orbitRadius * .48;
-          ctx.save();ctx.translate(ox,oy);ctx.shadowBlur=15;ctx.shadowColor='#ff355d';
-          ctx.fillStyle='#030104';ctx.beginPath();ctx.arc(0,0,8,0,Math.PI*2);ctx.fill();
-          ctx.strokeStyle='rgba(255,62,92,.92)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,11+Math.sin(a*2)*1.8,0,Math.PI*2);ctx.stroke();ctx.restore();
-        }
+        drawEclipseOrbitArt(ctx, time, unit, 1);
       }
 
       if (unit.unitId === 'moneyTree' && unit.moneyPulse > 0) {
@@ -11955,7 +12507,7 @@ function requestGachaDraw(count) {
         ctx.fillText(`+${unit.incomeAmount || UNIT_DATA.moneyTree.incomeAmount}`, 0, -48 - moneyRise * 18); ctx.restore();
       }
 
-      if (unit.stunRemaining > 0) {
+      if (unit.unitId !== 'eclipse' && unit.stunRemaining > 0) {
         ctx.fillStyle = 'rgba(38, 93, 170, .28)';
         ctx.beginPath();
         ctx.arc(0, 0, 32, 0, Math.PI * 2);
@@ -12234,12 +12786,80 @@ function requestGachaDraw(count) {
           ctx.beginPath();
           ctx.arc(shot.x2, shot.y2, lightningRadius, 0, Math.PI * 2);
           ctx.fill();
+        } else if (shot.effect === 'eclipseSpin') {
+          const pulse = Math.sin(progress * Math.PI);
+          const spin = -progress * Math.PI * 2; // 캔버스 좌표계에서 음수 회전 = 반시계방향
+          ctx.save();
+          ctx.translate(shot.x2, shot.y2);
+          ctx.globalCompositeOperation = 'lighter';
+
+          // 빠르게 한 바퀴 도는 붉은 월식 궤적
+          ctx.shadowBlur = 34;
+          ctx.shadowColor = '#ff234f';
+          for (let ring = 0; ring < 4; ring += 1) {
+            ctx.strokeStyle = `rgba(255,${54 + ring * 22},${86 + ring * 16},${(.78 - ring * .12) * pulse})`;
+            ctx.lineWidth = 10 - ring * 1.7;
+            ctx.beginPath();
+            ctx.arc(0, 0, 42 + ring * 7, spin - Math.PI * 1.55, spin + .28);
+            ctx.stroke();
+          }
+
+          // 검끝이 위를 향한 상태에서 시작해 반시계방향으로 360도 회전하는 장검
+          ctx.rotate(spin);
+          const bladeGradient = ctx.createLinearGradient(0, 34, 0, -55);
+          bladeGradient.addColorStop(0, '#4b0712');
+          bladeGradient.addColorStop(.35, '#b20d2d');
+          bladeGradient.addColorStop(.72, '#ff4568');
+          bladeGradient.addColorStop(1, '#fff0f4');
+          ctx.shadowBlur = 26;
+          ctx.shadowColor = '#ff183f';
+          ctx.strokeStyle = '#ff3a5e';
+          ctx.lineWidth = 3.2;
+          ctx.fillStyle = bladeGradient;
+          ctx.beginPath();
+          ctx.moveTo(0, -58);
+          ctx.lineTo(8, -39);
+          ctx.lineTo(5, 23);
+          ctx.lineTo(-5, 23);
+          ctx.lineTo(-8, -39);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = '#160208';
+          ctx.fillRect(-16, 23, 32, 6);
+          ctx.fillStyle = '#8c1028';
+          ctx.fillRect(-4, 29, 8, 20);
+          ctx.beginPath();
+          ctx.arc(0, 52, 6, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.rotate(-spin);
+          const impact = ctx.createRadialGradient(0, 0, 1, 0, 0, 62);
+          impact.addColorStop(0, `rgba(255,248,250,${.62 * pulse})`);
+          impact.addColorStop(.25, `rgba(255,45,78,${.38 * pulse})`);
+          impact.addColorStop(1, 'rgba(255,0,40,0)');
+          ctx.fillStyle = impact;
+          ctx.beginPath();
+          ctx.arc(0, 0, 62, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
         } else if (shot.effect === 'eclipseSlash') {
           const pulse = Math.sin(progress * Math.PI);
-          ctx.save();ctx.translate(shot.x2,shot.y2);ctx.rotate(shot.angle);
-          ctx.shadowBlur=22;ctx.shadowColor='#ff2c55';
-          for(let i=0;i<2;i+=1){const side=i===0?-1:1;ctx.strokeStyle=`rgba(255,${55+i*25},${85+i*15},${pulse*(.92-i*.12)})`;ctx.lineWidth=7-i*2;ctx.beginPath();ctx.arc(0,side*8,34+i*10,-1.05,1.05);ctx.stroke();}
-          ctx.strokeStyle=`rgba(255,210,220,${.85*pulse})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,52,-.88,.88);ctx.stroke();ctx.restore();
+          ctx.save(); ctx.translate(shot.x2, shot.y2); ctx.rotate(shot.angle);
+          ctx.globalCompositeOperation='lighter';
+          ctx.shadowBlur=30; ctx.shadowColor='#ff234f';
+          for (let layer=0; layer<5; layer+=1) {
+            const r=31+layer*8;
+            ctx.strokeStyle=layer===0?`rgba(255,236,241,${.92*pulse})`:`rgba(255,${70+layer*14},${100+layer*11},${(.72-layer*.09)*pulse})`;
+            ctx.lineWidth=8-layer*1.25;
+            ctx.beginPath();ctx.arc(0,-7,r,-1.22,.98);ctx.stroke();
+            ctx.beginPath();ctx.arc(0,7,r,-.98,1.22);ctx.stroke();
+          }
+          ctx.rotate(Math.PI/2);ctx.strokeStyle=`rgba(255,92,118,${.55*pulse})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,58,-.72,.72);ctx.stroke();
+          ctx.rotate(-Math.PI/2);
+          const impact=ctx.createRadialGradient(0,0,1,0,0,48);impact.addColorStop(0,`rgba(255,245,248,${.55*pulse})`);impact.addColorStop(.25,`rgba(255,54,88,${.30*pulse})`);impact.addColorStop(1,'rgba(255,0,45,0)');ctx.fillStyle=impact;ctx.beginPath();ctx.arc(0,0,48,0,Math.PI*2);ctx.fill();
+          for(let i=0;i<8;i+=1){const a=i*Math.PI/4+progress*.7;const r=18+i%3*7;ctx.fillStyle=`rgba(255,120,140,${.65*pulse})`;ctx.beginPath();ctx.arc(Math.cos(a)*r,Math.sin(a)*r,1.5+i%2,0,Math.PI*2);ctx.fill();}
+          ctx.restore();
         } else if (shot.effect === 'timeRift' || shot.effect === 'timeRiftGolden') {
           const golden = shot.effect === 'timeRiftGolden' || shot.golden;
           const primary = golden ? '255,216,79' : '216,180,254';
@@ -12401,7 +13021,7 @@ function requestGachaDraw(count) {
       }
 
       if (unitData.id === 'eclipse' && battle.placedUnits.some(unit => unit.unitId === 'eclipse')) {
-        return { valid: false, reason: '이클립스는 전장에 한 번에 1명만 배치할 수 있습니다.' };
+        return { valid: false, reason: '이클립스는 한 맵에 한 유닛밖에 깔 수 없습니다.' };
       }
 
       const nearby = battle.placedUnits.some(unit => {
@@ -12468,6 +13088,7 @@ function requestGachaDraw(count) {
         chronoOrbitingShots: [],
         chronoFieldRemaining: 0,
         eclipseGrowthStacks: 0,
+        eclipseAttackCount: 0,
         incomeAmount: unitData.id === 'moneyTree' ? unitData.incomeAmount : 0,
         incomeInterval: unitData.id === 'moneyTree' ? unitData.incomeInterval : 0,
         incomeCooldown: unitData.id === 'moneyTree' ? unitData.incomeInterval : 0,
@@ -12620,6 +13241,8 @@ function requestGachaDraw(count) {
     document.querySelector('#adminRefreshPlayerBtn').addEventListener('click', () => loadAdminPlayer());
     document.querySelector('#adminGemApplyBtn').addEventListener('click', applyAdminGemAdjustment);
     document.querySelector('#adminUnitGrantBtn').addEventListener('click', grantAdminUnit);
+    document.querySelector('#adminDiceGrantBtn').addEventListener('click', grantAdminDice);
+    document.querySelector('#adminInventoryUnitTakeBtn').addEventListener('click', takeAdminInventoryUnit);
     document.querySelector('#adminRefreshRoomsBtn').addEventListener('click', loadAdminRooms);
     document.querySelector('#adminRefreshLogsBtn').addEventListener('click', loadAdminLogs);
     document.querySelector('#openGachaBtn').addEventListener('click', openGacha);
@@ -13664,7 +14287,20 @@ function requestGachaDraw(count) {
 
     if (gold < unit.cost) return { ok: false, reason: `골드가 부족합니다. 필요 골드: ${unit.cost}` };
     if (units.filter(item => item.ownerRole === role).length >= 40) return { ok: false, reason: '한 플레이어가 배치할 수 있는 유닛 수는 40개까지입니다.' };
-    if (unitId === 'eclipse' && units.some(item => item.ownerRole === role && item.unitId === 'eclipse')) return { ok: false, reason: '이클립스는 플레이어당 한 번에 1명만 배치할 수 있습니다.' };
+    if (unitId === 'eclipse') {
+      const eclipseAlreadyPlaced = mpState.mode === 'coop'
+        ? units.some(item => item.unitId === 'eclipse' && item.ownerRole === role)
+        : units.some(item => item.unitId === 'eclipse');
+
+      if (eclipseAlreadyPlaced) {
+        return {
+          ok: false,
+          reason: mpState.mode === 'coop'
+            ? '이클립스는 협동 모드에서 한 플레이어당 한 유닛밖에 깔 수 없습니다.'
+            : '이클립스는 한 맵에 한 유닛밖에 깔 수 없습니다.'
+        };
+      }
+    }
     if (units.some(item => {
       const otherData = UNIT_DATA[item.unitId] || {};
       const required = Math.max(
@@ -13963,9 +14599,10 @@ function requestGachaDraw(count) {
     if (!enemy.abilityEvery || enemy.dead || Date.now() < enemy.nextAbilityAt) return;
     enemy.nextAbilityAt = Date.now() + enemy.abilityEvery * 1000;
     const units = mpGetUnitsForTarget(target).filter(unit => Math.abs(unit.x - enemy.x) < 270);
+    const stunnableUnits = units.filter(unit => unit.unitId !== 'eclipse');
 
     if (enemy.type === 'knight') {
-      const shuffled = [...units].sort(() => Math.random() - .5).slice(0, 3);
+      const shuffled = [...stunnableUnits].sort(() => Math.random() - .5).slice(0, 3);
       shuffled.forEach(unit => { unit.stunUntil = Math.max(unit.stunUntil || 0, Date.now() + 10000); });
       mpState.announcement = `기사 비둘기가 유닛 ${shuffled.length}개를 10초 동안 기절시켰습니다!`;
       mpState.announcementUntil = Date.now() + 2600;
@@ -13974,7 +14611,7 @@ function requestGachaDraw(count) {
 
     enemy.hp = Math.min(enemy.maxHp, enemy.hp + enemy.maxHp * .05);
     if (enemy.type === 'king') {
-      units.filter(unit => Math.hypot(unit.x - enemy.x, unit.y - enemy.y) <= 190)
+      stunnableUnits.filter(unit => Math.hypot(unit.x - enemy.x, unit.y - enemy.y) <= 190)
         .forEach(unit => { unit.stunUntil = Math.max(unit.stunUntil || 0, Date.now() + 1000); });
       mpState.announcement = '킹 비둘기가 체력을 회복하고 주변 유닛을 마비시켰습니다!';
       mpState.announcementUntil = Date.now() + 2200;
@@ -14089,6 +14726,7 @@ function requestGachaDraw(count) {
       chrono: .40,
       chronoGolden: .46,
       eclipseSlash: .34,
+      eclipseSpin: .42,
       line: .24
     };
     return durations[kind] || .28;
@@ -14225,7 +14863,7 @@ function requestGachaDraw(count) {
 
   function mpTriggerEclipseGrowth(unit, enemy) {
     const data = UNIT_DATA.eclipse;
-    if (!unit || unit.unitId !== 'eclipse' || Math.random() >= (data.killGrowthChance || .02)) return false;
+    if (!unit || unit.unitId !== 'eclipse' || Math.random() >= (data.killGrowthChance || .05)) return false;
     unit.damage = Number(unit.damage || data.damage) * 1.02;
     unit.fireInterval = Math.max(.08, Number(unit.fireInterval || data.fireInterval) / 1.02);
     unit.eclipseGrowthStacks = Number(unit.eclipseGrowthStacks || 0) + 1;
@@ -14288,10 +14926,37 @@ function requestGachaDraw(count) {
     }
 
     if (unit.unitId === 'eclipse') {
+      const eclipseData = UNIT_DATA.eclipse;
+      const spinEvery = eclipseData.spinSlashEvery || 4;
+      if (unit.attackCount % spinEvery === 0) {
+        const nearest = [...targetState.enemies]
+          .filter(enemy => !enemy.dead && Math.hypot(enemy.x - unit.x, enemy.y - unit.y) <= unit.range)
+          .sort((a, b) => Math.hypot(a.x - unit.x, a.y - unit.y) - Math.hypot(b.x - unit.x, b.y - unit.y))[0] || target;
+        unit.angle = Math.atan2(nearest.y - unit.y, nearest.x - unit.x);
+        unit.attackMode = 'eclipseSpin';
+        mpPushFx(unit.x, unit.y, nearest.x, nearest.y, '#ff355d', 10, sideKey, 'eclipseSpin');
+        const killed = mpApplyDamage(
+          targetState,
+          nearest,
+          Number(unit.damage || eclipseData.damage) * (eclipseData.spinSlashMultiplier || 3),
+          unit.ownerRole,
+          sideKey
+        );
+        if (!nearest.dead) {
+          const stunMs = (eclipseData.spinSlashStunDuration || 1) * 1000;
+          nearest.timeStunDurationMs = stunMs;
+          nearest.timeStunUntil = Math.max(Number(nearest.timeStunUntil || 0), Date.now() + stunMs);
+        }
+        if (killed) mpTriggerEclipseGrowth(unit, nearest);
+        mpState.announcement = `🌑 ${mpNameForRole(unit.ownerRole)}의 이클립스 · 월식 회전참! 평타 3배 피해 + 1초 기절`;
+        mpState.announcementUntil = Date.now() + 1700;
+        return;
+      }
+
       mpPushFx(unit.x, unit.y, target.x, target.y, '#ff355d', 7, sideKey, 'eclipseSlash');
       const killed = mpApplyDamage(targetState, target, unit.damage, unit.ownerRole, sideKey);
       if (killed) mpTriggerEclipseGrowth(unit, target);
-      if (Math.random() < (UNIT_DATA.eclipse.hitBlackHoleChance || .05)) mpCreateEclipseBlackHole(targetState, sideKey, unit, target);
+      if (Math.random() < (eclipseData.hitBlackHoleChance || .05)) mpCreateEclipseBlackHole(targetState, sideKey, unit, target);
       return;
     }
 
@@ -14359,7 +15024,8 @@ function requestGachaDraw(count) {
     for (const unit of targetState.units) {
       unit.attackAnimation = Math.max(0, Number(unit.attackAnimation || 0) - dt * 6.5);
       if (unit.unitId === 'astralChronomancer') mpUpdateChronoUnit(targetState, sideKey, unit);
-      if (now < (unit.stunUntil || 0)) continue;
+      if (unit.unitId === 'eclipse') unit.stunUntil = 0;
+      if (unit.unitId !== 'eclipse' && now < (unit.stunUntil || 0)) continue;
       if (unit.unitId === 'moneyTree') {
         unit.incomeAmount ||= UNIT_DATA.moneyTree.incomeAmount;
         unit.incomeInterval ||= UNIT_DATA.moneyTree.incomeInterval;
@@ -15252,10 +15918,8 @@ function requestGachaDraw(count) {
           for(const [x,y] of [[-14,-20],[7,-30],[17,-10],[-3,-7],[3,-17]]){mpCtx.beginPath();mpCtx.arc(x,y,4.2,0,Math.PI*2);mpCtx.fill();mpCtx.stroke();}
           mpCtx.restore();
         } else if (id === 'eclipse') {
-          drawBoots('#15070b', 9);
-          const cloak=mpCtx.createLinearGradient(-20,-12,20,20);cloak.addColorStop(0,'#0b0710');cloak.addColorStop(.45,'#24101b');cloak.addColorStop(1,'#050307');mpCtx.fillStyle=cloak;mpCtx.beginPath();mpCtx.moveTo(-22,18);mpCtx.lineTo(-15,-12);mpCtx.lineTo(15,-12);mpCtx.lineTo(22,18);mpCtx.lineTo(0,12);mpCtx.closePath();mpCtx.fill();
-          const armor=mpCtx.createRadialGradient(-5,-8,2,0,0,27);armor.addColorStop(0,'#5b1a2b');armor.addColorStop(.35,'#24131e');armor.addColorStop(1,'#09070c');mpCtx.fillStyle=armor;mpCtx.beginPath();mpCtx.roundRect(-16,-12,32,30,8);mpCtx.fill();mpCtx.strokeStyle='#ff355d';mpCtx.lineWidth=1.8;mpCtx.shadowBlur=11;mpCtx.shadowColor='#ff355d';mpCtx.strokeRect(-13,-9,26,24);mpCtx.shadowBlur=0;
-          for(const side of [-1,1]){mpCtx.fillStyle='#3b1420';mpCtx.beginPath();mpCtx.arc(side*18,-6,9,0,Math.PI*2);mpCtx.fill();mpCtx.strokeStyle='#8b223a';mpCtx.stroke();}mpCtx.fillStyle='#16101a';mpCtx.beginPath();mpCtx.arc(0,-21,13,0,Math.PI*2);mpCtx.fill();mpCtx.strokeStyle='#ff4b68';mpCtx.lineWidth=1.6;mpCtx.stroke();mpCtx.fillStyle='#ff506d';mpCtx.beginPath();mpCtx.arc(4,-23,2,0,Math.PI*2);mpCtx.fill();
+          drawBoots('#100408', 9);
+          drawEclipseGalaxyBodyArt(mpCtx, time, unit, mpHighLoadFrame ? .72 : 1);
         } else if (id === 'astralChronomancer') {
           const hover = Math.sin(time*.004 + unit.animationOffset)*2;
           mpCtx.save(); mpCtx.translate(0,hover);
@@ -15316,8 +15980,7 @@ function requestGachaDraw(count) {
           mpCtx.fillStyle=orb;mpCtx.beginPath();mpCtx.arc(orbX,0,11+attack*2,0,Math.PI*2);mpCtx.fill();
           if (chrono){mpCtx.strokeStyle='#fff';mpCtx.lineWidth=1.4;mpCtx.beginPath();mpCtx.arc(orbX,0,15,0,Math.PI*2);mpCtx.stroke();}
         } else if (unit.unitId === 'eclipse') {
-          const phase=time*.00075;const redA=`hsl(${350+Math.sin(phase)*9} 100% 62%)`;const redB=`hsl(${5+Math.cos(phase*1.17)*8} 100% 55%)`;
-          for(const side of [-1,1]){mpCtx.save();mpCtx.translate(-3,side*8);mpCtx.rotate(side*.075+(attack>0?side*(1-attack)*.18:0));mpCtx.shadowBlur=17;mpCtx.shadowColor=side>0?redA:redB;const blade=mpCtx.createLinearGradient(0,-5,66,5);blade.addColorStop(0,'#17070b');blade.addColorStop(.42,'#2a0b12');blade.addColorStop(.72,'#0b0508');blade.addColorStop(1,'#020102');mpCtx.fillStyle=blade;mpCtx.beginPath();mpCtx.moveTo(0,-4.2);mpCtx.lineTo(55,-3.2);mpCtx.lineTo(70,0);mpCtx.lineTo(55,3.2);mpCtx.lineTo(0,4.2);mpCtx.closePath();mpCtx.fill();const edge=mpCtx.createLinearGradient(0,0,70,0);edge.addColorStop(0,redA);edge.addColorStop(.5,redB);edge.addColorStop(1,redA);mpCtx.strokeStyle=edge;mpCtx.lineWidth=2.4;mpCtx.stroke();mpCtx.shadowBlur=8;mpCtx.fillStyle='#551321';mpCtx.fillRect(-7,-8,7,16);mpCtx.fillStyle='#ff4666';mpCtx.fillRect(-10,-1.5,14,3);mpCtx.restore();}
+          drawEclipseTwinBladesArt(mpCtx, time, unit, attack, mpHighLoadFrame ? .72 : 1);
         } else if (unit.unitId === 'skyDragonKnight') {
           // 황금 신화창: 이중 자루, 용날개 가드, 보석과 다층 창날
           const shaft = mpCtx.createLinearGradient(-5,0,58,0); shaft.addColorStop(0,'#6a3c00'); shaft.addColorStop(.38,'#d99a16'); shaft.addColorStop(.68,'#fff2a6'); shaft.addColorStop(1,'#b86a00');
@@ -15337,7 +16000,7 @@ function requestGachaDraw(count) {
     const data = UNIT_DATA[unit.unitId];
     if (!data) return;
     const y = mpState.mode === 'coop' ? mpDisplayY(unit.y) : unit.y;
-    const stunned = Date.now() < (unit.stunUntil || 0);
+    const stunned = unit.unitId !== 'eclipse' && Date.now() < (unit.stunUntil || 0);
     const slowed = Date.now() < (unit.slowUntil || 0);
 
     mpCtx.save();
@@ -15359,6 +16022,10 @@ function requestGachaDraw(count) {
       mpCtx.beginPath();
       mpCtx.arc(0, 0, fieldRange, 0, Math.PI * 2);
       mpCtx.stroke();
+    }
+
+    if (unit.unitId === 'eclipse') {
+      drawEclipseGalaxyAuraArt(mpCtx, time, unit, mpHighLoadFrame ? .72 : 1);
     }
 
     // 소유 플레이어를 알아보기 쉬운 외곽 링
@@ -15404,7 +16071,7 @@ function requestGachaDraw(count) {
     }
 
     if (unit.unitId === 'eclipse') {
-      const orbitRadius=54;for(let index=0;index<3;index+=1){const a=time*.00115+index*Math.PI*2/3;const ox=Math.cos(a)*orbitRadius,oy=Math.sin(a)*orbitRadius*.48;mpCtx.save();mpCtx.translate(ox,oy);mpCtx.shadowBlur=15;mpCtx.shadowColor='#ff355d';mpCtx.fillStyle='#030104';mpCtx.beginPath();mpCtx.arc(0,0,8,0,Math.PI*2);mpCtx.fill();mpCtx.strokeStyle='rgba(255,62,92,.92)';mpCtx.lineWidth=2;mpCtx.beginPath();mpCtx.arc(0,0,11+Math.sin(a*2)*1.8,0,Math.PI*2);mpCtx.stroke();mpCtx.restore();}
+      drawEclipseOrbitArt(mpCtx, time, unit, mpHighLoadFrame ? .72 : 1);
     }
 
     if (unit.unitId === 'moneyTree' && Date.now() < Number(unit.moneyPulseUntil || 0)) {
@@ -15755,8 +16422,22 @@ function requestGachaDraw(count) {
         const pulse=Math.sin(progress*Math.PI);mpCtx.shadowBlur=28;mpCtx.shadowColor='#ffe36e';
         for(let i=0;i<5;i+=1){mpCtx.strokeStyle=`rgba(255,${225-i*10},${90-i*10},${pulse*(.82-i*.11)})`;mpCtx.lineWidth=18-i*3;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.lineTo(fx.x2,y2);mpCtx.stroke();}
         const sweepX=lerp(fx.x1,fx.x2,progress);mpCtx.fillStyle=`rgba(255,250,200,${pulse})`;mpCtx.beginPath();mpCtx.ellipse(sweepX,y1,34,13,0,0,Math.PI*2);mpCtx.fill();
+      } else if (fx.kind === 'eclipseSpin') {
+        const pulse=Math.sin(progress*Math.PI);
+        const spin=-progress*Math.PI*2;
+        mpCtx.save();mpCtx.translate(fx.x2,y2);mpCtx.globalCompositeOperation='lighter';
+        mpCtx.shadowBlur=mpHighLoadFrame?24:34;mpCtx.shadowColor='#ff234f';
+        const ringCount=mpHighLoadFrame?3:4;
+        for(let ring=0;ring<ringCount;ring+=1){mpCtx.strokeStyle=`rgba(255,${54+ring*22},${86+ring*16},${(.78-ring*.12)*pulse})`;mpCtx.lineWidth=10-ring*1.7;mpCtx.beginPath();mpCtx.arc(0,0,42+ring*7,spin-Math.PI*1.55,spin+.28);mpCtx.stroke();}
+        mpCtx.rotate(spin);
+        const blade=mpCtx.createLinearGradient(0,34,0,-55);blade.addColorStop(0,'#4b0712');blade.addColorStop(.35,'#b20d2d');blade.addColorStop(.72,'#ff4568');blade.addColorStop(1,'#fff0f4');
+        mpCtx.shadowBlur=mpHighLoadFrame?18:26;mpCtx.shadowColor='#ff183f';mpCtx.strokeStyle='#ff3a5e';mpCtx.lineWidth=3.2;mpCtx.fillStyle=blade;mpCtx.beginPath();mpCtx.moveTo(0,-58);mpCtx.lineTo(8,-39);mpCtx.lineTo(5,23);mpCtx.lineTo(-5,23);mpCtx.lineTo(-8,-39);mpCtx.closePath();mpCtx.fill();mpCtx.stroke();
+        mpCtx.fillStyle='#160208';mpCtx.fillRect(-16,23,32,6);mpCtx.fillStyle='#8c1028';mpCtx.fillRect(-4,29,8,20);mpCtx.beginPath();mpCtx.arc(0,52,6,0,Math.PI*2);mpCtx.fill();
+        mpCtx.rotate(-spin);const impact=mpCtx.createRadialGradient(0,0,1,0,0,62);impact.addColorStop(0,`rgba(255,248,250,${.62*pulse})`);impact.addColorStop(.25,`rgba(255,45,78,${.38*pulse})`);impact.addColorStop(1,'rgba(255,0,40,0)');mpCtx.fillStyle=impact;mpCtx.beginPath();mpCtx.arc(0,0,62,0,Math.PI*2);mpCtx.fill();mpCtx.restore();
       } else if (fx.kind === 'eclipseSlash') {
-        const pulse=Math.sin(progress*Math.PI);mpCtx.save();mpCtx.translate(fx.x2,y2);mpCtx.rotate(angle);mpCtx.shadowBlur=22;mpCtx.shadowColor='#ff2c55';for(let i=0;i<2;i+=1){const side=i===0?-1:1;mpCtx.strokeStyle=`rgba(255,${55+i*25},${85+i*15},${pulse*(.92-i*.12)})`;mpCtx.lineWidth=7-i*2;mpCtx.beginPath();mpCtx.arc(0,side*8,34+i*10,-1.05,1.05);mpCtx.stroke();}mpCtx.restore();
+        const pulse=Math.sin(progress*Math.PI);mpCtx.save();mpCtx.translate(fx.x2,y2);mpCtx.rotate(angle);mpCtx.globalCompositeOperation='lighter';mpCtx.shadowBlur=mpHighLoadFrame?20:30;mpCtx.shadowColor='#ff234f';
+        const layers=mpHighLoadFrame?3:5;for(let layer=0;layer<layers;layer+=1){const r=31+layer*8;mpCtx.strokeStyle=layer===0?`rgba(255,236,241,${.92*pulse})`:`rgba(255,${70+layer*14},${100+layer*11},${(.72-layer*.09)*pulse})`;mpCtx.lineWidth=8-layer*1.25;mpCtx.beginPath();mpCtx.arc(0,-7,r,-1.22,.98);mpCtx.stroke();mpCtx.beginPath();mpCtx.arc(0,7,r,-.98,1.22);mpCtx.stroke();}
+        const impact=mpCtx.createRadialGradient(0,0,1,0,0,44);impact.addColorStop(0,`rgba(255,245,248,${.48*pulse})`);impact.addColorStop(.28,`rgba(255,54,88,${.26*pulse})`);impact.addColorStop(1,'rgba(255,0,45,0)');mpCtx.fillStyle=impact;mpCtx.beginPath();mpCtx.arc(0,0,44,0,Math.PI*2);mpCtx.fill();mpCtx.restore();
       } else if (fx.kind === 'lightning') {
         const flash=Math.sin(progress*Math.PI);mpCtx.shadowBlur=24;mpCtx.shadowColor='#fff3a3';
         for(let layer=0;layer<3;layer+=1){mpCtx.strokeStyle=layer===0?`rgba(255,255,240,${flash})`:`rgba(255,215,50,${flash*(.7-layer*.18)})`;mpCtx.lineWidth=7-layer*2;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);for(let i=1;i<=7;i+=1){const t=i/7;mpCtx.lineTo(lerp(fx.x1,fx.x2,t)+(Math.random()-.5)*16,lerp(y1,y2,t));}mpCtx.stroke();}

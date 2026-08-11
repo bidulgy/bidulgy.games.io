@@ -805,6 +805,24 @@
 }
 @keyframes galaxyRarityFlow { to { background-position: 220% 0; } }
 
+.rarity-admin {
+  color: #fff7d6;
+  background: linear-gradient(90deg, #ffffff, #ffd86b, #ff5c5c, #b56cff, #ffffff);
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow:
+    0 0 8px rgba(255,255,255,.72),
+    0 0 16px rgba(255,196,72,.58),
+    0 0 26px rgba(255,65,90,.42),
+    0 0 36px rgba(181,108,255,.34);
+  animation: adminRarityFlow 2.1s linear infinite;
+  font-weight: 1000;
+  letter-spacing: .08em;
+}
+@keyframes adminRarityFlow { to { background-position: 260% 0; } }
+
 .rarity-secret {
   color: #d8b4fe;
   text-shadow: 0 0 12px rgba(216, 180, 254, .72);
@@ -6290,13 +6308,39 @@ function applyStagePreview(stageId = selectedStage) {
         color: '#f4c542',
         skillText: '공격하지 않는 경제 유닛입니다. 기본 상태에서는 1초마다 15골드를 생산합니다. 1단계 업그레이드 시 1초마다 25골드, 2단계 업그레이드 시 0.7초마다 25골드를 생산합니다.'
       },
+      cherrySamurai: {
+        id: 'cherrySamurai',
+        name: '벚꽃 사무라이',
+        icon: '🌸',
+        rarity: '갤럭시',
+        rarityKey: 'galaxy',
+        rarityClass: 'rarity-galaxy',
+        cost: 600,
+        damage: 700,
+        range: 300,
+        meleeRange: 120,
+        fireInterval: 0.9,
+        normalBeforeIssen: 5,
+        issenMultiplier: 5,
+        issenWidth: 30,
+        issenHoldSeconds: 0.5,
+        ultimateEveryIssen: 6,
+        ultimateMultiplier: 10,
+        ultimateWidth: 30,
+        swordWaveCount: 2,
+        footprintRadius: 87,
+        multiplayerFootprintRadius: 72,
+        maxPlacedPerPlayer: 1,
+        color: '#ff8fc8',
+        skillText: '양손에 장검을 쥐고 두 검을 함께 크게 휘두릅니다. 120 이내에서는 근접 베기, 120~300에서는 첨부 이미지처럼 밝고 날카로운 검기 2개를 동시에 날리며 베기와 검기가 지나간 자리에는 벚꽃 잎이 잠깐 남습니다. 일반 공격을 5번 한 뒤 다음 공격에서 사거리 안 가장 앞선 적에게 일섬을 사용해 왼쪽 아래에서 오른쪽 위로 고속 이동하며 폭 30 경로의 모든 적에게 평타의 5배 피해를 줍니다. 이동 후 0.5초 멈췄다가 원래 위치로 돌아오며 항상 맵 안에 보이도록 이동 위치가 제한됩니다. 일섬을 6번 사용할 때마다 대상에게 돌진해 위→아래, 왼쪽→오른쪽으로 베고 대상 위로 높이 뛰어올라 큰 X자 참격을 완성합니다. 각 참격은 폭 30 범위 공격이며 각각 평타의 10배 피해를 줍니다. 벚꽃 사무라이는 일반 유닛보다 넓은 배치 공간을 차지하며 한 플레이어당 한 유닛만 배치할 수 있습니다.'
+      },
       eclipse: {
         id: 'eclipse',
         name: '이클립스',
         icon: '🌑',
-        rarity: '갤럭시',
-        rarityKey: 'galaxy',
-        rarityClass: 'rarity-galaxy',
+        rarity: 'ADMIN',
+        rarityKey: 'admin',
+        rarityClass: 'rarity-admin',
         cost: 650,
         damage: 500,
         range: 230,
@@ -7656,7 +7700,11 @@ async function logout() {
       const conversionValue = UNIT_FRAGMENT_CONVERSION[unit.rarityKey] || 0;
       const convertibleCopies = Math.max(0, copies - 1);
 
-      const conversionMarkup = selectable ? '' : `
+      const conversionMarkup = selectable
+        ? ''
+        : unit.rarityKey === 'admin'
+          ? `<div class="unit-convert-box"><strong class="rarity-admin">ADMIN 전용 유닛</strong><span class="muted">관리자 기능으로만 획득 가능 · 조각 변환 불가</span></div>`
+          : `
         <div class="unit-convert-box">
           <div class="convert-quantity-label">
             <span>중복 유닛 → 조각</span>
@@ -7736,6 +7784,7 @@ async function logout() {
       if (showingUnits) {
         const grid = document.querySelector('#collectionGrid');
         const rarityOrder = {
+          admin: 8,
           galaxy: 7,
           secret: 6,
           mythic: 5,
@@ -8855,7 +8904,11 @@ function requestGachaDraw(count) {
           .filter(unit => unit.rarityKey === rarityKey);
 
         if (!eligible.length) {
-          alert('이 등급에 등록된 유닛이 없습니다.');
+          if (rarityKey === 'galaxy') {
+            alert('현재 갤럭시 등급 유닛이 없습니다. 이클립스는 ADMIN 전용으로 변경되어 관리자 기능으로만 획득할 수 있습니다.');
+          } else {
+            alert('이 등급에 등록된 유닛이 없습니다.');
+          }
           return;
         }
 
@@ -9902,7 +9955,8 @@ function requestGachaDraw(count) {
         flameWizard: 'fireball',
         skyDragonKnight: 'dragonLance',
         astralChronomancer: 'timeRift',
-        eclipse: 'eclipseSlash'
+        eclipse: 'eclipseSlash',
+        cherrySamurai: 'sakuraWave'
       };
 
       return effects[unitId] || 'arcaneBolt';
@@ -9924,7 +9978,11 @@ function requestGachaDraw(count) {
         skyLightning: .44,
         timeRift: .48,
         timeRiftGolden: .52,
-        eclipseSlash: .34
+        eclipseSlash: .34,
+        sakuraMelee: .38,
+        sakuraWave: .50,
+        sakuraIssen: .82,
+        sakuraUltimateCut: .58
       };
 
       return durations[effect] || .34;
@@ -10031,6 +10089,20 @@ function requestGachaDraw(count) {
 
     function triggerDelayedAttack(attack) {
       if (!battle || battle.ended) return;
+
+      if (attack.kind === 'sakuraCorridor') {
+        battle.shots.push({
+          x1: attack.x1, y1: attack.y1, x2: attack.x2, y2: attack.y2,
+          life: getAttackEffectDuration(attack.effect || 'sakuraUltimateCut'),
+          maxLife: getAttackEffectDuration(attack.effect || 'sakuraUltimateCut'),
+          color: '#ff9bd0', effect: attack.effect || 'sakuraUltimateCut',
+          angle: Math.atan2(attack.y2 - attack.y1, attack.x2 - attack.x1),
+          width: attack.width || 30, seed: Math.random() * 1000, style: attack.style
+        });
+        const hits = damageEnemiesAlongSamuraiLine(attack.x1, attack.y1, attack.x2, attack.y2, attack.width || 30, attack.damage);
+        if (hits > 0) setBattleMessage(`🌸 만개천참 ${attack.style || ''} · ${hits}명에게 ${Math.round(attack.damage)} 피해`);
+        return;
+      }
 
       if (attack.kind === 'skyLightning') {
         const impactRadius = attack.radius ?? UNIT_DATA.skyDragonKnight.lightningRadius ?? 20;
@@ -10482,12 +10554,187 @@ function requestGachaDraw(count) {
       battle.blackHoles = remaining;
     }
 
+    function getFrontmostEnemyInRange(placed, maxRange) {
+      const candidates = battle.enemies.filter(enemy =>
+        !enemy.dead && Math.hypot(enemy.x - placed.x, enemy.y - placed.y) <= maxRange
+      );
+      candidates.sort((a, b) => {
+        const progress = Number(b.targetIndex || 0) - Number(a.targetIndex || 0);
+        if (progress !== 0) return progress;
+        const aNext = path[Math.min(path.length - 1, Number(a.targetIndex || 0))] || a;
+        const bNext = path[Math.min(path.length - 1, Number(b.targetIndex || 0))] || b;
+        const aRemain = Math.hypot((aNext.x ?? a.x) - a.x, (aNext.y ?? a.y) - a.y);
+        const bRemain = Math.hypot((bNext.x ?? b.x) - b.x, (bNext.y ?? b.y) - b.y);
+        return aRemain - bRemain;
+      });
+      return candidates[0] || null;
+    }
+
+    function damageEnemiesAlongSamuraiLine(x1, y1, x2, y2, width, damage) {
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const lenSq = dx * dx + dy * dy || 1;
+      const halfWidth = Math.max(1, Number(width || 30) / 2);
+      let hits = 0;
+      battle.enemies.forEach(enemy => {
+        if (enemy.dead) return;
+        const t = Math.max(0, Math.min(1, ((enemy.x - x1) * dx + (enemy.y - y1) * dy) / lenSq));
+        const px = x1 + dx * t;
+        const py = y1 + dy * t;
+        if (Math.hypot(enemy.x - px, enemy.y - py) > halfWidth + Number(enemy.radius || 0) * .35) return;
+        applyDamageToEnemy(enemy, damage);
+        hits += 1;
+      });
+      return hits;
+    }
+
+    function clampSamuraiDashPoint(x, y) {
+      const margin = 44;
+      return {
+        x: Math.max(margin, Math.min(canvas.width - margin, x)),
+        y: Math.max(margin, Math.min(canvas.height - margin, y))
+      };
+    }
+
+    function setSamuraiDashVisual(placed, toX, toY, ultimate = false) {
+      const now = performance.now();
+      const holdMs = ultimate ? 690 : ((UNIT_DATA.cherrySamurai.issenHoldSeconds || .5) * 1000);
+      placed.samuraiDash = {
+        fromX: placed.x,
+        fromY: placed.y,
+        toX,
+        toY,
+        startAt: now,
+        arriveAt: now + 115,
+        holdUntil: now + 115 + holdMs,
+        returnUntil: now + 115 + holdMs + 185,
+        ultimate
+      };
+    }
+
+    function getSamuraiRenderPosition(unit, now = performance.now()) {
+      const dash = unit?.samuraiDash;
+      if (!dash) return { x: unit.x, y: unit.y };
+      if (now >= dash.returnUntil) {
+        unit.samuraiDash = null;
+        return { x: unit.x, y: unit.y };
+      }
+      if (now < dash.arriveAt) {
+        const t = Math.max(0, Math.min(1, (now - dash.startAt) / Math.max(1, dash.arriveAt - dash.startAt)));
+        const eased = 1 - Math.pow(1 - t, 3);
+        return { x: dash.fromX + (dash.toX - dash.fromX) * eased, y: dash.fromY + (dash.toY - dash.fromY) * eased };
+      }
+      if (now <= dash.holdUntil) {
+        let jump = 0;
+        if (dash.ultimate) {
+          const t = Math.max(0, Math.min(1, (now - dash.arriveAt) / Math.max(1, dash.holdUntil - dash.arriveAt)));
+          jump = Math.sin(t * Math.PI) * 78;
+        }
+        return { x: dash.toX, y: dash.toY - jump };
+      }
+      const t = Math.max(0, Math.min(1, (now - dash.holdUntil) / Math.max(1, dash.returnUntil - dash.holdUntil)));
+      const eased = t * t * (3 - 2 * t);
+      return { x: dash.toX + (dash.fromX - dash.toX) * eased, y: dash.toY + (dash.fromY - dash.toY) * eased };
+    }
+
+    function triggerSamuraiUltimate(placed, target, slowMultiplier) {
+      const data = UNIT_DATA.cherrySamurai;
+      const center = clampSamuraiDashPoint(target.x, target.y);
+      setSamuraiDashVisual(placed, center.x, center.y, true);
+      placed.attackMode = 'sakuraUltimate';
+      placed.attackAnimation = 1;
+      placed.cooldown = Math.max(placed.fireInterval * slowMultiplier, 1.45);
+      const d = Number(placed.damage || data.damage) * (data.ultimateMultiplier || 10);
+      const w = data.ultimateWidth || 30;
+      const size = 92;
+      const strikes = [
+        { timer: .03, x1: center.x, y1: center.y - size, x2: center.x, y2: center.y + size, style: 'vertical' },
+        { timer: .20, x1: center.x - size, y1: center.y, x2: center.x + size, y2: center.y, style: 'horizontal' },
+        { timer: .48, x1: center.x - size*.82, y1: center.y - size*.82, x2: center.x + size*.82, y2: center.y + size*.82, style: 'diag1' },
+        { timer: .58, x1: center.x - size*.82, y1: center.y + size*.82, x2: center.x + size*.82, y2: center.y - size*.82, style: 'diag2' }
+      ];
+      strikes.forEach(strike => scheduleDelayedAttack({ kind: 'sakuraCorridor', ...strike, width: w, damage: d, effect: 'sakuraUltimateCut' }));
+      setBattleMessage('🌸 벚꽃 사무라이 · 오의 만개천참! 6번째 일섬이 4연속 범위 참격으로 강화됩니다!');
+    }
+
+    function triggerSamuraiIssen(placed, target, slowMultiplier) {
+      const data = UNIT_DATA.cherrySamurai;
+      const angle = Math.atan2(target.y - placed.y, target.x - placed.x);
+      const rawEndX = target.x + Math.cos(angle) * 42;
+      const rawEndY = target.y + Math.sin(angle) * 42;
+      const end = clampSamuraiDashPoint(rawEndX, rawEndY);
+      placed.angle = angle;
+      placed.attackMode = 'sakuraIssen';
+      placed.attackAnimation = 1;
+      placed.cooldown = Math.max(placed.fireInterval * slowMultiplier, .92);
+      setSamuraiDashVisual(placed, end.x, end.y, false);
+      const damage = Number(placed.damage || data.damage) * (data.issenMultiplier || 5);
+      const width = data.issenWidth || 30;
+      battle.shots.push({
+        x1: placed.x, y1: placed.y, x2: end.x, y2: end.y,
+        life: getAttackEffectDuration('sakuraIssen'), maxLife: getAttackEffectDuration('sakuraIssen'),
+        color: data.color, effect: 'sakuraIssen', angle, width, seed: Math.random() * 1000
+      });
+      const hits = damageEnemiesAlongSamuraiLine(placed.x, placed.y, end.x, end.y, width, damage);
+      setBattleMessage(`🌸 벚꽃 사무라이 · 일섬! 경로 ${hits}명에게 평타 5배 피해`);
+    }
+
+    function performCherrySamuraiAttack(placed, target, slowMultiplier) {
+      const data = UNIT_DATA.cherrySamurai;
+      if (!target || target.dead) return;
+      const specialReady = Number(placed.samuraiNormalCount || 0) >= (data.normalBeforeIssen || 5);
+      if (specialReady) {
+        placed.samuraiNormalCount = 0;
+        placed.samuraiIssenCount = Number(placed.samuraiIssenCount || 0) + 1;
+        const specialTarget = getFrontmostEnemyInRange(placed, placed.range) || target;
+        if (placed.samuraiIssenCount % (data.ultimateEveryIssen || 6) === 0) {
+          triggerSamuraiUltimate(placed, specialTarget, slowMultiplier);
+        } else {
+          triggerSamuraiIssen(placed, specialTarget, slowMultiplier);
+        }
+        return;
+      }
+
+      const angle = Math.atan2(target.y - placed.y, target.x - placed.x);
+      const distance = Math.hypot(target.x - placed.x, target.y - placed.y);
+      placed.angle = angle;
+      placed.attackAnimation = 1;
+      placed.cooldown = placed.fireInterval * slowMultiplier;
+      placed.samuraiNormalCount = Number(placed.samuraiNormalCount || 0) + 1;
+
+      if (distance <= (data.meleeRange || 120)) {
+        placed.attackMode = 'sakuraMelee';
+        battle.shots.push({
+          x1: placed.x, y1: placed.y, x2: target.x, y2: target.y,
+          life: getAttackEffectDuration('sakuraMelee'), maxLife: getAttackEffectDuration('sakuraMelee'),
+          color: data.color, effect: 'sakuraMelee', angle, seed: Math.random() * 1000, radius: data.meleeRange || 120
+        });
+        applyDamageToEnemy(target, placed.damage);
+        return;
+      }
+
+      placed.attackMode = 'sakuraWave';
+      const ux = Math.cos(angle), uy = Math.sin(angle), nx = -uy, ny = ux;
+      [-9, 9].forEach((offset, index) => {
+        battle.shots.push({
+          x1: placed.x + ux * 26 + nx * offset,
+          y1: placed.y - 7 + uy * 26 + ny * offset,
+          x2: target.x + nx * offset,
+          y2: target.y + ny * offset,
+          life: getAttackEffectDuration('sakuraWave'), maxLife: getAttackEffectDuration('sakuraWave'),
+          color: data.color, effect: 'sakuraWave', angle, seed: Math.random() * 1000 + index * 17
+        });
+      });
+      // 평타 700은 두 검기가 한 번의 공격으로 합쳐서 주는 총 피해입니다.
+      applyDamageToEnemy(target, placed.damage);
+    }
+
     function updatePlacedUnit(placed, dt) {
       if (placed.unitId === 'eclipse') placed.stunRemaining = 0;
       else placed.stunRemaining = Math.max(0, (placed.stunRemaining || 0) - dt);
       placed.attackSlowRemaining = Math.max(0, (placed.attackSlowRemaining || 0) - dt);
       placed.cooldown -= dt;
-      const animationSpeed = placed.unitId === 'royalGuardian' ? 2.8 : 5.5;
+      const animationSpeed = placed.unitId === 'royalGuardian' || placed.unitId === 'cherrySamurai' ? 3.0 : 5.5;
       placed.attackAnimation = Math.max(0, placed.attackAnimation - dt * animationSpeed);
 
       if (placed.unitId === 'astralChronomancer') {
@@ -10517,6 +10764,13 @@ function requestGachaDraw(count) {
         const targetInfo = getClosestEnemyToUnit(placed, placed.range);
         if (!targetInfo) return;
         performRoyalGuardianAttack(placed, targetInfo, slowMultiplier);
+        return;
+      }
+
+      if (placed.unitId === 'cherrySamurai') {
+        const target = getFrontmostEnemyInRange(placed, placed.range);
+        if (!target) return;
+        performCherrySamuraiAttack(placed, target, slowMultiplier);
         return;
       }
 
@@ -12310,6 +12564,27 @@ function requestGachaDraw(count) {
         const pulse = .88 + Math.sin(time * .006) * .12; ctx.shadowBlur = 12 * pulse; ctx.shadowColor = '#ffd84f'; ctx.fillStyle = '#ffd84f'; ctx.strokeStyle = '#8f6100'; ctx.lineWidth = 1.2;
         for (const [x,y] of [[-14,-20],[7,-30],[17,-10],[-3,-7],[3,-17]]) { ctx.beginPath(); ctx.arc(x,y,4.2,0,Math.PI*2); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#fff1a6'; ctx.beginPath(); ctx.arc(x-1.2,y-1.3,1.2,0,Math.PI*2); ctx.fill(); ctx.fillStyle = '#ffd84f'; }
         ctx.restore();
+      } else if (id === 'cherrySamurai') {
+        const sway = Math.sin(time * .004 + (unit.animationOffset || 0)) * 1.3;
+        drawBoots('#241722', 10);
+        // 검은 하카마와 벚꽃빛 겉옷
+        const hakama = ctx.createLinearGradient(-18,-8,18,20); hakama.addColorStop(0,'#120d17'); hakama.addColorStop(.45,'#302033'); hakama.addColorStop(1,'#0b0810');
+        ctx.fillStyle = hakama; ctx.beginPath(); ctx.moveTo(-18,18); ctx.lineTo(-13,-7); ctx.lineTo(13,-7); ctx.lineTo(18,18); ctx.lineTo(4,15); ctx.lineTo(0,24); ctx.lineTo(-4,15); ctx.closePath(); ctx.fill();
+        const robe = ctx.createLinearGradient(-15,-14,16,14); robe.addColorStop(0,'#fff7fb'); robe.addColorStop(.32,'#ffd4e7'); robe.addColorStop(.68,'#f58abb'); robe.addColorStop(1,'#8c315b');
+        ctx.fillStyle = robe; ctx.beginPath(); ctx.moveTo(-16,-10); ctx.lineTo(-9,-15); ctx.lineTo(9,-15); ctx.lineTo(17,-8); ctx.lineTo(12,14); ctx.lineTo(-12,14); ctx.closePath(); ctx.fill();
+        ctx.fillStyle='#2c1524'; ctx.fillRect(-15,1,30,5);
+        ctx.fillStyle='#ffb4d2'; ctx.beginPath(); ctx.arc(0,3,5.5,0,Math.PI*2); ctx.fill();
+        // 어깨 장식
+        for (const side of [-1,1]) { ctx.fillStyle='#4e253d'; ctx.beginPath(); ctx.ellipse(side*18,-6,9,6,side*.15,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='#ffb9d7'; ctx.lineWidth=1.3; ctx.stroke(); }
+        // 얼굴 / 머리 / 묶은 머리끈
+        ctx.fillStyle='#f1c6ad'; ctx.beginPath(); ctx.arc(0,-20,8.5,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#171017'; ctx.beginPath(); ctx.arc(0,-24,10.5,Math.PI,Math.PI*2); ctx.lineTo(9,-18); ctx.lineTo(-9,-18); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle='#23151f'; ctx.lineWidth=5; ctx.beginPath(); ctx.moveTo(-6,-26); ctx.quadraticCurveTo(-23,-34+sway,-26,-18); ctx.stroke();
+        ctx.strokeStyle='#ff8fc8'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-8,-27); ctx.quadraticCurveTo(-21,-32+sway,-24,-20); ctx.stroke();
+        // 작은 벚꽃 문양
+        ctx.fillStyle='rgba(255,220,235,.95)';
+        for (let i=0;i<5;i++){const a=i*Math.PI*2/5;ctx.beginPath();ctx.ellipse(Math.cos(a)*5,-4+Math.sin(a)*5,2.2,4,a,0,Math.PI*2);ctx.fill();}
+        ctx.fillStyle='#ff8fc8';ctx.beginPath();ctx.arc(0,-4,2,0,Math.PI*2);ctx.fill();
       } else if (id === 'eclipse') {
         drawBoots('#100408', 9);
         drawEclipseGalaxyBodyArt(ctx, time, unit, 1);
@@ -12342,6 +12617,20 @@ function requestGachaDraw(count) {
         }
       }
 
+      if (unit.unitId === 'cherrySamurai') {
+        weaponRecoil = 0;
+        if (attack > 0) {
+          const motionProgress = 1 - attack;
+          if (unit.attackMode === 'sakuraMelee' || unit.attackMode === 'sakuraWave') {
+            weaponAngle += -1.28 + motionProgress * 2.55;
+          } else if (unit.attackMode === 'sakuraIssen') {
+            weaponAngle += .78;
+          } else if (unit.attackMode === 'sakuraUltimate') {
+            weaponAngle += Math.sin(motionProgress * Math.PI * 4) * .85;
+          }
+        }
+      }
+
       ctx.save();
       ctx.translate(1, -5);
       ctx.rotate(weaponAngle);
@@ -12371,6 +12660,17 @@ function requestGachaDraw(count) {
         const orb=ctx.createRadialGradient(orbX-3,-4,1,orbX,0,12); orb.addColorStop(0,'#fff'); orb.addColorStop(.3,orbColor); orb.addColorStop(1,'rgba(20,20,40,0)');
         ctx.fillStyle=orb;ctx.beginPath();ctx.arc(orbX,0,11+attack*2,0,Math.PI*2);ctx.fill();
         if (chrono){ctx.strokeStyle='#fff';ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(orbX,0,15,0,Math.PI*2);ctx.stroke();}
+      } else if (unit.unitId === 'cherrySamurai') {
+        // 양손의 두 장검이 같은 동작으로 크게 움직입니다.
+        for (const offset of [-7, 7]) {
+          ctx.save(); ctx.translate(0, offset);
+          ctx.shadowBlur = 13 + attack * 10; ctx.shadowColor = '#ff9bca';
+          const steel = ctx.createLinearGradient(-6,0,63,0); steel.addColorStop(0,'#23151e'); steel.addColorStop(.18,'#987286'); steel.addColorStop(.48,'#fffdfd'); steel.addColorStop(.72,'#dff7ff'); steel.addColorStop(1,'#ffb8d8');
+          ctx.fillStyle=steel; ctx.strokeStyle='#fff2fa'; ctx.lineWidth=1.2;
+          ctx.beginPath(); ctx.moveTo(-2,-2.7); ctx.lineTo(48,-2.2); ctx.quadraticCurveTo(58,-1,66,0); ctx.quadraticCurveTo(57,2,48,2.6); ctx.lineTo(-2,3); ctx.closePath(); ctx.fill(); ctx.stroke();
+          ctx.shadowBlur=0; ctx.fillStyle='#3a2030'; ctx.fillRect(-11,-4,11,8); ctx.fillStyle='#ff8fc8'; ctx.fillRect(-14,-7,3,14); ctx.strokeStyle='#f7c7dc';ctx.lineWidth=1.1;ctx.beginPath();ctx.moveTo(-10,-4);ctx.lineTo(-2,4);ctx.moveTo(-10,4);ctx.lineTo(-2,-4);ctx.stroke();
+          ctx.restore();
+        }
       } else if (unit.unitId === 'eclipse') {
         drawEclipseTwinBladesArt(ctx, time, unit, attack, 1);
       } else if (unit.unitId === 'skyDragonKnight') {
@@ -12446,6 +12746,15 @@ function requestGachaDraw(count) {
           dashed: true
         });
       }
+
+      if (selected.unitId === 'cherrySamurai') {
+        drawRangeCircle(selected.x, selected.y, UNIT_DATA.cherrySamurai.meleeRange || 120, {
+          fill: 'rgba(255, 162, 205, .06)', stroke: 'rgba(255, 196, 224, .92)', lineWidth: 2, dashed: true
+        });
+        drawRangeCircle(selected.x, selected.y, UNIT_DATA.cherrySamurai.footprintRadius || 87, {
+          fill: 'rgba(255, 122, 190, .025)', stroke: 'rgba(255, 150, 205, .58)', lineWidth: 1.8, dashed: true
+        });
+      }
     }
 
     function drawPlacementPreview(time) {
@@ -12476,6 +12785,15 @@ function requestGachaDraw(count) {
         });
       }
 
+      if (unitId === 'cherrySamurai') {
+        drawRangeCircle(preview.x, preview.y, data.meleeRange || 120, {
+          fill: 'rgba(255, 156, 203, .06)', stroke: 'rgba(255, 205, 229, .95)', lineWidth: 2, dashed: false
+        });
+        drawRangeCircle(preview.x, preview.y, data.footprintRadius || 87, {
+          fill: 'rgba(255, 120, 190, .035)', stroke: 'rgba(255, 158, 210, .72)', lineWidth: 1.8, dashed: true
+        });
+      }
+
       const ghostUnit = {
         unitId,
         x: preview.x,
@@ -12495,6 +12813,9 @@ function requestGachaDraw(count) {
         chronoFieldRemaining: 0,
         eclipseGrowthStacks: 0,
         eclipseAttackCount: 0,
+        samuraiNormalCount: 0,
+        samuraiIssenCount: 0,
+        samuraiDash: null,
         incomeAmount: unitId === 'moneyTree' ? data.incomeAmount : 0,
         incomeInterval: unitId === 'moneyTree' ? data.incomeInterval : 0,
         incomeCooldown: unitId === 'moneyTree' ? data.incomeInterval : 0,
@@ -12519,7 +12840,8 @@ function requestGachaDraw(count) {
 
     function drawPlacedUnit(unit, time) {
       ctx.save();
-      ctx.translate(unit.x, unit.y);
+      const renderPos = unit.unitId === 'cherrySamurai' ? getSamuraiRenderPosition(unit, time) : { x: unit.x, y: unit.y };
+      ctx.translate(renderPos.x, renderPos.y);
 
       if (battle.selectedPlacedUnit === unit) {
         ctx.beginPath();
@@ -12737,6 +13059,10 @@ function requestGachaDraw(count) {
             ctx.arc(0, 0, layerRadius, -halfAngle, halfAngle);
             ctx.stroke();
           }
+          // 실제 검을 크게 휘두른 듯한 날카로운 선단과 잔광
+          ctx.strokeStyle = `rgba(255,255,245,${.95 * pulse})`;
+          ctx.lineWidth = 3.2;
+          ctx.beginPath(); ctx.arc(0, 0, radius * (.80 + progress*.12), -halfAngle*.96, halfAngle*.96); ctx.stroke();
         } else if (shot.effect === 'royalSwordWave') {
           const tailDistance = 48;
           const tailX = x - ux * tailDistance;
@@ -12759,6 +13085,8 @@ function requestGachaDraw(count) {
           ctx.beginPath();
           ctx.arc(0, 0, waveWidth + 4, -1.02, 1.02);
           ctx.stroke();
+          ctx.fillStyle = `rgba(255,255,235,${.78*fade})`;
+          ctx.beginPath(); ctx.moveTo(29,0); ctx.quadraticCurveTo(-3,-12,-42,-3); ctx.quadraticCurveTo(-5,2,29,0); ctx.fill();
           ctx.restore();
           ctx.strokeStyle = `rgba(255,205,48,${.30 * fade})`;
           ctx.lineWidth = 9;
@@ -12766,6 +13094,34 @@ function requestGachaDraw(count) {
           ctx.moveTo(tailX, tailY);
           ctx.lineTo(x, y);
           ctx.stroke();
+        } else if (shot.effect === 'sakuraMelee') {
+          const pulse = Math.sin(progress * Math.PI);
+          ctx.save(); ctx.translate(shot.x1, shot.y1); ctx.rotate(shot.angle);
+          ctx.globalCompositeOperation='lighter'; ctx.shadowBlur=22; ctx.shadowColor='#ff9dcf';
+          for (let layer=0; layer<4; layer++) {
+            const r = 52 + layer*11;
+            ctx.strokeStyle = layer===0 ? `rgba(255,255,255,${.95*pulse})` : `rgba(255,${180+layer*12},${215+layer*7},${(.72-layer*.11)*pulse})`;
+            ctx.lineWidth = 9-layer*1.7; ctx.beginPath(); ctx.arc(4,0,r,-2.28,-.28); ctx.stroke();
+          }
+          for(let i=0;i<12;i++){const a=-2.15+i*.17;const d=45+i%4*7;ctx.save();ctx.translate(Math.cos(a)*d,Math.sin(a)*d);ctx.rotate(a+progress*3+i);ctx.fillStyle=`rgba(255,190,220,${pulse*.82})`;ctx.beginPath();ctx.ellipse(0,0,2.2,5,0,0,Math.PI*2);ctx.fill();ctx.restore();}
+          ctx.restore();
+        } else if (shot.effect === 'sakuraWave') {
+          const tail=62; const tx=x-ux*tail, ty=y-uy*tail;
+          ctx.save(); ctx.translate(x,y); ctx.rotate(angle); ctx.globalCompositeOperation='lighter';
+          ctx.shadowBlur=24;ctx.shadowColor='#dffaff';
+          const blade=ctx.createLinearGradient(-58,0,27,0);blade.addColorStop(0,'rgba(175,236,255,0)');blade.addColorStop(.40,`rgba(189,242,255,${.44*fade})`);blade.addColorStop(.72,`rgba(255,220,240,${.78*fade})`);blade.addColorStop(1,`rgba(255,255,255,${fade})`);
+          ctx.fillStyle=blade;ctx.beginPath();ctx.moveTo(-54,-4);ctx.quadraticCurveTo(-5,-23,31,-2);ctx.quadraticCurveTo(9,3,-54,5);ctx.closePath();ctx.fill();
+          ctx.strokeStyle=`rgba(240,253,255,${fade})`;ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(-45,-2);ctx.quadraticCurveTo(0,-16,30,-1);ctx.stroke();ctx.restore();
+          ctx.strokeStyle=`rgba(255,155,203,${.34*fade})`;ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(x,y);ctx.stroke();
+          for(let i=0;i<8;i++){const back=15+i*8;const side=Math.sin(shot.seed+i*2.1)*10;ctx.save();ctx.translate(x-ux*back+nx*side,y-uy*back+ny*side);ctx.rotate(angle+i*.8);ctx.fillStyle=`rgba(255,177,214,${fade*(.8-i*.06)})`;ctx.beginPath();ctx.ellipse(0,0,2,4.8,0,0,Math.PI*2);ctx.fill();ctx.restore();}
+        } else if (shot.effect === 'sakuraIssen' || shot.effect === 'sakuraUltimateCut') {
+          const ultimate = shot.effect === 'sakuraUltimateCut';
+          const pulse=Math.sin(progress*Math.PI); const lineProgress=ultimate?Math.min(1,progress*2.3):Math.min(1,progress*3.2);
+          const ex=lerp(shot.x1,shot.x2,lineProgress), ey=lerp(shot.y1,shot.y2,lineProgress);
+          ctx.globalCompositeOperation='lighter';ctx.shadowBlur=ultimate?30:24;ctx.shadowColor=ultimate?'#fff3fb':'#ff8fc8';
+          for(let layer=0;layer<4;layer++){ctx.strokeStyle=layer===0?`rgba(255,255,255,${pulse})`:`rgba(255,${155+layer*22},${205+layer*12},${pulse*(.76-layer*.12)})`;ctx.lineWidth=(ultimate?12:9)-layer*2;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.lineTo(ex,ey);ctx.stroke();}
+          for(let i=0;i<(ultimate?16:11);i++){const t=(i+.3)/(ultimate?16:11);const px=lerp(shot.x1,shot.x2,t),py=lerp(shot.y1,shot.y2,t);const side=Math.sin(shot.seed+i*1.9)*15;ctx.save();ctx.translate(px+nx*side,py+ny*side);ctx.rotate(angle+i*.7+progress*4);ctx.fillStyle=`rgba(255,174,214,${pulse*.75})`;ctx.beginPath();ctx.ellipse(0,0,2.4,5.6,0,0,Math.PI*2);ctx.fill();ctx.restore();}
+          if(ultimate){ctx.strokeStyle=`rgba(235,251,255,${.45*pulse})`;ctx.lineWidth=20;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.lineTo(ex,ey);ctx.stroke();}
         } else if (shot.effect === 'arcaneBolt') {
           for(let i=0;i<7;i+=1){const back=8+i*7;const swirl=Math.sin(shot.seed+i*1.8+progress*16)*(4+i*.8);ctx.fillStyle=`rgba(${180+i*4},${120+i*6},255,${fade*(.85-i*.08)})`;ctx.beginPath();ctx.arc(x-ux*back+nx*swirl,y-uy*back+ny*swirl,Math.max(1.2,4.5-i*.45),0,Math.PI*2);ctx.fill();}
           const orb=ctx.createRadialGradient(x-4,y-4,1,x,y,15);orb.addColorStop(0,'#fff');orb.addColorStop(.25,'#ead7ff');orb.addColorStop(.55,'#a766ff');orb.addColorStop(1,'rgba(80,20,160,0)');ctx.fillStyle=orb;ctx.beginPath();ctx.arc(x,y,15,0,Math.PI*2);ctx.fill();ctx.strokeStyle=`rgba(235,215,255,${fade})`;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,17+Math.sin(progress*20)*3,0,Math.PI*2);ctx.stroke();
@@ -13140,6 +13496,10 @@ function requestGachaDraw(count) {
         return { valid: false, reason: '이클립스는 한 맵에 한 유닛밖에 깔 수 없습니다.' };
       }
 
+      if (unitData.id === 'cherrySamurai' && battle.placedUnits.some(unit => unit.unitId === 'cherrySamurai')) {
+        return { valid: false, reason: '벚꽃 사무라이는 한 플레이어당 한 유닛만 깔 수 있습니다.' };
+      }
+
       const nearby = battle.placedUnits.some(unit => {
         const otherData = UNIT_DATA[unit.unitId] || {};
         const requiredDistance = Math.max(
@@ -13150,7 +13510,14 @@ function requestGachaDraw(count) {
       });
 
       if (nearby) {
-        return { valid: false, reason: unitData.id === 'eclipse' ? '이클립스의 일식 구체 영역과 다른 유닛이 겹칩니다.' : '다른 유닛과 너무 가깝습니다.' };
+        return {
+          valid: false,
+          reason: unitData.id === 'eclipse'
+            ? '이클립스의 일식 구체 영역과 다른 유닛이 겹칩니다.'
+            : unitData.id === 'cherrySamurai'
+              ? '벚꽃 사무라이의 넓은 배치 영역과 다른 유닛이 겹칩니다.'
+              : '다른 유닛과 너무 가깝습니다.'
+        };
       }
 
       return { valid: true, reason: '' };
@@ -13205,6 +13572,9 @@ function requestGachaDraw(count) {
         chronoFieldRemaining: 0,
         eclipseGrowthStacks: 0,
         eclipseAttackCount: 0,
+        samuraiNormalCount: 0,
+        samuraiIssenCount: 0,
+        samuraiDash: null,
         incomeAmount: unitData.id === 'moneyTree' ? unitData.incomeAmount : 0,
         incomeInterval: unitData.id === 'moneyTree' ? unitData.incomeInterval : 0,
         incomeCooldown: unitData.id === 'moneyTree' ? unitData.incomeInterval : 0,
@@ -14420,6 +14790,16 @@ function requestGachaDraw(count) {
         };
       }
     }
+
+    if (unitId === 'cherrySamurai') {
+      const samuraiAlreadyPlaced = units.some(item =>
+        item.unitId === 'cherrySamurai' && item.ownerRole === role
+      );
+      if (samuraiAlreadyPlaced) {
+        return { ok: false, reason: '벚꽃 사무라이는 한 플레이어당 한 유닛만 깔 수 있습니다.' };
+      }
+    }
+
     if (units.some(item => {
       const otherData = UNIT_DATA[item.unitId] || {};
       const required = Math.max(
@@ -14427,7 +14807,14 @@ function requestGachaDraw(count) {
         otherData.multiplayerFootprintRadius || 48
       );
       return Math.hypot(item.x - x, item.y - y) < required;
-    })) return { ok: false, reason: unitId === 'eclipse' ? '이클립스의 일식 구체 영역과 다른 유닛이 겹칩니다.' : '다른 유닛과 조금 더 떨어뜨려 배치하세요.' };
+    })) return {
+      ok: false,
+      reason: unitId === 'eclipse'
+        ? '이클립스의 일식 구체 영역과 다른 유닛이 겹칩니다.'
+        : unitId === 'cherrySamurai'
+          ? '벚꽃 사무라이의 넓은 배치 영역과 다른 유닛이 겹칩니다.'
+          : '다른 유닛과 조금 더 떨어뜨려 배치하세요.'
+    };
     return { ok: true };
   }
 
@@ -14452,6 +14839,9 @@ function requestGachaDraw(count) {
       chronoOrbitingShots: [],
       chronoFieldUntil: 0,
       eclipseGrowthStacks: 0,
+      samuraiNormalCount: 0,
+      samuraiIssenCount: 0,
+      samuraiDash: null,
       upgradeLevel: 0,
       incomeAmount: unitId === 'moneyTree' ? Number(data.incomeAmount) : 0,
       incomeInterval: unitId === 'moneyTree' ? Number(data.incomeInterval) : 0,
@@ -14846,6 +15236,10 @@ function requestGachaDraw(count) {
       chronoGolden: .46,
       eclipseSlash: .34,
       eclipseSpin: .42,
+      sakuraMelee: .38,
+      sakuraWave: .50,
+      sakuraIssen: .82,
+      sakuraUltimateCut: .58,
       line: .24
     };
     return durations[kind] || .28;
@@ -14870,7 +15264,8 @@ function requestGachaDraw(count) {
       starterMage: 'arcane',
       flameWizard: 'fireball',
       skyDragonKnight: 'dragonLance',
-      eclipse: 'eclipseSlash'
+      eclipse: 'eclipseSlash',
+      cherrySamurai: 'sakuraWave'
     };
     return kinds[unitId] || 'line';
   }
@@ -15031,6 +15426,63 @@ function requestGachaDraw(count) {
     mpState.blackHoles = keep;
   }
 
+  function mpFrontmostEnemyInRange(targetState, unit, maxRange) {
+    return [...(targetState.enemies || [])]
+      .filter(enemy => !enemy.dead && Math.hypot(enemy.x-unit.x,enemy.y-unit.y) <= maxRange)
+      .sort((a,b) => Number(b.progress||b.x||0)-Number(a.progress||a.x||0))[0] || null;
+  }
+
+  function mpDamageAlongSamuraiLine(targetState, sideKey, unit, x1, y1, x2, y2, width, damage) {
+    const dx=x2-x1, dy=y2-y1, lenSq=dx*dx+dy*dy||1, half=Math.max(1,Number(width||30)/2);
+    let hits=0;
+    for(const enemy of targetState.enemies||[]){
+      if(enemy.dead) continue;
+      const t=Math.max(0,Math.min(1,((enemy.x-x1)*dx+(enemy.y-y1)*dy)/lenSq));
+      const px=x1+dx*t, py=y1+dy*t;
+      if(Math.hypot(enemy.x-px,enemy.y-py)>half+Number(enemy.radius||0)*.35) continue;
+      mpApplyDamage(targetState,enemy,damage,unit.ownerRole,sideKey); hits+=1;
+    }
+    return hits;
+  }
+
+  function mpClampSamuraiPoint(x,y){const m=44;return{x:Math.max(m,Math.min(MP_WIDTH-m,x)),y:Math.max(m,Math.min(MP_HEIGHT-m,y))};}
+
+  function mpSetSamuraiDash(unit,toX,toY,ultimate=false){const now=Date.now(),hold=ultimate?690:500;unit.samuraiDash={fromX:unit.x,fromY:unit.y,toX,toY,startAt:now,arriveAt:now+115,holdUntil:now+115+hold,returnUntil:now+115+hold+185,ultimate};}
+
+  function mpSamuraiRenderPosition(unit,now=Date.now()){
+    const d=unit?.samuraiDash;if(!d)return{x:unit.x,y:unit.y};
+    if(now>=d.returnUntil){unit.samuraiDash=null;return{x:unit.x,y:unit.y};}
+    if(now<d.arriveAt){const t=Math.max(0,Math.min(1,(now-d.startAt)/Math.max(1,d.arriveAt-d.startAt))),e=1-Math.pow(1-t,3);return{x:d.fromX+(d.toX-d.fromX)*e,y:d.fromY+(d.toY-d.fromY)*e};}
+    if(now<=d.holdUntil){const t=Math.max(0,Math.min(1,(now-d.arriveAt)/Math.max(1,d.holdUntil-d.arriveAt))),jump=d.ultimate?Math.sin(t*Math.PI)*78:0;return{x:d.toX,y:d.toY-jump};}
+    const t=Math.max(0,Math.min(1,(now-d.holdUntil)/Math.max(1,d.returnUntil-d.holdUntil))),e=t*t*(3-2*t);return{x:d.toX+(d.fromX-d.toX)*e,y:d.toY+(d.fromY-d.toY)*e};
+  }
+
+  function mpSamuraiUltimate(targetState,sideKey,unit,target){
+    const data=UNIT_DATA.cherrySamurai,c=mpClampSamuraiPoint(target.x,target.y),d=Number(unit.damage||data.damage)*(data.ultimateMultiplier||10),w=data.ultimateWidth||30,size=92;
+    unit.attackMode='sakuraUltimate';unit.attackAnimation=1;unit.cooldown=Math.max(unit.fireInterval,1.45);mpSetSamuraiDash(unit,c.x,c.y,true);
+    const lines=[[c.x,c.y-size,c.x,c.y+size],[c.x-size,c.y,c.x+size,c.y],[c.x-size*.82,c.y-size*.82,c.x+size*.82,c.y+size*.82],[c.x-size*.82,c.y+size*.82,c.x+size*.82,c.y-size*.82]];
+    lines.forEach((l,i)=>{mpPushFx(l[0],l[1],l[2],l[3],'#ff9bd0',12,sideKey,'sakuraUltimateCut',{delay:i<2?i*.17:.45+(i-2)*.10,width:w});mpDamageAlongSamuraiLine(targetState,sideKey,unit,...l,w,d);});
+    mpState.announcement=`🌸 ${mpNameForRole(unit.ownerRole)}의 벚꽃 사무라이 · 오의 만개천참!`;mpState.announcementUntil=Date.now()+2200;
+  }
+
+  function mpSamuraiIssen(targetState,sideKey,unit,target){
+    const data=UNIT_DATA.cherrySamurai,a=Math.atan2(target.y-unit.y,target.x-unit.x),end=mpClampSamuraiPoint(target.x+Math.cos(a)*42,target.y+Math.sin(a)*42),d=Number(unit.damage||data.damage)*(data.issenMultiplier||5),w=data.issenWidth||30;
+    unit.angle=a;unit.attackMode='sakuraIssen';unit.attackAnimation=1;unit.cooldown=Math.max(unit.fireInterval,.92);mpSetSamuraiDash(unit,end.x,end.y,false);
+    mpPushFx(unit.x,unit.y,end.x,end.y,'#ff9bd0',9,sideKey,'sakuraIssen',{width:w});const hits=mpDamageAlongSamuraiLine(targetState,sideKey,unit,unit.x,unit.y,end.x,end.y,w,d);
+    mpState.announcement=`🌸 ${mpNameForRole(unit.ownerRole)}의 벚꽃 사무라이 · 일섬! ${hits}명`;mpState.announcementUntil=Date.now()+1600;
+  }
+
+  function mpPerformCherrySamuraiAttack(targetState,sideKey,unit,target){
+    const data=UNIT_DATA.cherrySamurai;
+    if(Number(unit.samuraiNormalCount||0)>=(data.normalBeforeIssen||5)){
+      unit.samuraiNormalCount=0;unit.samuraiIssenCount=Number(unit.samuraiIssenCount||0)+1;const t=mpFrontmostEnemyInRange(targetState,unit,unit.range)||target;
+      if(unit.samuraiIssenCount%(data.ultimateEveryIssen||6)===0) mpSamuraiUltimate(targetState,sideKey,unit,t); else mpSamuraiIssen(targetState,sideKey,unit,t);return;
+    }
+    const a=Math.atan2(target.y-unit.y,target.x-unit.x),dist=Math.hypot(target.x-unit.x,target.y-unit.y);unit.angle=a;unit.attackAnimation=1;unit.cooldown=unit.fireInterval;unit.samuraiNormalCount=Number(unit.samuraiNormalCount||0)+1;
+    if(dist<=(data.meleeRange||120)){unit.attackMode='sakuraMelee';mpPushFx(unit.x,unit.y,target.x,target.y,'#ff9bd0',8,sideKey,'sakuraMelee',{angle:a,radius:data.meleeRange||120});mpApplyDamage(targetState,target,unit.damage,unit.ownerRole,sideKey);return;}
+    unit.attackMode='sakuraWave';const ux=Math.cos(a),uy=Math.sin(a),nx=-uy,ny=ux;[-9,9].forEach((o,i)=>mpPushFx(unit.x+ux*26+nx*o,unit.y+uy*26+ny*o,target.x+nx*o,target.y+ny*o,'#dffaff',7,sideKey,'sakuraWave',{seed:Math.random()*1000+i*17}));mpApplyDamage(targetState,target,unit.damage,unit.ownerRole,sideKey);
+  }
+
   function mpPerformUnitAttack(targetState, sideKey, unit, target) {
     const data = UNIT_DATA[unit.unitId];
     if (!data || !target || target.dead) return;
@@ -15042,6 +15494,11 @@ function requestGachaDraw(count) {
 
     if (unit.unitId === 'astralChronomancer') {
       mpPerformChronoAttack(targetState, sideKey, unit);
+      return;
+    }
+
+    if (unit.unitId === 'cherrySamurai') {
+      mpPerformCherrySamuraiAttack(targetState, sideKey, unit, target);
       return;
     }
 
@@ -16044,6 +16501,11 @@ function requestGachaDraw(count) {
           mpCtx.shadowBlur=12;mpCtx.shadowColor='#ffd84f';mpCtx.fillStyle='#ffd84f';mpCtx.strokeStyle='#8f6100';mpCtx.lineWidth=1.2;
           for(const [x,y] of [[-14,-20],[7,-30],[17,-10],[-3,-7],[3,-17]]){mpCtx.beginPath();mpCtx.arc(x,y,4.2,0,Math.PI*2);mpCtx.fill();mpCtx.stroke();}
           mpCtx.restore();
+        } else if (id === 'cherrySamurai') {
+          const sway=Math.sin(time*.004+(unit.animationOffset||0))*1.3;drawBoots('#241722',10);
+          const hakama=mpCtx.createLinearGradient(-18,-8,18,20);hakama.addColorStop(0,'#120d17');hakama.addColorStop(.45,'#302033');hakama.addColorStop(1,'#0b0810');mpCtx.fillStyle=hakama;mpCtx.beginPath();mpCtx.moveTo(-18,18);mpCtx.lineTo(-13,-7);mpCtx.lineTo(13,-7);mpCtx.lineTo(18,18);mpCtx.lineTo(4,15);mpCtx.lineTo(0,24);mpCtx.lineTo(-4,15);mpCtx.closePath();mpCtx.fill();
+          const robe=mpCtx.createLinearGradient(-15,-14,16,14);robe.addColorStop(0,'#fff7fb');robe.addColorStop(.32,'#ffd4e7');robe.addColorStop(.68,'#f58abb');robe.addColorStop(1,'#8c315b');mpCtx.fillStyle=robe;mpCtx.beginPath();mpCtx.moveTo(-16,-10);mpCtx.lineTo(-9,-15);mpCtx.lineTo(9,-15);mpCtx.lineTo(17,-8);mpCtx.lineTo(12,14);mpCtx.lineTo(-12,14);mpCtx.closePath();mpCtx.fill();mpCtx.fillStyle='#2c1524';mpCtx.fillRect(-15,1,30,5);
+          mpCtx.fillStyle='#f1c6ad';mpCtx.beginPath();mpCtx.arc(0,-20,8.5,0,Math.PI*2);mpCtx.fill();mpCtx.fillStyle='#171017';mpCtx.beginPath();mpCtx.arc(0,-24,10.5,Math.PI,Math.PI*2);mpCtx.lineTo(9,-18);mpCtx.lineTo(-9,-18);mpCtx.closePath();mpCtx.fill();mpCtx.strokeStyle='#23151f';mpCtx.lineWidth=5;mpCtx.beginPath();mpCtx.moveTo(-6,-26);mpCtx.quadraticCurveTo(-23,-34+sway,-26,-18);mpCtx.stroke();mpCtx.strokeStyle='#ff8fc8';mpCtx.lineWidth=2;mpCtx.beginPath();mpCtx.moveTo(-8,-27);mpCtx.quadraticCurveTo(-21,-32+sway,-24,-20);mpCtx.stroke();
         } else if (id === 'eclipse') {
           drawBoots('#100408', 9);
           drawEclipseGalaxyBodyArt(mpCtx, time, unit, mpHighLoadFrame ? .72 : 1);
@@ -16076,6 +16538,10 @@ function requestGachaDraw(count) {
             weaponAngle += -1.48 + motionProgress * 1.72;
           }
         }
+
+        if (unit.unitId === 'cherrySamurai') {
+          weaponRecoil=0;if(attack>0){const p=1-attack;if(unit.attackMode==='sakuraMelee'||unit.attackMode==='sakuraWave')weaponAngle+=-1.28+p*2.55;else if(unit.attackMode==='sakuraIssen')weaponAngle+=.78;else if(unit.attackMode==='sakuraUltimate')weaponAngle+=Math.sin(p*Math.PI*4)*.85;}
+        }
   
         mpCtx.save();
         mpCtx.translate(1, -5);
@@ -16106,6 +16572,8 @@ function requestGachaDraw(count) {
           const orb=mpCtx.createRadialGradient(orbX-3,-4,1,orbX,0,12); orb.addColorStop(0,'#fff'); orb.addColorStop(.3,orbColor); orb.addColorStop(1,'rgba(20,20,40,0)');
           mpCtx.fillStyle=orb;mpCtx.beginPath();mpCtx.arc(orbX,0,11+attack*2,0,Math.PI*2);mpCtx.fill();
           if (chrono){mpCtx.strokeStyle='#fff';mpCtx.lineWidth=1.4;mpCtx.beginPath();mpCtx.arc(orbX,0,15,0,Math.PI*2);mpCtx.stroke();}
+        } else if (unit.unitId === 'cherrySamurai') {
+          for(const offset of [-7,7]){mpCtx.save();mpCtx.translate(0,offset);mpCtx.shadowBlur=mpHighLoadFrame?8:13;mpCtx.shadowColor='#ff9bca';const steel=mpCtx.createLinearGradient(-6,0,63,0);steel.addColorStop(0,'#23151e');steel.addColorStop(.18,'#987286');steel.addColorStop(.48,'#fffdfd');steel.addColorStop(.72,'#dff7ff');steel.addColorStop(1,'#ffb8d8');mpCtx.fillStyle=steel;mpCtx.strokeStyle='#fff2fa';mpCtx.lineWidth=1.2;mpCtx.beginPath();mpCtx.moveTo(-2,-2.7);mpCtx.lineTo(48,-2.2);mpCtx.quadraticCurveTo(58,-1,66,0);mpCtx.quadraticCurveTo(57,2,48,2.6);mpCtx.lineTo(-2,3);mpCtx.closePath();mpCtx.fill();mpCtx.stroke();mpCtx.shadowBlur=0;mpCtx.fillStyle='#3a2030';mpCtx.fillRect(-11,-4,11,8);mpCtx.fillStyle='#ff8fc8';mpCtx.fillRect(-14,-7,3,14);mpCtx.restore();}
         } else if (unit.unitId === 'eclipse') {
           drawEclipseTwinBladesArt(mpCtx, time, unit, attack, mpHighLoadFrame ? .72 : 1);
         } else if (unit.unitId === 'skyDragonKnight') {
@@ -16126,12 +16594,14 @@ function requestGachaDraw(count) {
   function mpDrawUnit(unit, time) {
     const data = UNIT_DATA[unit.unitId];
     if (!data) return;
-    const y = mpState.mode === 'coop' ? mpDisplayY(unit.y) : unit.y;
+    const samuraiPos = unit.unitId === 'cherrySamurai' ? mpSamuraiRenderPosition(unit, Date.now()) : { x: unit.x, y: unit.y };
+    const y = mpState.mode === 'coop' ? mpDisplayY(samuraiPos.y) : samuraiPos.y;
+    const drawX = samuraiPos.x;
     const stunned = unit.unitId !== 'eclipse' && Date.now() < (unit.stunUntil || 0);
     const slowed = Date.now() < (unit.slowUntil || 0);
 
     mpCtx.save();
-    mpCtx.translate(unit.x, y);
+    mpCtx.translate(drawX, y);
 
     if (unit.unitId === 'astralChronomancer' && Date.now() < Number(unit.chronoFieldUntil || 0)) {
       const fieldRange = UNIT_DATA.astralChronomancer.timeFieldRange || 300;
@@ -16523,14 +16993,30 @@ function requestGachaDraw(count) {
       } else if (fx.kind === 'steelSlash' || fx.kind === 'royalWave') {
         const royal = fx.kind === 'royalWave';
         const pulse=Math.sin(progress*Math.PI);
-        mpCtx.translate(fx.x2,y2); mpCtx.rotate(angle);
-        for(let i=0;i<4;i+=1){mpCtx.strokeStyle=royal?`rgba(255,${232-i*12},${115-i*12},${pulse*(.95-i*.15)})`:`rgba(${210+i*12},${230+i*8},255,${pulse*(.9-i*.18)})`;mpCtx.lineWidth=8-i*1.6;mpCtx.beginPath();mpCtx.arc(-i*3,0,24+i*8,-1.05,1.05);mpCtx.stroke();}
+        if (royal) {
+          // 왕실 수호자의 원거리 검기는 목표 지점에서 원이 번쩍이는 대신 실제 칼날 모양의 검기가 날아갑니다.
+          const tailX=x-ux*52, tailY=y-uy*52;
+          mpCtx.save();mpCtx.translate(x,y);mpCtx.rotate(angle);mpCtx.globalCompositeOperation='lighter';mpCtx.shadowBlur=20;mpCtx.shadowColor='#ffe36e';
+          const g=mpCtx.createLinearGradient(-52,0,30,0);g.addColorStop(0,'rgba(255,180,20,0)');g.addColorStop(.48,`rgba(255,214,58,${.55*fade})`);g.addColorStop(.82,`rgba(255,248,183,${.88*fade})`);g.addColorStop(1,`rgba(255,255,245,${fade})`);
+          mpCtx.fillStyle=g;mpCtx.beginPath();mpCtx.moveTo(-48,-4);mpCtx.quadraticCurveTo(-5,-20,30,-2);mpCtx.quadraticCurveTo(9,3,-48,5);mpCtx.closePath();mpCtx.fill();
+          mpCtx.strokeStyle=`rgba(255,255,230,${fade})`;mpCtx.lineWidth=2.4;mpCtx.beginPath();mpCtx.moveTo(-40,-2);mpCtx.quadraticCurveTo(0,-15,28,-1);mpCtx.stroke();mpCtx.restore();
+          mpCtx.strokeStyle=`rgba(255,202,45,${.34*fade})`;mpCtx.lineWidth=8;mpCtx.beginPath();mpCtx.moveTo(tailX,tailY);mpCtx.lineTo(x,y);mpCtx.stroke();
+        } else {
+          mpCtx.translate(fx.x2,y2); mpCtx.rotate(angle);
+          for(let i=0;i<4;i+=1){mpCtx.strokeStyle=`rgba(${210+i*12},${230+i*8},255,${pulse*(.9-i*.18)})`;mpCtx.lineWidth=8-i*1.6;mpCtx.beginPath();mpCtx.arc(-i*3,0,24+i*8,-1.05,1.05);mpCtx.stroke();}
+        }
       } else if (fx.kind === 'royalCone') {
         const pulse=Math.sin(progress*Math.PI); const radius=fx.radius||120; const half=((fx.coneAngle||120)*Math.PI/180)/2;
         mpCtx.translate(fx.x1,y1); mpCtx.rotate(fx.angle||angle);
         const g=mpCtx.createRadialGradient(0,0,18,0,0,radius); g.addColorStop(0,`rgba(255,255,220,${.62*pulse})`);g.addColorStop(.55,`rgba(255,214,60,${.34*pulse})`);g.addColorStop(1,'rgba(255,170,0,0)');
         mpCtx.fillStyle=g;mpCtx.beginPath();mpCtx.moveTo(0,0);mpCtx.arc(0,0,radius,-half,half);mpCtx.closePath();mpCtx.fill();
-        for(let i=0;i<3;i+=1){mpCtx.strokeStyle=`rgba(255,239,130,${pulse*(.9-i*.2)})`;mpCtx.lineWidth=7-i*1.7;mpCtx.beginPath();mpCtx.arc(0,0,radius*(.62+i*.15),-half,half);mpCtx.stroke();}
+        for(let i=0;i<3;i+=1){mpCtx.strokeStyle=`rgba(255,239,130,${pulse*(.9-i*.2)})`;mpCtx.lineWidth=7-i*1.7;mpCtx.beginPath();mpCtx.arc(0,0,radius*(.62+i*.15),-half,half);mpCtx.stroke();}mpCtx.strokeStyle=`rgba(255,255,245,${.95*pulse})`;mpCtx.lineWidth=3;mpCtx.beginPath();mpCtx.arc(0,0,radius*(.82+progress*.08),-half*.96,half*.96);mpCtx.stroke();
+      } else if (fx.kind === 'sakuraMelee') {
+        const pulse=Math.sin(progress*Math.PI);mpCtx.translate(fx.x1,y1);mpCtx.rotate(fx.angle||angle);mpCtx.globalCompositeOperation='lighter';mpCtx.shadowBlur=mpHighLoadFrame?12:22;mpCtx.shadowColor='#ff9dcf';for(let l=0;l<4;l++){const r=52+l*11;mpCtx.strokeStyle=l===0?`rgba(255,255,255,${.95*pulse})`:`rgba(255,${180+l*12},${215+l*7},${(.72-l*.11)*pulse})`;mpCtx.lineWidth=9-l*1.7;mpCtx.beginPath();mpCtx.arc(4,0,r,-2.28,-.28);mpCtx.stroke();}for(let i=0;i<(mpHighLoadFrame?6:12);i++){const a=-2.15+i*.17,d=45+i%4*7;mpCtx.save();mpCtx.translate(Math.cos(a)*d,Math.sin(a)*d);mpCtx.rotate(a+progress*3+i);mpCtx.fillStyle=`rgba(255,190,220,${pulse*.82})`;mpCtx.beginPath();mpCtx.ellipse(0,0,2.2,5,0,0,Math.PI*2);mpCtx.fill();mpCtx.restore();}
+      } else if (fx.kind === 'sakuraWave') {
+        const tail=62,tx=x-ux*tail,ty=y-uy*tail;mpCtx.save();mpCtx.translate(x,y);mpCtx.rotate(angle);mpCtx.globalCompositeOperation='lighter';mpCtx.shadowBlur=mpHighLoadFrame?14:24;mpCtx.shadowColor='#dffaff';const blade=mpCtx.createLinearGradient(-58,0,27,0);blade.addColorStop(0,'rgba(175,236,255,0)');blade.addColorStop(.4,`rgba(189,242,255,${.44*fade})`);blade.addColorStop(.72,`rgba(255,220,240,${.78*fade})`);blade.addColorStop(1,`rgba(255,255,255,${fade})`);mpCtx.fillStyle=blade;mpCtx.beginPath();mpCtx.moveTo(-54,-4);mpCtx.quadraticCurveTo(-5,-23,31,-2);mpCtx.quadraticCurveTo(9,3,-54,5);mpCtx.closePath();mpCtx.fill();mpCtx.strokeStyle=`rgba(240,253,255,${fade})`;mpCtx.lineWidth=2.2;mpCtx.beginPath();mpCtx.moveTo(-45,-2);mpCtx.quadraticCurveTo(0,-16,30,-1);mpCtx.stroke();mpCtx.restore();mpCtx.strokeStyle=`rgba(255,155,203,${.34*fade})`;mpCtx.lineWidth=7;mpCtx.beginPath();mpCtx.moveTo(tx,ty);mpCtx.lineTo(x,y);mpCtx.stroke();for(let i=0;i<(mpHighLoadFrame?4:8);i++){const back=15+i*8,side=Math.sin(fx.seed+i*2.1)*10;mpCtx.save();mpCtx.translate(x-ux*back+nx*side,y-uy*back+ny*side);mpCtx.rotate(angle+i*.8);mpCtx.fillStyle=`rgba(255,177,214,${fade*(.8-i*.06)})`;mpCtx.beginPath();mpCtx.ellipse(0,0,2,4.8,0,0,Math.PI*2);mpCtx.fill();mpCtx.restore();}
+      } else if (fx.kind === 'sakuraIssen' || fx.kind === 'sakuraUltimateCut') {
+        const ultimate=fx.kind==='sakuraUltimateCut';const delay=Number(fx.delay||0);const local=Math.max(0,Math.min(1,(progress-delay)/(1-delay||1)));if(local<=0){mpCtx.restore();continue;}const pulse=Math.sin(local*Math.PI),lineProgress=Math.min(1,local*(ultimate?2.3:3.2)),ex=lerp(fx.x1,fx.x2,lineProgress),ey=lerp(y1,y2,lineProgress);mpCtx.globalCompositeOperation='lighter';mpCtx.shadowBlur=mpHighLoadFrame?16:(ultimate?30:24);mpCtx.shadowColor=ultimate?'#fff3fb':'#ff8fc8';for(let l=0;l<4;l++){mpCtx.strokeStyle=l===0?`rgba(255,255,255,${pulse})`:`rgba(255,${155+l*22},${205+l*12},${pulse*(.76-l*.12)})`;mpCtx.lineWidth=(ultimate?12:9)-l*2;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.lineTo(ex,ey);mpCtx.stroke();}for(let i=0;i<(mpHighLoadFrame?6:(ultimate?16:11));i++){const t=(i+.3)/(ultimate?16:11),px=lerp(fx.x1,fx.x2,t),py=lerp(y1,y2,t),side=Math.sin(fx.seed+i*1.9)*15;mpCtx.save();mpCtx.translate(px+nx*side,py+ny*side);mpCtx.rotate(angle+i*.7+local*4);mpCtx.fillStyle=`rgba(255,174,214,${pulse*.75})`;mpCtx.beginPath();mpCtx.ellipse(0,0,2.4,5.6,0,0,Math.PI*2);mpCtx.fill();mpCtx.restore();}
       } else if (fx.kind === 'arcane') {
         const wave=Math.sin(progress*Math.PI*7+fx.seed)*18;
         mpCtx.shadowBlur=14;mpCtx.shadowColor='#9b64ff';

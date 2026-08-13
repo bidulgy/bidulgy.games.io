@@ -12562,6 +12562,259 @@ function requestGachaDraw(count) {
       g.restore();
     }
 
+    function drawCherrySamuraiBodyArt(g, time, unit, intensity = 1) {
+      const phase = time * .0032 + Number(unit.animationOffset || 0);
+      const clothSway = Math.sin(phase) * 1.8;
+      const breath = .5 + Math.sin(time * .0047 + Number(unit.animationOffset || 0)) * .5;
+
+      g.save();
+
+      // 바닥에 길게 떨어지는 남색 도포 자락. 분홍색 캐릭터처럼 보이지 않도록 어두운 실루엣을 먼저 잡습니다.
+      const backCoat = g.createLinearGradient(-25, -8, 25, 28);
+      backCoat.addColorStop(0, '#060a12');
+      backCoat.addColorStop(.5, '#111a2b');
+      backCoat.addColorStop(1, '#03060d');
+      g.fillStyle = backCoat;
+      g.beginPath();
+      g.moveTo(-18, -7);
+      g.quadraticCurveTo(-24 + clothSway, 7, -28 + clothSway * 1.4, 25);
+      g.lineTo(-8, 18);
+      g.lineTo(0, 27);
+      g.lineTo(8, 18);
+      g.lineTo(28 + clothSway * 1.4, 25);
+      g.quadraticCurveTo(24 + clothSway, 7, 18, -7);
+      g.closePath();
+      g.fill();
+
+      // 검은 가죽 장화.
+      const boot = g.createLinearGradient(0, 12, 0, 29);
+      boot.addColorStop(0, '#202735');
+      boot.addColorStop(1, '#05070b');
+      g.fillStyle = boot;
+      for (const side of [-1, 1]) {
+        g.beginPath();
+        g.roundRect(side * 5 - 6, 11, 12, 17, 4);
+        g.fill();
+        g.fillStyle = '#313b4d';
+        g.fillRect(side * 5 - 6, 17, 12, 2);
+        g.fillStyle = boot;
+      }
+
+      // 넓은 하카마. 가운데 주름을 넣어 남성 검객의 단단한 하체 실루엣을 강조합니다.
+      const hakama = g.createLinearGradient(-20, -3, 20, 22);
+      hakama.addColorStop(0, '#0a101c');
+      hakama.addColorStop(.42, '#1d2940');
+      hakama.addColorStop(.7, '#111827');
+      hakama.addColorStop(1, '#050911');
+      g.fillStyle = hakama;
+      g.beginPath();
+      g.moveTo(-18, 4);
+      g.lineTo(-14, -5);
+      g.lineTo(14, -5);
+      g.lineTo(19, 4);
+      g.lineTo(13, 21);
+      g.lineTo(2, 16);
+      g.lineTo(0, 24);
+      g.lineTo(-2, 16);
+      g.lineTo(-13, 21);
+      g.closePath();
+      g.fill();
+      g.strokeStyle = 'rgba(119,154,194,.32)';
+      g.lineWidth = 1;
+      g.beginPath();
+      g.moveTo(0, 0); g.lineTo(0, 21);
+      g.moveTo(-9, 2); g.lineTo(-6, 18);
+      g.moveTo(9, 2); g.lineTo(6, 18);
+      g.stroke();
+
+      // 상의는 짙은 남색 도포 + 검은 갑주. 벚꽃색은 안감과 문양에만 제한합니다.
+      const torso = g.createLinearGradient(-18, -18, 19, 11);
+      torso.addColorStop(0, '#253653');
+      torso.addColorStop(.38, '#101827');
+      torso.addColorStop(.72, '#17243a');
+      torso.addColorStop(1, '#080d17');
+      g.fillStyle = torso;
+      g.beginPath();
+      g.moveTo(-18, 10);
+      g.lineTo(-17, -10);
+      g.lineTo(-9, -16);
+      g.lineTo(9, -16);
+      g.lineTo(18, -10);
+      g.lineTo(17, 10);
+      g.lineTo(9, 15);
+      g.lineTo(-9, 15);
+      g.closePath();
+      g.fill();
+
+      // 겹쳐 입은 옷깃과 벚꽃빛 안감.
+      g.fillStyle = '#d9e6f5';
+      g.beginPath();
+      g.moveTo(-8, -15); g.lineTo(1, -5); g.lineTo(-3, 2); g.lineTo(-12, -11); g.closePath(); g.fill();
+      g.fillStyle = '#d45b8c';
+      g.beginPath();
+      g.moveTo(8, -15); g.lineTo(-1, -5); g.lineTo(3, 2); g.lineTo(12, -11); g.closePath(); g.fill();
+
+      // 어깨 갑주: 넓고 각지게 만들어 남성 체형이 바로 읽히도록 합니다.
+      for (const side of [-1, 1]) {
+        const shoulder = g.createLinearGradient(side * 11, -15, side * 28, -3);
+        shoulder.addColorStop(0, '#3a4b65');
+        shoulder.addColorStop(.45, '#131c2c');
+        shoulder.addColorStop(1, '#070b13');
+        g.fillStyle = shoulder;
+        g.beginPath();
+        g.moveTo(side * 9, -13);
+        g.lineTo(side * 22, -15);
+        g.lineTo(side * 28, -8);
+        g.lineTo(side * 23, 0);
+        g.lineTo(side * 13, -2);
+        g.closePath();
+        g.fill();
+        g.strokeStyle = 'rgba(255,135,189,.62)';
+        g.lineWidth = 1.2;
+        g.stroke();
+        g.strokeStyle = 'rgba(181,205,232,.35)';
+        g.beginPath();
+        g.moveTo(side * 14, -10); g.lineTo(side * 24, -8);
+        g.moveTo(side * 14, -6); g.lineTo(side * 23, -4);
+        g.stroke();
+      }
+
+      // 허리 띠와 금속 잠금장치.
+      g.fillStyle = '#2a0c18';
+      g.fillRect(-17, 3, 34, 5);
+      g.fillStyle = '#b94172';
+      g.fillRect(-16, 4, 32, 2);
+      g.fillStyle = '#ccd7e7';
+      g.beginPath();
+      g.roundRect(-5, 1, 10, 9, 2);
+      g.fill();
+      g.fillStyle = '#6e173c';
+      g.beginPath(); g.arc(0, 5.5, 2.4, 0, Math.PI * 2); g.fill();
+
+      // 목.
+      g.fillStyle = '#c99172';
+      g.fillRect(-4, -20, 8, 7);
+
+      // 남성 얼굴: 둥근 얼굴 대신 각진 턱과 광대, 굵은 눈썹으로 구성합니다.
+      const skin = g.createLinearGradient(-9, -28, 9, -13);
+      skin.addColorStop(0, '#e3aa86');
+      skin.addColorStop(.5, '#c98d6c');
+      skin.addColorStop(1, '#9f684f');
+      g.fillStyle = skin;
+      g.beginPath();
+      g.moveTo(-9, -26);
+      g.quadraticCurveTo(-10, -18, -6, -14);
+      g.lineTo(-2, -11);
+      g.lineTo(2, -11);
+      g.lineTo(6, -14);
+      g.quadraticCurveTo(10, -18, 9, -26);
+      g.quadraticCurveTo(0, -30, -9, -26);
+      g.closePath();
+      g.fill();
+
+      // 귀.
+      g.fillStyle = '#b8795c';
+      for (const side of [-1, 1]) { g.beginPath(); g.ellipse(side * 9.3, -20.5, 2.2, 3.7, 0, 0, Math.PI * 2); g.fill(); }
+
+      // 짙은 머리와 구레나룻. 갓 아래에서는 머리가 살짝만 보입니다.
+      g.fillStyle = '#080a0f';
+      g.beginPath();
+      g.moveTo(-9, -27); g.quadraticCurveTo(0, -34, 9, -27); g.lineTo(8, -23); g.quadraticCurveTo(0, -27, -8, -23); g.closePath(); g.fill();
+      g.fillRect(-9, -23, 2.6, 7);
+      g.fillRect(6.4, -23, 2.6, 7);
+
+      // 굵은 눈썹과 눈.
+      g.strokeStyle = '#24120f';
+      g.lineWidth = 2.1;
+      g.lineCap = 'round';
+      g.beginPath(); g.moveTo(-6.5, -23); g.lineTo(-2, -22.2); g.moveTo(2, -22.2); g.lineTo(6.5, -23); g.stroke();
+      g.strokeStyle = '#120b0b';
+      g.lineWidth = 1.4;
+      g.beginPath(); g.moveTo(-6, -20.5); g.lineTo(-2.2, -20.2); g.moveTo(2.2, -20.2); g.lineTo(6, -20.5); g.stroke();
+
+      // 코와 턱 그림자, 짧은 수염 음영.
+      g.strokeStyle = 'rgba(100,57,45,.72)';
+      g.lineWidth = 1.2;
+      g.beginPath(); g.moveTo(.5, -20); g.lineTo(-.7, -17.3); g.lineTo(1.2, -16.8); g.stroke();
+      g.fillStyle = 'rgba(37,21,20,.56)';
+      g.beginPath(); g.moveTo(-4.5, -14.5); g.quadraticCurveTo(0, -11, 4.5, -14.5); g.quadraticCurveTo(0, -13, -4.5, -14.5); g.fill();
+
+      // 갓끈은 얼굴 뒤/옆에서 턱으로 내려옵니다.
+      g.strokeStyle = 'rgba(25,29,37,.86)';
+      g.lineWidth = 1.35;
+      g.beginPath();
+      g.moveTo(-16, -29); g.quadraticCurveTo(-12, -20, -4, -12);
+      g.moveTo(16, -29); g.quadraticCurveTo(12, -20, 4, -12);
+      g.stroke();
+      g.fillStyle = '#b94172';
+      g.beginPath(); g.arc(0, -11.5, 1.8, 0, Math.PI * 2); g.fill();
+
+      // 핵심 외형: 넓고 반투명한 검은 갓 챙.
+      g.save();
+      g.shadowBlur = 10 * intensity;
+      g.shadowColor = 'rgba(117,151,199,.40)';
+      const brim = g.createLinearGradient(-30, -32, 30, -26);
+      brim.addColorStop(0, 'rgba(5,8,14,.88)');
+      brim.addColorStop(.48, 'rgba(22,31,46,.72)');
+      brim.addColorStop(1, 'rgba(3,5,9,.92)');
+      g.fillStyle = brim;
+      g.beginPath();
+      g.ellipse(0, -30, 30, 7.8, 0, 0, Math.PI * 2);
+      g.fill();
+      g.shadowBlur = 0;
+      g.strokeStyle = 'rgba(147,173,207,.72)';
+      g.lineWidth = 1.4;
+      g.stroke();
+      g.strokeStyle = 'rgba(255,127,181,.48)';
+      g.lineWidth = .8;
+      g.beginPath(); g.ellipse(0, -29.4, 27, 6.2, 0, .1, Math.PI - .1); g.stroke();
+      g.restore();
+
+      // 갓 모자 몸통과 꼭대기. 높은 원통형 실루엣을 만들어 일반 모자와 확실히 구분합니다.
+      const crown = g.createLinearGradient(-9, -49, 10, -31);
+      crown.addColorStop(0, '#05070b');
+      crown.addColorStop(.48, '#182131');
+      crown.addColorStop(1, '#030508');
+      g.fillStyle = crown;
+      g.beginPath();
+      g.moveTo(-8.5, -31);
+      g.lineTo(-6.5, -47);
+      g.quadraticCurveTo(0, -51, 6.5, -47);
+      g.lineTo(8.5, -31);
+      g.closePath();
+      g.fill();
+      g.strokeStyle = 'rgba(154,180,214,.62)';
+      g.lineWidth = 1.2;
+      g.stroke();
+      g.fillStyle = '#080b11';
+      g.beginPath(); g.ellipse(0, -47.2, 6.6, 2.7, 0, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = 'rgba(213,230,249,.5)'; g.stroke();
+
+      // 갤럭시 등급 포인트: 갓과 갑주의 가장자리에만 벚꽃빛 펄스가 약하게 흐릅니다.
+      g.globalAlpha = (.45 + breath * .32) * intensity;
+      g.strokeStyle = '#ff7fba';
+      g.lineWidth = 1.25;
+      g.beginPath();
+      g.moveTo(-25, -29); g.quadraticCurveTo(0, -34, 25, -29);
+      g.moveTo(-17, 9); g.lineTo(-9, 14);
+      g.moveTo(17, 9); g.lineTo(9, 14);
+      g.stroke();
+      g.globalAlpha = 1;
+
+      // 가슴의 작은 벚꽃 문양.
+      g.save();
+      g.translate(0, -3);
+      g.fillStyle = '#f7b1d0';
+      for (let i = 0; i < 5; i += 1) {
+        const a = i * Math.PI * 2 / 5 - Math.PI / 2;
+        g.save(); g.translate(Math.cos(a) * 3.1, Math.sin(a) * 3.1); g.rotate(a); g.beginPath(); g.ellipse(0, -1.5, 1.5, 3.2, 0, 0, Math.PI * 2); g.fill(); g.restore();
+      }
+      g.fillStyle = '#8e244f'; g.beginPath(); g.arc(0, 0, 1.6, 0, Math.PI * 2); g.fill();
+      g.restore();
+
+      g.restore();
+    }
+
     function drawStandingUnitBody(unit, time) {
       const id = unit.unitId;
       const attackPulse = (unit.attackAnimation || 0) * .8;
@@ -12660,26 +12913,7 @@ function requestGachaDraw(count) {
         for (const [x,y] of [[-14,-20],[7,-30],[17,-10],[-3,-7],[3,-17]]) { ctx.beginPath(); ctx.arc(x,y,4.2,0,Math.PI*2); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#fff1a6'; ctx.beginPath(); ctx.arc(x-1.2,y-1.3,1.2,0,Math.PI*2); ctx.fill(); ctx.fillStyle = '#ffd84f'; }
         ctx.restore();
       } else if (id === 'cherrySamurai') {
-        const sway = Math.sin(time * .004 + (unit.animationOffset || 0)) * 1.3;
-        drawBoots('#241722', 10);
-        // 검은 하카마와 벚꽃빛 겉옷
-        const hakama = ctx.createLinearGradient(-18,-8,18,20); hakama.addColorStop(0,'#120d17'); hakama.addColorStop(.45,'#302033'); hakama.addColorStop(1,'#0b0810');
-        ctx.fillStyle = hakama; ctx.beginPath(); ctx.moveTo(-18,18); ctx.lineTo(-13,-7); ctx.lineTo(13,-7); ctx.lineTo(18,18); ctx.lineTo(4,15); ctx.lineTo(0,24); ctx.lineTo(-4,15); ctx.closePath(); ctx.fill();
-        const robe = ctx.createLinearGradient(-15,-14,16,14); robe.addColorStop(0,'#fff7fb'); robe.addColorStop(.32,'#ffd4e7'); robe.addColorStop(.68,'#f58abb'); robe.addColorStop(1,'#8c315b');
-        ctx.fillStyle = robe; ctx.beginPath(); ctx.moveTo(-16,-10); ctx.lineTo(-9,-15); ctx.lineTo(9,-15); ctx.lineTo(17,-8); ctx.lineTo(12,14); ctx.lineTo(-12,14); ctx.closePath(); ctx.fill();
-        ctx.fillStyle='#2c1524'; ctx.fillRect(-15,1,30,5);
-        ctx.fillStyle='#ffb4d2'; ctx.beginPath(); ctx.arc(0,3,5.5,0,Math.PI*2); ctx.fill();
-        // 어깨 장식
-        for (const side of [-1,1]) { ctx.fillStyle='#4e253d'; ctx.beginPath(); ctx.ellipse(side*18,-6,9,6,side*.15,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='#ffb9d7'; ctx.lineWidth=1.3; ctx.stroke(); }
-        // 얼굴 / 머리 / 묶은 머리끈
-        ctx.fillStyle='#f1c6ad'; ctx.beginPath(); ctx.arc(0,-20,8.5,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle='#171017'; ctx.beginPath(); ctx.arc(0,-24,10.5,Math.PI,Math.PI*2); ctx.lineTo(9,-18); ctx.lineTo(-9,-18); ctx.closePath(); ctx.fill();
-        ctx.strokeStyle='#23151f'; ctx.lineWidth=5; ctx.beginPath(); ctx.moveTo(-6,-26); ctx.quadraticCurveTo(-23,-34+sway,-26,-18); ctx.stroke();
-        ctx.strokeStyle='#ff8fc8'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-8,-27); ctx.quadraticCurveTo(-21,-32+sway,-24,-20); ctx.stroke();
-        // 작은 벚꽃 문양
-        ctx.fillStyle='rgba(255,220,235,.95)';
-        for (let i=0;i<5;i++){const a=i*Math.PI*2/5;ctx.beginPath();ctx.ellipse(Math.cos(a)*5,-4+Math.sin(a)*5,2.2,4,a,0,Math.PI*2);ctx.fill();}
-        ctx.fillStyle='#ff8fc8';ctx.beginPath();ctx.arc(0,-4,2,0,Math.PI*2);ctx.fill();
+        drawCherrySamuraiBodyArt(ctx, time, unit, 1);
       } else if (id === 'eclipse') {
         drawBoots('#100408', 9);
         drawEclipseGalaxyBodyArt(ctx, time, unit, 1);
@@ -16743,10 +16977,7 @@ function requestGachaDraw(count) {
           for(const [x,y] of [[-14,-20],[7,-30],[17,-10],[-3,-7],[3,-17]]){mpCtx.beginPath();mpCtx.arc(x,y,4.2,0,Math.PI*2);mpCtx.fill();mpCtx.stroke();}
           mpCtx.restore();
         } else if (id === 'cherrySamurai') {
-          const sway=Math.sin(time*.004+(unit.animationOffset||0))*1.3;drawBoots('#241722',10);
-          const hakama=mpCtx.createLinearGradient(-18,-8,18,20);hakama.addColorStop(0,'#120d17');hakama.addColorStop(.45,'#302033');hakama.addColorStop(1,'#0b0810');mpCtx.fillStyle=hakama;mpCtx.beginPath();mpCtx.moveTo(-18,18);mpCtx.lineTo(-13,-7);mpCtx.lineTo(13,-7);mpCtx.lineTo(18,18);mpCtx.lineTo(4,15);mpCtx.lineTo(0,24);mpCtx.lineTo(-4,15);mpCtx.closePath();mpCtx.fill();
-          const robe=mpCtx.createLinearGradient(-15,-14,16,14);robe.addColorStop(0,'#fff7fb');robe.addColorStop(.32,'#ffd4e7');robe.addColorStop(.68,'#f58abb');robe.addColorStop(1,'#8c315b');mpCtx.fillStyle=robe;mpCtx.beginPath();mpCtx.moveTo(-16,-10);mpCtx.lineTo(-9,-15);mpCtx.lineTo(9,-15);mpCtx.lineTo(17,-8);mpCtx.lineTo(12,14);mpCtx.lineTo(-12,14);mpCtx.closePath();mpCtx.fill();mpCtx.fillStyle='#2c1524';mpCtx.fillRect(-15,1,30,5);
-          mpCtx.fillStyle='#f1c6ad';mpCtx.beginPath();mpCtx.arc(0,-20,8.5,0,Math.PI*2);mpCtx.fill();mpCtx.fillStyle='#171017';mpCtx.beginPath();mpCtx.arc(0,-24,10.5,Math.PI,Math.PI*2);mpCtx.lineTo(9,-18);mpCtx.lineTo(-9,-18);mpCtx.closePath();mpCtx.fill();mpCtx.strokeStyle='#23151f';mpCtx.lineWidth=5;mpCtx.beginPath();mpCtx.moveTo(-6,-26);mpCtx.quadraticCurveTo(-23,-34+sway,-26,-18);mpCtx.stroke();mpCtx.strokeStyle='#ff8fc8';mpCtx.lineWidth=2;mpCtx.beginPath();mpCtx.moveTo(-8,-27);mpCtx.quadraticCurveTo(-21,-32+sway,-24,-20);mpCtx.stroke();
+          drawCherrySamuraiBodyArt(mpCtx, time, unit, mpHighLoadFrame ? .82 : 1);
         } else if (id === 'eclipse') {
           drawBoots('#100408', 9);
           drawEclipseGalaxyBodyArt(mpCtx, time, unit, mpHighLoadFrame ? .72 : 1);

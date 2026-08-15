@@ -6028,7 +6028,7 @@ body {
   </div>
 
   <script>
-    window.BIDULGY_BUILD_VERSION = '2026-08-16-phoenix-facing-v1';
+    window.BIDULGY_BUILD_VERSION = '2026-08-16-phoenix-mouth-wavefix-v2';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -9645,7 +9645,7 @@ function requestGachaDraw(count) {
 
       window.addEventListener('load', () => {
         navigator.serviceWorker
-          .register('./service-worker.js?v=20260816-phoenix-facing-1', { updateViaCache: 'none' })
+          .register('./service-worker.js?v=20260816-phoenix-mouth-wavefix-2', { updateViaCache: 'none' })
           .then(registration => registration.update())
           .catch(error => console.error('서비스 워커 등록 실패:', error));
       });
@@ -11206,6 +11206,7 @@ function requestGachaDraw(count) {
 
     function triggerPoseidonWave(placed) {
       const data = UNIT_DATA.poseidon;
+      const damage = Number(placed.damage || data.damage) * Number(data.waveMultiplier || 3);
       playUnitAttackSound('poseidon', { skill: 'poseidonWave', volume: 1.18 });
       const reversedPath = [...path].reverse().map(point => ({ x: point.x, y: point.y }));
       battle.shots.push({
@@ -11218,18 +11219,78 @@ function requestGachaDraw(count) {
         color: '#53d8ff',
         effect: 'poseidonWave',
         pathPoints: reversedPath,
-        seed: Math.random() * 1000
+        seed: Math.random() * 1000,
+        damage,
+        wetDuration: Number(data.wetDuration || 3),
+        wetSlow: Number(data.wetSlow || .25),
+        knockback: Number(data.waveKnockback || 58),
+        hitRadius: 62,
+        hitEnemyIds: []
       });
-      const damage = Number(placed.damage || data.damage) * Number(data.waveMultiplier || 3);
-      let hits = 0;
-      for (const enemy of battle.enemies) {
-        if (enemy.dead || enemy.soilPileState) continue;
-        applyDamageToEnemy(enemy, damage);
-        applyWetStatus(enemy, data.wetDuration || 3, data.wetSlow || .25);
-        pushEnemyBackwardOnPath(enemy, data.waveKnockback || 58);
-        hits += 1;
+      setBattleMessage(`🌊 포세이돈의 해수! 파도가 지나가는 순간 ${Math.round(damage)} 피해 + 젖음`);
+    }
+
+    function projectPointToWavePath(points, px, py) {
+      if (!Array.isArray(points) || points.length < 2) return null;
+      let total = 0;
+      let best = { distance: Infinity, along: 0, total: 0 };
+      for (let i = 0; i < points.length - 1; i += 1) {
+        const a = points[i], b = points[i + 1];
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const len2 = dx * dx + dy * dy;
+        const len = Math.sqrt(len2);
+        if (len <= .001) continue;
+        const t = Math.max(0, Math.min(1, ((px - a.x) * dx + (py - a.y) * dy) / len2));
+        const qx = a.x + dx * t, qy = a.y + dy * t;
+        const distance = Math.hypot(px - qx, py - qy);
+        if (distance < best.distance) best = { distance, along: total + len * t, total: 0 };
+        total += len;
       }
-      if (hits) setBattleMessage(`🌊 포세이돈의 역류 파도! ${hits}마리 관통 · ${Math.round(damage)} 피해 · 젖음`);
+      best.total = total;
+      return best;
+    }
+
+    function poseidonWaveTravel(progress) {
+      const p = Math.max(0, Math.min(1, progress));
+      return 1 - Math.pow(1 - p, 2.1);
+    }
+
+    function updatePoseidonWaveHits(dt) {
+      if (!battle?.shots?.length) return;
+      for (const shot of battle.shots) {
+        if (shot.effect !== 'poseidonWave' || !Number.isFinite(Number(shot.damage))) continue;
+        const points = shot.pathPoints;
+        if (!Array.isArray(points) || points.length < 2) continue;
+        const currentProgress = 1 - Math.max(0, Number(shot.life || 0)) / Math.max(.001, Number(shot.maxLife || 1));
+        const nextLife = Math.max(0, Number(shot.life || 0) - dt);
+        const nextProgress = 1 - nextLife / Math.max(.001, Number(shot.maxLife || 1));
+        const probe = projectPointToWavePath(points, points[0].x, points[0].y);
+        const total = Number(probe?.total || 0);
+        if (total <= 0) continue;
+        const from = total * poseidonWaveTravel(currentProgress);
+        const to = total * poseidonWaveTravel(nextProgress);
+        const hitIds = new Set(Array.isArray(shot.hitEnemyIds) ? shot.hitEnemyIds : []);
+        for (const enemy of battle.enemies) {
+          if (!enemy || enemy.dead || enemy.soilPileState || Number(enemy.reviveInvulnerableRemaining || 0) > 0) continue;
+          if (hitIds.has(enemy.id)) continue;
+          const projection = projectPointToWavePath(points, enemy.x, enemy.y);
+          if (!projection) continue;
+          const radius = Number(shot.hitRadius || 62) + Number(enemy.radius || 0) * .35;
+          if (projection.distance > radius) continue;
+          if (projection.along < from - 52 || projection.along > to + 64) continue;
+          applyDamageToEnemy(enemy, Number(shot.damage));
+          if (!enemy.dead) {
+            applyWetStatus(enemy, Number(shot.wetDuration || 3), Number(shot.wetSlow || .25));
+            pushEnemyBackwardOnPath(enemy, Number(shot.knockback || 58));
+          }
+          hitIds.add(enemy.id);
+          battle.shots.push({
+            x1: enemy.x, y1: enemy.y, x2: enemy.x, y2: enemy.y,
+            life: .30, maxLife: .30, color: '#baf7ff', effect: 'waterImpact', seed: Math.random() * 1000
+          });
+        }
+        shot.hitEnemyIds = [...hitIds];
+      }
     }
 
     function performPoseidonAttack(placed, target, slowMultiplier = 1) {
@@ -11313,6 +11374,18 @@ function requestGachaDraw(count) {
       fireIceQueenArrowAt(placed.x, placed.y, placed.damage, placed.range, target, placed);
     }
 
+    function getPhoenixMouthPosition(unit, flightYOffset = 18) {
+      const angle = Number.isFinite(Number(unit?.angle)) ? Number(unit.angle) : 0;
+      const attack = Math.max(0, Math.min(1, Number(unit?.attackAnimation || 0)));
+      const neckThrust = attack * 6.5;
+      const reach = 63 + neckThrust;
+      const liftedY = Number(unit?.y || 0) - (Number(unit?.phoenixFlightRemaining || 0) > 0 ? flightYOffset : 0);
+      return {
+        x: Number(unit?.x || 0) + Math.cos(angle) * reach,
+        y: liftedY + Math.sin(angle) * reach
+      };
+    }
+
     function triggerPhoenixRoar(placed) {
       const data = UNIT_DATA.phoenix;
       playUnitAttackSound('phoenix', { skill: 'phoenixRoar', volume: 1.22 });
@@ -11372,13 +11445,15 @@ function requestGachaDraw(count) {
       placed.phoenixFxTimer = Number(placed.phoenixFxTimer || 0) - dt;
       if (placed.phoenixFxTimer <= 0) {
         playUnitAttackSound('phoenix', { volume: .54 });
+        const mouth = getPhoenixMouthPosition(placed, 18);
+        const breathRange = Math.max(36, currentRange - Math.hypot(mouth.x - placed.x, mouth.y - placed.y));
         battle.shots.push({
-          x1: placed.x, y1: placed.y - 7,
-          x2: placed.x + Math.cos(placed.angle) * Math.min(currentRange, 150),
-          y2: placed.y + Math.sin(placed.angle) * Math.min(currentRange, 150),
+          x1: mouth.x, y1: mouth.y,
+          x2: mouth.x + Math.cos(placed.angle) * Math.min(breathRange, 150),
+          y2: mouth.y + Math.sin(placed.angle) * Math.min(breathRange, 150),
           life: getAttackEffectDuration('phoenixBreath'), maxLife: getAttackEffectDuration('phoenixBreath'),
           color: data.color, effect: 'phoenixBreath', angle: placed.angle, seed: Math.random() * 1000,
-          radius: currentRange, coneAngle: data.flameConeAngle || 78
+          radius: breathRange, coneAngle: data.flameConeAngle || 78
         });
         placed.phoenixFxTimer = .09;
       }
@@ -11588,6 +11663,7 @@ function requestGachaDraw(count) {
         poseidonTrident: .34,
         poseidonReturn: .23,
         poseidonWave: 1.58,
+        waterImpact: .30,
         phoenixBreath: .20,
         phoenixRoar: 1.20,
         edenBolt: .42,
@@ -13007,6 +13083,7 @@ function requestGachaDraw(count) {
       battle.placedUnits.forEach(unit => updatePlacedUnit(unit, dt));
       updateDelayedAttacks(dt);
       updateEclipseEffects(dt);
+      updatePoseidonWaveHits(dt);
       battle.shots.forEach(shot => shot.life -= dt);
 
       battle.enemies = battle.enemies.filter(enemy => !enemy.dead);
@@ -15870,8 +15947,12 @@ function requestGachaDraw(count) {
       const neckThrust = attack * 6.5;
 
       g.save();
-      // 피닉스 전체가 현재 공격 대상을 바라봅니다. +X가 머리 방향입니다.
-      g.rotate(facing);
+      // 목표 방향을 바라보되 좌측 적을 공격할 때 캐릭터 전체가 뒤집히지 않도록
+      // 좌우 반전 + 기울기 방식으로 방향을 잡습니다.
+      const facingSign = Math.cos(facing) < 0 ? -1 : 1;
+      const bodyTilt = Math.atan2(Math.sin(facing), Math.abs(Math.cos(facing))) * facingSign;
+      g.rotate(bodyTilt);
+      g.scale(facingSign, 1);
       g.translate(0, flying ? -2 : 0);
 
       // 열기/불꽃 후광 — 진행 방향 뒤쪽으로 흐르도록 구성
@@ -16023,23 +16104,29 @@ function requestGachaDraw(count) {
       g.stroke();
       g.restore();
 
-      // 긴 화염 볏 — 왕관처럼 뒤로 찢어짐
+      // 긴 화염 볏 — 몸이 어느 방향을 보더라도 화면의 위쪽을 향하도록 회전을 상쇄합니다.
+      g.save();
+      g.scale(facingSign, 1);
+      g.rotate(-bodyTilt);
       for (let i = 0; i < 5; i++) {
-        const h = 14 + (i % 3) * 6 + (flying ? 4 : 0);
-        const x = -7 + i * 4;
-        const crest = g.createLinearGradient(x, -9, x - 6, -9 - h);
-        crest.addColorStop(0, '#ff6c20');
-        crest.addColorStop(.44, '#ffd452');
-        crest.addColorStop(.78, '#fff6b8');
-        crest.addColorStop(1, 'rgba(255,240,130,0)');
+        const h = 15 + (i % 3) * 7 + (flying ? 4 : 0);
+        const x = -8 + i * 4;
+        const sway = Math.sin(t * 5.3 + i * 1.17) * 2.2;
+        const crest = g.createLinearGradient(x, -8, x + sway, -11 - h);
+        crest.addColorStop(0, '#ff5b1c');
+        crest.addColorStop(.36, '#ffad2f');
+        crest.addColorStop(.70, '#ffe56b');
+        crest.addColorStop(.92, '#fff7c6');
+        crest.addColorStop(1, 'rgba(255,247,198,0)');
         g.fillStyle = crest;
         g.beginPath();
-        g.moveTo(x - 2.5, -8);
-        g.quadraticCurveTo(x - 7 - i, -8 - h, x + 1.8, -10 - h * .72);
-        g.quadraticCurveTo(x + 4, -14, x + 2.5, -7);
+        g.moveTo(x - 2.7, -7);
+        g.bezierCurveTo(x - 5 + sway, -14 - h * .38, x - 2 + sway, -9 - h, x + 1 + sway, -12 - h);
+        g.bezierCurveTo(x + 4 + sway, -9 - h * .62, x + 4, -13, x + 2.7, -6);
         g.closePath();
         g.fill();
       }
+      g.restore();
       g.restore();
 
       // 공격 중 부리 앞쪽 화염 압축 — 실제 화염 숨결이 나가는 방향을 강조
@@ -17502,6 +17589,21 @@ function requestGachaDraw(count) {
           for(let i=0;i<24;i++){const a=shot.seed+i*2.39+progress*7.5,r=18+(i%7)*8,px=30+Math.cos(a)*r*.72,py=Math.sin(a)*r*.62;ctx.fillStyle=i%4===0?`rgba(255,255,255,${.9*pulse})`:`rgba(145,239,255,${.7*pulse})`;ctx.beginPath();ctx.arc(px,py,1.5+(i%4)*.75,0,Math.PI*2);ctx.fill();}
           // 파도 전면의 세로 포말벽
           const front=ctx.createLinearGradient(36,-55,68,55);front.addColorStop(0,'rgba(255,255,255,0)');front.addColorStop(.45,`rgba(235,255,255,${.82*pulse})`);front.addColorStop(.7,`rgba(108,232,255,${.56*pulse})`);front.addColorStop(1,'rgba(255,255,255,0)');ctx.strokeStyle=front;ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(47,-48);ctx.quadraticCurveTo(74,0,45,49);ctx.stroke();
+          ctx.restore();
+        } else if (shot.effect === 'waterImpact') {
+          const pulse = Math.sin(progress * Math.PI);
+          ctx.save(); ctx.translate(shot.x1, shot.y1); ctx.globalCompositeOperation = 'lighter';
+          for (let i = 0; i < 3; i++) {
+            ctx.strokeStyle = `rgba(${170+i*25},${235+i*6},255,${pulse*(.72-i*.16)})`;
+            ctx.lineWidth = 5 - i;
+            ctx.beginPath(); ctx.arc(0, 0, 7 + progress * (22 + i * 8), 0, Math.PI * 2); ctx.stroke();
+          }
+          for (let i = 0; i < 9; i++) {
+            const a = shot.seed + i * Math.PI * 2 / 9;
+            const r = 8 + progress * (20 + (i % 3) * 7);
+            ctx.fillStyle = `rgba(220,252,255,${pulse*.82})`;
+            ctx.beginPath(); ctx.ellipse(Math.cos(a)*r, Math.sin(a)*r*.65, 2, 4, a, 0, Math.PI*2); ctx.fill();
+          }
           ctx.restore();
         } else if (shot.effect === 'phoenixBreath') {
           const pulse=Math.sin(progress*Math.PI),radius=Number(shot.radius||205),half=(Number(shot.coneAngle||78)*Math.PI/180)/2;
@@ -19675,14 +19777,16 @@ function requestGachaDraw(count) {
     const data=UNIT_DATA.poseidon, damage=mpEffectiveUnitDamage(unit)*Number(data.waveMultiplier||3);
     playUnitAttackSound('poseidon',{skill:'poseidonWave',volume:1.18});
     mpPushFx(MP_BASE_X,MP_PATH_Y,MP_START_X,MP_PATH_Y,'#53d8ff',18,sideKey,'poseidonWave',{width:88});
-    let hits=0;
+    mpState.delayedAttacks ||= [];
+    const now=Date.now(), travelMs=Math.round(mpFxDuration('poseidonWave')*1000), span=Math.max(1,Math.abs(MP_BASE_X-MP_START_X));
+    let scheduled=0;
     for(const enemy of targetState.enemies||[]){
-      if(enemy.dead) continue;
-      mpApplyDamage(targetState,enemy,damage,unit.ownerRole,sideKey);
-      if(!enemy.dead) mpApplyWetStatus(enemy,data.wetDuration||3,data.wetSlow||.25);
-      mpPushEnemyBackward(enemy,data.waveKnockback||58); hits++;
+      if(enemy.dead || Number(enemy.soilPileUntil||0)>now || Number(enemy.reviveInvulnerableUntil||0)>now) continue;
+      const ratio=Math.max(0,Math.min(1,Math.abs(MP_BASE_X-Number(enemy.x||0))/span));
+      mpState.delayedAttacks.push({kind:'poseidonWaveHit',sideKey,unitId:unit.id,ownerRole:unit.ownerRole,enemyId:enemy.id,damage,wetDuration:Number(data.wetDuration||3),wetSlow:Number(data.wetSlow||.25),knockback:Number(data.waveKnockback||58),at:now+Math.round(travelMs*ratio)});
+      scheduled++;
     }
-    if(hits){mpState.announcement=`🌊 ${mpNameForRole(unit.ownerRole)}의 포세이돈 · 역류 파도! ${hits}마리`;mpState.announcementUntil=Date.now()+1800;}
+    mpState.announcement=`🌊 ${mpNameForRole(unit.ownerRole)}의 포세이돈 · 해수! ${scheduled}개 표적을 향해 전진`;mpState.announcementUntil=Date.now()+1800;
   }
 
   function mpPerformPoseidonAttack(targetState, sideKey, unit, target) {
@@ -19724,6 +19828,14 @@ function requestGachaDraw(count) {
     mpFireIceQueenArrow(targetState,sideKey,unit,target);
   }
 
+  function mpPhoenixMouthPosition(unit) {
+    const angle=Number.isFinite(Number(unit?.angle))?Number(unit.angle):0;
+    const attack=Math.max(0,Math.min(1,Number(unit?.attackAnimation||0)));
+    const reach=63+attack*6.5;
+    const y=Number(unit?.y||0)-(Number(unit?.phoenixFlightRemaining||0)>0?16:0);
+    return {x:Number(unit?.x||0)+Math.cos(angle)*reach,y:y+Math.sin(angle)*reach};
+  }
+
   function mpTriggerPhoenixRoar(targetState, sideKey, unit) {
     const data=UNIT_DATA.phoenix,now=Date.now();
     playUnitAttackSound('phoenix',{skill:'phoenixRoar',volume:1.22});
@@ -19751,7 +19863,7 @@ function requestGachaDraw(count) {
     const interval=Number(data.fireInterval||.01),ticks=Math.floor(unit.phoenixBreathAccumulator/interval);if(ticks<=0)return;unit.phoenixBreathAccumulator-=ticks*interval;
     const half=Number(data.flameConeAngle||78)*Math.PI/360, damage=Number(unit.damage||data.damage)*ticks;
     for(const enemy of targetState.enemies||[]){if(enemy.dead)continue;const dx=enemy.x-unit.x,dy=enemy.y-unit.y,d=Math.hypot(dx,dy);if(d>range)continue;if(Math.abs(mpAngleDelta(Math.atan2(dy,dx),unit.angle))<=half)mpApplyDamage(targetState,enemy,damage,unit.ownerRole,sideKey);}
-    unit.phoenixFxTimer=Number(unit.phoenixFxTimer||0)-dt;if(unit.phoenixFxTimer<=0){playUnitAttackSound('phoenix',{volume:.54});mpPushFx(unit.x,unit.y,unit.x+Math.cos(unit.angle)*Math.min(range,160),unit.y+Math.sin(unit.angle)*Math.min(range,160),data.color,12,sideKey,'phoenixBreath',{angle:unit.angle,radius:range,coneAngle:data.flameConeAngle||78});unit.phoenixFxTimer=.09;}
+    unit.phoenixFxTimer=Number(unit.phoenixFxTimer||0)-dt;if(unit.phoenixFxTimer<=0){playUnitAttackSound('phoenix',{volume:.54});const mouth=mpPhoenixMouthPosition(unit),breathRange=Math.max(36,range-Math.hypot(mouth.x-unit.x,mouth.y-unit.y));mpPushFx(mouth.x,mouth.y,mouth.x+Math.cos(unit.angle)*Math.min(breathRange,160),mouth.y+Math.sin(unit.angle)*Math.min(breathRange,160),data.color,12,sideKey,'phoenixBreath',{angle:unit.angle,radius:breathRange,coneAngle:data.flameConeAngle||78});unit.phoenixFxTimer=.09;}
   }
 
   function mpEdenDamageMultiplier(unit){const d=UNIT_DATA.eden;return 1+Math.min(Number(d.maxCharge||100),Number(unit.edenCharge||0))*Number(d.chargeDamagePerStack||.005);}
@@ -19917,6 +20029,7 @@ function requestGachaDraw(count) {
       poseidonTrident: .34,
       poseidonReturn: .23,
       poseidonWave: 1.58,
+      waterImpact: .30,
       phoenixBreath: .30,
       phoenixRoar: .85,
       edenBolt: .42,
@@ -20505,6 +20618,15 @@ function requestGachaDraw(count) {
         ? mpState.shared
         : mpState.sides[attack.sideKey];
       if (!targetState) continue;
+      if (attack.kind === 'poseidonWaveHit') {
+        const enemy=(targetState.enemies||[]).find(e=>e.id===attack.enemyId);
+        if(enemy && !enemy.dead && Number(enemy.soilPileUntil||0)<=now && Number(enemy.reviveInvulnerableUntil||0)<=now){
+          mpApplyDamage(targetState,enemy,Number(attack.damage||0),attack.ownerRole,attack.sideKey);
+          if(!enemy.dead){mpApplyWetStatus(enemy,Number(attack.wetDuration||3),Number(attack.wetSlow||.25));mpPushEnemyBackward(enemy,Number(attack.knockback||58));}
+          mpPushFx(enemy.x,enemy.y,enemy.x,enemy.y,'#baf7ff',10,attack.sideKey,'waterImpact');
+        }
+        continue;
+      }
       if (attack.kind === 'poseidonReturn') {
         const owner=(targetState.units||[]).find(u=>u.id===attack.unitId) || {ownerRole:attack.ownerRole};
         playUnitAttackSound('poseidon',{skill:'poseidonReturn',volume:1.02});
@@ -22015,6 +22137,10 @@ function requestGachaDraw(count) {
         mpCtx.shadowBlur=17;mpCtx.shadowColor='#fff';mpCtx.strokeStyle=`rgba(248,255,255,${.98*pulse})`;mpCtx.lineWidth=7;mpCtx.beginPath();mpCtx.moveTo(-54,36);mpCtx.bezierCurveTo(-6,39,22,12,15,-15);mpCtx.bezierCurveTo(10,-33,-7,-40,-21,-35);mpCtx.bezierCurveTo(5,-50,39,-35,48,-12);mpCtx.stroke();
         for(let i=0;i<(mpHighLoadFrame?12:22);i++){const a=fx.seed+i*2.37+progress*7.4,r=18+(i%7)*8,px=30+Math.cos(a)*r*.72,py=Math.sin(a)*r*.62;mpCtx.fillStyle=i%4===0?`rgba(255,255,255,${.9*pulse})`:`rgba(145,239,255,${.7*pulse})`;mpCtx.beginPath();mpCtx.arc(px,py,1.5+(i%4)*.7,0,Math.PI*2);mpCtx.fill();}
         mpCtx.restore();
+      } else if (fx.kind === 'waterImpact') {
+        const pulse=Math.sin(progress*Math.PI);mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.globalCompositeOperation='lighter';
+        for(let i=0;i<3;i++){mpCtx.strokeStyle=`rgba(${170+i*25},${235+i*6},255,${pulse*(.72-i*.16)})`;mpCtx.lineWidth=5-i;mpCtx.beginPath();mpCtx.arc(0,0,7+progress*(22+i*8),0,Math.PI*2);mpCtx.stroke();}
+        for(let i=0;i<(mpHighLoadFrame?5:9);i++){const a=fx.seed+i*Math.PI*2/9,r=8+progress*(20+(i%3)*7);mpCtx.fillStyle=`rgba(220,252,255,${pulse*.82})`;mpCtx.beginPath();mpCtx.ellipse(Math.cos(a)*r,Math.sin(a)*r*.65,2,4,a,0,Math.PI*2);mpCtx.fill();}mpCtx.restore();
       } else if (fx.kind === 'phoenixBreath') {
         const half=((Number(fx.coneAngle||78)*Math.PI/180)/2),radius=Math.min(Number(fx.radius||160),210),pulse=Math.sin(progress*Math.PI);mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.rotate(fx.angle||angle);const fg=mpCtx.createRadialGradient(0,0,8,0,0,radius);fg.addColorStop(0,`rgba(255,248,170,${.7*pulse})`);fg.addColorStop(.38,`rgba(255,150,35,${.56*pulse})`);fg.addColorStop(.78,`rgba(238,55,20,${.30*pulse})`);fg.addColorStop(1,'rgba(150,20,0,0)');mpCtx.fillStyle=fg;mpCtx.beginPath();mpCtx.moveTo(0,0);mpCtx.arc(0,0,radius,-half,half);mpCtx.closePath();mpCtx.fill();
         for(let i=0;i<(mpHighLoadFrame?8:16);i++){const a=-half+(i+.5)/(mpHighLoadFrame?8:16)*half*2,d=35+((i*47)%Math.max(45,radius-35))*progress;mpCtx.fillStyle=i%3?'#ff6b22':'#ffd35a';mpCtx.beginPath();mpCtx.arc(Math.cos(a)*d,Math.sin(a)*d,2+(i%4),0,Math.PI*2);mpCtx.fill();}mpCtx.restore();

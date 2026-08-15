@@ -4138,6 +4138,79 @@ body {
     max-width: 88%;
   }
 }
+
+
+/* ===== EDEN GALAXY EXCLUSIVE REVEAL ===== */
+.eden-reveal-shell {
+  position: relative;
+  width: min(980px, 94vw);
+  min-height: min(690px, 84vh);
+  overflow: hidden;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 50% 55%, rgba(255,255,255,.11), transparent 19%),
+    radial-gradient(circle at 50% 48%, #111218 0 16%, #050507 35%, #000 76%);
+  border: 1px solid rgba(255,255,255,.22);
+  box-shadow: 0 0 90px rgba(255,255,255,.13), inset 0 0 110px #000;
+  isolation: isolate;
+}
+.eden-reveal-shell::before {
+  content: '';
+  position: absolute; inset: -35%;
+  background: repeating-conic-gradient(from 0deg, rgba(255,255,255,.0) 0 8deg, rgba(255,255,255,.055) 10deg 12deg, transparent 14deg 25deg);
+  animation: edenVoidRotate 8s linear infinite;
+  opacity: .7;
+}
+.eden-reveal-shell::after {
+  content: '';
+  position:absolute; inset:0;
+  background: repeating-linear-gradient(0deg, rgba(255,255,255,.027) 0 1px, transparent 1px 4px);
+  mix-blend-mode: screen; pointer-events:none;
+  animation: edenScan .12s steps(2) infinite;
+}
+.eden-vortex {
+  position:absolute; left:50%; top:55%; width:520px; height:230px;
+  transform:translate(-50%,-50%) rotateX(68deg);
+  border-radius:50%;
+  background: repeating-radial-gradient(ellipse at center, transparent 0 20px, rgba(255,255,255,.18) 22px 25px, rgba(0,0,0,.65) 27px 44px);
+  box-shadow: 0 0 80px rgba(255,255,255,.2), inset 0 0 75px #000;
+  animation: edenVortexPulse 2.2s ease-in-out infinite;
+}
+.eden-vortex-ring {position:absolute;left:50%;top:55%;border:2px solid rgba(255,255,255,.58);border-radius:50%;transform:translate(-50%,-50%) rotateX(68deg);filter:drop-shadow(0 0 12px #fff);}
+.eden-vortex-ring.r1{width:370px;height:150px;animation:edenRingSpin 2.8s linear infinite;}
+.eden-vortex-ring.r2{width:470px;height:196px;opacity:.55;animation:edenRingSpin 4.1s linear reverse infinite;}
+.eden-void-core {
+  position:absolute;left:50%;top:43%;width:164px;height:214px;transform:translate(-50%,-50%) scale(.1);
+  border-radius:48% 52% 42% 58% / 58% 47% 53% 42%;
+  background:radial-gradient(circle at 48% 38%,#1d1e24 0 9%,#08080a 28%,#000 70%);
+  box-shadow: 0 0 18px #fff, 0 0 80px rgba(255,255,255,.28), inset 0 0 42px rgba(255,255,255,.06);
+  animation: edenCoreBirth 1.8s cubic-bezier(.12,.78,.16,1) .35s forwards, edenCoreFloat 2.6s ease-in-out 2.15s infinite;
+  z-index:4;
+}
+.eden-void-core::before,.eden-void-core::after{content:'';position:absolute;top:42%;width:43px;height:5px;background:#fff;border-radius:100%;box-shadow:0 0 18px #fff;opacity:0;animation:edenEyeOpen .42s ease 1.85s forwards;}
+.eden-void-core::before{left:23px;transform:rotate(10deg)} .eden-void-core::after{right:23px;transform:rotate(-10deg)}
+.eden-wing-shard {position:absolute;left:50%;top:44%;width:11px;height:120px;background:linear-gradient(to bottom,rgba(255,255,255,.95),rgba(255,255,255,0));clip-path:polygon(50% 0,100% 100%,0 78%);transform-origin:50% 88%;opacity:0;filter:drop-shadow(0 0 8px #fff);animation:edenShardIn .75s ease-out 1.55s forwards;z-index:3;}
+.eden-fog {position:absolute;border-radius:50%;background:rgba(255,255,255,.07);filter:blur(16px);mix-blend-mode:screen;animation:edenFogDrift 4s ease-in-out infinite alternate;}
+.eden-crack {position:absolute;left:50%;top:46%;height:2px;width:0;background:linear-gradient(90deg,#fff,transparent);transform-origin:left center;box-shadow:0 0 14px #fff;animation:edenCrackGrow .46s ease-out forwards;z-index:2;}
+.eden-reveal-title {position:absolute;z-index:8;left:50%;bottom:104px;transform:translateX(-50%) scale(1.6);font:900 clamp(48px,9vw,104px)/.9 Georgia,serif;letter-spacing:.22em;color:#fff;text-shadow:0 0 10px #fff,0 0 38px rgba(255,255,255,.7),0 8px 0 #08080a;opacity:0;animation:edenTitleReveal .75s cubic-bezier(.08,.75,.2,1) 2.28s forwards;white-space:nowrap;}
+.eden-reveal-sub {position:absolute;z-index:8;left:50%;bottom:72px;transform:translateX(-50%);font-weight:800;letter-spacing:.45em;color:rgba(255,255,255,.78);opacity:0;animation:edenFadeIn .7s ease 2.72s forwards;white-space:nowrap;}
+.eden-flash {position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:7;animation:edenFlash 3.15s ease forwards;}
+.eden-reveal-results {position:absolute;z-index:10;inset:auto 18px 16px;display:flex;justify-content:center;pointer-events:none;opacity:0;animation:edenFadeIn .6s ease 3.18s forwards;}
+.eden-reveal-results .reward-panel{pointer-events:auto;width:min(680px,92%);background:rgba(3,3,5,.88);backdrop-filter:blur(18px);border-color:rgba(255,255,255,.3);}
+@keyframes edenVoidRotate{to{transform:rotate(360deg)}}
+@keyframes edenScan{50%{transform:translateY(1px)}}
+@keyframes edenVortexPulse{50%{transform:translate(-50%,-50%) rotateX(68deg) scale(1.08);filter:brightness(1.7)}}
+@keyframes edenRingSpin{to{transform:translate(-50%,-50%) rotateX(68deg) rotateZ(360deg)}}
+@keyframes edenCoreBirth{0%{transform:translate(-50%,-50%) scale(.05) rotate(-24deg);opacity:0}45%{opacity:1}72%{transform:translate(-50%,-50%) scale(1.14) rotate(4deg)}100%{transform:translate(-50%,-50%) scale(1) rotate(0)}}
+@keyframes edenCoreFloat{50%{margin-top:-13px;filter:brightness(1.18)}}
+@keyframes edenEyeOpen{to{opacity:1;height:7px}}
+@keyframes edenShardIn{0%{opacity:0;transform:translateX(-50%) rotate(var(--a)) scaleY(.1)}100%{opacity:.78;transform:translateX(-50%) rotate(var(--a)) scaleY(1)}}
+@keyframes edenFogDrift{to{transform:translate(55px,-28px) scale(1.3);opacity:.13}}
+@keyframes edenCrackGrow{to{width:var(--len);opacity:.75}}
+@keyframes edenTitleReveal{0%{opacity:0;filter:blur(18px);transform:translateX(-50%) scale(2)}70%{opacity:1;filter:blur(0);transform:translateX(-50%) scale(.94)}100%{opacity:1;transform:translateX(-50%) scale(1)}}
+@keyframes edenFadeIn{to{opacity:1}}
+@keyframes edenFlash{0%,48%,63%,100%{opacity:0}50%{opacity:.92}52%{opacity:.05}65%{opacity:.62}67%{opacity:0}}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style id="multiplayerStyles">
@@ -5911,7 +5984,7 @@ body {
   </div>
 
   <script>
-    window.BIDULGY_BUILD_VERSION = '2026-08-15-rpg-sfx-v1';
+    window.BIDULGY_BUILD_VERSION = '2026-08-15-four-units-v1';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -6388,6 +6461,27 @@ function applyStagePreview(stageId = selectedStage) {
         color: '#ffd04a',
         skillText: '120 범위 안에서는 전방 120° 범위 베기를 사용합니다. 120 밖·250 안에서는 검기를 날리며, 검기가 적중한 지점 반경 55의 적들에게 범위 피해를 줍니다.'
       },
+      iceQueen: {
+        id: 'iceQueen',
+        name: '얼음여왕',
+        icon: '❄️',
+        rarity: '전설',
+        rarityKey: 'legendary',
+        rarityClass: 'rarity-legend',
+        cost: 340,
+        damage: 180,
+        range: 235,
+        fireInterval: 0.78,
+        chillDuration: 5,
+        chillSlow: 0.25,
+        freezeApplications: 3,
+        hardFreezeDuration: 3,
+        volleyEvery: 7,
+        volleyCount: 7,
+        volleyInterval: 0.2,
+        color: '#8ee7ff',
+        skillText: '얼음 화살에 맞은 적은 5초간 빙결 기운으로 이동속도가 25% 감소합니다. 빙결 기운이 유지되는 동안 총 3회 맞으면 일반 적은 3초간 완전히 얼어 움직이지 못합니다(보스 면역). 불이 붙으면 빙결 효과가 즉시 해제됩니다. 7번째 공격마다 0.2초 간격으로 얼음 화살 7발을 연속 발사합니다.'
+      },
       skyDragonKnight: {
         id: 'skyDragonKnight',
         name: '천공 용기사',
@@ -6407,6 +6501,27 @@ function applyStagePreview(stageId = selectedStage) {
         color: '#ef4444',
         skillText: '창 명중 후 50% 확률로 0.5초 뒤 명중 지점에 반지름 20의 번개가 떨어져 범위 안의 모든 적에게 일반 공격과 같은 피해를 줍니다. 창을 7번 던질 때마다 자신이 배치된 위치에서 가장 가까운 가로 길을 황금 거대창으로 쓸어 일반 공격의 5배 피해를 줍니다.'
       },
+      poseidon: {
+        id: 'poseidon',
+        name: '포세이돈',
+        icon: '🔱',
+        rarity: '신화',
+        rarityKey: 'mythic',
+        rarityClass: 'rarity-mythic',
+        cost: 430,
+        damage: 230,
+        range: 300,
+        meleeRange: 105,
+        fireInterval: 0.95,
+        tridentWidth: 20,
+        waveEvery: 7,
+        waveMultiplier: 3,
+        waveKnockback: 58,
+        wetDuration: 3,
+        wetSlow: 0.25,
+        color: '#35c9ff',
+        skillText: '가까운 적은 삼지창으로 찌르고, 멀리 있는 적에게는 삼지창을 최대 300까지 던집니다. 던진 삼지창은 적을 관통하고 끝까지 날아간 뒤 빠르게 되돌아오며 돌아오는 경로의 적에게도 피해를 줍니다. 7번째 공격마다 기지에서 거대한 파도가 역류해 모든 적을 관통하며 평타의 3배 피해를 주고 밀어냅니다. 파도에 맞은 적은 3초간 젖음 상태가 되어 이동속도가 25% 감소합니다.'
+      },
       moneyTree: {
         id: 'moneyTree',
         name: '돈나무',
@@ -6425,6 +6540,30 @@ function applyStagePreview(stageId = selectedStage) {
         upgradeCosts: [67, 100],
         color: '#f4c542',
         skillText: '공격하지 않는 경제 유닛입니다. 기본 상태에서는 1초마다 15골드를 생산합니다. 1단계 업그레이드 시 1초마다 25골드, 2단계 업그레이드 시 0.7초마다 25골드를 생산합니다.'
+      },
+      phoenix: {
+        id: 'phoenix',
+        name: '피닉스',
+        icon: '🔥',
+        rarity: '비밀',
+        rarityKey: 'secret',
+        rarityClass: 'rarity-secret',
+        cost: 540,
+        damage: 3,
+        range: 205,
+        fireInterval: 0.01,
+        flameConeAngle: 78,
+        roarInterval: 20,
+        roarDuration: 6,
+        roarSlow: 0.25,
+        burnDuration: 6,
+        burnTickInterval: 0.01,
+        burnDamagePerTick: 1,
+        flightInterval: 60,
+        flightDuration: 10,
+        flightRangeMultiplier: 2,
+        color: '#ff7a2f',
+        skillText: '불꽃 숨결은 0.01초마다 전방 범위의 적에게 3 피해를 줍니다. 20초마다 크게 울어 현재 적들을 6초간 25% 느리게 하고 불을 붙여 0.01초마다 1 피해를 줍니다. 젖은 적에게는 불이 붙지 않습니다. 60초마다 10초간 높이 날아오르며 공격범위가 2배가 됩니다.'
       },
       cherrySamurai: {
         id: 'cherrySamurai',
@@ -6467,6 +6606,35 @@ function applyStagePreview(stageId = selectedStage) {
         maxPlacedPerPlayer: 1,
         color: '#ff8fc8',
         skillText: '기절 면역. 근접 120에서는 전방 180° 범위 베기, 원거리 300에서는 검기 2발을 서로 다른 적에게 발사하며 각 검기는 적중 지점 반경 35에 범위 피해를 줍니다. 반경 170 벚꽃 영역은 0.1초마다 10 피해를 줍니다. 일반 공격 3회마다 폭 60·이동거리 최대 200의 일섬(평타 5배), 일섬 4회마다 오의(각 참격 평타 10배)를 사용합니다. 모든 10번째 공격에는 현재 적 전체에 벚꽃 표식을 남기고 3초 뒤 평타 5배 피해를 줍니다. 한 플레이어당 1기만 배치할 수 있습니다.'
+      },
+      eden: {
+        id: 'eden',
+        name: '에덴',
+        icon: '◈',
+        rarity: '갤럭시',
+        rarityKey: 'galaxy',
+        rarityClass: 'rarity-galaxy',
+        cost: 720,
+        damage: 720,
+        range: 285,
+        fireInterval: 0.82,
+        maxPlaced: 1,
+        footprintRadius: 102,
+        multiplayerFootprintRadius: 84,
+        chargePerHit: 1,
+        maxCharge: 100,
+        chargeDamagePerStack: 0.005,
+        barrageEvery: 5,
+        barrageCount: 6,
+        barrageMultiplier: 0.75,
+        cutEvery: 12,
+        cutRadius: 150,
+        cutMultiplier: 3,
+        voidRushEvery: 20,
+        voidRushWidth: 70,
+        voidRushMultiplier: 4,
+        color: '#f4f4f5',
+        skillText: '공격이 적중할 때마다 공허 충전이 1 쌓이며 최대 100까지 누적됩니다. 충전 1당 피해가 0.5% 증가합니다. 5번째 공격마다 공허 분신 6개가 여러 적을 난사하고, 12번째 공격마다 반경 150을 공허 칼날로 베어 평타의 3배 피해를 줍니다. 20번째 공격마다 전방을 공허 돌진으로 관통해 평타의 4배 피해를 줍니다. 한 맵에 1기만 배치할 수 있습니다.'
       },
       eclipse: {
         id: 'eclipse',
@@ -8891,7 +9059,62 @@ function requestGachaDraw(count) {
         }, { once: true });
     }
 
+
+    function edenCutsceneResultMarkup(rollResults, beforeCopies = {}) {
+      const summary = {};
+      rollResults.forEach(result => {
+        const id = result.winningUnit.id;
+        if (!summary[id]) {
+          const finalCopies = Math.max(1, Math.floor(Number(player.ownedUnits?.[id]?.copies || 1)));
+          summary[id] = { unit: result.winningUnit, amount: 0, newAmount: Number(beforeCopies?.[id] || 0) <= 0 ? 1 : 0, finalCopies };
+        }
+        summary[id].amount += 1;
+      });
+      return Object.values(summary).sort((a,b)=>b.amount-a.amount).map(item => `
+        <div class="multi-unit-result-row">
+          <div class="unit-result-name"><span>${item.unit.icon}</span><strong>${item.unit.name}</strong>${item.newAmount > 0 ? '<span class="rarity-galaxy">NEW</span>' : ''}</div>
+          <span class="unit-result-count">획득 X${item.amount} · 보유 X${item.finalCopies}</span>
+        </div>`).join('');
+    }
+
+    async function playEdenGalaxyCutscene(rollResults, beforeCopies = {}) {
+      const overlay = document.querySelector('#cutsceneOverlay');
+      const content = document.querySelector('#cutsceneContent');
+      const dice = DICE_DATA.galaxy;
+      setCutsceneTheme(dice);
+      cutsceneRunning = true;
+      overlay.classList.remove('hidden');
+
+      const shards = Array.from({length:14},(_,i)=>`<i class="eden-wing-shard" style="--a:${(i-6.5)*13}deg;animation-delay:${1.45+(i%5)*.035}s"></i>`).join('');
+      const fog = Array.from({length:10},(_,i)=>`<i class="eden-fog" style="width:${90+(i%4)*35}px;height:${40+(i%3)*22}px;left:${6+(i*9)%82}%;top:${12+(i*17)%67}%;animation-delay:${-(i*.31)}s"></i>`).join('');
+      const cracks = Array.from({length:12},(_,i)=>`<i class="eden-crack" style="--len:${80+(i%5)*35}px;transform:rotate(${i*30+(i%2)*12}deg);animation-delay:${1.08+i*.035}s"></i>`).join('');
+      content.innerHTML = `
+        <div class="eden-reveal-shell">
+          <div class="eden-vortex"></div><div class="eden-vortex-ring r1"></div><div class="eden-vortex-ring r2"></div>
+          ${fog}${cracks}${shards}
+          <div class="eden-void-core"></div><div class="eden-flash"></div>
+          <div class="eden-reveal-title">EDEN</div><div class="eden-reveal-sub">GALAXY · VOID AWAKENING</div>
+          <div class="eden-reveal-results">
+            <div id="edenRewardPanel" class="reward-panel visible">
+              <span class="section-kicker">GALAXY ACQUIRED</span>
+              <h2>에덴이 공허에서 깨어났습니다</h2>
+              <div class="multi-unit-results">${edenCutsceneResultMarkup(rollResults,beforeCopies)}</div>
+              <button id="closeEdenCutscene" class="cutscene-close-button">인벤토리로</button>
+            </div>
+          </div>
+        </div>`;
+      playUnitAttackSound('eden',{skill:'edenReveal',volume:1.35});
+      if (navigator.vibrate) navigator.vibrate([45,30,90,45,160]);
+      await wait(3250);
+      content.querySelector('#closeEdenCutscene')?.addEventListener('click',()=>{
+        closeCutscene(); activeInventoryTab='units'; renderInventory();
+      },{once:true});
+    }
+
     async function playMultiDiceRollCutscene(rarityKey, rollResults, beforeCopies = {}) {
+      if (rarityKey === 'galaxy' && rollResults.some(result => result.winningUnit?.id === 'eden')) {
+        return playEdenGalaxyCutscene(rollResults, beforeCopies);
+      }
       const dice = DICE_DATA[rarityKey];
       const overlay = document.querySelector('#cutsceneOverlay');
       const content = document.querySelector('#cutsceneContent');
@@ -9353,7 +9576,7 @@ function requestGachaDraw(count) {
 
       window.addEventListener('load', () => {
         navigator.serviceWorker
-          .register('./service-worker.js?v=20260815-rpg-sfx-1', { updateViaCache: 'none' })
+          .register('./service-worker.js?v=20260815-four-units-1', { updateViaCache: 'none' })
           .then(registration => registration.update())
           .catch(error => console.error('서비스 워커 등록 실패:', error));
       });
@@ -9544,14 +9767,14 @@ function requestGachaDraw(count) {
 
       const now = audio.currentTime;
       const baseVolume = Math.max(.25, Number(options.volume || 1));
-      const skillDuration = ['samuraiUltimate', 'samuraiUltimateCut'].includes(skill) ? 1.05 : (isSkill ? .68 : (highTier ? .50 : .34));
+      const skillDuration = ['edenReveal'].includes(skill) ? 1.85 : (['samuraiUltimate', 'samuraiUltimateCut'].includes(skill) ? 1.05 : (isSkill ? .68 : (highTier ? .50 : .34)));
       // 이전 버전보다 전체 체감 볼륨을 크게 올린다. 컴프레서가 겹침 시 찢어짐을 억제한다.
       const loudness = (isSkill ? .225 : (highTier ? .165 : .135)) * baseVolume;
       const master = createAttackSfxMaster(audio, now, loudness, skillDuration);
 
       // 일반 무기 타격음.
       const swordUnits = new Set(['starterKnight', 'royalGuardian', 'cherrySamurai', 'eclipse']);
-      const bowUnits = new Set(['starterArcher', 'windRanger']);
+      const bowUnits = new Set(['starterArcher', 'windRanger', 'iceQueen']);
 
       if (!isSkill) {
         if (swordUnits.has(unitId)) {
@@ -9565,6 +9788,16 @@ function requestGachaDraw(count) {
           attackSfxNoise(audio, master, now, .22, .34, 1550, 480, .5);
           attackSfxTone(audio, master, now, .23, 190, 760, 'sawtooth', .18, .004);
           attackSfxImpact(audio, master, now + .035, .46);
+        } else if (unitId === 'poseidon') {
+          attackSfxNoise(audio, master, now, .20, .35, 7200, 950, .52);
+          attackSfxTone(audio, master, now + .006, .23, 1760, 290, 'triangle', .22, .002);
+          attackSfxTone(audio, master, now + .018, .28, 420, 92, 'sine', .18, .004);
+        } else if (unitId === 'phoenix') {
+          attackSfxNoise(audio, master, now, .18, .27, 2900, 420, .46);
+          attackSfxTone(audio, master, now, .20, 310, 760, 'sawtooth', .14, .003);
+        } else if (unitId === 'eden') {
+          attackSfxMagicBurst(audio, master, now, .9, 'dark');
+          attackSfxTone(audio, master, now + .016, .22, 2400, 380, 'sine', .11, .002);
         } else if (unitId === 'starterMage') {
           attackSfxMagicBurst(audio, master, now, .86, 'arcane');
         } else {
@@ -9672,6 +9905,71 @@ function requestGachaDraw(count) {
         attackSfxNoise(audio, master, now, .54, .37, 2500, 180, 1.15);
         attackSfxTone(audio, master, now + .08, .56, 760, 118, 'triangle', .18, .01);
         attackSfxImpact(audio, master, now + .32, 1.12);
+        return;
+      }
+
+
+      if (skill === 'poseidonPierce' || skill === 'poseidonReturn') {
+        // 물을 가르며 금속 삼지창이 관통하는 느낌의 새 합성음.
+        attackSfxNoise(audio, master, now, .24, .62, 9800, 820, .48);
+        attackSfxTone(audio, master, now, .18, 2350, 360, 'triangle', .27, .001);
+        attackSfxTone(audio, master, now + .025, .34, 520, 86, 'sine', .22, .004);
+        attackSfxImpact(audio, master, now + .045, .62);
+        return;
+      }
+
+      if (skill === 'poseidonWave') {
+        attackSfxTone(audio, master, now, .85, 118, 38, 'sine', .42, .008);
+        attackSfxNoise(audio, master, now, .72, .66, 3400, 210, .55);
+        [0,.08,.16].forEach((d,i)=>attackSfxTone(audio,master,now+d,.36,560+i*180,110+i*35,'triangle',.15,.004));
+        attackSfxImpact(audio, master, now + .16, 1.0);
+        return;
+      }
+
+      if (skill === 'iceVolley') {
+        [0,.045,.09,.135].forEach((d,i)=>{
+          attackSfxTone(audio, master, now+d, .16, 1700+i*240, 520+i*60, 'triangle', .12, .001);
+          attackSfxNoise(audio, master, now+d, .12, .18, 7200, 2600, .75);
+        });
+        return;
+      }
+
+      if (skill === 'phoenixRoar' || skill === 'phoenixAscend') {
+        attackSfxTone(audio, master, now, .92, skill==='phoenixRoar'?620:420, skill==='phoenixRoar'?1180:1820, 'sawtooth', .22, .02);
+        attackSfxTone(audio, master, now+.04, .78, 180, 62, 'sine', .30, .01);
+        attackSfxNoise(audio, master, now+.02, .74, .46, 4200, 380, .52);
+        if(skill==='phoenixRoar') attackSfxImpact(audio, master, now+.24, .88);
+        return;
+      }
+
+      if (skill === 'edenBarrage') {
+        attackSfxMagicBurst(audio, master, now, 1.1, 'dark');
+        [0,.045,.09,.135,.18,.225].forEach((d,i)=>attackSfxTone(audio,master,now+d,.18,1750+i*90,310+i*20,'triangle',.085,.001));
+        return;
+      }
+
+      if (skill === 'edenCut') {
+        attackSfxTone(audio, master, now, .16, 92, 42, 'sine', .22, .002);
+        attackSfxMetalSlash(audio, master, now+.035, 1.55, true);
+        attackSfxNoise(audio, master, now+.02, .42, .58, 9300, 680, .44);
+        attackSfxImpact(audio, master, now+.10, 1.08);
+        return;
+      }
+
+      if (skill === 'edenReveal') {
+        attackSfxTone(audio, master, now, .92, 46, 24, 'sine', .72, .004);
+        attackSfxNoise(audio, master, now + .04, .72, .62, 6200, 180, 1.1);
+        attackSfxTone(audio, master, now + .18, .78, 240, 2180, 'triangle', .28, .008);
+        [0,.11,.22,.34].forEach((delay,i)=>attackSfxImpact(audio, master, now+.32+delay, .62+i*.13));
+        attackSfxTone(audio, master, now + .74, .78, 3200, 640, 'sine', .22, .006);
+        return;
+      }
+
+      if (skill === 'edenRush') {
+        attackSfxMagicBurst(audio, master, now, 1.28, 'dark');
+        attackSfxNoise(audio, master, now, .52, .70, 6800, 180, .38);
+        attackSfxTone(audio, master, now, .58, 1800, 55, 'sawtooth', .24, .002);
+        attackSfxImpact(audio, master, now+.16, 1.22);
         return;
       }
 
@@ -10273,9 +10571,13 @@ function requestGachaDraw(count) {
         windRanger: '3회 공격마다 거대 관통 화살 · 경로 적에게 평타 피해',
         flameWizard: '평타 폭발 피해 · 5타마다 반경 115 폭염 범위공격×2',
         royalGuardian: `120 이내 전방 120° 범위 베기 · 121~${unit.range} 검기 적중지 반경 ${unit.swordWaveRadius || 55} 범위공격`,
+        iceQueen: '빙결 5초·이속 -25% · 3회 중첩 시 일반 적 3초 완전 동결 · 불붙으면 해제 · 7타마다 7연사(0.2초 간격)',
         skyDragonKnight: '명중 시 50% 번개(0.5초 후·반경 20) · 7회 공격마다 가로 길 평타×5',
+        poseidon: '근접 찌르기 · 원거리 관통 삼지창 왕복 · 7타마다 전역 파도×3 + 밀침 + 젖음 3초(이속 -25%)',
         moneyTree: '공격 없음 · 기본 1초마다 15골드 · 업그레이드 시 최대 0.7초마다 25골드',
+        phoenix: '0.01초 불꽃 숨결 범위공격 · 20초마다 6초 둔화+화상 · 젖음에는 화상 불가 · 60초마다 10초간 사거리×2',
         cherrySamurai: `기절 면역 · 근접 120 전방 180° 범위 · 원거리 ${unit.range} 검기 2발(각 적중지 반경 ${unit.swordWaveSplashRadius || 35} 범위) · 벚꽃 영역 ${unit.blossomAuraRange || 170}: 0.1초마다 ${unit.blossomAuraDamage || 10} 피해 · 일반 3타 후 일섬(폭 ${unit.issenWidth || 60}·거리 ${unit.issenRange || 200})×5 · 일섬 4회마다 오의 각 참격×10 · 10번째 공격마다 적 전체 3초 표식 후 ×5`,
+        eden: '공허 충전 최대 100(1당 피해 +0.5%) · 5타 공허난사 · 12타 반경150 공허절단×3 · 20타 관통 돌진×4 · 맵당 1기',
         eclipse: `평타 적중지 반경 ${unit.normalSlashRadius || 55} 범위 베기 · 처치 시 5% 성장(공격력·공속 +2%, 회전참 범위 +5%) · 타격 시 5% 블랙홀 · 4타마다 회전참×3 + 1초 기절 · 기절 면역`,
         astralChronomancer: '다중발사(2/3/4발) · 공전탄 최대 10발 · 각 탄환 20% 황금 시간기절 · 60회 공격마다 사거리 300 시간정지 5초'
       };
@@ -10537,6 +10839,23 @@ function requestGachaDraw(count) {
       if (enemy.timeStunRemaining <= 0) enemy.timeStunSource = '';
       enemy.timeFieldRemaining = Math.max(0, (enemy.timeFieldRemaining || 0) - dt);
       enemy.reviveInvulnerableRemaining = Math.max(0, Number(enemy.reviveInvulnerableRemaining || 0) - dt);
+      enemy.wetRemaining = Math.max(0, Number(enemy.wetRemaining || 0) - dt);
+      enemy.phoenixSlowRemaining = Math.max(0, Number(enemy.phoenixSlowRemaining || 0) - dt);
+      enemy.chillRemaining = Math.max(0, Number(enemy.chillRemaining || 0) - dt);
+      enemy.hardFreezeRemaining = Math.max(0, Number(enemy.hardFreezeRemaining || 0) - dt);
+      if (enemy.chillRemaining <= 0) enemy.chillStacks = 0;
+
+      if (Number(enemy.burnRemaining || 0) > 0) {
+        enemy.burnRemaining = Math.max(0, Number(enemy.burnRemaining || 0) - dt);
+        enemy.burnAccumulator = Number(enemy.burnAccumulator || 0) + dt;
+        const interval = Math.max(.005, Number(enemy.burnTickInterval || .01));
+        const ticks = Math.floor(enemy.burnAccumulator / interval);
+        if (ticks > 0) {
+          enemy.burnAccumulator -= ticks * interval;
+          applyDamageToEnemy(enemy, ticks * Number(enemy.burnDamagePerTick || 1));
+          if (enemy.dead) return;
+        }
+      }
 
       if (enemy.soilPileState) {
         enemy.soilReviveTimer = Math.max(0, Number(enemy.soilReviveTimer || 0) - dt);
@@ -10594,6 +10913,7 @@ function requestGachaDraw(count) {
 
       const timeStunned = enemy.timeStunRemaining > 0;
       const timeFieldFrozen = enemy.timeFieldRemaining > 0;
+      const iceFrozen = enemy.hardFreezeRemaining > 0;
 
       // 황금 시간탄의 '기절' 중에는 이동과 보스 능력을 모두 멈춘다.
       // 30회 공격 시간영역은 '이동 불가' 효과이므로 보스 능력 자체는 유지한다.
@@ -10605,7 +10925,7 @@ function requestGachaDraw(count) {
         }
       }
 
-      if (timeStunned || timeFieldFrozen) return;
+      if (timeStunned || timeFieldFrozen || iceFrozen) return;
 
       const target = path[enemy.targetIndex];
 
@@ -10666,7 +10986,7 @@ function requestGachaDraw(count) {
         angleDifference * Math.min(1, dt * 9);
 
       const distance = Math.hypot(dx, dy);
-      const movement = enemy.speed * dt;
+      const movement = enemy.speed * getEnemyStatusSpeedMultiplier(enemy) * dt;
 
       if (distance <= movement) {
         enemy.x = target.x;
@@ -10679,16 +10999,390 @@ function requestGachaDraw(count) {
     }
 
 
+
+    function isBossEnemy(enemy) {
+      return Boolean(enemy && enemy.type !== 'normal');
+    }
+
+    function applyWetStatus(enemy, duration = 3, slow = .25) {
+      if (!enemy || enemy.dead) return;
+      enemy.wetRemaining = Math.max(Number(enemy.wetRemaining || 0), Number(duration || 3));
+      enemy.wetSlow = Math.max(Number(enemy.wetSlow || 0), Number(slow || .25));
+      // 물에 젖으면 기존 화염도 꺼집니다.
+      enemy.burnRemaining = 0;
+      enemy.burnAccumulator = 0;
+    }
+
+    function clearIceStatus(enemy) {
+      if (!enemy) return;
+      enemy.chillRemaining = 0;
+      enemy.chillStacks = 0;
+      enemy.hardFreezeRemaining = 0;
+    }
+
+    function applyBurnStatus(enemy, duration = 6, tickInterval = .01, damagePerTick = 1) {
+      if (!enemy || enemy.dead || Number(enemy.wetRemaining || 0) > 0) return false;
+      clearIceStatus(enemy);
+      enemy.burnRemaining = Math.max(Number(enemy.burnRemaining || 0), Number(duration || 6));
+      enemy.burnTickInterval = Math.max(.005, Number(tickInterval || .01));
+      enemy.burnDamagePerTick = Math.max(0, Number(damagePerTick || 1));
+      enemy.burnAccumulator = Math.max(0, Number(enemy.burnAccumulator || 0));
+      return true;
+    }
+
+    function applyIceStatus(enemy, data = UNIT_DATA.iceQueen) {
+      if (!enemy || enemy.dead) return;
+      // 이미 불타고 있는 적은 얼음이 붙지 않습니다.
+      if (Number(enemy.burnRemaining || 0) > 0) {
+        clearIceStatus(enemy);
+        return;
+      }
+      const duration = Number(data?.chillDuration || 5);
+      const maxApplications = Number(data?.freezeApplications || 3);
+      enemy.chillRemaining = Math.max(Number(enemy.chillRemaining || 0), duration);
+      enemy.chillSlow = Math.max(Number(enemy.chillSlow || 0), Number(data?.chillSlow || .25));
+      enemy.chillStacks = Math.min(maxApplications, Number(enemy.chillStacks || 0) + 1);
+      if (!isBossEnemy(enemy) && enemy.chillStacks >= maxApplications) {
+        enemy.hardFreezeRemaining = Math.max(Number(enemy.hardFreezeRemaining || 0), Number(data?.hardFreezeDuration || 3));
+        enemy.chillStacks = 0;
+      }
+    }
+
+    function getEnemyStatusSpeedMultiplier(enemy) {
+      let multiplier = 1;
+      if (Number(enemy.wetRemaining || 0) > 0) multiplier *= Math.max(.05, 1 - Number(enemy.wetSlow || .25));
+      if (Number(enemy.phoenixSlowRemaining || 0) > 0) multiplier *= Math.max(.05, 1 - Number(enemy.phoenixSlow || .25));
+      if (Number(enemy.chillRemaining || 0) > 0) multiplier *= Math.max(.05, 1 - Number(enemy.chillSlow || .25));
+      return multiplier;
+    }
+
+    function getFrontmostEnemyFromPoint(x, y, range) {
+      let best = null;
+      let bestProgress = -Infinity;
+      for (const enemy of battle?.enemies || []) {
+        if (enemy.dead || enemy.soilPileState || Number(enemy.reviveInvulnerableRemaining || 0) > 0) continue;
+        if (Math.hypot(enemy.x - x, enemy.y - y) > range) continue;
+        const progress = Number(enemy.targetIndex || 0);
+        if (progress > bestProgress) {
+          best = enemy;
+          bestProgress = progress;
+        }
+      }
+      return best;
+    }
+
+    function enemiesAlongLine(x1, y1, x2, y2, halfWidth = 18) {
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const len = Math.max(1, Math.hypot(dx, dy));
+      const ux = dx / len;
+      const uy = dy / len;
+      const nx = -uy;
+      const ny = ux;
+      return (battle?.enemies || []).filter(enemy => {
+        if (enemy.dead || enemy.soilPileState || Number(enemy.reviveInvulnerableRemaining || 0) > 0) return false;
+        const ex = enemy.x - x1;
+        const ey = enemy.y - y1;
+        const forward = ex * ux + ey * uy;
+        if (forward < -enemy.radius || forward > len + enemy.radius) return false;
+        const side = Math.abs(ex * nx + ey * ny);
+        return side <= halfWidth + Number(enemy.radius || 0) * .35;
+      });
+    }
+
+    function pushEnemyBackwardOnPath(enemy, amount = 58) {
+      if (!enemy || enemy.dead || enemy.targetIndex <= 0) return false;
+      const previous = path[Math.max(0, enemy.targetIndex - 1)];
+      if (!previous) return false;
+      const dx = previous.x - enemy.x;
+      const dy = previous.y - enemy.y;
+      const distance = Math.hypot(dx, dy);
+      // 모서리에서 다음 선분으로 넘어가야 하는 상태면 밀지 않습니다.
+      if (distance < 48) return false;
+      const push = Math.min(Math.max(0, amount), Math.max(0, distance - 44));
+      if (push <= 1) return false;
+      enemy.x += dx / distance * push;
+      enemy.y += dy / distance * push;
+      return true;
+    }
+
+    function triggerPoseidonWave(placed) {
+      const data = UNIT_DATA.poseidon;
+      playUnitAttackSound('poseidon', { skill: 'poseidonWave', volume: 1.18 });
+      const reversedPath = [...path].reverse().map(point => ({ x: point.x, y: point.y }));
+      battle.shots.push({
+        x1: BASE_POSITION.x,
+        y1: BASE_POSITION.y,
+        x2: path[0]?.x ?? 0,
+        y2: path[0]?.y ?? BASE_POSITION.y,
+        life: getAttackEffectDuration('poseidonWave'),
+        maxLife: getAttackEffectDuration('poseidonWave'),
+        color: '#53d8ff',
+        effect: 'poseidonWave',
+        pathPoints: reversedPath,
+        seed: Math.random() * 1000
+      });
+      const damage = Number(placed.damage || data.damage) * Number(data.waveMultiplier || 3);
+      let hits = 0;
+      for (const enemy of battle.enemies) {
+        if (enemy.dead || enemy.soilPileState) continue;
+        applyDamageToEnemy(enemy, damage);
+        applyWetStatus(enemy, data.wetDuration || 3, data.wetSlow || .25);
+        pushEnemyBackwardOnPath(enemy, data.waveKnockback || 58);
+        hits += 1;
+      }
+      if (hits) setBattleMessage(`🌊 포세이돈의 역류 파도! ${hits}마리 관통 · ${Math.round(damage)} 피해 · 젖음`);
+    }
+
+    function performPoseidonAttack(placed, target, slowMultiplier = 1) {
+      const data = UNIT_DATA.poseidon;
+      const angle = Math.atan2(target.y - placed.y, target.x - placed.x);
+      const distance = Math.hypot(target.x - placed.x, target.y - placed.y);
+      placed.angle = angle;
+      placed.cooldown = Number(placed.fireInterval || data.fireInterval) * slowMultiplier;
+      placed.attackAnimation = 1;
+      placed.attackCount = Number(placed.attackCount || 0) + 1;
+
+      if (distance <= Number(data.meleeRange || 105)) {
+        placed.attackMode = 'poseidonThrust';
+        playUnitAttackSound('poseidon', { skill: 'poseidonPierce', volume: .98 });
+        battle.shots.push({
+          x1: placed.x, y1: placed.y - 4, x2: target.x, y2: target.y,
+          life: getAttackEffectDuration('poseidonThrust'), maxLife: getAttackEffectDuration('poseidonThrust'),
+          color: data.color, effect: 'poseidonThrust', angle, seed: Math.random() * 1000
+        });
+        applyDamageToEnemy(target, placed.damage);
+      } else {
+        placed.attackMode = 'poseidonThrow';
+        playUnitAttackSound('poseidon', { skill: 'poseidonPierce', volume: 1.04 });
+        const endX = placed.x + Math.cos(angle) * Number(data.range || 300);
+        const endY = placed.y + Math.sin(angle) * Number(data.range || 300);
+        battle.shots.push({
+          x1: placed.x, y1: placed.y - 4, x2: endX, y2: endY,
+          life: getAttackEffectDuration('poseidonTrident'), maxLife: getAttackEffectDuration('poseidonTrident'),
+          color: data.color, effect: 'poseidonTrident', angle, seed: Math.random() * 1000
+        });
+        enemiesAlongLine(placed.x, placed.y, endX, endY, data.tridentWidth || 20)
+          .forEach(enemy => applyDamageToEnemy(enemy, placed.damage));
+        scheduleDelayedAttack({
+          kind: 'poseidonReturn',
+          timer: .24,
+          x1: endX, y1: endY, x2: placed.x, y2: placed.y,
+          damage: placed.damage, width: data.tridentWidth || 20
+        });
+      }
+      if (placed.attackCount % Number(data.waveEvery || 7) === 0) triggerPoseidonWave(placed);
+    }
+
+    function fireIceQueenArrowAt(x, y, damage, range, target = null, sourceUnit = null) {
+      const data = UNIT_DATA.iceQueen;
+      const enemy = target && !target.dead ? target : getFrontmostEnemyFromPoint(x, y, range);
+      if (!enemy) return false;
+      const angle = Math.atan2(enemy.y - y, enemy.x - x);
+      battle.shots.push({
+        x1: x, y1: y - 5, x2: enemy.x, y2: enemy.y,
+        life: getAttackEffectDuration('iceArrow'), maxLife: getAttackEffectDuration('iceArrow'),
+        color: data.color, effect: 'iceArrow', angle, seed: Math.random() * 1000
+      });
+      applyDamageToEnemy(enemy, damage);
+      if (!enemy.dead) applyIceStatus(enemy, data);
+      if (sourceUnit) sourceUnit.angle = angle;
+      return true;
+    }
+
+    function performIceQueenAttack(placed, target, slowMultiplier = 1) {
+      const data = UNIT_DATA.iceQueen;
+      placed.attackCount = Number(placed.attackCount || 0) + 1;
+      placed.angle = Math.atan2(target.y - placed.y, target.x - placed.x);
+      placed.cooldown = Number(placed.fireInterval || data.fireInterval) * slowMultiplier;
+      placed.attackAnimation = 1;
+      placed.attackMode = 'iceShot';
+      playUnitAttackSound('iceQueen');
+
+      if (placed.attackCount % Number(data.volleyEvery || 7) === 0) {
+        playUnitAttackSound('iceQueen', { skill: 'iceVolley', volume: 1.08 });
+        for (let i = 0; i < Number(data.volleyCount || 7); i += 1) {
+          scheduleDelayedAttack({
+            kind: 'iceQueenArrow',
+            timer: i * Number(data.volleyInterval || .2),
+            x: placed.x, y: placed.y, damage: placed.damage, range: placed.range
+          });
+        }
+        return;
+      }
+      fireIceQueenArrowAt(placed.x, placed.y, placed.damage, placed.range, target, placed);
+    }
+
+    function triggerPhoenixRoar(placed) {
+      const data = UNIT_DATA.phoenix;
+      playUnitAttackSound('phoenix', { skill: 'phoenixRoar', volume: 1.22 });
+      placed.phoenixRoarFlash = 1.2;
+      battle.shots.push({
+        x1: placed.x, y1: placed.y, x2: placed.x, y2: placed.y,
+        life: getAttackEffectDuration('phoenixRoar'), maxLife: getAttackEffectDuration('phoenixRoar'),
+        color: data.color, effect: 'phoenixRoar', seed: Math.random() * 1000, radius: Math.max(canvas.width, canvas.height)
+      });
+      for (const enemy of battle.enemies) {
+        if (enemy.dead || enemy.soilPileState) continue;
+        enemy.phoenixSlowRemaining = Math.max(Number(enemy.phoenixSlowRemaining || 0), Number(data.roarDuration || 6));
+        enemy.phoenixSlow = Math.max(Number(enemy.phoenixSlow || 0), Number(data.roarSlow || .25));
+        applyBurnStatus(enemy, data.burnDuration || 6, data.burnTickInterval || .01, data.burnDamagePerTick || 1);
+      }
+    }
+
+    function updatePhoenixUnit(placed, dt) {
+      const data = UNIT_DATA.phoenix;
+      if (placed.stunRemaining > 0) return;
+      placed.phoenixRoarTimer = Number.isFinite(placed.phoenixRoarTimer) ? placed.phoenixRoarTimer - dt : Number(data.roarInterval || 20);
+      placed.phoenixFlightTimer = Number.isFinite(placed.phoenixFlightTimer) ? placed.phoenixFlightTimer - dt : Number(data.flightInterval || 60);
+      placed.phoenixFlightRemaining = Math.max(0, Number(placed.phoenixFlightRemaining || 0) - dt);
+      placed.phoenixRoarFlash = Math.max(0, Number(placed.phoenixRoarFlash || 0) - dt);
+
+      if (placed.phoenixRoarTimer <= 0) {
+        triggerPhoenixRoar(placed);
+        placed.phoenixRoarTimer += Number(data.roarInterval || 20);
+      }
+      if (placed.phoenixFlightTimer <= 0) {
+        playUnitAttackSound('phoenix', { skill: 'phoenixAscend', volume: 1.14 });
+        placed.phoenixFlightRemaining = Number(data.flightDuration || 10);
+        placed.phoenixFlightTimer += Number(data.flightInterval || 60);
+      }
+
+      const currentRange = Number(placed.range || data.range) * (placed.phoenixFlightRemaining > 0 ? Number(data.flightRangeMultiplier || 2) : 1);
+      const target = getFrontmostEnemyFromPoint(placed.x, placed.y, currentRange);
+      if (!target) {
+        placed.phoenixBreathAccumulator = 0;
+        return;
+      }
+      placed.angle = Math.atan2(target.y - placed.y, target.x - placed.x);
+      placed.attackMode = 'phoenixBreath';
+      placed.attackAnimation = Math.max(Number(placed.attackAnimation || 0), .6);
+
+      placed.phoenixBreathAccumulator = Number(placed.phoenixBreathAccumulator || 0) + dt;
+      const tickInterval = Number(data.fireInterval || .01);
+      const ticks = Math.floor(placed.phoenixBreathAccumulator / tickInterval);
+      if (ticks <= 0) return;
+      placed.phoenixBreathAccumulator -= ticks * tickInterval;
+      const damage = Number(placed.damage || data.damage) * ticks;
+      const half = (Number(data.flameConeAngle || 78) * Math.PI / 180) / 2;
+      for (const enemy of battle.enemies) {
+        if (enemy.dead || enemy.soilPileState) continue;
+        if (isEnemyInsideCone(enemy, placed, placed.angle, currentRange, half)) applyDamageToEnemy(enemy, damage);
+      }
+      placed.phoenixFxTimer = Number(placed.phoenixFxTimer || 0) - dt;
+      if (placed.phoenixFxTimer <= 0) {
+        playUnitAttackSound('phoenix', { volume: .54 });
+        battle.shots.push({
+          x1: placed.x, y1: placed.y - 7,
+          x2: placed.x + Math.cos(placed.angle) * Math.min(currentRange, 150),
+          y2: placed.y + Math.sin(placed.angle) * Math.min(currentRange, 150),
+          life: getAttackEffectDuration('phoenixBreath'), maxLife: getAttackEffectDuration('phoenixBreath'),
+          color: data.color, effect: 'phoenixBreath', angle: placed.angle, seed: Math.random() * 1000,
+          radius: currentRange, coneAngle: data.flameConeAngle || 78
+        });
+        placed.phoenixFxTimer = .09;
+      }
+    }
+
+    function edenDamageMultiplier(placed) {
+      const data = UNIT_DATA.eden;
+      return 1 + Math.min(Number(data.maxCharge || 100), Number(placed.edenCharge || 0)) * Number(data.chargeDamagePerStack || .005);
+    }
+
+    function addEdenCharge(placed, amount = 1) {
+      const data = UNIT_DATA.eden;
+      placed.edenCharge = Math.min(Number(data.maxCharge || 100), Number(placed.edenCharge || 0) + Number(amount || 1));
+    }
+
+    function performEdenAttack(placed, target, slowMultiplier = 1) {
+      const data = UNIT_DATA.eden;
+      placed.attackCount = Number(placed.attackCount || 0) + 1;
+      placed.angle = Math.atan2(target.y - placed.y, target.x - placed.x);
+      placed.cooldown = Number(placed.fireInterval || data.fireInterval) * slowMultiplier;
+      placed.attackAnimation = 1;
+      const damage = Number(placed.damage || data.damage) * edenDamageMultiplier(placed);
+
+      if (placed.attackCount % Number(data.voidRushEvery || 20) === 0) {
+        playUnitAttackSound('eden', { skill: 'edenRush', volume: 1.20 });
+        placed.attackMode = 'edenRush';
+        const endX = placed.x + Math.cos(placed.angle) * placed.range;
+        const endY = placed.y + Math.sin(placed.angle) * placed.range;
+        battle.shots.push({
+          x1: placed.x, y1: placed.y, x2: endX, y2: endY,
+          life: getAttackEffectDuration('edenRush'), maxLife: getAttackEffectDuration('edenRush'),
+          color: '#f8fafc', effect: 'edenRush', angle: placed.angle, seed: Math.random() * 1000,
+          width: data.voidRushWidth || 70
+        });
+        enemiesAlongLine(placed.x, placed.y, endX, endY, Number(data.voidRushWidth || 70) / 2)
+          .forEach(enemy => applyDamageToEnemy(enemy, damage * Number(data.voidRushMultiplier || 4)));
+        addEdenCharge(placed, 1);
+        return;
+      }
+
+      if (placed.attackCount % Number(data.cutEvery || 12) === 0) {
+        playUnitAttackSound('eden', { skill: 'edenCut', volume: 1.16 });
+        placed.attackMode = 'edenCut';
+        battle.shots.push({
+          x1: target.x, y1: target.y, x2: target.x, y2: target.y,
+          life: getAttackEffectDuration('edenCut'), maxLife: getAttackEffectDuration('edenCut'),
+          color: '#ffffff', effect: 'edenCut', angle: placed.angle, seed: Math.random() * 1000, radius: data.cutRadius || 150
+        });
+        for (const enemy of battle.enemies) {
+          if (!enemy.dead && Math.hypot(enemy.x - target.x, enemy.y - target.y) <= Number(data.cutRadius || 150)) {
+            applyDamageToEnemy(enemy, damage * Number(data.cutMultiplier || 3));
+          }
+        }
+        addEdenCharge(placed, 1);
+        return;
+      }
+
+      if (placed.attackCount % Number(data.barrageEvery || 5) === 0) {
+        playUnitAttackSound('eden', { skill: 'edenBarrage', volume: 1.14 });
+        placed.attackMode = 'edenBarrage';
+        const candidates = battle.enemies
+          .filter(enemy => !enemy.dead && !enemy.soilPileState && Math.hypot(enemy.x - placed.x, enemy.y - placed.y) <= placed.range)
+          .sort((a,b) => Number(b.targetIndex||0) - Number(a.targetIndex||0))
+          .slice(0, Number(data.barrageCount || 6));
+        const targets = candidates.length ? candidates : [target];
+        for (let i = 0; i < Number(data.barrageCount || 6); i += 1) {
+          const enemy = targets[i % targets.length];
+          battle.shots.push({
+            x1: placed.x + (i%2 ? 20 : -20), y1: placed.y - 18 + (i%3)*8,
+            x2: enemy.x, y2: enemy.y,
+            life: getAttackEffectDuration('edenBarrage'), maxLife: getAttackEffectDuration('edenBarrage'),
+            color: '#f8fafc', effect: 'edenBarrage', angle: Math.atan2(enemy.y-placed.y,enemy.x-placed.x), seed: Math.random()*1000+i*13
+          });
+          applyDamageToEnemy(enemy, damage * Number(data.barrageMultiplier || .75));
+        }
+        addEdenCharge(placed, 1);
+        return;
+      }
+
+      playUnitAttackSound('eden');
+      placed.attackMode = 'edenBolt';
+      battle.shots.push({
+        x1: placed.x, y1: placed.y - 8, x2: target.x, y2: target.y,
+        life: getAttackEffectDuration('edenBolt'), maxLife: getAttackEffectDuration('edenBolt'),
+        color: '#f8fafc', effect: 'edenBolt', angle: placed.angle, seed: Math.random() * 1000
+      });
+      applyDamageToEnemy(target, damage);
+      addEdenCharge(placed, 1);
+    }
+
     function getAttackEffectType(unitId) {
       const effects = {
         starterArcher: 'arrow',
         windRanger: 'windArrow',
         starterKnight: 'steelSlash',
         royalGuardian: 'royalConeSlash',
+        iceQueen: 'iceArrow',
         starterMage: 'arcaneBolt',
         flameWizard: 'fireball',
         skyDragonKnight: 'dragonLance',
+        poseidon: 'poseidonTrident',
+        phoenix: 'phoenixBreath',
         astralChronomancer: 'timeRift',
+        eden: 'edenBolt',
         eclipse: 'eclipseSlash',
         cherrySamurai: 'sakuraWave'
       };
@@ -10710,6 +11404,18 @@ function requestGachaDraw(count) {
         dragonLaneCast: .38,
         dragonLaneSweep: .72,
         skyLightning: .44,
+        iceArrow: .42,
+        iceBurst: .50,
+        poseidonThrust: .32,
+        poseidonTrident: .52,
+        poseidonReturn: .42,
+        poseidonWave: .92,
+        phoenixBreath: .20,
+        phoenixRoar: 1.20,
+        edenBolt: .42,
+        edenBarrage: .50,
+        edenCut: .58,
+        edenRush: .62,
         timeRift: .48,
         timeRiftGolden: .52,
         eclipseSlash: .34,
@@ -10880,6 +11586,25 @@ function requestGachaDraw(count) {
         });
         const hits = damageEnemiesAlongSamuraiLine(attack.x1, attack.y1, attack.x2, attack.y2, attack.width || 30, attack.damage);
         if (hits > 0) setBattleMessage(`🌸 만개천참 ${attack.style || ''} · ${hits}명에게 ${Math.round(attack.damage)} 피해`);
+        return;
+      }
+
+      if (attack.kind === 'poseidonReturn') {
+        playUnitAttackSound('poseidon', { skill: 'poseidonReturn', volume: .98 });
+        battle.shots.push({
+          x1: attack.x1, y1: attack.y1, x2: attack.x2, y2: attack.y2,
+          life: getAttackEffectDuration('poseidonReturn'), maxLife: getAttackEffectDuration('poseidonReturn'),
+          color: '#8be7ff', effect: 'poseidonReturn',
+          angle: Math.atan2(attack.y2-attack.y1, attack.x2-attack.x1), seed: Math.random()*1000
+        });
+        enemiesAlongLine(attack.x1, attack.y1, attack.x2, attack.y2, attack.width || 20)
+          .forEach(enemy => applyDamageToEnemy(enemy, attack.damage));
+        return;
+      }
+
+      if (attack.kind === 'iceQueenArrow') {
+        playUnitAttackSound('iceQueen', { volume: .72 });
+        fireIceQueenArrowAt(attack.x, attack.y, attack.damage, attack.range);
         return;
       }
 
@@ -11716,6 +12441,11 @@ function requestGachaDraw(count) {
         updateChronoOrbitingShots(placed);
       }
 
+      if (placed.unitId === 'phoenix') {
+        updatePhoenixUnit(placed, dt);
+        return;
+      }
+
       if (placed.unitId === 'moneyTree') {
         if (placed.stunRemaining > 0) return;
         placed.incomeAmount ||= UNIT_DATA.moneyTree.incomeAmount;
@@ -11745,6 +12475,27 @@ function requestGachaDraw(count) {
         const target = getFrontmostEnemyInRange(placed, placed.range);
         if (!target) return;
         performCherrySamuraiAttack(placed, target, slowMultiplier);
+        return;
+      }
+
+      if (placed.unitId === 'poseidon') {
+        const target = getFrontmostEnemyInRange(placed, placed.range);
+        if (!target) return;
+        performPoseidonAttack(placed, target, slowMultiplier);
+        return;
+      }
+
+      if (placed.unitId === 'iceQueen') {
+        const target = getFrontmostEnemyInRange(placed, placed.range);
+        if (!target) return;
+        performIceQueenAttack(placed, target, slowMultiplier);
+        return;
+      }
+
+      if (placed.unitId === 'eden') {
+        const target = getFrontmostEnemyInRange(placed, placed.range);
+        if (!target) return;
+        performEdenAttack(placed, target, slowMultiplier);
         return;
       }
 
@@ -13871,6 +14622,45 @@ function requestGachaDraw(count) {
         ctx.restore();
       }
 
+
+      // 포세이돈/피닉스/얼음여왕 상태이상 표시
+      if (Number(enemy.wetRemaining || 0) > 0) {
+        ctx.save();
+        ctx.translate(drawX, drawY);
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.strokeStyle = 'rgba(90,218,255,.78)';
+        ctx.lineWidth = 2;
+        for (let i=0;i<5;i+=1) {
+          const a = time*.004 + i*Math.PI*2/5;
+          const rr = enemy.radius + 7 + (i%2)*4;
+          ctx.beginPath();
+          ctx.arc(Math.cos(a)*rr*.45, Math.sin(a)*rr*.34, 2.3+(i%2), 0, Math.PI*2);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+      if (Number(enemy.burnRemaining || 0) > 0) {
+        ctx.save(); ctx.translate(drawX, drawY - enemy.radius*.15);
+        ctx.globalCompositeOperation='lighter';
+        for(let i=0;i<7;i+=1){
+          const a=time*.006+i*1.7, px=Math.sin(a*1.9+i)*enemy.radius*.55, py=enemy.radius*.42-((time*.08+i*13)%(enemy.radius*1.5));
+          const g=ctx.createRadialGradient(px,py,0,px,py,8+i%3*2);g.addColorStop(0,'rgba(255,247,180,.95)');g.addColorStop(.35,'rgba(255,125,35,.88)');g.addColorStop(1,'rgba(255,30,10,0)');
+          ctx.fillStyle=g;ctx.beginPath();ctx.arc(px,py,8+i%3*2,0,Math.PI*2);ctx.fill();
+        }
+        ctx.restore();
+      }
+      if (Number(enemy.chillRemaining || 0) > 0 || Number(enemy.hardFreezeRemaining || 0) > 0) {
+        const frozen = Number(enemy.hardFreezeRemaining || 0) > 0;
+        ctx.save(); ctx.translate(drawX, drawY);
+        ctx.strokeStyle = frozen ? 'rgba(220,249,255,.95)' : 'rgba(129,225,255,.78)';
+        ctx.lineWidth = frozen ? 4 : 2.2;
+        ctx.shadowBlur = frozen ? 18 : 9; ctx.shadowColor='#8ee7ff';
+        ctx.beginPath();ctx.arc(0,0,enemy.radius+(frozen?10:6),0,Math.PI*2);ctx.stroke();
+        const flakes=frozen?8:4;
+        for(let i=0;i<flakes;i+=1){const a=i*Math.PI*2/flakes+time*.0007,rr=enemy.radius+13;ctx.fillStyle='#e8fbff';ctx.beginPath();ctx.moveTo(Math.cos(a)*rr,Math.sin(a)*rr-4);ctx.lineTo(Math.cos(a)*rr+3,Math.sin(a)*rr+3);ctx.lineTo(Math.cos(a)*rr-3,Math.sin(a)*rr+3);ctx.closePath();ctx.fill();}
+        ctx.restore();
+      }
+
       const barWidth = isBoss ? 100 : 44;
       const barHeight = isBoss ? 8 : 5;
       const barY = drawY - enemy.radius - (isBoss ? 40 : 28);
@@ -14836,6 +15626,15 @@ function requestGachaDraw(count) {
         ctx.fillStyle = '#4d2f0a'; ctx.fillRect(-11,-23,22,5);
         ctx.fillStyle = '#f7d65a'; ctx.beginPath(); ctx.moveTo(-8,-34); ctx.lineTo(-3,-27); ctx.lineTo(1,-36); ctx.lineTo(5,-27); ctx.lineTo(10,-34); ctx.lineTo(9,-25); ctx.lineTo(-9,-25); ctx.closePath(); ctx.fill();
         ctx.fillStyle = '#b77900'; ctx.beginPath(); ctx.moveTo(-26,-7); ctx.lineTo(-12,-13); ctx.lineTo(-7,5); ctx.lineTo(-17,16); ctx.lineTo(-27,8); ctx.closePath(); ctx.fill();
+      } else if (id === 'iceQueen') {
+        drawBoots('#b8e9f4', 8);
+        const robe=ctx.createLinearGradient(0,-20,0,22);robe.addColorStop(0,'#f8fdff');robe.addColorStop(.42,'#9de8ff');robe.addColorStop(1,'#356f9f');
+        ctx.fillStyle=robe;ctx.beginPath();ctx.moveTo(-20,20);ctx.lineTo(-13,-11);ctx.lineTo(13,-11);ctx.lineTo(21,20);ctx.quadraticCurveTo(0,12,-20,20);ctx.fill();
+        ctx.fillStyle='#dff9ff';for(const side of [-1,1]){ctx.beginPath();ctx.moveTo(side*11,-9);ctx.lineTo(side*25,-3);ctx.lineTo(side*15,7);ctx.closePath();ctx.fill();}
+        ctx.fillStyle='#d7f7ff';ctx.beginPath();ctx.arc(0,-18,10,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#2c5d86';ctx.beginPath();ctx.arc(0,-19,8,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle='#effdff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-12,-30);ctx.lineTo(-5,-39);ctx.lineTo(0,-31);ctx.lineTo(6,-40);ctx.lineTo(13,-30);ctx.stroke();
+        ctx.fillStyle='#8ee7ff';ctx.beginPath();ctx.arc(0,-6,4.5,0,Math.PI*2);ctx.fill();
       } else if (id === 'starterMage') {
         ctx.fillStyle = '#3d2467'; ctx.beginPath(); ctx.moveTo(-19,20); ctx.lineTo(-10,-10); ctx.lineTo(10,-10); ctx.lineTo(20,20); ctx.closePath(); ctx.fill();
         ctx.fillStyle = '#9b64ff'; ctx.beginPath(); ctx.moveTo(-14,16); ctx.lineTo(-8,-8); ctx.lineTo(8,-8); ctx.lineTo(14,16); ctx.closePath(); ctx.fill();
@@ -14860,6 +15659,15 @@ function requestGachaDraw(count) {
         ctx.fillStyle = '#4a1119'; ctx.fillRect(-10,-23,20,5);
         ctx.fillStyle = '#ff947c'; for (const side of [-1,1]) { ctx.beginPath(); ctx.moveTo(side*5,-32); ctx.lineTo(side*17,-42); ctx.lineTo(side*12,-25); ctx.closePath(); ctx.fill(); }
         ctx.fillStyle = '#f9d26b'; ctx.beginPath(); ctx.moveTo(0,-4); ctx.lineTo(6,5); ctx.lineTo(0,11); ctx.lineTo(-6,5); ctx.closePath(); ctx.fill();
+      } else if (id === 'poseidon') {
+        drawBoots('#153e57', 10);
+        const sea=ctx.createLinearGradient(-18,-16,18,18);sea.addColorStop(0,'#bff7ff');sea.addColorStop(.28,'#35c9ff');sea.addColorStop(.72,'#146b9a');sea.addColorStop(1,'#0b344e');
+        ctx.fillStyle=sea;ctx.beginPath();ctx.moveTo(-20,17);ctx.lineTo(-16,-13);ctx.lineTo(16,-13);ctx.lineTo(22,17);ctx.closePath();ctx.fill();
+        ctx.fillStyle='#d7f9ff';for(const side of [-1,1]){ctx.beginPath();ctx.moveTo(side*13,-10);ctx.lineTo(side*28,-17);ctx.lineTo(side*22,2);ctx.closePath();ctx.fill();}
+        ctx.fillStyle='#11384f';ctx.beginPath();ctx.arc(0,-20,12,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle='#76e7ff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,-20,15,Math.PI*.1,Math.PI*.9);ctx.stroke();
+        ctx.fillStyle='#7cecff';ctx.beginPath();ctx.moveTo(0,-36);ctx.lineTo(5,-27);ctx.lineTo(0,-29);ctx.lineTo(-5,-27);ctx.closePath();ctx.fill();
+        ctx.fillStyle='#e8fbff';ctx.beginPath();ctx.arc(0,-5,5,0,Math.PI*2);ctx.fill();
       } else if (id === 'moneyTree') {
         const sway = Math.sin(time * .0026 + unit.animationOffset) * .045;
         ctx.save(); ctx.rotate(sway);
@@ -14871,8 +15679,41 @@ function requestGachaDraw(count) {
         const pulse = .88 + Math.sin(time * .006) * .12; ctx.shadowBlur = 12 * pulse; ctx.shadowColor = '#ffd84f'; ctx.fillStyle = '#ffd84f'; ctx.strokeStyle = '#8f6100'; ctx.lineWidth = 1.2;
         for (const [x,y] of [[-14,-20],[7,-30],[17,-10],[-3,-7],[3,-17]]) { ctx.beginPath(); ctx.arc(x,y,4.2,0,Math.PI*2); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#fff1a6'; ctx.beginPath(); ctx.arc(x-1.2,y-1.3,1.2,0,Math.PI*2); ctx.fill(); ctx.fillStyle = '#ffd84f'; }
         ctx.restore();
+      } else if (id === 'phoenix') {
+        const flap=Math.sin(time*.012 + unit.animationOffset)*.42;
+        const lift=unit.phoenixFlightRemaining>0?-14:0;
+        ctx.save();ctx.translate(0,lift);
+        ctx.fillStyle='rgba(0,0,0,.22)';ctx.beginPath();ctx.ellipse(0,25-lift,25,7,0,0,Math.PI*2);ctx.fill();
+        for(const side of [-1,1]){
+          ctx.save();ctx.rotate(side*(.35+flap));
+          const wing=ctx.createLinearGradient(0,0,34*side,-8);wing.addColorStop(0,'#ffd36a');wing.addColorStop(.45,'#ff7a2f');wing.addColorStop(1,'#e32418');
+          ctx.fillStyle=wing;ctx.beginPath();ctx.moveTo(0,-7);ctx.quadraticCurveTo(side*25,-29,side*45,-12);ctx.quadraticCurveTo(side*27,-3,side*9,8);ctx.closePath();ctx.fill();
+          for(let i=0;i<4;i++){ctx.fillStyle=i%2?'#ffb12d':'#ff4b1e';ctx.beginPath();ctx.moveTo(side*(18+i*7),-10+i);ctx.lineTo(side*(31+i*7),-3+i*2);ctx.lineTo(side*(21+i*5),5+i);ctx.closePath();ctx.fill();}
+          ctx.restore();
+        }
+        const body=ctx.createRadialGradient(-4,-10,2,0,-3,24);body.addColorStop(0,'#fff1a5');body.addColorStop(.42,'#ffb734');body.addColorStop(1,'#c93418');
+        ctx.fillStyle=body;ctx.beginPath();ctx.ellipse(0,-2,16,23,0,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#ffd65b';ctx.beginPath();ctx.arc(10,-24,9,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#4b1d10';ctx.beginPath();ctx.moveTo(17,-24);ctx.lineTo(30,-20);ctx.lineTo(18,-17);ctx.closePath();ctx.fill();
+        ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(13,-27,2.3,0,Math.PI*2);ctx.fill();ctx.fillStyle='#7a0b06';ctx.beginPath();ctx.arc(13.5,-27,1.2,0,Math.PI*2);ctx.fill();
+        // 불꽃 꼬리
+        for(let i=0;i<5;i++){const a=(i-2)*.35;ctx.fillStyle=i%2?'#ff4a18':'#ffb128';ctx.beginPath();ctx.moveTo(-5+i*2,17);ctx.quadraticCurveTo(Math.sin(time*.008+i)*8,35+i*4,Math.sin(a)*15,45+i*4);ctx.quadraticCurveTo(2,31,5,17);ctx.fill();}
+        ctx.restore();
       } else if (id === 'cherrySamurai') {
         drawCherrySamuraiBodyArt(ctx, time, unit, 1);
+      } else if (id === 'eden') {
+        const hover=Math.sin(time*.003+unit.animationOffset)*2.2;
+        ctx.save();ctx.translate(0,hover);
+        const cloak=ctx.createLinearGradient(0,-22,0,25);cloak.addColorStop(0,'#f8fafc');cloak.addColorStop(.18,'#8f9299');cloak.addColorStop(.42,'#151619');cloak.addColorStop(1,'#020203');
+        ctx.fillStyle=cloak;ctx.beginPath();ctx.moveTo(-18,21);ctx.lineTo(-12,-15);ctx.lineTo(12,-15);ctx.lineTo(19,21);ctx.quadraticCurveTo(0,12,-18,21);ctx.fill();
+        ctx.fillStyle='#050506';ctx.beginPath();ctx.arc(0,-22,11,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#fff';ctx.fillRect(-7,-24,14,2);
+        // 옆의 공허 덩어리
+        const ox=26+Math.sin(time*.0024)*4, oy=-10+Math.cos(time*.0032)*5;
+        const voidg=ctx.createRadialGradient(ox-4,oy-5,2,ox,oy,17);voidg.addColorStop(0,'#35363a');voidg.addColorStop(.36,'#09090b');voidg.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=voidg;ctx.beginPath();ctx.arc(ox,oy,17,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#fff';ctx.beginPath();ctx.ellipse(ox+3,oy-2,5,2.2,-.2,0,Math.PI*2);ctx.fill();
+        ctx.restore();
       } else if (id === 'eclipse') {
         drawBoots('#100408', 9);
         drawEclipseGalaxyBodyArt(ctx, time, unit, 1);
@@ -14943,14 +15784,15 @@ function requestGachaDraw(count) {
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
-      if (unit.unitId === 'starterArcher' || unit.unitId === 'windRanger') {
+      if (unit.unitId === 'starterArcher' || unit.unitId === 'windRanger' || unit.unitId === 'iceQueen') {
         const wind = unit.unitId === 'windRanger';
-        ctx.strokeStyle = wind ? '#8ff4bd' : '#d49a55';
+        const ice = unit.unitId === 'iceQueen';
+        ctx.strokeStyle = ice ? '#dffbff' : (wind ? '#8ff4bd' : '#d49a55');
         ctx.lineWidth = 3;
         ctx.beginPath(); ctx.arc(12,0,17,-1.18,1.18); ctx.stroke();
         ctx.strokeStyle = '#f8fbff'; ctx.lineWidth = 1.1; ctx.beginPath(); ctx.moveTo(19,-15); ctx.lineTo(19,15); ctx.stroke();
-        ctx.strokeStyle = wind ? '#d7ffe8' : '#e7edf5'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-5,0); ctx.lineTo(35,0); ctx.stroke();
-        ctx.fillStyle = wind ? '#62e89c' : '#dbeafe'; ctx.beginPath(); ctx.moveTo(42,0); ctx.lineTo(33,-5); ctx.lineTo(33,5); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = ice ? '#b8f3ff' : (wind ? '#d7ffe8' : '#e7edf5'); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-5,0); ctx.lineTo(35,0); ctx.stroke();
+        ctx.fillStyle = ice ? '#e9fdff' : (wind ? '#62e89c' : '#dbeafe'); ctx.beginPath(); ctx.moveTo(42,0); ctx.lineTo(33,-5); ctx.lineTo(33,5); ctx.closePath(); ctx.fill();
       } else if (unit.unitId === 'starterKnight' || unit.unitId === 'royalGuardian') {
         const royal = unit.unitId === 'royalGuardian';
         const blade = ctx.createLinearGradient(0,0,46,0); blade.addColorStop(0,royal?'#8c5a00':'#596979'); blade.addColorStop(.38,'#ffffff'); blade.addColorStop(1,royal?'#ffe76b':'#b8d9f5');
@@ -14965,6 +15807,14 @@ function requestGachaDraw(count) {
         const orb=ctx.createRadialGradient(orbX-3,-4,1,orbX,0,12); orb.addColorStop(0,'#fff'); orb.addColorStop(.3,orbColor); orb.addColorStop(1,'rgba(20,20,40,0)');
         ctx.fillStyle=orb;ctx.beginPath();ctx.arc(orbX,0,11+attack*2,0,Math.PI*2);ctx.fill();
         if (chrono){ctx.strokeStyle='#fff';ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(orbX,0,15,0,Math.PI*2);ctx.stroke();}
+      } else if (unit.unitId === 'poseidon') {
+        const glow=unit.attackAnimation||0;
+        ctx.shadowBlur=14+glow*10;ctx.shadowColor='#35c9ff';
+        const shaft=ctx.createLinearGradient(-8,0,58,0);shaft.addColorStop(0,'#154c6d');shaft.addColorStop(.4,'#69dcff');shaft.addColorStop(1,'#e9fdff');
+        ctx.strokeStyle=shaft;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-8,0);ctx.lineTo(55,0);ctx.stroke();
+        ctx.strokeStyle='#dffaff';ctx.lineWidth=3;
+        for(const off of [-9,0,9]){ctx.beginPath();ctx.moveTo(52,0);ctx.lineTo(70,off);ctx.stroke();}
+        ctx.strokeStyle='#62d9ff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(55,0);ctx.lineTo(61,-12);ctx.moveTo(55,0);ctx.lineTo(61,12);ctx.stroke();
       } else if (unit.unitId === 'cherrySamurai') {
         const bloomCast = unit.samuraiBloomCast;
         const bloomActive = bloomCast && time >= Number(bloomCast.startAt || 0) && time <= Number(bloomCast.endAt || 0);
@@ -14992,6 +15842,11 @@ function requestGachaDraw(count) {
           }
           ctx.restore();
         }
+      } else if (unit.unitId === 'eden') {
+        ctx.shadowBlur=22;ctx.shadowColor='#ffffff';
+        const blade=ctx.createLinearGradient(-4,-2,62,2);blade.addColorStop(0,'#050506');blade.addColorStop(.45,'#1a1b1e');blade.addColorStop(.72,'#ffffff');blade.addColorStop(1,'rgba(255,255,255,0)');
+        ctx.fillStyle=blade;ctx.beginPath();ctx.moveTo(-4,-4);ctx.lineTo(47,-5);ctx.lineTo(65,0);ctx.lineTo(47,5);ctx.lineTo(-4,4);ctx.closePath();ctx.fill();
+        ctx.fillStyle='#fff';ctx.fillRect(-8,-7,4,14);
       } else if (unit.unitId === 'eclipse') {
         drawEclipseTwinBladesArt(ctx, time, unit, attack, 1);
       } else if (unit.unitId === 'skyDragonKnight') {
@@ -15042,14 +15897,28 @@ function requestGachaDraw(count) {
       g.restore();
     }
 
+
+    function drawEdenAuraArt(g, time, unit, quality = 1) {
+      const t=time*.001, charge=Math.min(100,Number(unit.edenCharge||0)), pulse=.82+Math.sin(t*2.7)*.12;
+      g.save();
+      const r=70+charge*.16;
+      const floor=g.createRadialGradient(0,8,4,0,8,r);floor.addColorStop(0,`rgba(255,255,255,${.10*pulse})`);floor.addColorStop(.20,'rgba(10,10,12,.38)');floor.addColorStop(.58,'rgba(0,0,0,.22)');floor.addColorStop(1,'rgba(0,0,0,0)');
+      g.fillStyle=floor;g.beginPath();g.ellipse(0,11,r,r*.38,0,0,Math.PI*2);g.fill();
+      g.save();g.rotate(t*.23);g.strokeStyle=`rgba(255,255,255,${.46*pulse})`;g.lineWidth=2.4;g.setLineDash([15,9]);g.beginPath();g.ellipse(0,9,52+charge*.08,20+charge*.025,.25,0,Math.PI*2);g.stroke();g.setLineDash([]);g.restore();
+      const fogCount=quality>.7?10:6;
+      for(let i=0;i<fogCount;i++){const a=t*(.12+i*.011)+i*2.31,rr=26+(i%4)*11,x=Math.cos(a)*rr,y=-4+Math.sin(a*1.4)*(14+(i%3)*5);g.fillStyle=`rgba(${i%2?255:30},${i%2?255:30},${i%2?255:34},${.08+(i%3)*.03})`;g.beginPath();g.arc(x,y,5+(i%3)*2,0,Math.PI*2);g.fill();}
+      g.restore();
+    }
+
     function drawDetailedUnitSprite(unit, time) {
       const data = UNIT_DATA[unit.unitId];
       if (unit.unitId === 'eclipse') drawEclipseGalaxyAuraArt(ctx, time, unit, 1);
+      if (unit.unitId === 'eden') drawEdenAuraArt(ctx, time, unit, 1);
       const auraPulse = .36 + Math.sin(time * .005 + unit.animationOffset) * .10;
       ctx.beginPath();
       ctx.arc(0, 2, 31, 0, Math.PI * 2);
       ctx.strokeStyle = `${data.color}${Math.round(auraPulse * 255).toString(16).padStart(2, '0')}`;
-      ctx.lineWidth = unit.unitId === 'eclipse' ? 3.6 : (unit.unitId === 'skyDragonKnight' || unit.unitId === 'astralChronomancer' ? 3 : 1.5);
+      ctx.lineWidth = unit.unitId === 'eclipse' ? 3.6 : (unit.unitId === 'eden' ? 3.2 : (unit.unitId === 'skyDragonKnight' || unit.unitId === 'astralChronomancer' || unit.unitId === 'poseidon' || unit.unitId === 'phoenix' ? 3 : 1.5));
       ctx.stroke();
 
       drawStandingUnitBody(unit, time);
@@ -15172,6 +16041,11 @@ function requestGachaDraw(count) {
         chronoAttackCount: 0,
         chronoOrbitingShots: [],
         chronoFieldRemaining: 0,
+        phoenixRoarTimer: UNIT_DATA.phoenix?.roarInterval || 20,
+        phoenixFlightTimer: UNIT_DATA.phoenix?.flightInterval || 60,
+        phoenixFlightRemaining: 0,
+        phoenixBreathAccumulator: 0,
+        edenCharge: 0,
         eclipseGrowthStacks: 0,
         eclipseAttackCount: 0,
         samuraiNormalCount: 0,
@@ -15207,6 +16081,7 @@ function requestGachaDraw(count) {
       ctx.save();
       const renderPos = unit.unitId === 'cherrySamurai' ? getSamuraiRenderPosition(unit, time) : { x: unit.x, y: unit.y };
       ctx.translate(renderPos.x, renderPos.y);
+      if (unit.unitId === 'phoenix' && Number(unit.phoenixFlightRemaining || 0) > 0) ctx.translate(0, -18);
 
       if (battle.selectedPlacedUnit === unit) {
         ctx.beginPath();
@@ -15290,6 +16165,11 @@ function requestGachaDraw(count) {
           ctx.stroke();
           ctx.restore();
         });
+      }
+
+      if (unit.unitId === 'eden') {
+        const charge=Math.min(100,Number(unit.edenCharge||0));
+        ctx.save();ctx.strokeStyle='rgba(255,255,255,.82)';ctx.lineWidth=2.2;ctx.beginPath();ctx.arc(0,0,39,-Math.PI/2,-Math.PI/2+Math.PI*2*(charge/100));ctx.stroke();ctx.font='bold 10px Arial';ctx.textAlign='center';ctx.fillStyle='#fff';ctx.fillText(`VOID ${charge}`,0,43);ctx.restore();
       }
 
       if (unit.unitId === 'eclipse') {
@@ -15832,6 +16712,48 @@ function requestGachaDraw(count) {
           const impact=ctx.createRadialGradient(0,0,1,0,0,48);impact.addColorStop(0,`rgba(255,245,248,${.55*pulse})`);impact.addColorStop(.25,`rgba(255,54,88,${.30*pulse})`);impact.addColorStop(1,'rgba(255,0,45,0)');ctx.fillStyle=impact;ctx.beginPath();ctx.arc(0,0,48,0,Math.PI*2);ctx.fill();
           for(let i=0;i<8;i+=1){const a=i*Math.PI/4+progress*.7;const r=18+i%3*7;ctx.fillStyle=`rgba(255,120,140,${.65*pulse})`;ctx.beginPath();ctx.arc(Math.cos(a)*r,Math.sin(a)*r,1.5+i%2,0,Math.PI*2);ctx.fill();}
           ctx.restore();
+        } else if (shot.effect === 'iceArrow') {
+          const tailX=x-ux*34,tailY=y-uy*34;
+          ctx.shadowBlur=16;ctx.shadowColor='#8ee7ff';
+          ctx.strokeStyle=`rgba(126,229,255,${.72*fade})`;ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(tailX,tailY);ctx.lineTo(x,y);ctx.stroke();
+          ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.fillStyle='#e9fdff';ctx.strokeStyle='#78dbff';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(16,0);ctx.lineTo(-4,-6);ctx.lineTo(-1,0);ctx.lineTo(-4,6);ctx.closePath();ctx.fill();ctx.stroke();
+          for(let i=0;i<3;i++){ctx.fillStyle=`rgba(180,244,255,${.75*fade})`;ctx.beginPath();ctx.moveTo(-8-i*8,0);ctx.lineTo(-2-i*8,-4);ctx.lineTo(-2-i*8,4);ctx.closePath();ctx.fill();}ctx.restore();
+        } else if (shot.effect === 'poseidonThrust') {
+          const pulse=Math.sin(progress*Math.PI);ctx.save();ctx.translate(shot.x1,shot.y1);ctx.rotate(shot.angle);ctx.globalCompositeOperation='lighter';
+          ctx.strokeStyle=`rgba(230,253,255,${.92*pulse})`;ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(4,0);ctx.lineTo(95*progress,0);ctx.stroke();
+          ctx.strokeStyle=`rgba(49,201,255,${.48*pulse})`;ctx.lineWidth=14;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(90*progress,0);ctx.stroke();
+          for(const off of [-8,0,8]){ctx.strokeStyle=`rgba(220,250,255,${.75*pulse})`;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(72*progress,0);ctx.lineTo(96*progress,off);ctx.stroke();}ctx.restore();
+        } else if (shot.effect === 'poseidonTrident' || shot.effect === 'poseidonReturn') {
+          const returning=shot.effect==='poseidonReturn',tail=returning?28:46,tailX=x-ux*tail,tailY=y-uy*tail;
+          ctx.shadowBlur=20;ctx.shadowColor='#35c9ff';ctx.strokeStyle=`rgba(62,205,255,${.52*fade})`;ctx.lineWidth=13;ctx.beginPath();ctx.moveTo(tailX,tailY);ctx.lineTo(x,y);ctx.stroke();
+          ctx.save();ctx.translate(x,y);ctx.rotate(angle);const tg=ctx.createLinearGradient(-22,0,28,0);tg.addColorStop(0,'#0e5779');tg.addColorStop(.45,'#59d8ff');tg.addColorStop(1,'#f0feff');ctx.strokeStyle=tg;ctx.lineWidth=4.5;ctx.beginPath();ctx.moveTo(-22,0);ctx.lineTo(25,0);ctx.stroke();
+          ctx.strokeStyle='#e7fdff';ctx.lineWidth=2.5;for(const off of [-8,0,8]){ctx.beginPath();ctx.moveTo(22,0);ctx.lineTo(38,off);ctx.stroke();}ctx.restore();
+          for(let i=0;i<5;i++){const px=x-ux*(12+i*10)+nx*Math.sin(progress*13+i)*5,py=y-uy*(12+i*10)+ny*Math.sin(progress*13+i)*5;ctx.fillStyle=`rgba(123,230,255,${.5*fade})`;ctx.beginPath();ctx.arc(px,py,2+i%2,0,Math.PI*2);ctx.fill();}
+        } else if (shot.effect === 'poseidonWave') {
+          const pulse=Math.sin(progress*Math.PI),points=Array.isArray(shot.pathPoints)?shot.pathPoints:[{x:shot.x1,y:shot.y1},{x:shot.x2,y:shot.y2}];
+          ctx.save();ctx.globalCompositeOperation='lighter';ctx.lineCap='round';ctx.lineJoin='round';
+          const layers=4;for(let l=0;l<layers;l++){ctx.strokeStyle=`rgba(${170-l*24},${240-l*10},255,${pulse*(.62-l*.10)})`;ctx.lineWidth=38-l*8;ctx.beginPath();points.forEach((pt,i)=>{if(i===0)ctx.moveTo(pt.x,pt.y);else ctx.lineTo(pt.x,pt.y);});ctx.stroke();}
+          ctx.strokeStyle=`rgba(245,255,255,${.92*pulse})`;ctx.lineWidth=5;ctx.beginPath();points.forEach((pt,i)=>{if(i===0)ctx.moveTo(pt.x,pt.y);else ctx.lineTo(pt.x,pt.y);});ctx.stroke();
+          for(let i=0;i<14;i++){const t=(progress*1.4+i/14)%1,seg=Math.min(points.length-2,Math.floor(t*(points.length-1))),lt=t*(points.length-1)-seg,a=points[seg],b=points[seg+1],px=a.x+(b.x-a.x)*lt,py=a.y+(b.y-a.y)*lt;ctx.fillStyle=`rgba(220,252,255,${.65*pulse})`;ctx.beginPath();ctx.arc(px,py,3+(i%3),0,Math.PI*2);ctx.fill();}ctx.restore();
+        } else if (shot.effect === 'phoenixBreath') {
+          const pulse=Math.sin(progress*Math.PI),radius=Number(shot.radius||205),half=(Number(shot.coneAngle||78)*Math.PI/180)/2;
+          ctx.save();ctx.translate(shot.x1,shot.y1);ctx.rotate(shot.angle);ctx.globalCompositeOperation='lighter';
+          const flame=ctx.createRadialGradient(0,0,5,0,0,Math.min(radius,160));flame.addColorStop(0,`rgba(255,248,170,${.78*pulse})`);flame.addColorStop(.35,`rgba(255,154,39,${.55*pulse})`);flame.addColorStop(.72,`rgba(255,59,20,${.28*pulse})`);flame.addColorStop(1,'rgba(255,20,0,0)');ctx.fillStyle=flame;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,Math.min(radius,160),-half,half);ctx.closePath();ctx.fill();
+          for(let i=0;i<8;i++){const a=-half+(i/7)*(half*2)+Math.sin(progress*12+i)*.05,rr=30+progress*100+(i%3)*10;ctx.fillStyle=`rgba(255,${120+(i%3)*45},${25+i%2*55},${.68*fade})`;ctx.beginPath();ctx.arc(Math.cos(a)*rr,Math.sin(a)*rr,5+(i%3)*2,0,Math.PI*2);ctx.fill();}ctx.restore();
+        } else if (shot.effect === 'phoenixRoar') {
+          const p=Math.sin(progress*Math.PI);ctx.save();ctx.globalCompositeOperation='lighter';ctx.translate(shot.x1,shot.y1);for(let i=0;i<4;i++){ctx.strokeStyle=`rgba(255,${165+i*18},${55+i*28},${p*(.7-i*.12)})`;ctx.lineWidth=10-i*2;ctx.beginPath();ctx.arc(0,0,30+progress*(190+i*34),0,Math.PI*2);ctx.stroke();}ctx.restore();
+        } else if (shot.effect === 'edenBolt' || shot.effect === 'edenBarrage') {
+          const barrage=shot.effect==='edenBarrage',wave=Math.sin(progress*Math.PI*8+shot.seed)*(barrage?16:10);
+          ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle=`rgba(255,255,255,${.86*fade})`;ctx.lineWidth=barrage?5:4;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.bezierCurveTo(shot.x1+dx*.3+nx*wave,shot.y1+dy*.3+ny*wave,shot.x1+dx*.7-nx*wave,shot.y1+dy*.7-ny*wave,x,y);ctx.stroke();
+          ctx.strokeStyle=`rgba(15,15,18,${.95*fade})`;ctx.lineWidth=barrage?11:8;ctx.globalCompositeOperation='source-over';ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.quadraticCurveTo(shot.x1+dx*.5+nx*wave*.6,shot.y1+dy*.5+ny*wave*.6,x,y);ctx.stroke();ctx.globalCompositeOperation='lighter';
+          ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(x,y,barrage?5:6,0,Math.PI*2);ctx.fill();ctx.restore();
+        } else if (shot.effect === 'edenCut') {
+          const pulse=Math.sin(progress*Math.PI),r=Number(shot.radius||150);ctx.save();ctx.translate(shot.x1,shot.y1);ctx.globalCompositeOperation='lighter';
+          ctx.fillStyle=`rgba(0,0,0,${.26*pulse})`;ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();
+          for(let i=0;i<4;i++){ctx.strokeStyle=`rgba(255,255,255,${pulse*(.9-i*.16)})`;ctx.lineWidth=10-i*2;ctx.beginPath();ctx.arc(0,0,r*(.55+i*.11),-1.25+progress*2.5,.25+progress*2.5);ctx.stroke();}
+          ctx.strokeStyle=`rgba(20,20,22,${.9*pulse})`;ctx.lineWidth=18;ctx.beginPath();ctx.arc(0,0,r*.72,-1.1+progress*2.5,.4+progress*2.5);ctx.stroke();ctx.restore();
+        } else if (shot.effect === 'edenRush') {
+          const pulse=Math.sin(progress*Math.PI);ctx.save();ctx.globalCompositeOperation='lighter';for(let i=0;i<5;i++){ctx.strokeStyle=i%2?`rgba(255,255,255,${pulse*(.8-i*.08)})`:`rgba(10,10,12,${pulse*(.95-i*.08)})`;ctx.lineWidth=Number(shot.width||70)-i*11;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.lineTo(shot.x2,shot.y2);ctx.stroke();}ctx.restore();
         } else if (shot.effect === 'timeRift' || shot.effect === 'timeRiftGolden') {
           const golden = shot.effect === 'timeRiftGolden' || shot.golden;
           const primary = golden ? '255,216,79' : '216,180,254';
@@ -16025,6 +16947,10 @@ function requestGachaDraw(count) {
         return { valid: false, reason: '벚꽃 사무라이는 한 플레이어당 한 유닛만 깔 수 있습니다.' };
       }
 
+      if (unitData.id === 'eden' && battle.placedUnits.some(unit => unit.unitId === 'eden')) {
+        return { valid: false, reason: '에덴은 한 맵에 한 유닛만 배치할 수 있습니다.' };
+      }
+
       const nearby = battle.placedUnits.some(unit => {
         const otherData = UNIT_DATA[unit.unitId] || {};
         const requiredDistance = Math.max(
@@ -16041,7 +16967,9 @@ function requestGachaDraw(count) {
             ? '이클립스의 일식 구체 영역과 다른 유닛이 겹칩니다.'
             : unitData.id === 'cherrySamurai'
               ? '벚꽃 사무라이의 넓은 배치 영역과 다른 유닛이 겹칩니다.'
-              : '다른 유닛과 너무 가깝습니다.'
+              : unitData.id === 'eden'
+                ? '에덴의 공허 영역과 다른 유닛이 겹칩니다.'
+                : '다른 유닛과 너무 가깝습니다.'
         };
       }
 
@@ -17379,6 +18307,15 @@ function requestGachaDraw(count) {
       }
     }
 
+    if (unitId === 'eden') {
+      const edenAlreadyPlaced = mpState.mode === 'coop'
+        ? units.some(item => item.unitId === 'eden')
+        : units.some(item => item.unitId === 'eden');
+      if (edenAlreadyPlaced) {
+        return { ok: false, reason: '에덴은 한 맵에 한 유닛만 배치할 수 있습니다.' };
+      }
+    }
+
     if (units.some(item => {
       const otherData = UNIT_DATA[item.unitId] || {};
       const required = Math.max(
@@ -17392,7 +18329,9 @@ function requestGachaDraw(count) {
         ? '이클립스의 일식 구체 영역과 다른 유닛이 겹칩니다.'
         : unitId === 'cherrySamurai'
           ? '벚꽃 사무라이의 넓은 배치 영역과 다른 유닛이 겹칩니다.'
-          : '다른 유닛과 조금 더 떨어뜨려 배치하세요.'
+          : unitId === 'eden'
+            ? '에덴의 공허 영역과 다른 유닛이 겹칩니다.'
+            : '다른 유닛과 조금 더 떨어뜨려 배치하세요.'
     };
     return { ok: true };
   }
@@ -17417,6 +18356,12 @@ function requestGachaDraw(count) {
       slowUntil: 0,
       chronoOrbitingShots: [],
       chronoFieldUntil: 0,
+      phoenixRoarTimer: unitId === 'phoenix' ? Number(data.roarInterval || 20) : 0,
+      phoenixFlightTimer: unitId === 'phoenix' ? Number(data.flightInterval || 60) : 0,
+      phoenixFlightRemaining: 0,
+      phoenixBreathAccumulator: 0,
+      phoenixFxTimer: 0,
+      edenCharge: 0,
       eclipseGrowthStacks: 0,
       samuraiNormalCount: 0,
       samuraiIssenCount: 0,
@@ -17853,6 +18798,176 @@ function requestGachaDraw(count) {
     return true;
   }
 
+
+  function mpIsBossEnemy(enemy) {
+    return Boolean(enemy && enemy.type !== 'normal');
+  }
+
+  function mpClearIceStatus(enemy) {
+    if (!enemy) return;
+    enemy.chillUntil = 0;
+    enemy.chillStacks = 0;
+    enemy.iceFreezeUntil = 0;
+  }
+
+  function mpApplyWetStatus(enemy, duration = 3, slow = .25) {
+    if (!enemy || enemy.dead) return;
+    const now = Date.now();
+    enemy.wetUntil = Math.max(Number(enemy.wetUntil || 0), now + Number(duration || 3) * 1000);
+    enemy.wetSlow = Math.max(Number(enemy.wetSlow || 0), Number(slow || .25));
+    enemy.burnUntil = 0;
+    enemy.burnAccumulator = 0;
+  }
+
+  function mpApplyBurnStatus(enemy, duration = 6, tickInterval = .01, damagePerTick = 1, ownerRole = 'host', sideKey = null) {
+    if (!enemy || enemy.dead || Date.now() < Number(enemy.wetUntil || 0)) return false;
+    mpClearIceStatus(enemy);
+    const now = Date.now();
+    enemy.burnUntil = Math.max(Number(enemy.burnUntil || 0), now + Number(duration || 6) * 1000);
+    enemy.burnTickInterval = Math.max(.005, Number(tickInterval || .01));
+    enemy.burnDamagePerTick = Math.max(0, Number(damagePerTick || 1));
+    enemy.burnOwnerRole = ownerRole;
+    enemy.burnSideKey = sideKey;
+    enemy.burnAccumulator = Math.max(0, Number(enemy.burnAccumulator || 0));
+    return true;
+  }
+
+  function mpApplyIceStatus(enemy, data = UNIT_DATA.iceQueen) {
+    if (!enemy || enemy.dead) return;
+    const now = Date.now();
+    if (now < Number(enemy.burnUntil || 0)) { mpClearIceStatus(enemy); return; }
+    enemy.chillUntil = Math.max(Number(enemy.chillUntil || 0), now + Number(data.chillDuration || 5) * 1000);
+    enemy.chillSlow = Math.max(Number(enemy.chillSlow || 0), Number(data.chillSlow || .25));
+    enemy.chillStacks = Math.min(Number(data.freezeApplications || 3), Number(enemy.chillStacks || 0) + 1);
+    if (!mpIsBossEnemy(enemy) && enemy.chillStacks >= Number(data.freezeApplications || 3)) {
+      enemy.iceFreezeUntil = Math.max(Number(enemy.iceFreezeUntil || 0), now + Number(data.hardFreezeDuration || 3) * 1000);
+      enemy.chillStacks = 0;
+    }
+  }
+
+  function mpEnemyStatusSpeedMultiplier(enemy) {
+    const now = Date.now();
+    let multiplier = 1;
+    if (now < Number(enemy.wetUntil || 0)) multiplier *= Math.max(.05, 1 - Number(enemy.wetSlow || .25));
+    if (now < Number(enemy.phoenixSlowUntil || 0)) multiplier *= Math.max(.05, 1 - Number(enemy.phoenixSlow || .25));
+    if (now < Number(enemy.chillUntil || 0)) multiplier *= Math.max(.05, 1 - Number(enemy.chillSlow || .25));
+    return multiplier;
+  }
+
+  function mpEnemiesAlongLine(targetState, x1, y1, x2, y2, halfWidth = 18) {
+    const dx=x2-x1,dy=y2-y1,len=Math.max(1,Math.hypot(dx,dy)),ux=dx/len,uy=dy/len,nx=-uy,ny=ux;
+    return [...(targetState.enemies||[])].filter(enemy=>{
+      if(enemy.dead || Number(enemy.soilPileUntil||0)>Date.now() || Number(enemy.reviveInvulnerableUntil||0)>Date.now()) return false;
+      const ex=enemy.x-x1,ey=enemy.y-y1,forward=ex*ux+ey*uy;
+      if(forward < -Number(enemy.radius||0) || forward > len+Number(enemy.radius||0)) return false;
+      return Math.abs(ex*nx+ey*ny) <= halfWidth + Number(enemy.radius||0)*.35;
+    });
+  }
+
+  function mpPushEnemyBackward(enemy, amount = 58) {
+    if (!enemy || enemy.dead) return false;
+    const old = enemy.x;
+    enemy.x = Math.max(MP_START_X + 8, Number(enemy.x || 0) - Math.max(0, Number(amount || 0)));
+    return enemy.x < old - .5;
+  }
+
+  function mpFrontmostEnemyInUnitRange(targetState, unit, range = unit.range, excludeId = null) {
+    return [...(targetState.enemies||[])]
+      .filter(enemy => !enemy.dead && enemy.id !== excludeId && Number(enemy.soilPileUntil||0)<=Date.now() && Number(enemy.reviveInvulnerableUntil||0)<=Date.now() && Math.hypot(enemy.x-unit.x,enemy.y-unit.y)<=range)
+      .sort((a,b)=>Number(b.x||0)-Number(a.x||0))[0] || null;
+  }
+
+  function mpTriggerPoseidonWave(targetState, sideKey, unit) {
+    const data=UNIT_DATA.poseidon, damage=mpEffectiveUnitDamage(unit)*Number(data.waveMultiplier||3);
+    playUnitAttackSound('poseidon',{skill:'poseidonWave',volume:1.18});
+    mpPushFx(MP_BASE_X,MP_PATH_Y,MP_START_X,MP_PATH_Y,'#53d8ff',18,sideKey,'poseidonWave',{width:88});
+    let hits=0;
+    for(const enemy of targetState.enemies||[]){
+      if(enemy.dead) continue;
+      mpApplyDamage(targetState,enemy,damage,unit.ownerRole,sideKey);
+      if(!enemy.dead) mpApplyWetStatus(enemy,data.wetDuration||3,data.wetSlow||.25);
+      mpPushEnemyBackward(enemy,data.waveKnockback||58); hits++;
+    }
+    if(hits){mpState.announcement=`🌊 ${mpNameForRole(unit.ownerRole)}의 포세이돈 · 역류 파도! ${hits}마리`;mpState.announcementUntil=Date.now()+1800;}
+  }
+
+  function mpPerformPoseidonAttack(targetState, sideKey, unit, target) {
+    const data=UNIT_DATA.poseidon, angle=Math.atan2(target.y-unit.y,target.x-unit.x), dist=Math.hypot(target.x-unit.x,target.y-unit.y);
+    unit.angle=angle;unit.attackMode=dist<=Number(data.meleeRange||105)?'poseidonThrust':'poseidonThrow';
+    if(dist<=Number(data.meleeRange||105)){
+      playUnitAttackSound('poseidon',{skill:'poseidonPierce',volume:.98});
+      mpPushFx(unit.x,unit.y,target.x,target.y,data.color,8,sideKey,'poseidonThrust');
+      mpApplyDamage(targetState,target,mpEffectiveUnitDamage(unit),unit.ownerRole,sideKey);
+    }else{
+      playUnitAttackSound('poseidon',{skill:'poseidonPierce',volume:1.04});
+      const endX=unit.x+Math.cos(angle)*Number(data.range||300),endY=unit.y+Math.sin(angle)*Number(data.range||300);
+      mpPushFx(unit.x,unit.y,endX,endY,data.color,9,sideKey,'poseidonTrident');
+      mpEnemiesAlongLine(targetState,unit.x,unit.y,endX,endY,Number(data.tridentWidth||20)).forEach(enemy=>mpApplyDamage(targetState,enemy,mpEffectiveUnitDamage(unit),unit.ownerRole,sideKey));
+      mpState.delayedAttacks ||= [];
+      mpState.delayedAttacks.push({kind:'poseidonReturn',sideKey,unitId:unit.id,ownerRole:unit.ownerRole,x1:endX,y1:endY,x2:unit.x,y2:unit.y,width:Number(data.tridentWidth||20),damage:mpEffectiveUnitDamage(unit),at:Date.now()+240});
+    }
+    if(unit.attackCount%Number(data.waveEvery||7)===0) mpTriggerPoseidonWave(targetState,sideKey,unit);
+  }
+
+  function mpFireIceQueenArrow(targetState, sideKey, unit, enemy) {
+    if(!enemy || enemy.dead) return false;
+    mpPushFx(unit.x,unit.y,enemy.x,enemy.y,UNIT_DATA.iceQueen.color,5,sideKey,'iceArrow');
+    mpApplyDamage(targetState,enemy,mpEffectiveUnitDamage(unit),unit.ownerRole,sideKey);
+    if(!enemy.dead) mpApplyIceStatus(enemy,UNIT_DATA.iceQueen);
+    return true;
+  }
+
+  function mpPerformIceQueenAttack(targetState, sideKey, unit, target) {
+    const data=UNIT_DATA.iceQueen; unit.attackMode='iceShot';
+    if(unit.attackCount%Number(data.volleyEvery||7)===0){
+      playUnitAttackSound('iceQueen',{skill:'iceVolley',volume:1.08});
+      mpState.delayedAttacks ||= [];
+      for(let i=0;i<Number(data.volleyCount||7);i++) mpState.delayedAttacks.push({kind:'iceQueenArrow',sideKey,unitId:unit.id,ownerRole:unit.ownerRole,at:Date.now()+i*Number(data.volleyInterval||.2)*1000});
+      return;
+    }
+    mpFireIceQueenArrow(targetState,sideKey,unit,target);
+  }
+
+  function mpTriggerPhoenixRoar(targetState, sideKey, unit) {
+    const data=UNIT_DATA.phoenix,now=Date.now();
+    playUnitAttackSound('phoenix',{skill:'phoenixRoar',volume:1.22});
+    mpPushFx(unit.x,unit.y,unit.x,unit.y,data.color,18,sideKey,'phoenixRoar',{radius:MP_WIDTH});
+    for(const enemy of targetState.enemies||[]){
+      if(enemy.dead) continue;
+      enemy.phoenixSlowUntil=Math.max(Number(enemy.phoenixSlowUntil||0),now+Number(data.roarDuration||6)*1000);
+      enemy.phoenixSlow=Math.max(Number(enemy.phoenixSlow||0),Number(data.roarSlow||.25));
+      mpApplyBurnStatus(enemy,data.burnDuration||6,data.burnTickInterval||.01,data.burnDamagePerTick||1,unit.ownerRole,sideKey);
+    }
+  }
+
+  function mpUpdatePhoenixUnit(targetState, sideKey, unit, dt) {
+    const data=UNIT_DATA.phoenix, now=Date.now();
+    unit.phoenixRoarTimer=Number.isFinite(unit.phoenixRoarTimer)?unit.phoenixRoarTimer-dt:Number(data.roarInterval||20);
+    unit.phoenixFlightTimer=Number.isFinite(unit.phoenixFlightTimer)?unit.phoenixFlightTimer-dt:Number(data.flightInterval||60);
+    unit.phoenixFlightRemaining=Math.max(0,Number(unit.phoenixFlightRemaining||0)-dt);
+    if(unit.phoenixRoarTimer<=0){mpTriggerPhoenixRoar(targetState,sideKey,unit);unit.phoenixRoarTimer+=Number(data.roarInterval||20);}
+    if(unit.phoenixFlightTimer<=0){playUnitAttackSound('phoenix',{skill:'phoenixAscend',volume:1.14});unit.phoenixFlightRemaining=Number(data.flightDuration||10);unit.phoenixFlightTimer+=Number(data.flightInterval||60);}
+    const range=Number(unit.range||data.range)*(unit.phoenixFlightRemaining>0?Number(data.flightRangeMultiplier||2):1);
+    const target=mpFrontmostEnemyInUnitRange(targetState,unit,range);
+    if(!target){unit.phoenixBreathAccumulator=0;return;}
+    unit.angle=Math.atan2(target.y-unit.y,target.x-unit.x);unit.attackMode='phoenixBreath';unit.attackAnimation=Math.max(Number(unit.attackAnimation||0),.55);
+    unit.phoenixBreathAccumulator=Number(unit.phoenixBreathAccumulator||0)+dt;
+    const interval=Number(data.fireInterval||.01),ticks=Math.floor(unit.phoenixBreathAccumulator/interval);if(ticks<=0)return;unit.phoenixBreathAccumulator-=ticks*interval;
+    const half=Number(data.flameConeAngle||78)*Math.PI/360, damage=Number(unit.damage||data.damage)*ticks;
+    for(const enemy of targetState.enemies||[]){if(enemy.dead)continue;const dx=enemy.x-unit.x,dy=enemy.y-unit.y,d=Math.hypot(dx,dy);if(d>range)continue;if(Math.abs(mpAngleDelta(Math.atan2(dy,dx),unit.angle))<=half)mpApplyDamage(targetState,enemy,damage,unit.ownerRole,sideKey);}
+    unit.phoenixFxTimer=Number(unit.phoenixFxTimer||0)-dt;if(unit.phoenixFxTimer<=0){playUnitAttackSound('phoenix',{volume:.54});mpPushFx(unit.x,unit.y,unit.x+Math.cos(unit.angle)*Math.min(range,160),unit.y+Math.sin(unit.angle)*Math.min(range,160),data.color,12,sideKey,'phoenixBreath',{angle:unit.angle,radius:range,coneAngle:data.flameConeAngle||78});unit.phoenixFxTimer=.09;}
+  }
+
+  function mpEdenDamageMultiplier(unit){const d=UNIT_DATA.eden;return 1+Math.min(Number(d.maxCharge||100),Number(unit.edenCharge||0))*Number(d.chargeDamagePerStack||.005);}
+  function mpAddEdenCharge(unit,a=1){unit.edenCharge=Math.min(Number(UNIT_DATA.eden.maxCharge||100),Number(unit.edenCharge||0)+Number(a||1));}
+  function mpPerformEdenAttack(targetState,sideKey,unit,target){
+    const d=UNIT_DATA.eden,damage=mpEffectiveUnitDamage(unit)*mpEdenDamageMultiplier(unit);unit.attackMode='edenBolt';
+    if(unit.attackCount%Number(d.voidRushEvery||20)===0){playUnitAttackSound('eden',{skill:'edenRush',volume:1.2});unit.attackMode='edenRush';const ex=unit.x+Math.cos(unit.angle)*unit.range,ey=unit.y+Math.sin(unit.angle)*unit.range;mpPushFx(unit.x,unit.y,ex,ey,'#fff',14,sideKey,'edenRush',{width:d.voidRushWidth||70});mpEnemiesAlongLine(targetState,unit.x,unit.y,ex,ey,Number(d.voidRushWidth||70)/2).forEach(e=>mpApplyDamage(targetState,e,damage*Number(d.voidRushMultiplier||4),unit.ownerRole,sideKey));mpAddEdenCharge(unit);return;}
+    if(unit.attackCount%Number(d.cutEvery||12)===0){playUnitAttackSound('eden',{skill:'edenCut',volume:1.16});unit.attackMode='edenCut';mpPushFx(target.x,target.y,target.x,target.y,'#fff',18,sideKey,'edenCut',{radius:d.cutRadius||150});for(const e of targetState.enemies||[])if(!e.dead&&Math.hypot(e.x-target.x,e.y-target.y)<=Number(d.cutRadius||150))mpApplyDamage(targetState,e,damage*Number(d.cutMultiplier||3),unit.ownerRole,sideKey);mpAddEdenCharge(unit);return;}
+    if(unit.attackCount%Number(d.barrageEvery||5)===0){playUnitAttackSound('eden',{skill:'edenBarrage',volume:1.14});unit.attackMode='edenBarrage';const targets=[...(targetState.enemies||[])].filter(e=>!e.dead&&Math.hypot(e.x-unit.x,e.y-unit.y)<=unit.range).sort((a,b)=>b.x-a.x);for(let i=0;i<Number(d.barrageCount||6);i++){const e=targets[i%Math.max(1,targets.length)]||target;mpPushFx(unit.x+(i%2?18:-18),unit.y-15+(i%3)*7,e.x,e.y,'#fff',6,sideKey,'edenBarrage');mpApplyDamage(targetState,e,damage*Number(d.barrageMultiplier||.75),unit.ownerRole,sideKey);}mpAddEdenCharge(unit);return;}
+    playUnitAttackSound('eden');mpPushFx(unit.x,unit.y,target.x,target.y,'#fff',6,sideKey,'edenBolt');mpApplyDamage(targetState,target,damage,unit.ownerRole,sideKey);mpAddEdenCharge(unit);
+  }
+
   function mpUpdateEnemies(target, dt, sideKey = null) {
     const now = Date.now();
     if (Number(target.dirtConvergeUntil || 0) && now >= Number(target.dirtConvergeUntil || 0)) { target.dirtPiles=[]; target.dirtConvergeUntil=0; target.dirtConvergeFrom=[]; }
@@ -17873,11 +18988,23 @@ function requestGachaDraw(count) {
         enemy.sakuraMarks=enemy.dead?[]:keepMarks;
         if(enemy.dead)continue;
       }
+      if (Number(enemy.chillUntil || 0) > 0 && now >= Number(enemy.chillUntil || 0)) { enemy.chillUntil = 0; enemy.chillStacks = 0; }
+      if (Number(enemy.burnUntil || 0) > now) {
+        enemy.burnAccumulator = Number(enemy.burnAccumulator || 0) + dt;
+        const interval = Math.max(.005, Number(enemy.burnTickInterval || .01));
+        const ticks = Math.floor(enemy.burnAccumulator / interval);
+        if (ticks > 0) {
+          enemy.burnAccumulator -= ticks * interval;
+          mpApplyDamage(target, enemy, ticks * Number(enemy.burnDamagePerTick || 1), enemy.burnOwnerRole || 'host', sideKey);
+          if (enemy.dead) continue;
+        }
+      } else { enemy.burnUntil = 0; enemy.burnAccumulator = 0; }
       const timeStunned = now < Number(enemy.timeStunUntil || 0);
       const timeFieldFrozen = now < Number(enemy.timeFieldUntil || 0);
-      if (!timeStunned) mpApplyBossAbility(enemy, target);
-      if (timeStunned || timeFieldFrozen) continue;
-      enemy.x += enemy.speed * dt;
+      const iceFrozen = now < Number(enemy.iceFreezeUntil || 0);
+      if (!timeStunned && !iceFrozen) mpApplyBossAbility(enemy, target);
+      if (timeStunned || timeFieldFrozen || iceFrozen) continue;
+      enemy.x += enemy.speed * mpEnemyStatusSpeedMultiplier(enemy) * dt;
       if (enemy.x >= MP_BASE_X - 18) mpDamageBase(target, enemy, sideKey);
     }
     target.enemies = target.enemies.filter(enemy => !enemy.dead);
@@ -17887,7 +19014,7 @@ function requestGachaDraw(count) {
     let target = null;
     let bestX = -Infinity;
     for (const enemy of enemies) {
-      if (enemy.dead || Number(enemy.soilPileUntil || 0) > Date.now()) continue;
+      if (enemy.dead || Number(enemy.soilPileUntil || 0) > Date.now() || Number(enemy.reviveInvulnerableUntil || 0) > Date.now()) continue;
       const d = Math.hypot(enemy.x - unit.x, enemy.y - unit.y);
       if (d <= unit.range && enemy.x > bestX) {
         target = enemy;
@@ -17919,6 +19046,17 @@ function requestGachaDraw(count) {
       sakuraIssen: .82,
       sakuraUltimateCut: .96,
       sakuraMarkBurst: .90,
+      iceArrow: .38,
+      poseidonThrust: .32,
+      poseidonTrident: .46,
+      poseidonReturn: .34,
+      poseidonWave: .92,
+      phoenixBreath: .30,
+      phoenixRoar: .85,
+      edenBolt: .42,
+      edenBarrage: .52,
+      edenCut: .62,
+      edenRush: .58,
       crystalRay: .72,
       line: .24
     };
@@ -17941,6 +19079,10 @@ function requestGachaDraw(count) {
       windRanger: 'windArrow',
       starterKnight: 'steelSlash',
       royalGuardian: 'royalWave',
+      iceQueen: 'iceArrow',
+      poseidon: 'poseidonTrident',
+      phoenix: 'phoenixBreath',
+      eden: 'edenBolt',
       starterMage: 'arcane',
       flameWizard: 'fireball',
       skyDragonKnight: 'dragonLance',
@@ -18253,6 +19395,10 @@ function requestGachaDraw(count) {
     unit.attackAnimation = 1;
     unit.attackMode = 'ranged';
 
+    if (unit.unitId === 'poseidon') { mpPerformPoseidonAttack(targetState, sideKey, unit, target); return; }
+    if (unit.unitId === 'iceQueen') { mpPerformIceQueenAttack(targetState, sideKey, unit, target); return; }
+    if (unit.unitId === 'eden') { mpPerformEdenAttack(targetState, sideKey, unit, target); return; }
+
     if (unit.unitId === 'astralChronomancer') {
       mpPerformChronoAttack(targetState, sideKey, unit);
       return;
@@ -18454,6 +19600,7 @@ function requestGachaDraw(count) {
       if (unit.unitId === 'astralChronomancer') mpUpdateChronoUnit(targetState, sideKey, unit);
       if (UNIT_DATA[unit.unitId]?.stunImmune) unit.stunUntil = 0;
       if (!UNIT_DATA[unit.unitId]?.stunImmune && now < (unit.stunUntil || 0)) continue;
+      if (unit.unitId === 'phoenix') { mpUpdatePhoenixUnit(targetState, sideKey, unit, dt); continue; }
       if (unit.unitId === 'moneyTree') {
         unit.incomeAmount ||= UNIT_DATA.moneyTree.incomeAmount;
         unit.incomeInterval ||= UNIT_DATA.moneyTree.incomeInterval;
@@ -18488,6 +19635,18 @@ function requestGachaDraw(count) {
         ? mpState.shared
         : mpState.sides[attack.sideKey];
       if (!targetState) continue;
+      if (attack.kind === 'poseidonReturn') {
+        const owner=(targetState.units||[]).find(u=>u.id===attack.unitId) || {ownerRole:attack.ownerRole};
+        playUnitAttackSound('poseidon',{skill:'poseidonReturn',volume:1.02});
+        mpPushFx(attack.x1,attack.y1,attack.x2,attack.y2,'#8cecff',9,attack.sideKey,'poseidonReturn');
+        mpEnemiesAlongLine(targetState,attack.x1,attack.y1,attack.x2,attack.y2,attack.width||20).forEach(e=>mpApplyDamage(targetState,e,attack.damage,owner.ownerRole||attack.ownerRole,attack.sideKey));
+        continue;
+      }
+      if (attack.kind === 'iceQueenArrow') {
+        const owner=(targetState.units||[]).find(u=>u.id===attack.unitId);
+        if(owner){const enemy=mpFrontmostEnemyInUnitRange(targetState,owner,owner.range);if(enemy)mpFireIceQueenArrow(targetState,attack.sideKey,owner,enemy);}
+        continue;
+      }
       if (attack.kind === 'sakuraCorridor') {
         playUnitAttackSound('cherrySamurai',{skill:'samuraiUltimateCut',volume:1.04});
         const owner=(targetState.units||[]).find(u=>u.id===attack.unitId) || { ownerRole: attack.ownerRole };
@@ -19318,6 +20477,36 @@ function requestGachaDraw(count) {
           mpCtx.fillStyle = '#ffe0bd'; mpCtx.beginPath(); mpCtx.arc(0,-14,6.5,0,Math.PI*2); mpCtx.fill();
           for (const side of [-1,1]) { mpCtx.fillStyle = '#ffca54'; mpCtx.beginPath(); mpCtx.moveTo(side*5,-24); mpCtx.quadraticCurveTo(side*15,-38,side*13,-21); mpCtx.closePath(); mpCtx.fill(); }
           mpCtx.fillStyle = '#ff7a2f'; for (const side of [-1,1]) { mpCtx.beginPath(); mpCtx.arc(side*14,-5,5+attackPulse,0,Math.PI*2); mpCtx.fill(); }
+        } else if (id === 'iceQueen') {
+          drawBoots('#d6f7ff',8);
+          const ice=mpCtx.createLinearGradient(0,-28,0,20);ice.addColorStop(0,'#effcff');ice.addColorStop(.45,'#8ddff6');ice.addColorStop(1,'#316a9e');
+          mpCtx.fillStyle=ice;mpCtx.beginPath();mpCtx.moveTo(-22,21);mpCtx.lineTo(-12,-9);mpCtx.lineTo(12,-9);mpCtx.lineTo(22,21);mpCtx.lineTo(0,15);mpCtx.closePath();mpCtx.fill();
+          mpCtx.fillStyle='#dffaff';mpCtx.beginPath();mpCtx.arc(0,-18,8,0,Math.PI*2);mpCtx.fill();
+          mpCtx.strokeStyle='#baf4ff';mpCtx.lineWidth=3;mpCtx.beginPath();mpCtx.moveTo(-12,-26);mpCtx.lineTo(-5,-38);mpCtx.lineTo(0,-28);mpCtx.lineTo(6,-40);mpCtx.lineTo(13,-26);mpCtx.stroke();
+          mpCtx.fillStyle='#e9fdff';for(const side of [-1,1]){mpCtx.beginPath();mpCtx.moveTo(side*13,-8);mpCtx.lineTo(side*25,-20);mpCtx.lineTo(side*20,0);mpCtx.closePath();mpCtx.fill();}
+        } else if (id === 'poseidon') {
+          drawBoots('#163a4c',10);
+          const sea=mpCtx.createLinearGradient(-18,-14,18,18);sea.addColorStop(0,'#bff7ff');sea.addColorStop(.35,'#30b9d7');sea.addColorStop(.72,'#11627e');sea.addColorStop(1,'#082d45');
+          mpCtx.fillStyle=sea;mpCtx.beginPath();mpCtx.roundRect(-18,-12,36,30,7);mpCtx.fill();
+          mpCtx.fillStyle='#42d8ee';for(const side of [-1,1]){mpCtx.beginPath();mpCtx.moveTo(side*14,-9);mpCtx.lineTo(side*28,-16);mpCtx.lineTo(side*22,2);mpCtx.closePath();mpCtx.fill();}
+          mpCtx.fillStyle='#0b2d43';mpCtx.beginPath();mpCtx.arc(0,-20,12,0,Math.PI*2);mpCtx.fill();
+          mpCtx.strokeStyle='#9cf4ff';mpCtx.lineWidth=3;mpCtx.beginPath();mpCtx.moveTo(-10,-29);mpCtx.lineTo(-5,-38);mpCtx.lineTo(0,-31);mpCtx.lineTo(6,-40);mpCtx.lineTo(11,-29);mpCtx.stroke();
+          mpCtx.fillStyle='#8cf3ff';mpCtx.beginPath();mpCtx.moveTo(0,-6);mpCtx.lineTo(7,3);mpCtx.lineTo(0,11);mpCtx.lineTo(-7,3);mpCtx.closePath();mpCtx.fill();
+        } else if (id === 'phoenix') {
+          const flap=Math.sin(time*.008+unit.animationOffset)*.42, lift=unit.phoenixFlightRemaining>0?-10:0;mpCtx.save();mpCtx.translate(0,lift);
+          mpCtx.shadowBlur=18;mpCtx.shadowColor='#ff6a22';
+          for(const side of [-1,1]){mpCtx.save();mpCtx.rotate(side*(.2+flap));const wg=mpCtx.createLinearGradient(0,0,side*42,-16);wg.addColorStop(0,'#fff4a8');wg.addColorStop(.35,'#ff9b32');wg.addColorStop(1,'#d72616');mpCtx.fillStyle=wg;mpCtx.beginPath();mpCtx.moveTo(0,-4);mpCtx.quadraticCurveTo(side*28,-30,side*46,-14);mpCtx.lineTo(side*27,0);mpCtx.lineTo(side*45,10);mpCtx.lineTo(side*12,12);mpCtx.closePath();mpCtx.fill();mpCtx.restore();}
+          const body=mpCtx.createRadialGradient(-4,-12,2,0,-4,27);body.addColorStop(0,'#fff8b2');body.addColorStop(.36,'#ff9b27');body.addColorStop(1,'#a91f18');mpCtx.fillStyle=body;mpCtx.beginPath();mpCtx.ellipse(0,-2,13,24,0,0,Math.PI*2);mpCtx.fill();
+          mpCtx.beginPath();mpCtx.arc(0,-25,9,0,Math.PI*2);mpCtx.fill();mpCtx.fillStyle='#ffe164';mpCtx.beginPath();mpCtx.moveTo(7,-26);mpCtx.lineTo(20,-22);mpCtx.lineTo(8,-18);mpCtx.closePath();mpCtx.fill();
+          for(let i=-2;i<=2;i++){mpCtx.fillStyle=i%2?'#ff5126':'#ffc447';mpCtx.beginPath();mpCtx.moveTo(i*4,15);mpCtx.quadraticCurveTo(i*8,35,i*5,46);mpCtx.quadraticCurveTo(i*2,31,0,19);mpCtx.closePath();mpCtx.fill();}
+          mpCtx.restore();
+        } else if (id === 'eden') {
+          const hover=Math.sin(time*.003+unit.animationOffset)*3;mpCtx.save();mpCtx.translate(0,hover);mpCtx.shadowBlur=18;mpCtx.shadowColor='#fff';
+          mpCtx.fillStyle='#030305';mpCtx.beginPath();mpCtx.moveTo(-24,22);mpCtx.quadraticCurveTo(-17,-13,0,-29);mpCtx.quadraticCurveTo(17,-13,24,22);mpCtx.quadraticCurveTo(0,11,-24,22);mpCtx.fill();
+          mpCtx.strokeStyle='rgba(255,255,255,.72)';mpCtx.lineWidth=2;mpCtx.beginPath();mpCtx.arc(0,-16,15,-2.7,-.45);mpCtx.stroke();
+          mpCtx.fillStyle='#fff';mpCtx.fillRect(-10,-17,7,2.5);mpCtx.fillRect(3,-17,7,2.5);
+          for(let i=0;i<5;i++){const a=time*.0017+i*Math.PI*2/5,rr=30+(i%2)*8;mpCtx.fillStyle=i%2?'rgba(255,255,255,.7)':'rgba(30,30,34,.9)';mpCtx.beginPath();mpCtx.arc(Math.cos(a)*rr,Math.sin(a)*rr*.55,3+i%2,0,Math.PI*2);mpCtx.fill();}
+          mpCtx.restore();
         } else if (id === 'skyDragonKnight') {
           drawBoots('#24171a', 10);
           mpCtx.fillStyle = '#2b1218'; mpCtx.beginPath(); mpCtx.moveTo(-21,17); mpCtx.lineTo(-17,-13); mpCtx.lineTo(17,-13); mpCtx.lineTo(22,17); mpCtx.closePath(); mpCtx.fill();
@@ -19407,6 +20596,14 @@ function requestGachaDraw(count) {
           const orb=mpCtx.createRadialGradient(orbX-3,-4,1,orbX,0,12); orb.addColorStop(0,'#fff'); orb.addColorStop(.3,orbColor); orb.addColorStop(1,'rgba(20,20,40,0)');
           mpCtx.fillStyle=orb;mpCtx.beginPath();mpCtx.arc(orbX,0,11+attack*2,0,Math.PI*2);mpCtx.fill();
           if (chrono){mpCtx.strokeStyle='#fff';mpCtx.lineWidth=1.4;mpCtx.beginPath();mpCtx.arc(orbX,0,15,0,Math.PI*2);mpCtx.stroke();}
+        } else if (unit.unitId === 'iceQueen') {
+          mpCtx.strokeStyle='#bdf6ff';mpCtx.lineWidth=3.5;mpCtx.beginPath();mpCtx.arc(24,0,24,-1.25,1.25);mpCtx.stroke();mpCtx.strokeStyle='#fff';mpCtx.lineWidth=1.2;mpCtx.beginPath();mpCtx.moveTo(31,-22);mpCtx.lineTo(31,22);mpCtx.stroke();
+          mpCtx.fillStyle='#dffcff';mpCtx.beginPath();mpCtx.moveTo(35,0);mpCtx.lineTo(62,-3);mpCtx.lineTo(62,3);mpCtx.closePath();mpCtx.fill();
+        } else if (unit.unitId === 'poseidon') {
+          const tr=mpCtx.createLinearGradient(-8,0,68,0);tr.addColorStop(0,'#124a66');tr.addColorStop(.5,'#58e3ff');tr.addColorStop(1,'#eaffff');mpCtx.strokeStyle=tr;mpCtx.lineWidth=5;mpCtx.beginPath();mpCtx.moveTo(-8,0);mpCtx.lineTo(58,0);mpCtx.stroke();
+          mpCtx.fillStyle='#bdf8ff';for(const yy of [-9,0,9]){mpCtx.beginPath();mpCtx.moveTo(78,yy);mpCtx.lineTo(55,yy-5);mpCtx.lineTo(59,yy+5);mpCtx.closePath();mpCtx.fill();}mpCtx.strokeStyle='#74e8ff';mpCtx.lineWidth=3;mpCtx.beginPath();mpCtx.moveTo(58,-9);mpCtx.lineTo(58,9);mpCtx.stroke();
+        } else if (unit.unitId === 'eden') {
+          mpCtx.shadowBlur=20;mpCtx.shadowColor='#fff';const vg=mpCtx.createLinearGradient(-5,0,64,0);vg.addColorStop(0,'#050507');vg.addColorStop(.58,'#15161a');vg.addColorStop(.84,'#fff');vg.addColorStop(1,'rgba(255,255,255,0)');mpCtx.fillStyle=vg;mpCtx.beginPath();mpCtx.moveTo(-5,-4);mpCtx.lineTo(48,-5);mpCtx.lineTo(67,0);mpCtx.lineTo(48,5);mpCtx.lineTo(-5,4);mpCtx.closePath();mpCtx.fill();
         } else if (unit.unitId === 'cherrySamurai') {
           const wallNow=Date.now(),bloom=unit.samuraiBloomCast,bloomActive=bloom&&wallNow>=Number(bloom.startAt||0)&&wallNow<=Number(bloom.endAt||0),bp=bloomActive?Math.max(0,Math.min(1,(wallNow-bloom.startAt)/Math.max(1,bloom.endAt-bloom.startAt))):0;
           for(const offset of [-7,7]){mpCtx.save();mpCtx.translate(0,offset);mpCtx.shadowBlur=bloomActive?(mpHighLoadFrame?18:30):(mpHighLoadFrame?8:13);mpCtx.shadowColor=bloomActive?'#ff4fa5':'#ff9bca';const steel=mpCtx.createLinearGradient(-6,0,63,0);steel.addColorStop(0,bloomActive?'#5b123a':'#23151e');steel.addColorStop(.18,bloomActive?'#ff5eaf':'#987286');steel.addColorStop(.48,'#fffdfd');steel.addColorStop(.72,bloomActive?'#ffaad4':'#dff7ff');steel.addColorStop(1,bloomActive?'#ff3f9d':'#ffb8d8');mpCtx.fillStyle=steel;mpCtx.strokeStyle=bloomActive?'#fff4fb':'#fff2fa';mpCtx.lineWidth=bloomActive?2.2:1.2;mpCtx.beginPath();mpCtx.moveTo(-2,-2.7);mpCtx.lineTo(48,-2.2);mpCtx.quadraticCurveTo(58,-1,66,0);mpCtx.quadraticCurveTo(57,2,48,2.6);mpCtx.lineTo(-2,3);mpCtx.closePath();mpCtx.fill();mpCtx.stroke();mpCtx.shadowBlur=0;mpCtx.fillStyle='#3a2030';mpCtx.fillRect(-11,-4,11,8);mpCtx.fillStyle='#ff8fc8';mpCtx.fillRect(-14,-7,3,14);if(bloomActive&&!mpHighLoadFrame){for(let i=0;i<10;i++){const a=wallNow*.010+i*Math.PI*2/10,px=34+Math.cos(a)*(15+bp*7),py=Math.sin(a)*(8+bp*4);mpCtx.save();mpCtx.translate(px,py);mpCtx.rotate(a+wallNow*.004);mpCtx.fillStyle=`rgba(255,${118+(i%3)*26},${187+(i%2)*28},${.62+bp*.28})`;mpCtx.beginPath();mpCtx.ellipse(0,0,2.4,5.4,.2,0,Math.PI*2);mpCtx.fill();mpCtx.restore();}}mpCtx.restore();}
@@ -19437,7 +20634,7 @@ function requestGachaDraw(count) {
     const slowed = Date.now() < (unit.slowUntil || 0);
 
     mpCtx.save();
-    mpCtx.translate(drawX, y);
+    mpCtx.translate(drawX, y - (unit.unitId === 'phoenix' && Number(unit.phoenixFlightRemaining||0)>0 ? 16 : 0));
 
     if (unit.unitId === 'cherrySamurai') drawCherrySamuraiBlossomAuraArt(mpCtx, time, unit, mpHighLoadFrame ? .55 : .82);
 
@@ -19462,6 +20659,7 @@ function requestGachaDraw(count) {
     if (unit.unitId === 'eclipse') {
       drawEclipseGalaxyAuraArt(mpCtx, time, unit, mpHighLoadFrame ? .72 : 1);
     }
+    if (unit.unitId === 'eden') drawEdenAuraArt(mpCtx,time,unit,mpHighLoadFrame?.62:.9);
 
     // 소유 플레이어를 알아보기 쉬운 외곽 링
     mpCtx.beginPath();
@@ -19509,6 +20707,7 @@ function requestGachaDraw(count) {
     if (unit.unitId === 'eclipse') {
       drawEclipseOrbitArt(mpCtx, time, unit, mpHighLoadFrame ? .72 : 1);
     }
+    if (unit.unitId === 'eden') { mpCtx.save();mpCtx.fillStyle='#fff';mpCtx.font='700 10px Arial';mpCtx.textAlign='center';mpCtx.fillText(`VOID ${Math.round(Number(unit.edenCharge||0))}`,0,42);mpCtx.restore(); }
 
     if (unit.unitId === 'moneyTree' && Date.now() < Number(unit.moneyPulseUntil || 0)) {
       const remain = Math.max(0, Number(unit.moneyPulseUntil || 0) - Date.now()) / 650;
@@ -19562,9 +20761,9 @@ function requestGachaDraw(count) {
     visual.lastSeenAt = time;
 
     const now = Date.now();
-    const frozen = now < Number(enemy.timeStunUntil || 0) || now < Number(enemy.timeFieldUntil || 0);
+    const frozen = now < Number(enemy.timeStunUntil || 0) || now < Number(enemy.timeFieldUntil || 0) || now < Number(enemy.iceFreezeUntil || 0);
     const snapshotAge = Math.min(MP_GUEST_PREDICTION_MS, Math.max(0, time - visual.snapshotAt)) / 1000;
-    const speed = Math.max(0, Number(enemy.speed || 0));
+    const speed = Math.max(0, Number(enemy.speed || 0)) * mpEnemyStatusSpeedMultiplier(enemy);
 
     let targetX = visual.targetX;
     if (!frozen && !enemy.dead) {
@@ -19711,6 +20910,16 @@ function requestGachaDraw(count) {
       mpCtx.save();mpCtx.translate(x,y);mpCtx.globalCompositeOperation='lighter';mpCtx.shadowBlur=mpHighLoadFrame?10:18+progress*14;mpCtx.shadowColor='#ff62ad';mpCtx.strokeStyle=`rgba(255,150,205,${.78*pulse})`;mpCtx.lineWidth=2.6;mpCtx.beginPath();mpCtx.arc(0,0,14+progress*5,0,Math.PI*2);mpCtx.stroke();
       if(!mpHighLoadFrame){for(let i=0;i<5;i++){const a=-Math.PI/2+i*Math.PI*2/5+progress*.7;mpCtx.save();mpCtx.rotate(a);mpCtx.translate(0,-10-progress*2);mpCtx.fillStyle=`rgba(255,127,190,${.72+progress*.2})`;mpCtx.beginPath();mpCtx.ellipse(0,-4,3.2,7,0,0,Math.PI*2);mpCtx.fill();mpCtx.restore();}}
       mpCtx.strokeStyle='#fff';mpCtx.lineWidth=2.8;mpCtx.beginPath();mpCtx.arc(0,0,19,-Math.PI/2,-Math.PI/2+Math.PI*2*progress);mpCtx.stroke();mpCtx.restore();
+    }
+
+    if (now < Number(enemy.wetUntil || 0)) {
+      mpCtx.save();mpCtx.strokeStyle='rgba(83,216,255,.72)';mpCtx.lineWidth=2;mpCtx.beginPath();mpCtx.arc(x,y,r+7,0,Math.PI*2);mpCtx.stroke();mpCtx.fillStyle='rgba(135,232,255,.78)';for(let i=0;i<4;i++){const a=time*.003+i*Math.PI/2;mpCtx.beginPath();mpCtx.ellipse(x+Math.cos(a)*(r+5),y+Math.sin(a)*(r+4),2.2,4,a,0,Math.PI*2);mpCtx.fill();}mpCtx.restore();
+    }
+    if (now < Number(enemy.burnUntil || 0)) {
+      mpCtx.save();mpCtx.shadowBlur=10;mpCtx.shadowColor='#ff5a24';for(let i=0;i<4;i++){const a=i*1.7+time*.008;mpCtx.fillStyle=i%2?'#ffd055':'#ff5a24';mpCtx.beginPath();mpCtx.moveTo(x+Math.sin(a)*r*.5,y-r*.2);mpCtx.quadraticCurveTo(x+Math.sin(a)*r*.7,y-r-14,x+Math.sin(a+.8)*r*.3,y-r*.5);mpCtx.closePath();mpCtx.fill();}mpCtx.restore();
+    }
+    if (now < Number(enemy.chillUntil || 0) || now < Number(enemy.iceFreezeUntil || 0)) {
+      const frozen=now<Number(enemy.iceFreezeUntil||0);mpCtx.save();mpCtx.strokeStyle=frozen?'rgba(210,250,255,.96)':'rgba(140,225,255,.76)';mpCtx.lineWidth=frozen?4:2;mpCtx.beginPath();mpCtx.arc(x,y,r+(frozen?10:6),0,Math.PI*2);mpCtx.stroke();mpCtx.fillStyle='rgba(210,250,255,.8)';for(let i=0;i<(frozen?7:4);i++){const a=i*Math.PI*2/(frozen?7:4)+time*.001;mpCtx.beginPath();mpCtx.moveTo(x+Math.cos(a)*(r+3),y+Math.sin(a)*(r+3));mpCtx.lineTo(x+Math.cos(a)*(r+12),y+Math.sin(a)*(r+12));mpCtx.stroke();}mpCtx.restore();
     }
 
     if (now < Number(enemy.timeStunUntil || 0) && enemy.timeStunSource === 'chrono') {
@@ -19904,6 +21113,28 @@ function requestGachaDraw(count) {
         mpCtx.strokeStyle=g;mpCtx.lineWidth=12;mpCtx.beginPath();mpCtx.moveTo(tailX,tailY);mpCtx.lineTo(x,y);mpCtx.stroke();
         const orb=mpCtx.createRadialGradient(x-3,y-3,1,x,y,14);orb.addColorStop(0,'#fff7c2');orb.addColorStop(.3,'#ffcc4a');orb.addColorStop(.7,'#ff5a1f');orb.addColorStop(1,'rgba(180,25,5,0)');mpCtx.fillStyle=orb;mpCtx.beginPath();mpCtx.arc(x,y,14,0,Math.PI*2);mpCtx.fill();
         if(progress>.66){const p=(progress-.66)/.34,blastRadius=Number(fx.radius||34);mpCtx.strokeStyle=`rgba(255,137,48,${1-p})`;mpCtx.lineWidth=5;mpCtx.beginPath();mpCtx.arc(fx.x2,y2,12+p*blastRadius,0,Math.PI*2);mpCtx.stroke();}
+      } else if (fx.kind === 'iceArrow') {
+        mpCtx.shadowBlur=16;mpCtx.shadowColor='#8ee7ff';mpCtx.strokeStyle=`rgba(170,242,255,${.62*fade})`;mpCtx.lineWidth=7;mpCtx.beginPath();mpCtx.moveTo(x-ux*32,y-uy*32);mpCtx.lineTo(x,y);mpCtx.stroke();
+        mpCtx.save();mpCtx.translate(x,y);mpCtx.rotate(angle);const ig=mpCtx.createLinearGradient(-22,0,20,0);ig.addColorStop(0,'rgba(120,225,255,0)');ig.addColorStop(.45,'#baf4ff');ig.addColorStop(1,'#fff');mpCtx.fillStyle=ig;mpCtx.beginPath();mpCtx.moveTo(20,0);mpCtx.lineTo(-10,-5);mpCtx.lineTo(-4,0);mpCtx.lineTo(-10,5);mpCtx.closePath();mpCtx.fill();mpCtx.restore();
+      } else if (fx.kind === 'poseidonThrust' || fx.kind === 'poseidonTrident' || fx.kind === 'poseidonReturn') {
+        const ret=fx.kind==='poseidonReturn';mpCtx.shadowBlur=20;mpCtx.shadowColor='#58e3ff';mpCtx.strokeStyle=`rgba(80,220,255,${.32*fade})`;mpCtx.lineWidth=13;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.lineTo(x,y);mpCtx.stroke();
+        mpCtx.save();mpCtx.translate(x,y);mpCtx.rotate(angle);if(ret)mpCtx.rotate(Math.PI);const tg=mpCtx.createLinearGradient(-34,0,32,0);tg.addColorStop(0,'#0d6381');tg.addColorStop(.55,'#82efff');tg.addColorStop(1,'#fff');mpCtx.strokeStyle=tg;mpCtx.lineWidth=4;mpCtx.beginPath();mpCtx.moveTo(-34,0);mpCtx.lineTo(23,0);mpCtx.stroke();mpCtx.fillStyle='#d9fbff';for(const oy of [-7,0,7]){mpCtx.beginPath();mpCtx.moveTo(39,oy);mpCtx.lineTo(21,oy-4);mpCtx.lineTo(24,oy+4);mpCtx.closePath();mpCtx.fill();}mpCtx.restore();
+      } else if (fx.kind === 'poseidonWave') {
+        const pulse=Math.sin(progress*Math.PI),waveX=lerp(fx.x1,fx.x2,travel);mpCtx.save();mpCtx.globalCompositeOperation='lighter';
+        for(let i=0;i<4;i++){const yy=y1+(i-1.5)*12;mpCtx.strokeStyle=`rgba(${95+i*20},${210+i*10},255,${pulse*(.72-i*.1)})`;mpCtx.lineWidth=22-i*4;mpCtx.beginPath();mpCtx.moveTo(fx.x1,yy);mpCtx.quadraticCurveTo((fx.x1+waveX)/2,yy-26-Math.sin(progress*12+i)*9,waveX,yy);mpCtx.stroke();}
+        mpCtx.fillStyle=`rgba(220,250,255,${.9*pulse})`;for(let i=0;i<7;i++){const yy=y1-38+i*13;mpCtx.beginPath();mpCtx.arc(waveX+(i%2)*8,yy,4+(i%3)*2,0,Math.PI*2);mpCtx.fill();}mpCtx.restore();
+      } else if (fx.kind === 'phoenixBreath') {
+        const half=((Number(fx.coneAngle||78)*Math.PI/180)/2),radius=Math.min(Number(fx.radius||160),210),pulse=Math.sin(progress*Math.PI);mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.rotate(fx.angle||angle);const fg=mpCtx.createRadialGradient(0,0,8,0,0,radius);fg.addColorStop(0,`rgba(255,248,170,${.7*pulse})`);fg.addColorStop(.38,`rgba(255,150,35,${.56*pulse})`);fg.addColorStop(.78,`rgba(238,55,20,${.30*pulse})`);fg.addColorStop(1,'rgba(150,20,0,0)');mpCtx.fillStyle=fg;mpCtx.beginPath();mpCtx.moveTo(0,0);mpCtx.arc(0,0,radius,-half,half);mpCtx.closePath();mpCtx.fill();
+        for(let i=0;i<(mpHighLoadFrame?8:16);i++){const a=-half+(i+.5)/(mpHighLoadFrame?8:16)*half*2,d=35+((i*47)%Math.max(45,radius-35))*progress;mpCtx.fillStyle=i%3?'#ff6b22':'#ffd35a';mpCtx.beginPath();mpCtx.arc(Math.cos(a)*d,Math.sin(a)*d,2+(i%4),0,Math.PI*2);mpCtx.fill();}mpCtx.restore();
+      } else if (fx.kind === 'phoenixRoar') {
+        const pulse=Math.sin(progress*Math.PI);mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.shadowBlur=22;mpCtx.shadowColor='#ff7a2f';for(let i=0;i<4;i++){mpCtx.strokeStyle=`rgba(255,${170+i*18},${70+i*20},${pulse*(.72-i*.12)})`;mpCtx.lineWidth=8-i*1.5;mpCtx.beginPath();mpCtx.arc(0,0,35+progress*(180+i*55),0,Math.PI*2);mpCtx.stroke();}mpCtx.restore();
+      } else if (fx.kind === 'edenBolt' || fx.kind === 'edenBarrage') {
+        const barrage=fx.kind==='edenBarrage',wave=Math.sin(progress*Math.PI*(barrage?11:7)+fx.seed)*(barrage?18:12);mpCtx.shadowBlur=22;mpCtx.shadowColor='#fff';for(let i=0;i<3;i++){mpCtx.strokeStyle=i===0?`rgba(255,255,255,${.86*fade})`:`rgba(${i===1?18:190},${i===1?18:190},${i===1?22:195},${(.62-i*.12)*fade})`;mpCtx.lineWidth=7-i*2;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.bezierCurveTo(fx.x1+dx*.3+nx*(wave+i*6),y1+dy*.3+ny*(wave+i*6),fx.x1+dx*.7-nx*(wave+i*5),y1+dy*.7-ny*(wave+i*5),x,y);mpCtx.stroke();}
+        mpCtx.fillStyle='#fff';mpCtx.beginPath();mpCtx.arc(x,y,barrage?6:8,0,Math.PI*2);mpCtx.fill();
+      } else if (fx.kind === 'edenCut') {
+        const rr=Number(fx.radius||150),pulse=Math.sin(progress*Math.PI);mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.globalCompositeOperation='lighter';for(const rot of [-.58,.58]){mpCtx.save();mpCtx.rotate(rot);const cg=mpCtx.createLinearGradient(-rr,0,rr,0);cg.addColorStop(0,'rgba(255,255,255,0)');cg.addColorStop(.42,`rgba(255,255,255,${.92*pulse})`);cg.addColorStop(.5,'#fff');cg.addColorStop(.58,`rgba(20,20,25,${.8*pulse})`);cg.addColorStop(1,'rgba(0,0,0,0)');mpCtx.strokeStyle=cg;mpCtx.lineWidth=12;mpCtx.beginPath();mpCtx.moveTo(-rr,0);mpCtx.lineTo(rr,0);mpCtx.stroke();mpCtx.restore();}mpCtx.restore();
+      } else if (fx.kind === 'edenRush') {
+        const width=Number(fx.width||70),pulse=Math.max(0,1-progress*.72);mpCtx.save();mpCtx.globalCompositeOperation='lighter';mpCtx.strokeStyle=`rgba(255,255,255,${.82*pulse})`;mpCtx.lineWidth=width*.22;mpCtx.shadowBlur=26;mpCtx.shadowColor='#fff';mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.lineTo(x,y);mpCtx.stroke();mpCtx.strokeStyle=`rgba(5,5,8,${.9*pulse})`;mpCtx.lineWidth=width*.48;mpCtx.beginPath();mpCtx.moveTo(fx.x1+nx*8,y1+ny*8);mpCtx.lineTo(x+nx*8,y+ny*8);mpCtx.stroke();mpCtx.restore();
       } else if (fx.kind === 'dragonLance') {
         const tailX=x-ux*42,tailY=y-uy*42;mpCtx.shadowBlur=16;mpCtx.shadowColor='#ffe36e';mpCtx.strokeStyle=`rgba(255,223,91,${.8*fade})`;mpCtx.lineWidth=9;mpCtx.beginPath();mpCtx.moveTo(tailX,tailY);mpCtx.lineTo(x,y);mpCtx.stroke();
         mpCtx.save();mpCtx.translate(x,y);mpCtx.rotate(angle);const spear=mpCtx.createLinearGradient(-28,0,18,0);spear.addColorStop(0,'#8a4a00');spear.addColorStop(.55,'#ffd84f');spear.addColorStop(1,'#fff7bf');mpCtx.strokeStyle=spear;mpCtx.lineWidth=4;mpCtx.beginPath();mpCtx.moveTo(-28,0);mpCtx.lineTo(16,0);mpCtx.stroke();mpCtx.fillStyle='#fff1a1';mpCtx.beginPath();mpCtx.moveTo(24,0);mpCtx.lineTo(11,-7);mpCtx.lineTo(11,7);mpCtx.closePath();mpCtx.fill();mpCtx.restore();

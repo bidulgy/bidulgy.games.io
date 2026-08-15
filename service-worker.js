@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bidulgy-games-v20260815-stage2-1';
+const CACHE_NAME = 'bidulgy-games-v20260815-four-units-1';
 
 const APP_SHELL = [
   './',
@@ -21,8 +21,7 @@ self.addEventListener('install', event => {
             await cache.put(url, response.clone());
           }
         } catch (_) {
-          // 설치 중 일부 파일을 불러오지 못해도
-          // 서비스 워커 자체는 계속 설치합니다.
+          // 일부 파일을 못 받아도 서비스 워커 설치는 계속 진행
         }
       }
     })
@@ -103,8 +102,6 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // HTML / JS / CSS / manifest / 아이콘은
-  // 인터넷 연결 시 항상 서버 최신 파일을 먼저 사용합니다.
   event.respondWith(
     networkFirst(request)
   );

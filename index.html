@@ -5911,7 +5911,7 @@ body {
   </div>
 
   <script>
-    window.BIDULGY_BUILD_VERSION = '2026-08-15-chrono-revive-v1';
+    window.BIDULGY_BUILD_VERSION = '2026-08-15-golem-armor-v3';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -12796,6 +12796,137 @@ function requestGachaDraw(count) {
       g.restore();
     }
 
+    // 골렘 장갑판: 자연석 위에 고대 전투 장비가 덧대어진 느낌을 만든다.
+    function drawGolemArmorPlate(g, x, y, w, h, rotation, palette, accent, seed = 0, detail = true) {
+      g.save();
+      g.translate(x, y);
+      g.rotate(rotation || 0);
+      const edge = palette?.edge || '#111820';
+      const dark = palette?.dark || '#26313d';
+      const mid = palette?.mid || '#566473';
+      const light = palette?.light || '#94a1ae';
+      const bevel = Math.max(1, Math.min(w, h) * .055);
+      const notch = Math.min(w, h) * .18;
+
+      g.beginPath();
+      g.moveTo(-w * .52 + notch, -h * .50);
+      g.lineTo(w * .36, -h * .50);
+      g.lineTo(w * .54, -h * .18);
+      g.lineTo(w * .43, h * .43);
+      g.lineTo(-w * .30, h * .52);
+      g.lineTo(-w * .55, h * .14);
+      g.closePath();
+      const grad = g.createLinearGradient(-w * .5, -h * .5, w * .55, h * .55);
+      grad.addColorStop(0, light);
+      grad.addColorStop(.28, mid);
+      grad.addColorStop(.76, dark);
+      grad.addColorStop(1, edge);
+      g.fillStyle = grad;
+      g.fill();
+      g.strokeStyle = edge;
+      g.lineWidth = bevel;
+      g.stroke();
+
+      // 안쪽 베벨
+      g.globalAlpha = .38;
+      g.strokeStyle = 'rgba(255,255,255,.52)';
+      g.lineWidth = Math.max(.7, bevel * .36);
+      g.beginPath();
+      g.moveTo(-w * .37, -h * .28);
+      g.lineTo(w * .24, -h * .31);
+      g.lineTo(w * .34, -h * .10);
+      g.stroke();
+      g.globalAlpha = 1;
+
+      if (detail) {
+        const pulse = .72 + Math.sin(seed * 2.37) * .10;
+        g.shadowColor = accent;
+        g.shadowBlur = Math.max(5, h * .18);
+        g.strokeStyle = accent;
+        g.globalAlpha = pulse;
+        g.lineWidth = Math.max(1, h * .055);
+        g.lineCap = 'round';
+        // 고대 룬 문양
+        g.beginPath();
+        g.moveTo(-w * .16, -h * .18);
+        g.lineTo(0, h * .06);
+        g.lineTo(w * .18, -h * .18);
+        g.moveTo(0, h * .06);
+        g.lineTo(0, h * .27);
+        g.moveTo(-w * .10, h * .18);
+        g.lineTo(w * .10, h * .18);
+        g.stroke();
+        g.shadowBlur = 0;
+        g.globalAlpha = 1;
+      }
+      g.restore();
+    }
+
+    function drawGolemStoneSpike(g, x, y, length, width, angle, palette, accent, glow = 0) {
+      g.save();
+      g.translate(x, y);
+      g.rotate(angle || 0);
+      const grad = g.createLinearGradient(0, -length, 0, length * .2);
+      grad.addColorStop(0, palette?.light || '#9aa6b3');
+      grad.addColorStop(.42, palette?.mid || '#667483');
+      grad.addColorStop(1, palette?.dark || '#323d49');
+      if (glow > 0) {
+        g.shadowColor = accent;
+        g.shadowBlur = glow;
+      }
+      g.fillStyle = grad;
+      g.strokeStyle = palette?.edge || '#1c242d';
+      g.lineWidth = Math.max(1, width * .11);
+      g.beginPath();
+      g.moveTo(0, -length);
+      g.lineTo(width * .52, length * .12);
+      g.lineTo(-width * .46, length * .18);
+      g.closePath();
+      g.fill();
+      g.stroke();
+      g.shadowBlur = 0;
+      g.restore();
+    }
+
+    function drawGolemRuneCore(g, x, y, r, accent, actionGlow = 0, detail = true) {
+      g.save();
+      g.translate(x, y);
+      const pulse = .94 + Math.sin(performance.now() * .005) * .06;
+      g.scale(pulse, pulse);
+      g.shadowColor = accent;
+      g.shadowBlur = 12 + actionGlow * 22;
+      const rg = g.createRadialGradient(-r * .20, -r * .25, r * .05, 0, 0, r);
+      rg.addColorStop(0, '#ffffff');
+      rg.addColorStop(.22, accent);
+      rg.addColorStop(.72, accent);
+      rg.addColorStop(1, 'rgba(0,0,0,.20)');
+      g.fillStyle = rg;
+      g.strokeStyle = 'rgba(235,252,255,.88)';
+      g.lineWidth = Math.max(1, r * .11);
+      g.beginPath();
+      g.moveTo(0, -r);
+      g.lineTo(r * .76, -r * .18);
+      g.lineTo(r * .48, r * .72);
+      g.lineTo(-r * .48, r * .72);
+      g.lineTo(-r * .76, -r * .18);
+      g.closePath();
+      g.fill();
+      g.stroke();
+      g.shadowBlur = 0;
+      if (detail) {
+        g.globalAlpha = .82;
+        g.strokeStyle = '#ffffff';
+        g.lineWidth = Math.max(.7, r * .06);
+        g.beginPath();
+        g.moveTo(0, -r * .64);
+        g.lineTo(0, r * .42);
+        g.moveTo(-r * .35, -r * .06);
+        g.lineTo(r * .35, -r * .06);
+        g.stroke();
+      }
+      g.restore();
+    }
+
     function drawDetailedGolem(g, enemy, x, y, smoothTime, actionNow, online = false, highLoad = false) {
       const r = Number(enemy.radius || 21);
       const speedy = enemy.variant === 'speedyGolem' || enemy.rolling;
@@ -12807,14 +12938,24 @@ function requestGachaDraw(count) {
       const boss = enemy.type !== 'normal';
 
       const palette = soil
-        ? { light:'#b08b61', mid:'#806044', dark:'#473326', edge:'#2b2019', crack:'#3b271b', highlight:'rgba(241,210,162,.25)' }
+        ? { light:'#c09b70', mid:'#7d5b3d', dark:'#38281f', edge:'#1d1511', crack:'#f0a34f', highlight:'rgba(255,221,173,.28)' }
         : crystal
-          ? { light:'#6b99a7', mid:'#3e6b7a', dark:'#233c49', edge:'#142934', crack:'rgba(12,38,49,.92)', highlight:'rgba(199,246,255,.32)' }
+          ? { light:'#77aeb9', mid:'#315d6a', dark:'#142d38', edge:'#091b24', crack:'rgba(111,241,255,.96)', highlight:'rgba(211,250,255,.38)' }
           : gemBoss
-            ? { light:'#8b99aa', mid:'#5d6d7e', dark:'#313d4a', edge:'#202935', crack:'rgba(26,34,42,.9)', highlight:'rgba(214,234,248,.29)' }
+            ? { light:'#a0a9b8', mid:'#556676', dark:'#273540', edge:'#131c25', crack:'rgba(92,238,255,.92)', highlight:'rgba(223,244,255,.34)' }
             : giant
-              ? { light:'#78818b', mid:'#4e5964', dark:'#272f38', edge:'#181e25', crack:'rgba(12,16,20,.9)', highlight:'rgba(211,221,231,.24)' }
-              : { light:'#9aa6b3', mid:'#667483', dark:'#323d49', edge:'#1c242d', crack:'rgba(17,24,31,.88)', highlight:'rgba(230,239,247,.26)' };
+              ? { light:'#858c93', mid:'#454f58', dark:'#202830', edge:'#10151b', crack:'rgba(244,166,69,.90)', highlight:'rgba(230,235,240,.26)' }
+              : { light:'#a5afb9', mid:'#586775', dark:'#27333f', edge:'#111922', crack:'rgba(88,198,255,.88)', highlight:'rgba(238,247,255,.30)' };
+
+      const accent = crystal
+        ? '#9af7ff'
+        : gemBoss
+          ? '#4ee8ff'
+          : giant
+            ? '#ffb24f'
+            : soil
+              ? (combined ? '#ffb85f' : '#e7a65b')
+              : '#58cfff';
 
       const pileActive = online
         ? Number(enemy.soilPileUntil || 0) > actionNow
@@ -12919,18 +13060,41 @@ function requestGachaDraw(count) {
         }
 
         g.rotate(spin);
-        drawGolemRockPiece(g, 0, 0, r * .78, r * .72, 0, palette, 31, !highLoad);
-        for (let i = 0; i < 5; i += 1) {
-          const a = i * Math.PI * 2 / 5;
-          drawGolemRockPiece(g, Math.cos(a) * r * .56, Math.sin(a) * r * .50, r * .30, r * .25, a, palette, 40 + i, !highLoad);
-        }
-        g.fillStyle = '#7ee7ff';
-        g.shadowColor = '#7ee7ff';
+        // 스피디 골렘은 장갑 조각이 맞물린 돌 바퀴처럼 보이게 한다.
+        g.shadowColor = accent;
         g.shadowBlur = 12;
+        g.strokeStyle = `${accent}88`;
+        g.lineWidth = Math.max(2, r * .08);
         g.beginPath();
-        g.arc(r * .34, -r * .16, r * .08, 0, Math.PI * 2);
-        g.fill();
+        g.arc(0, 0, r * .76, 0, Math.PI * 2);
+        g.stroke();
         g.shadowBlur = 0;
+        drawGolemRockPiece(g, 0, 0, r * .64, r * .60, 0, palette, 31, !highLoad);
+        for (let i = 0; i < 8; i += 1) {
+          const a = i * Math.PI * 2 / 8;
+          g.save();
+          g.translate(Math.cos(a) * r * .63, Math.sin(a) * r * .58);
+          g.rotate(a + Math.PI / 2);
+          drawGolemArmorPlate(g, 0, 0, r * .42, r * .30, 0, palette, accent, 40 + i, !highLoad);
+          g.restore();
+        }
+        if (!highLoad) {
+          g.strokeStyle = accent;
+          g.shadowColor = accent;
+          g.shadowBlur = 10;
+          g.lineWidth = Math.max(1.4, r * .055);
+          g.globalAlpha = .78;
+          for (let i = 0; i < 4; i += 1) {
+            const a = i * Math.PI / 2;
+            g.beginPath();
+            g.moveTo(Math.cos(a) * r * .18, Math.sin(a) * r * .18);
+            g.lineTo(Math.cos(a) * r * .47, Math.sin(a) * r * .47);
+            g.stroke();
+          }
+          g.globalAlpha = 1;
+          g.shadowBlur = 0;
+        }
+        drawGolemRuneCore(g, r * .24, -r * .10, r * .16, accent, 0, !highLoad);
         g.restore();
         return;
       }
@@ -13030,6 +13194,28 @@ function requestGachaDraw(count) {
       const armLen = r * (giant ? 1.02 : boss ? .91 : .80) * mass;
       const limbThick = r * (giant ? .38 : boss ? .32 : .27);
 
+      // 뒤쪽 실루엣 장식: 등 가시/뿔이 몸보다 먼저 보여 보스급 실루엣을 만든다.
+      if (!highLoad) {
+        if (crystal) {
+          for (let i = 0; i < 5; i += 1) {
+            const t = i / 4;
+            drawGolemCrystalShard(g, -r * (.34 + t * .18), -r * (.57 - t * .36), r * (.34 + (1 - Math.abs(t - .35)) * .18), -1.84 - t * .22, '#8ef4ff', 18 + actionGlow * 14, .92);
+          }
+        } else if (gemBoss) {
+          drawGolemStoneSpike(g, -r * .30, -r * .54, r * .54, r * .22, -1.72, palette, accent, 5);
+          drawGolemCrystalShard(g, -r * .28, -r * .62, r * .34, -1.70, '#58ecff', 14 + actionGlow * 10, .95);
+        } else if (giant) {
+          drawGolemStoneSpike(g, -r * .33, -r * .58, r * .58, r * .30, -1.82, palette, accent, 0);
+          drawGolemStoneSpike(g, r * .04, -r * .66, r * .46, r * .26, -1.36, palette, accent, 0);
+        } else if (combined) {
+          for (let i = 0; i < 3; i += 1) {
+            drawGolemStoneSpike(g, -r * (.36 - i * .14), -r * (.48 + i * .06), r * (.34 + i * .06), r * .20, -1.82 + i * .18, palette, accent, 3);
+          }
+        } else {
+          drawGolemStoneSpike(g, -r * .27, -r * .48, r * .28, r * .16, -1.80, palette, accent, 0);
+        }
+      }
+
       // 뒤쪽 다리부터 그린다. 두 다리는 아래 지면을 향하며 서로 반대로 내딛는다.
       let backLegAngle = Math.PI / 2 - legSwing * .78;
       let frontLegAngle = Math.PI / 2 + legSwing * .78;
@@ -13050,22 +13236,67 @@ function requestGachaDraw(count) {
       drawGolemRockPiece(g, r * .24, torsoY - r * .03, r * .38, r * .47, .08, palette, 15, detail);
       drawGolemRockPiece(g, -r * .35, torsoY + r * .04, r * .34, r * .48, -.10, palette, 14, detail);
 
-      // 한쪽 어깨가 크게 보이는 측면 견갑.
+      // 전투형 흉갑. 단순 바위 몸통 위에 룬 장갑을 겹쳐 고대 수호병처럼 보이게 한다.
+      drawGolemArmorPlate(
+        g,
+        r * .08,
+        torsoY - r * .03,
+        r * (boss ? .92 : .74),
+        r * (boss ? .74 : .61),
+        -.035,
+        palette,
+        accent,
+        91 + r,
+        detail
+      );
+      if (detail) {
+        g.strokeStyle = `${accent}78`;
+        g.shadowColor = accent;
+        g.shadowBlur = 7 + actionGlow * 10;
+        g.lineWidth = Math.max(1, r * .035);
+        g.beginPath();
+        g.moveTo(-r * .36, torsoY + r * .16);
+        g.lineTo(-r * .06, torsoY + r * .30);
+        g.lineTo(r * .25, torsoY + r * .18);
+        g.stroke();
+        g.shadowBlur = 0;
+      }
+
+      // 한쪽 어깨가 크게 보이는 측면 견갑. 외곽은 더 각지고 뾰족하게 만든다.
       drawGolemRockPiece(g, -r * .10, shoulderY - r * .10, r * (giant ? .52 : .42), r * .32, -.10, palette, 19, detail);
       drawGolemRockPiece(g, r * .11, shoulderY - r * .03, r * (giant ? .47 : .37), r * .29, .08, palette, 20, detail);
+      drawGolemArmorPlate(g, -r * .06, shoulderY - r * .12, r * (giant ? .72 : boss ? .62 : .52), r * .31, -.10, palette, accent, 121, detail);
+      drawGolemStoneSpike(g, -r * .31, shoulderY - r * .19, r * (giant ? .50 : .34), r * .20, -1.86, palette, accent, boss ? 5 : 0);
 
-      // 머리는 몸 앞쪽에 낮게 달리고 눈은 하나만 보여 확실한 옆얼굴 실루엣이 된다.
+      // 머리는 낮고 앞으로 돌출된 전투형 석갑 투구 형태. 눈은 한 줄의 빛으로만 보인다.
       const headX = r * .58 * mass;
       const headY = -r * .45;
       drawGolemRockPiece(g, headX, headY, r * (boss ? .46 : .39), r * (boss ? .39 : .33), -.08, palette, 33, detail);
       drawGolemRockPiece(g, headX + r * .28, headY + r * .10, r * .20, r * .16, .12, palette, 34, detail);
-      g.shadowColor = crystal ? '#baf7ff' : gemBoss ? '#7ff6ff' : soil ? '#ffc47b' : '#7dd3fc';
-      g.shadowBlur = 10 + actionGlow * 16;
-      g.fillStyle = crystal ? '#dffcff' : gemBoss ? '#91f7ff' : soil ? '#ffca78' : '#86d9ff';
+      drawGolemArmorPlate(g, headX + r * .03, headY - r * .08, r * (boss ? .64 : .54), r * .28, -.08, palette, accent, 148, detail);
+      drawGolemStoneSpike(g, headX - r * .15, headY - r * .22, r * (boss ? .36 : .26), r * .16, -1.45, palette, accent, boss ? 5 : 0);
+      if (boss) drawGolemStoneSpike(g, headX + r * .08, headY - r * .20, r * .27, r * .14, -1.12, palette, accent, 3);
+
+      g.shadowColor = accent;
+      g.shadowBlur = 12 + actionGlow * 18;
+      g.strokeStyle = accent;
+      g.lineWidth = Math.max(2, r * .075);
+      g.lineCap = 'round';
       g.beginPath();
-      g.ellipse(headX + r * .20, headY - r * .055, r * .095, r * .060, -.06, 0, Math.PI * 2);
-      g.fill();
+      g.moveTo(headX + r * .08, headY - r * .06);
+      g.lineTo(headX + r * .31, headY - r * .02);
+      g.stroke();
       g.shadowBlur = 0;
+      if (detail) {
+        g.globalAlpha = .50;
+        g.strokeStyle = '#ffffff';
+        g.lineWidth = Math.max(.7, r * .022);
+        g.beginPath();
+        g.moveTo(headX + r * .11, headY - r * .082);
+        g.lineTo(headX + r * .27, headY - r * .052);
+        g.stroke();
+        g.globalAlpha = 1;
+      }
 
       // 앞쪽 다리와 팔은 몸 앞으로 지나가면서 보행 깊이를 만든다.
       drawGolemLimb(g, r * .17, hipY, legLen, limbThick * .90, frontLegAngle, palette, 7, detail, 1.20);
@@ -13079,33 +13310,41 @@ function requestGachaDraw(count) {
       }
       drawGolemLimb(g, r * .10, shoulderY - r * .02, armLen, limbThick * 1.03, frontArmAngle, palette, 28, detail, giant ? 1.42 : 1.16);
 
-      // 가슴 코어와 측면 균열
+      // 가슴의 봉인 코어와 발광 균열. 보스일수록 코어가 크고 강하게 빛난다.
       if (!soil || combined) {
-        const coreColor = crystal ? '#bdf7ff' : gemBoss ? '#64efff' : giant ? '#f0b96d' : '#73cfff';
-        g.shadowColor = coreColor;
-        g.shadowBlur = (boss ? 17 : 10) + actionGlow * 25;
-        g.fillStyle = coreColor;
-        g.globalAlpha = .72 + actionGlow * .28;
-        g.beginPath();
-        g.moveTo(r * .17, -r * .30);
-        g.lineTo(r * .34, -r * .12);
-        g.lineTo(r * .16, r * .10);
-        g.lineTo(-r * .04, -r * .09);
-        g.closePath();
-        g.fill();
-        g.globalAlpha = 1;
-        g.shadowBlur = 0;
+        const coreColor = accent;
+        drawGolemRuneCore(g, r * .14, torsoY - r * .02, r * (boss ? .22 : .17), coreColor, actionGlow, detail);
         if (detail) {
-          g.strokeStyle = `${coreColor}aa`;
-          g.lineWidth = Math.max(1, r * .045);
-          g.globalAlpha = .72 + Math.sin(smoothTime * .005) * .13;
+          g.strokeStyle = `${coreColor}bb`;
+          g.shadowColor = coreColor;
+          g.shadowBlur = 8 + actionGlow * 14;
+          g.lineWidth = Math.max(1, r * .042);
+          g.globalAlpha = .66 + Math.sin(smoothTime * .005) * .14;
           g.beginPath();
-          g.moveTo(r * .15, -r * .10);
-          g.lineTo(-r * .10, r * .03);
-          g.lineTo(-r * .33, r * .17);
+          g.moveTo(r * .02, torsoY + r * .02);
+          g.lineTo(-r * .16, torsoY + r * .16);
+          g.lineTo(-r * .36, torsoY + r * .22);
+          g.moveTo(r * .22, torsoY - r * .06);
+          g.lineTo(r * .37, torsoY - r * .19);
           g.stroke();
+          g.shadowBlur = 0;
           g.globalAlpha = 1;
         }
+      } else if (detail) {
+        // 흙 골렘은 수정 대신 뜨거운 흙의 룬 균열이 몸 안쪽에서 빛난다.
+        g.strokeStyle = `${accent}cc`;
+        g.shadowColor = accent;
+        g.shadowBlur = 7;
+        g.lineWidth = Math.max(1, r * .045);
+        g.beginPath();
+        g.moveTo(r * .13, torsoY - r * .19);
+        g.lineTo(-r * .04, torsoY - r * .03);
+        g.lineTo(r * .11, torsoY + r * .12);
+        g.lineTo(-r * .14, torsoY + r * .25);
+        g.moveTo(r * .11, torsoY + r * .12);
+        g.lineTo(r * .31, torsoY + r * .22);
+        g.stroke();
+        g.shadowBlur = 0;
       }
 
       // 흙 골렘의 부유 흙은 몸 주변 전체가 아니라 등 뒤/발 주변 위주로 보여 떠 있는 느낌을 줄인다.

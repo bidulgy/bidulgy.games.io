@@ -5911,7 +5911,7 @@ body {
   </div>
 
   <script>
-    window.BIDULGY_BUILD_VERSION = '2026-08-15-golem-proportion-v4';
+    window.BIDULGY_BUILD_VERSION = '2026-08-15-rpg-sfx-v1';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -9353,7 +9353,7 @@ function requestGachaDraw(count) {
 
       window.addEventListener('load', () => {
         navigator.serviceWorker
-          .register('./service-worker.js?v=20260815-chrono-revive-1', { updateViaCache: 'none' })
+          .register('./service-worker.js?v=20260815-rpg-sfx-1', { updateViaCache: 'none' })
           .then(registration => registration.update())
           .catch(error => console.error('서비스 워커 등록 실패:', error));
       });
@@ -9425,8 +9425,8 @@ function requestGachaDraw(count) {
       siren.stop(now + 1.18);
     }
 
-    // 유닛 공격 효과음: 외부 음원 파일 없이 Web Audio로 합성한다.
-    // 연사 유닛이 많아도 소리가 과도하게 겹치지 않도록 짧은 시간당 재생 수를 제한한다.
+    // 유닛 공격/스킬 효과음: 외부 음원을 복제하지 않고 Web Audio로 새롭게 합성한다.
+    // 빠른 RPG 전투의 타격감처럼 '선명한 어택 + 저음 충격 + 짧은 잔향'을 겹쳐 만든다.
     let attackSfxNoiseBuffer = null;
     let attackSfxWindowStartedAt = 0;
     let attackSfxWindowCount = 0;
@@ -9434,50 +9434,89 @@ function requestGachaDraw(count) {
 
     function getAttackSfxNoiseBuffer(audio) {
       if (attackSfxNoiseBuffer && attackSfxNoiseBuffer.sampleRate === audio.sampleRate) return attackSfxNoiseBuffer;
-      const length = Math.max(1, Math.floor(audio.sampleRate * .34));
+      const length = Math.max(1, Math.floor(audio.sampleRate * .55));
       const buffer = audio.createBuffer(1, length, audio.sampleRate);
       const data = buffer.getChannelData(0);
       let last = 0;
       for (let i = 0; i < length; i += 1) {
         const white = Math.random() * 2 - 1;
-        last = last * .72 + white * .28;
-        data[i] = last;
+        last = last * .58 + white * .42;
+        data[i] = Math.max(-1, Math.min(1, last));
       }
       attackSfxNoiseBuffer = buffer;
       return buffer;
     }
 
-    function attackSfxTone(audio, destination, start, duration, fromHz, toHz, type = 'sine', gainValue = .1) {
+    function attackSfxTone(audio, destination, start, duration, fromHz, toHz, type = 'sine', gainValue = .1, attack = .006) {
       const osc = audio.createOscillator();
       const gain = audio.createGain();
       osc.type = type;
       osc.frequency.setValueAtTime(Math.max(20, fromHz), start);
       osc.frequency.exponentialRampToValueAtTime(Math.max(20, toHz), start + Math.max(.015, duration));
       gain.gain.setValueAtTime(.0001, start);
-      gain.gain.exponentialRampToValueAtTime(Math.max(.0002, gainValue), start + .008);
+      gain.gain.exponentialRampToValueAtTime(Math.max(.0002, gainValue), start + Math.max(.002, attack));
       gain.gain.exponentialRampToValueAtTime(.0001, start + duration);
       osc.connect(gain);
       gain.connect(destination);
       osc.start(start);
-      osc.stop(start + duration + .025);
+      osc.stop(start + duration + .03);
     }
 
-    function attackSfxNoise(audio, destination, start, duration, gainValue = .08, cutoff = 2600) {
+    function attackSfxNoise(audio, destination, start, duration, gainValue = .08, cutoff = 2600, endCutoff = null, q = .75) {
       const source = audio.createBufferSource();
       const filter = audio.createBiquadFilter();
       const gain = audio.createGain();
       source.buffer = getAttackSfxNoiseBuffer(audio);
       filter.type = 'bandpass';
-      filter.frequency.setValueAtTime(cutoff, start);
-      filter.Q.setValueAtTime(.75, start);
+      filter.frequency.setValueAtTime(Math.max(80, cutoff), start);
+      if (Number.isFinite(endCutoff)) {
+        filter.frequency.exponentialRampToValueAtTime(Math.max(80, endCutoff), start + Math.max(.02, duration));
+      }
+      filter.Q.setValueAtTime(Math.max(.15, q), start);
       gain.gain.setValueAtTime(.0001, start);
-      gain.gain.exponentialRampToValueAtTime(Math.max(.0002, gainValue), start + .006);
+      gain.gain.exponentialRampToValueAtTime(Math.max(.0002, gainValue), start + .004);
       gain.gain.exponentialRampToValueAtTime(.0001, start + duration);
       source.connect(filter);
       filter.connect(gain);
       gain.connect(destination);
       source.start(start);
-      source.stop(start + duration + .02);
+      source.stop(start + duration + .025);
+    }
+
+    function attackSfxImpact(audio, destination, start, strength = 1) {
+      attackSfxTone(audio, destination, start, .18, 118, 42, 'sine', .34 * strength, .003);
+      attackSfxTone(audio, destination, start + .004, .105, 265, 92, 'triangle', .19 * strength, .002);
+      attackSfxNoise(audio, destination, start, .10, .24 * strength, 1180, 380, .55);
+    }
+
+    function attackSfxMetalSlash(audio, destination, start, strength = 1, bright = false) {
+      attackSfxNoise(audio, destination, start, .19, .40 * strength, bright ? 6700 : 4300, bright ? 2200 : 1450, .55);
+      attackSfxTone(audio, destination, start + .008, .17, bright ? 2750 : 1900, bright ? 760 : 540, 'triangle', .25 * strength, .002);
+      attackSfxTone(audio, destination, start + .022, .24, bright ? 4200 : 2800, bright ? 1950 : 1150, 'sine', .095 * strength, .004);
+    }
+
+    function attackSfxMagicBurst(audio, destination, start, strength = 1, hue = 'arcane') {
+      const low = hue === 'dark' ? 72 : hue === 'time' ? 126 : 152;
+      const high = hue === 'time' ? 1620 : hue === 'dark' ? 760 : 1320;
+      attackSfxTone(audio, destination, start, .30, low, 46, 'sine', .24 * strength, .004);
+      attackSfxTone(audio, destination, start + .012, .25, high * .55, high, 'triangle', .15 * strength, .005);
+      attackSfxNoise(audio, destination, start + .006, .22, .18 * strength, hue === 'dark' ? 1250 : 3900, hue === 'time' ? 7200 : 1700, .8);
+    }
+
+    function createAttackSfxMaster(audio, now, volume, duration) {
+      const master = audio.createGain();
+      const compressor = audio.createDynamicsCompressor();
+      compressor.threshold.setValueAtTime(-12, now);
+      compressor.knee.setValueAtTime(12, now);
+      compressor.ratio.setValueAtTime(5, now);
+      compressor.attack.setValueAtTime(.002, now);
+      compressor.release.setValueAtTime(.14, now);
+      master.gain.setValueAtTime(Math.max(.045, Math.min(.30, volume)), now);
+      master.gain.setValueAtTime(Math.max(.045, Math.min(.30, volume)), now + Math.min(.035, duration * .12));
+      master.gain.exponentialRampToValueAtTime(.0001, now + duration);
+      master.connect(compressor);
+      compressor.connect(audio.destination);
+      return master;
     }
 
     function playUnitAttackSound(unitId, options = {}) {
@@ -9486,6 +9525,8 @@ function requestGachaDraw(count) {
       const audio = ensureBattleAudio();
       if (!audio || audio.state !== 'running') return;
 
+      const skill = String(options.skill || 'normal');
+      const isSkill = skill !== 'normal';
       const perfNow = performance.now();
       if (perfNow - attackSfxWindowStartedAt > 120) {
         attackSfxWindowStartedAt = perfNow;
@@ -9493,62 +9534,150 @@ function requestGachaDraw(count) {
       }
       const rarityKey = String(data.rarityKey || 'common');
       const highTier = ['mythic', 'secret', 'galaxy', 'admin'].includes(rarityKey);
-      const lastAt = Number(attackSfxLastByUnit.get(unitId) || 0);
-      const minGap = highTier ? 38 : 55;
+      const throttleKey = `${unitId}:${skill}`;
+      const lastAt = Number(attackSfxLastByUnit.get(throttleKey) || 0);
+      const minGap = isSkill ? 18 : (highTier ? 34 : 48);
       if (perfNow - lastAt < minGap) return;
-      if (attackSfxWindowCount >= (highTier ? 10 : 7)) return;
+      if (attackSfxWindowCount >= (isSkill ? 15 : (highTier ? 12 : 9))) return;
       attackSfxWindowCount += 1;
-      attackSfxLastByUnit.set(unitId, perfNow);
+      attackSfxLastByUnit.set(throttleKey, perfNow);
 
       const now = audio.currentTime;
-      const master = audio.createGain();
-      const baseVolume = Number(options.volume || 1);
-      master.gain.setValueAtTime(Math.max(.018, Math.min(.085, .048 * baseVolume)), now);
-      master.gain.exponentialRampToValueAtTime(.0001, now + (highTier ? .46 : .28));
-      master.connect(audio.destination);
+      const baseVolume = Math.max(.25, Number(options.volume || 1));
+      const skillDuration = ['samuraiUltimate', 'samuraiUltimateCut'].includes(skill) ? 1.05 : (isSkill ? .68 : (highTier ? .50 : .34));
+      // 이전 버전보다 전체 체감 볼륨을 크게 올린다. 컴프레서가 겹침 시 찢어짐을 억제한다.
+      const loudness = (isSkill ? .225 : (highTier ? .165 : .135)) * baseVolume;
+      const master = createAttackSfxMaster(audio, now, loudness, skillDuration);
 
+      // 일반 무기 타격음.
       const swordUnits = new Set(['starterKnight', 'royalGuardian', 'cherrySamurai', 'eclipse']);
       const bowUnits = new Set(['starterArcher', 'windRanger']);
 
-      if (swordUnits.has(unitId)) {
-        // 칼이 공기를 가르는 소리 + 짧은 금속성 칼날 잔향.
-        attackSfxNoise(audio, master, now, .16, .32, highTier ? 3600 : 2800);
-        attackSfxTone(audio, master, now + .012, .14, highTier ? 1450 : 1120, highTier ? 520 : 390, 'triangle', .22);
-        attackSfxTone(audio, master, now + .035, .12, highTier ? 2350 : 1750, highTier ? 1700 : 1160, 'sine', .10);
-      } else if (bowUnits.has(unitId)) {
-        attackSfxTone(audio, master, now, .075, 310, 145, 'triangle', .20);
-        attackSfxNoise(audio, master, now + .018, .105, .24, unitId === 'windRanger' ? 4100 : 3200);
-      } else if (unitId === 'flameWizard') {
-        attackSfxNoise(audio, master, now, .18, .28, 1400);
-        attackSfxTone(audio, master, now, .20, 210, 640, 'sawtooth', .15);
-      } else if (unitId === 'starterMage') {
-        attackSfxTone(audio, master, now, .19, 520, 1160, 'sine', .18);
-        attackSfxTone(audio, master, now + .025, .15, 780, 1480, 'triangle', .09);
-      } else {
-        attackSfxTone(audio, master, now, .16, 430, 760, 'triangle', .16);
-        attackSfxNoise(audio, master, now + .012, .10, .16, 2900);
+      if (!isSkill) {
+        if (swordUnits.has(unitId)) {
+          attackSfxMetalSlash(audio, master, now, highTier ? 1.18 : 1, highTier);
+          attackSfxTone(audio, master, now + .012, .12, 230, 78, 'sine', highTier ? .16 : .10, .002);
+        } else if (bowUnits.has(unitId)) {
+          attackSfxTone(audio, master, now, .085, 390, 120, 'triangle', .28, .002);
+          attackSfxNoise(audio, master, now + .012, .13, .32, unitId === 'windRanger' ? 5600 : 3900, 1550, .7);
+          attackSfxTone(audio, master, now + .035, .16, 980, 420, 'sine', .08, .004);
+        } else if (unitId === 'flameWizard') {
+          attackSfxNoise(audio, master, now, .22, .34, 1550, 480, .5);
+          attackSfxTone(audio, master, now, .23, 190, 760, 'sawtooth', .18, .004);
+          attackSfxImpact(audio, master, now + .035, .46);
+        } else if (unitId === 'starterMage') {
+          attackSfxMagicBurst(audio, master, now, .86, 'arcane');
+        } else {
+          attackSfxTone(audio, master, now, .18, 460, 820, 'triangle', .20, .004);
+          attackSfxNoise(audio, master, now + .008, .12, .20, 3200, 1300, .75);
+        }
+
+        // 신화 이상은 평타에도 짧은 등급 고유 레이어를 더한다.
+        if (rarityKey === 'mythic') {
+          attackSfxImpact(audio, master, now + .018, .58);
+          attackSfxTone(audio, master, now + .032, .22, 880, 1760, 'triangle', .12, .004);
+        } else if (rarityKey === 'secret') {
+          attackSfxMagicBurst(audio, master, now + .008, .72, 'time');
+          attackSfxTone(audio, master, now + .055, .28, 2100, 3150, 'sine', .08, .006);
+        } else if (rarityKey === 'galaxy') {
+          attackSfxImpact(audio, master, now + .012, .68);
+          attackSfxNoise(audio, master, now, .27, .24, 7200, 2100, .5);
+          attackSfxTone(audio, master, now + .03, .28, 1480, 3320, 'sine', .11, .003);
+        } else if (rarityKey === 'admin') {
+          attackSfxMagicBurst(audio, master, now, .92, 'dark');
+          attackSfxImpact(audio, master, now + .025, .75);
+        }
+        return;
       }
 
-      // 신화 이상은 기본 무기음 위에 등급별 고유 레이어를 추가한다.
-      if (rarityKey === 'mythic') {
-        attackSfxTone(audio, master, now, .30, 112, 58, 'sine', .24);
-        attackSfxTone(audio, master, now + .035, .24, 880, 1760, 'triangle', .11);
-      } else if (rarityKey === 'secret') {
-        [0, .035, .072].forEach((delay, index) => {
-          attackSfxTone(audio, master, now + delay, .22, 660 * (1 + index * .22), 1320 * (1 + index * .20), 'sine', .095);
-        });
-        attackSfxTone(audio, master, now, .32, 96, 54, 'sine', .17);
-      } else if (rarityKey === 'galaxy') {
-        attackSfxTone(audio, master, now, .30, 132, 52, 'sine', .28);
-        attackSfxNoise(audio, master, now + .01, .23, .22, 5200);
-        [0, .035, .075].forEach((delay, index) => {
-          attackSfxTone(audio, master, now + delay, .26, 1180 + index * 380, 2140 + index * 460, 'sine', .095);
-        });
-      } else if (rarityKey === 'admin') {
-        attackSfxTone(audio, master, now, .38, 86, 34, 'sawtooth', .27);
-        attackSfxNoise(audio, master, now, .24, .20, 1800);
-        attackSfxTone(audio, master, now + .028, .28, 1320, 330, 'triangle', .13);
+      // ---- 신화 이상 특수 스킬 전용 효과음 ----
+      if (skill === 'dragonLightning') {
+        attackSfxNoise(audio, master, now, .16, .58, 8500, 1800, 1.25);
+        attackSfxTone(audio, master, now, .11, 2200, 240, 'sawtooth', .22, .001);
+        attackSfxImpact(audio, master, now + .035, .92);
+        attackSfxTone(audio, master, now + .045, .34, 540, 1820, 'triangle', .13, .003);
+        return;
       }
+
+      if (skill === 'dragonLaneSweep') {
+        attackSfxImpact(audio, master, now, 1.22);
+        attackSfxNoise(audio, master, now + .012, .38, .62, 6200, 640, .55);
+        attackSfxTone(audio, master, now, .43, 148, 48, 'sine', .38, .003);
+        attackSfxTone(audio, master, now + .075, .34, 940, 2480, 'triangle', .16, .005);
+        return;
+      }
+
+      if (skill === 'chronoField') {
+        attackSfxTone(audio, master, now, .58, 980, 126, 'sine', .20, .006);
+        attackSfxTone(audio, master, now + .035, .62, 420, 1680, 'triangle', .17, .008);
+        [0, .08, .16, .24].forEach((delay, i) => {
+          attackSfxTone(audio, master, now + delay, .34, 920 + i * 230, 1820 + i * 310, 'sine', .085, .006);
+        });
+        attackSfxNoise(audio, master, now + .02, .44, .23, 2400, 7600, .8);
+        attackSfxImpact(audio, master, now + .12, .55);
+        return;
+      }
+
+      if (skill === 'samuraiIssen') {
+        // 짧은 정적 뒤 날카로운 검풍과 충격이 한번에 터지는 일섬.
+        attackSfxTone(audio, master, now, .07, 170, 92, 'sine', .16, .002);
+        attackSfxMetalSlash(audio, master, now + .035, 1.45, true);
+        attackSfxNoise(audio, master, now + .032, .31, .56, 9800, 1250, .45);
+        attackSfxImpact(audio, master, now + .075, 1.05);
+        attackSfxTone(audio, master, now + .09, .38, 1220, 3980, 'sine', .13, .004);
+        return;
+      }
+
+      if (skill === 'samuraiBloom') {
+        // 벚꽃이 검으로 모일 때의 상승음 + 표식이 새겨지는 맑은 타격음.
+        attackSfxNoise(audio, master, now, .48, .23, 2400, 8200, 1.0);
+        attackSfxTone(audio, master, now, .50, 360, 2480, 'sine', .16, .01);
+        [0, .07, .14, .21].forEach((delay, i) => {
+          attackSfxTone(audio, master, now + .12 + delay, .30, 1180 + i * 310, 2520 + i * 420, 'triangle', .085, .004);
+        });
+        attackSfxImpact(audio, master, now + .33, .68);
+        return;
+      }
+
+      if (skill === 'samuraiUltimate') {
+        // 오의 시작: 깊은 충격 -> 벚꽃/검 에너지 충전 -> 베기 직전 상승음.
+        attackSfxImpact(audio, master, now, 1.28);
+        attackSfxTone(audio, master, now, .72, 76, 38, 'sine', .42, .004);
+        attackSfxNoise(audio, master, now + .06, .68, .35, 1200, 9200, .7);
+        attackSfxTone(audio, master, now + .08, .68, 320, 3100, 'triangle', .19, .012);
+        [0, .10, .20, .30].forEach((delay, i) => {
+          attackSfxTone(audio, master, now + .18 + delay, .28, 1080 + i * 360, 2240 + i * 520, 'sine', .085, .004);
+        });
+        return;
+      }
+
+      if (skill === 'samuraiUltimateCut') {
+        attackSfxMetalSlash(audio, master, now, 1.58, true);
+        attackSfxNoise(audio, master, now, .29, .68, 10500, 930, .42);
+        attackSfxImpact(audio, master, now + .052, 1.18);
+        attackSfxTone(audio, master, now + .045, .38, 1520, 4380, 'sine', .14, .003);
+        return;
+      }
+
+      if (skill === 'eclipseSpin') {
+        attackSfxMagicBurst(audio, master, now, 1.05, 'dark');
+        attackSfxNoise(audio, master, now, .43, .58, 5200, 620, .5);
+        [0, .075, .15].forEach(delay => attackSfxMetalSlash(audio, master, now + delay, .72, true));
+        attackSfxImpact(audio, master, now + .19, 1.02);
+        return;
+      }
+
+      if (skill === 'eclipseBlackHole') {
+        attackSfxTone(audio, master, now, .72, 92, 27, 'sawtooth', .38, .008);
+        attackSfxNoise(audio, master, now, .54, .37, 2500, 180, 1.15);
+        attackSfxTone(audio, master, now + .08, .56, 760, 118, 'triangle', .18, .01);
+        attackSfxImpact(audio, master, now + .32, 1.12);
+        return;
+      }
+
+      // 정의되지 않은 스킬도 평타보다 강한 공용 스킬음으로 들린다.
+      attackSfxMagicBurst(audio, master, now, 1, highTier ? 'time' : 'arcane');
+      attackSfxImpact(audio, master, now + .035, .78);
     }
 
     function showBossSpawnAlert(name) {
@@ -10740,6 +10869,7 @@ function requestGachaDraw(count) {
       if (!battle || battle.ended) return;
 
       if (attack.kind === 'sakuraCorridor') {
+        playUnitAttackSound('cherrySamurai', { skill: 'samuraiUltimateCut', volume: 1.12 });
         battle.shots.push({
           x1: attack.x1, y1: attack.y1, x2: attack.x2, y2: attack.y2,
           life: getAttackEffectDuration(attack.effect || 'sakuraUltimateCut'),
@@ -10754,6 +10884,7 @@ function requestGachaDraw(count) {
       }
 
       if (attack.kind === 'skyLightning') {
+        playUnitAttackSound('skyDragonKnight', { skill: 'dragonLightning', volume: 1.10 });
         const impactRadius = attack.radius ?? UNIT_DATA.skyDragonKnight.lightningRadius ?? 20;
         let hitCount = 0;
 
@@ -10786,6 +10917,7 @@ function requestGachaDraw(count) {
       }
 
       if (attack.kind === 'dragonLaneSweep') {
+        playUnitAttackSound('skyDragonKnight', { skill: 'dragonLaneSweep', volume: 1.18 });
         const laneHalfWidth = 46;
         const minX = attack.minX - 38;
         const maxX = attack.maxX + 38;
@@ -11083,6 +11215,7 @@ function requestGachaDraw(count) {
 
     function activateChronoTimeField(placed) {
       const data = UNIT_DATA.astralChronomancer;
+      playUnitAttackSound('astralChronomancer', { skill: 'chronoField', volume: 1.15 });
       placed.chronoFieldRemaining = data.timeFieldDuration || 5;
       setBattleMessage('별빛 시간술사가 시간 영역을 펼쳤습니다! 사거리 300 안의 일반 적 이동이 5초간 멈춥니다. 보스는 면역입니다.');
     }
@@ -11156,6 +11289,7 @@ function requestGachaDraw(count) {
 
     function createEclipseBlackHole(placed, enemy) {
       const data = UNIT_DATA.eclipse;
+      playUnitAttackSound('eclipse', { skill: 'eclipseBlackHole', volume: 1.16 });
       battle.blackHoles ||= [];
       battle.blackHoles.push({
         x: enemy.x,
@@ -11383,6 +11517,7 @@ function requestGachaDraw(count) {
 
     function triggerSamuraiUltimate(placed, target, slowMultiplier) {
       const data = UNIT_DATA.cherrySamurai;
+      playUnitAttackSound('cherrySamurai', { skill: 'samuraiUltimate', volume: 1.20 });
       const center = clampSamuraiDashPoint(target.x, target.y);
       setSamuraiUltimateSequence(placed, center);
       const seq = placed.samuraiUltimateSequence;
@@ -11410,6 +11545,7 @@ function requestGachaDraw(count) {
 
     function triggerSamuraiIssen(placed, target, slowMultiplier) {
       const data = UNIT_DATA.cherrySamurai;
+      playUnitAttackSound('cherrySamurai', { skill: 'samuraiIssen', volume: 1.16 });
       const angle = Math.atan2(target.y - placed.y, target.x - placed.x);
       const distance = Number(data.issenRange || 200);
       const end = clampSamuraiDashPoint(
@@ -11462,6 +11598,7 @@ function requestGachaDraw(count) {
 
     function triggerSamuraiBloomMark(placed) {
       const data = UNIT_DATA.cherrySamurai;
+      playUnitAttackSound('cherrySamurai', { skill: 'samuraiBloom', volume: 1.14 });
       const now = performance.now();
       const castMs = Math.max(650, Number(data.bloomCastSeconds || 1.15) * 1000);
       placed.samuraiBloomCast = { startAt: now, endAt: now + castMs };
@@ -11491,8 +11628,6 @@ function requestGachaDraw(count) {
     function performCherrySamuraiAttack(placed, target, slowMultiplier) {
       const data = UNIT_DATA.cherrySamurai;
       if (!target || target.dead) return;
-      playUnitAttackSound(placed.unitId);
-
       const specialReady = Number(placed.samuraiNormalCount || 0) >= Number(data.normalBeforeIssen || 3);
       if (specialReady) {
         const specialTarget = getFrontmostEnemyInRange(placed, Number(data.issenRange || 200));
@@ -11509,6 +11644,7 @@ function requestGachaDraw(count) {
         }
       }
 
+      playUnitAttackSound(placed.unitId);
       const angle = Math.atan2(target.y - placed.y, target.x - placed.x);
       const distance = Math.hypot(target.x - placed.x, target.y - placed.y);
       placed.angle = angle;
@@ -11626,7 +11762,7 @@ function requestGachaDraw(count) {
 
       if (!target) return;
 
-      playUnitAttackSound(placed.unitId);
+      if (placed.unitId !== 'eclipse') playUnitAttackSound(placed.unitId);
       const targetAngle = Math.atan2(target.y - placed.y, target.x - placed.x);
       placed.angle = targetAngle;
       placed.cooldown = placed.fireInterval * slowMultiplier;
@@ -11645,6 +11781,7 @@ function requestGachaDraw(count) {
         const spinEvery = eclipseData.spinSlashEvery || 4;
 
         if (placed.eclipseAttackCount % spinEvery === 0) {
+          playUnitAttackSound('eclipse', { skill: 'eclipseSpin', volume: 1.15 });
           // 4타째에는 진행도가 아니라 실제 거리 기준으로 가장 가까운 적을 다시 고릅니다.
           const closestInfo = getClosestEnemyToUnit(placed, placed.range);
           const spinTarget = closestInfo?.enemy || target;
@@ -11693,6 +11830,7 @@ function requestGachaDraw(count) {
           return;
         }
 
+        playUnitAttackSound('eclipse');
         const effect = getAttackEffectType(placed.unitId);
         const duration = getAttackEffectDuration(effect);
         battle.shots.push({
@@ -17914,6 +18052,7 @@ function requestGachaDraw(count) {
     }
 
     if (unit.attackCount % (data.timeFieldEvery || 60) === 0) {
+      playUnitAttackSound('astralChronomancer',{skill:'chronoField',volume:1.04});
       unit.chronoFieldUntil = Date.now() + (data.timeFieldDuration || 5) * 1000;
       mpState.announcement = '🌌 별빛 시간술사: 시간 영역 전개! 사거리 300 안의 일반 적 이동이 5초간 정지합니다. 보스는 면역입니다.';
       mpState.announcementUntil = Date.now() + 2800;
@@ -17936,6 +18075,7 @@ function requestGachaDraw(count) {
 
   function mpCreateEclipseBlackHole(targetState, sideKey, unit, enemy) {
     const data = UNIT_DATA.eclipse;
+    playUnitAttackSound('eclipse', { skill: 'eclipseBlackHole', volume: 1.06 });
     mpState.blackHoles ||= [];
     mpState.blackHoles.push({
       id: mpMakeId('blackhole'), sideKey, ownerUnitId: unit.id, ownerRole: unit.ownerRole,
@@ -18035,6 +18175,7 @@ function requestGachaDraw(count) {
   }
 
   function mpSamuraiUltimate(targetState,sideKey,unit,target){
+    playUnitAttackSound('cherrySamurai',{skill:'samuraiUltimate',volume:1.08});
     const data=UNIT_DATA.cherrySamurai,c=mpClampSamuraiPoint(target.x,target.y),damage=Number(unit.damage||data.damage)*Number(data.ultimateMultiplier||10),baseW=Number(data.ultimateWidth||60),xW=Number(data.ultimateXWidth||78),xSize=Number(data.ultimateXSize||205);
     unit.attackMode='sakuraUltimate';unit.attackAnimation=1;unit.cooldown=Math.max(unit.fireInterval,4.15);mpSetSamuraiUltimateSequence(unit,c);
     const q=unit.samuraiUltimateSequence,xa=mpClampSamuraiPoint(c.x-xSize*.72,c.y-xSize*.72),xb=mpClampSamuraiPoint(c.x+xSize*.72,c.y+xSize*.72),xc=mpClampSamuraiPoint(c.x-xSize*.72,c.y+xSize*.72),xd=mpClampSamuraiPoint(c.x+xSize*.72,c.y-xSize*.72);
@@ -18050,6 +18191,7 @@ function requestGachaDraw(count) {
   }
 
   function mpSamuraiIssen(targetState,sideKey,unit,target){
+    playUnitAttackSound('cherrySamurai',{skill:'samuraiIssen',volume:1.06});
     const data=UNIT_DATA.cherrySamurai,a=Math.atan2(target.y-unit.y,target.x-unit.x),range=Number(data.issenRange||200),end=mpClampSamuraiPoint(unit.x+Math.cos(a)*range,unit.y+Math.sin(a)*range),damage=Number(unit.damage||data.damage)*Number(data.issenMultiplier||5),w=Number(data.issenWidth||60);
     unit.angle=a;unit.attackMode='sakuraIssen';unit.attackAnimation=1;unit.cooldown=Math.max(unit.fireInterval,.92);mpSetSamuraiDash(unit,end.x,end.y,false);
     mpPushFx(unit.x,unit.y,end.x,end.y,'#ff9bd0',12,sideKey,'sakuraIssen',{width:w});const hits=mpDamageAlongSamuraiLine(targetState,sideKey,unit,unit.x,unit.y,end.x,end.y,w,damage);
@@ -18073,6 +18215,7 @@ function requestGachaDraw(count) {
   }
 
   function mpTriggerSamuraiBloomMark(targetState,sideKey,unit){
+    playUnitAttackSound('cherrySamurai',{skill:'samuraiBloom',volume:1.04});
     const data=UNIT_DATA.cherrySamurai,now=Date.now(),castMs=Math.max(650,Number(data.bloomCastSeconds||1.15)*1000),delayMs=Math.max(250,Number(data.bloomMarkDelay||3)*1000),damage=Number(unit.damage||data.damage)*Number(data.bloomMarkMultiplier||5),castId=mpMakeId('sakura-mark');
     unit.samuraiBloomCast={startAt:now,endAt:now+castMs};
     for(const enemy of targetState.enemies||[]){
@@ -18091,6 +18234,7 @@ function requestGachaDraw(count) {
       const t=mpFrontmostEnemyInRange(targetState,unit,Number(data.issenRange||200));
       if(t){unit.samuraiNormalCount=0;unit.samuraiIssenCount=Number(unit.samuraiIssenCount||0)+1;mpRegisterCherrySamuraiAttack(targetState,sideKey,unit);if(unit.samuraiIssenCount%Number(data.ultimateEveryIssen||4)===0)mpSamuraiUltimate(targetState,sideKey,unit,t);else mpSamuraiIssen(targetState,sideKey,unit,t);return;}
     }
+    playUnitAttackSound('cherrySamurai',{volume:.98});
     const a=Math.atan2(target.y-unit.y,target.x-unit.x),dist=Math.hypot(target.x-unit.x,target.y-unit.y);unit.angle=a;unit.attackAnimation=1;unit.cooldown=unit.fireInterval;unit.samuraiNormalCount=Number(unit.samuraiNormalCount||0)+1;mpRegisterCherrySamuraiAttack(targetState,sideKey,unit);
     if(dist<=(data.meleeRange||120)){
       unit.attackMode='sakuraMelee';const half=((data.meleeConeAngle||180)*Math.PI/180)/2,victims=[...targetState.enemies].filter(e=>{if(e.dead)return false;const dx=e.x-unit.x,dy=e.y-unit.y,d=Math.hypot(dx,dy);return d<=(data.meleeRange||120)&&Math.abs(mpAngleDelta(Math.atan2(dy,dx),a))<=half;});
@@ -18102,7 +18246,7 @@ function requestGachaDraw(count) {
   function mpPerformUnitAttack(targetState, sideKey, unit, target) {
     const data = UNIT_DATA[unit.unitId];
     if (!data || !target || target.dead) return;
-    playUnitAttackSound(unit.unitId, { volume: .88 });
+    if (unit.unitId !== 'cherrySamurai' && unit.unitId !== 'eclipse') playUnitAttackSound(unit.unitId, { volume: .98 });
     unit.attackCount = (unit.attackCount || 0) + 1;
     const angle = Math.atan2(target.y - unit.y, target.x - unit.x);
     unit.angle = angle;
@@ -18123,6 +18267,7 @@ function requestGachaDraw(count) {
       const eclipseData = UNIT_DATA.eclipse;
       const spinEvery = eclipseData.spinSlashEvery || 4;
       if (unit.attackCount % spinEvery === 0) {
+        playUnitAttackSound('eclipse',{skill:'eclipseSpin',volume:1.05});
         const nearest = [...targetState.enemies]
           .filter(enemy => !enemy.dead && Math.hypot(enemy.x - unit.x, enemy.y - unit.y) <= unit.range)
           .sort((a, b) => Math.hypot(a.x - unit.x, a.y - unit.y) - Math.hypot(b.x - unit.x, b.y - unit.y))[0] || target;
@@ -18155,6 +18300,7 @@ function requestGachaDraw(count) {
         return;
       }
 
+      playUnitAttackSound('eclipse',{volume:.98});
       mpPushFx(unit.x, unit.y, target.x, target.y, '#ff355d', 7, sideKey, 'eclipseSlash', { radius: eclipseData.normalSlashRadius || 55 });
       const slashRadius = eclipseData.normalSlashRadius || 55;
       [...targetState.enemies]
@@ -18286,6 +18432,7 @@ function requestGachaDraw(count) {
         mpScheduleLightning(sideKey, target, mpEffectiveUnitDamage(unit), unit.ownerRole);
       }
       if (unit.attackCount % (data.laneSweepEvery || 7) === 0) {
+        playUnitAttackSound('skyDragonKnight',{skill:'dragonLaneSweep',volume:1.06});
         mpPushFx(0, MP_PATH_Y, MP_WIDTH, MP_PATH_Y, '#ffe072', 12, sideKey, 'dragonLane');
         [...targetState.enemies].forEach(enemy => {
           if (!enemy.dead && Math.abs(enemy.y - MP_PATH_Y) <= 45) {
@@ -18342,11 +18489,13 @@ function requestGachaDraw(count) {
         : mpState.sides[attack.sideKey];
       if (!targetState) continue;
       if (attack.kind === 'sakuraCorridor') {
+        playUnitAttackSound('cherrySamurai',{skill:'samuraiUltimateCut',volume:1.04});
         const owner=(targetState.units||[]).find(u=>u.id===attack.unitId) || { ownerRole: attack.ownerRole };
         mpPushFx(attack.x1,attack.y1,attack.x2,attack.y2,'#ff9bd0',attack.style?.startsWith('diag')?22:15,attack.sideKey,'sakuraUltimateCut',{width:attack.width,style:attack.style});
         mpDamageAlongSamuraiLine(targetState,attack.sideKey,owner,attack.x1,attack.y1,attack.x2,attack.y2,attack.width||60,attack.damage);
         continue;
       }
+      playUnitAttackSound('skyDragonKnight',{skill:'dragonLightning',volume:1.02});
       mpPushFx(attack.x, attack.y - 120, attack.x, attack.y + 20, '#fff4a5', 7, attack.sideKey, 'lightning', { radius: attack.radius });
       [...targetState.enemies].forEach(enemy => {
         if (!enemy.dead && Math.hypot(enemy.x - attack.x, enemy.y - attack.y) <= attack.radius + enemy.radius * .3) {

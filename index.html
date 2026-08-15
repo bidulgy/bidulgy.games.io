@@ -5911,7 +5911,7 @@ body {
   </div>
 
   <script>
-    window.BIDULGY_BUILD_VERSION = '2026-08-15-stage2-golem-v1';
+    window.BIDULGY_BUILD_VERSION = '2026-08-15-stage2-golem-motion-v2';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -9750,6 +9750,7 @@ function requestGachaDraw(count) {
           affected += 1;
         });
       }
+      setGolemAction(enemy, 'crystal', 900);
       enemy.pulseKind = 'crystal';
       enemy.pulseEffect = .65;
       if (reason === 'shieldBreak') setBattleMessage(`크리스탈 보호막이 깨지며 8방향으로 파편이 폭발했습니다! 유닛 ${affected}명이 기절했습니다.`);
@@ -10219,8 +10220,17 @@ function requestGachaDraw(count) {
       return affected;
     }
 
+    function setGolemAction(enemy, kind, duration = 850) {
+      if (!enemy) return;
+      const now = performance.now();
+      enemy.golemAnimKind = kind;
+      enemy.golemAnimStart = now;
+      enemy.golemAnimUntil = now + Math.max(120, Number(duration || 850));
+    }
+
     function useBossAbility(enemy) {
       if (enemy.type === 'gemGolemBoss') {
+        setGolemAction(enemy, 'shield', 900);
         const amount = enemy.maxHealth * Number(enemy.shieldRatio || .5);
         enemy.shield = amount; enemy.shieldMax = amount;
         enemy.pulseKind = 'shield'; enemy.pulseEffect = .65;
@@ -10229,6 +10239,7 @@ function requestGachaDraw(count) {
       }
 
       if (enemy.type === 'giantGolemBoss') {
+        setGolemAction(enemy, 'slam', 1050);
         const spawned = spawnStageTwoRollingGolems(enemy);
         const affected = affectNearbyUnits(enemy, 'stun', 2);
         enemy.pulseKind = 'slam'; enemy.pulseEffect = .65;
@@ -10273,6 +10284,7 @@ function requestGachaDraw(count) {
           enemy.soilPileState = false;
           enemy.soilRevived = true;
           enemy.health = Math.max(1, Math.round(enemy.maxHealth * Number(enemy.reviveHealthRatio || 2/3)));
+          setGolemAction(enemy, 'revive', 900);
           enemy.pulseKind = 'revive'; enemy.pulseEffect = .65;
         }
         return;
@@ -10288,6 +10300,7 @@ function requestGachaDraw(count) {
         if (enemy.crystalShieldTimer <= 0) {
           const amount = enemy.maxHealth * Number(enemy.shieldRatio || .3);
           enemy.shield = amount; enemy.shieldMax = amount;
+          setGolemAction(enemy, 'shield', 950);
           enemy.pulseKind = 'shield'; enemy.pulseEffect = .65;
           setBattleMessage(`크리스탈 골렘이 최대체력의 30% 보호막 ${Math.round(amount)}을 생성했습니다!`);
           enemy.crystalShieldTimer += Number(enemy.crystalShieldInterval || 10);
@@ -10480,6 +10493,7 @@ function requestGachaDraw(count) {
         enemy.maxHealth = Math.max(1, Math.round(enemy.maxHealth * Number(enemy.reviveHpRatio || .75)));
         enemy.health = enemy.maxHealth;
         enemy.radius = Math.max(34, Number(enemy.radius || 54) * .96);
+        setGolemAction(enemy, 'revive', 1000);
         enemy.pulseKind = 'revive'; enemy.pulseEffect = .65;
         setBattleMessage(`합쳐진 흙 골렘이 다시 뭉쳤습니다! ${enemy.reviveCount}회 부활 · HP ${enemy.maxHealth}`);
         return false;
@@ -12529,34 +12543,488 @@ function requestGachaDraw(count) {
       ctx.restore();
     }
 
-    function drawCanvasGolem(enemy, x, y, time) {
+    function drawGolemRockPiece(g, x, y, rx, ry, rotation, palette, seed = 0, detail = true) {
+      const colors = palette || { light:'#8996a4', mid:'#65717f', dark:'#303945', edge:'#1c242d' };
+      g.save();
+      g.translate(x, y);
+      g.rotate(rotation || 0);
+
+      const pointCount = 8;
+      g.beginPath();
+      for (let i = 0; i < pointCount; i += 1) {
+        const a = i * Math.PI * 2 / pointCount;
+        const jitter = 1 + Math.sin(seed * 1.71 + i * 2.33) * .075 + Math.cos(seed * .83 + i * 1.17) * .035;
+        const px = Math.cos(a) * rx * jitter;
+        const py = Math.sin(a) * ry * (1 + Math.cos(seed * 1.19 + i * 1.91) * .055);
+        if (i === 0) g.moveTo(px, py); else g.lineTo(px, py);
+      }
+      g.closePath();
+
+      const grad = g.createLinearGradient(-rx, -ry, rx, ry);
+      grad.addColorStop(0, colors.light);
+      grad.addColorStop(.42, colors.mid);
+      grad.addColorStop(1, colors.dark);
+      g.fillStyle = grad;
+      g.fill();
+      g.strokeStyle = colors.edge || '#1c242d';
+      g.lineWidth = Math.max(1, Math.min(rx, ry) * .11);
+      g.stroke();
+
+      if (detail) {
+        g.globalAlpha = .42;
+        g.fillStyle = colors.highlight || 'rgba(255,255,255,.28)';
+        g.beginPath();
+        g.moveTo(-rx * .55, -ry * .18);
+        g.lineTo(-rx * .12, -ry * .72);
+        g.lineTo(rx * .42, -ry * .34);
+        g.lineTo(rx * .17, -ry * .04);
+        g.closePath();
+        g.fill();
+
+        g.globalAlpha = .62;
+        g.strokeStyle = colors.crack || 'rgba(14,20,27,.75)';
+        g.lineWidth = Math.max(.7, Math.min(rx, ry) * .052);
+        g.lineCap = 'round';
+        const crackShift = Math.sin(seed * 2.7) * .18;
+        g.beginPath();
+        g.moveTo(rx * (.10 + crackShift), -ry * .10);
+        g.lineTo(rx * (.24 + crackShift), ry * .10);
+        g.lineTo(rx * (.08 + crackShift), ry * .34);
+        g.stroke();
+
+        g.globalAlpha = .34;
+        g.strokeStyle = 'rgba(255,255,255,.45)';
+        g.beginPath();
+        g.moveTo(-rx * .42, -ry * .37);
+        g.lineTo(rx * .08, -ry * .56);
+        g.stroke();
+      }
+      g.restore();
+    }
+
+    function drawGolemCrystalShard(g, x, y, size, angle, color = '#7ee8ff', glow = 14, alpha = 1) {
+      g.save();
+      g.translate(x, y);
+      g.rotate(angle || 0);
+      g.globalAlpha = alpha;
+      g.shadowColor = color;
+      g.shadowBlur = glow;
+      const grad = g.createLinearGradient(0, -size, 0, size * .65);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(.20, color);
+      grad.addColorStop(.72, color);
+      grad.addColorStop(1, 'rgba(70,40,130,.75)');
+      g.fillStyle = grad;
+      g.strokeStyle = 'rgba(235,252,255,.88)';
+      g.lineWidth = Math.max(.8, size * .075);
+      g.beginPath();
+      g.moveTo(0, -size);
+      g.lineTo(size * .34, -size * .10);
+      g.lineTo(size * .20, size * .60);
+      g.lineTo(-size * .20, size * .60);
+      g.lineTo(-size * .34, -size * .10);
+      g.closePath();
+      g.fill();
+      g.stroke();
+      g.shadowBlur = 0;
+      g.globalAlpha = alpha * .52;
+      g.fillStyle = '#ffffff';
+      g.beginPath();
+      g.moveTo(-size * .06, -size * .76);
+      g.lineTo(size * .10, -size * .18);
+      g.lineTo(size * .03, size * .24);
+      g.lineTo(-size * .09, -size * .08);
+      g.closePath();
+      g.fill();
+      g.restore();
+    }
+
+    function drawGolemLimb(g, x, y, length, thickness, angle, palette, seed, detail = true, fistScale = 1) {
+      g.save();
+      g.translate(x, y);
+      g.rotate(angle);
+      drawGolemRockPiece(g, length * .24, 0, length * .31, thickness * .55, -.05, palette, seed + .2, detail);
+      drawGolemRockPiece(g, length * .63, 0, length * .27, thickness * .48, .08, palette, seed + .9, detail);
+      drawGolemRockPiece(g, length * .96, 0, thickness * .58 * fistScale, thickness * .62 * fistScale, -.08, palette, seed + 1.6, detail);
+      g.restore();
+    }
+
+    function drawDetailedGolem(g, enemy, x, y, smoothTime, actionNow, online = false, highLoad = false) {
       const r = Number(enemy.radius || 21);
       const speedy = enemy.variant === 'speedyGolem' || enemy.rolling;
       const soil = enemy.variant === 'soilGolem' || enemy.type === 'combinedSoilGolemBoss';
+      const combined = enemy.type === 'combinedSoilGolemBoss';
       const gemBoss = enemy.type === 'gemGolemBoss';
       const giant = enemy.type === 'giantGolemBoss';
       const crystal = enemy.type === 'crystalGolemBoss';
-      if (enemy.soilPileState) {
-        ctx.save();ctx.translate(x,y);ctx.fillStyle='#71563d';ctx.strokeStyle='#3c2c20';ctx.lineWidth=2;
-        for(let i=0;i<7;i++){const a=i*Math.PI*2/7+(enemy.wingPhase||0);ctx.beginPath();ctx.ellipse(Math.cos(a)*r*.42,Math.sin(a)*r*.22,r*.52,r*.28,a*.3,0,Math.PI*2);ctx.fill();ctx.stroke();}
-        ctx.fillStyle='#d3a86e';ctx.font='bold 12px Arial';ctx.textAlign='center';ctx.fillText('재결합',0,-r*.8);ctx.restore();return;
+      const boss = enemy.type !== 'normal';
+
+      const palette = soil
+        ? { light:'#b08b61', mid:'#806044', dark:'#473326', edge:'#2b2019', crack:'#3b271b', highlight:'rgba(241,210,162,.25)' }
+        : crystal
+          ? { light:'#6b99a7', mid:'#3e6b7a', dark:'#233c49', edge:'#142934', crack:'rgba(12,38,49,.92)', highlight:'rgba(199,246,255,.32)' }
+          : gemBoss
+            ? { light:'#8b99aa', mid:'#5d6d7e', dark:'#313d4a', edge:'#202935', crack:'rgba(26,34,42,.9)', highlight:'rgba(214,234,248,.29)' }
+            : giant
+              ? { light:'#78818b', mid:'#4e5964', dark:'#272f38', edge:'#181e25', crack:'rgba(12,16,20,.9)', highlight:'rgba(211,221,231,.24)' }
+              : { light:'#9aa6b3', mid:'#667483', dark:'#323d49', edge:'#1c242d', crack:'rgba(17,24,31,.88)', highlight:'rgba(230,239,247,.26)' };
+
+      const pileActive = online
+        ? Number(enemy.soilPileUntil || 0) > actionNow
+        : Boolean(enemy.soilPileState);
+
+      if (pileActive) {
+        let progress = 0;
+        if (online) {
+          const remain = Math.max(0, Number(enemy.soilPileUntil || 0) - actionNow);
+          progress = 1 - Math.min(1, remain / 1250);
+        } else {
+          progress = 1 - Math.min(1, Math.max(0, Number(enemy.soilReviveTimer || 0)) / 1.25);
+        }
+        const gather = progress * progress;
+        g.save();
+        g.translate(x, y);
+        g.fillStyle = 'rgba(0,0,0,.24)';
+        g.beginPath();
+        g.ellipse(0, r * .38, r * 1.18, r * .34, 0, 0, Math.PI * 2);
+        g.fill();
+
+        for (let i = 0; i < 10; i += 1) {
+          const a = i * Math.PI * 2 / 10 + Number(enemy.wingPhase || 0);
+          const baseD = r * (.28 + (i % 3) * .17);
+          const d = baseD * (1 - gather * .68);
+          const lift = gather * r * (.12 + (i % 4) * .08);
+          const cx = Math.cos(a) * d;
+          const cy = Math.sin(a) * d * .44 - lift;
+          drawGolemRockPiece(g, cx, cy, r * (.26 + (i % 2) * .08), r * (.14 + (i % 3) * .035), a * .35, palette, i + 10, !highLoad);
+        }
+
+        if (!highLoad) {
+          g.globalAlpha = .65 + gather * .35;
+          for (let i = 0; i < 8; i += 1) {
+            const a = i * Math.PI * 2 / 8 + smoothTime * .0018;
+            const d = r * (.76 - gather * .38);
+            g.fillStyle = 'rgba(198,154,104,.72)';
+            g.beginPath();
+            g.arc(Math.cos(a) * d, Math.sin(a) * d * .42 - gather * r * .35, 1.6 + (i % 3), 0, Math.PI * 2);
+            g.fill();
+          }
+        }
+        if (gather > .55) {
+          g.globalAlpha = Math.min(1, (gather - .55) / .45);
+          g.strokeStyle = 'rgba(241,190,117,.72)';
+          g.lineWidth = 2;
+          g.beginPath();
+          g.arc(0, -r * .08, r * (.38 + gather * .26), 0, Math.PI * 2);
+          g.stroke();
+        }
+        g.restore();
+        return;
       }
-      ctx.save();ctx.translate(x,y);
-      if(speedy) ctx.rotate(time*.008 + (enemy.wingPhase||0));
-      const stone = soil ? '#846548' : crystal ? '#3f6f82' : gemBoss ? '#596777' : giant ? '#4d5661' : '#687483';
-      const dark = soil ? '#4b3728' : '#2d3540';
-      ctx.fillStyle='rgba(0,0,0,.26)';ctx.beginPath();ctx.ellipse(0,r*.85,r*1.18,r*.31,0,0,Math.PI*2);ctx.fill();
-      const chunks=[[-.65,.25,.55], [.64,.28,.58], [-.5,-.35,.7],[.52,-.32,.68],[0,.05,1.05],[0,-.72,.62]];
-      chunks.forEach(([ox,oy,sc],i)=>{ctx.fillStyle=i===4?stone:(i%2?stone:dark);ctx.strokeStyle='#1d242d';ctx.lineWidth=Math.max(1.4,r*.07);ctx.beginPath();ctx.roundRect((ox-sc*.5)*r,(oy-sc*.5)*r,sc*r,sc*r,Math.max(3,r*.12));ctx.fill();ctx.stroke();});
-      if(!soil){
-        const crystalColor=crystal?'#b8f7ff':gemBoss?'#70f0ff':'#7dd3fc';
-        ctx.fillStyle=crystalColor;ctx.shadowColor=crystalColor;ctx.shadowBlur=crystal?22:10;
-        const crystals=crystal?7:gemBoss?4:1;
-        for(let i=0;i<crystals;i++){const a=-Math.PI/2+i*Math.PI*2/crystals;const d=(crystal?.44:.15)*r;ctx.save();ctx.translate(Math.cos(a)*d,Math.sin(a)*d);ctx.rotate(a);ctx.beginPath();ctx.moveTo(0,-r*.38);ctx.lineTo(r*.16,0);ctx.lineTo(0,r*.28);ctx.lineTo(-r*.16,0);ctx.closePath();ctx.fill();ctx.restore();}
-        ctx.shadowBlur=0;
+
+      const speedScale = Math.max(.55, Math.min(2.5, Number(enemy.speed || 50) / 50));
+      const phase = smoothTime * .0062 * speedScale + Number(enemy.wingPhase || 0);
+      const step = Math.sin(phase);
+      const stride = Math.cos(phase);
+      const baseBob = -Math.abs(Math.sin(phase * 2)) * r * .045;
+      const breath = Math.sin(smoothTime * .0024 + Number(enemy.wingPhase || 0)) * r * .018;
+
+      const actionActive = Number(enemy.golemAnimUntil || 0) > actionNow;
+      const actionKind = actionActive ? String(enemy.golemAnimKind || '') : (!online && Number(enemy.pulseEffect || 0) > 0 ? String(enemy.pulseKind || '') : '');
+      let actionProgress = 1;
+      if (actionActive) {
+        const start = Number(enemy.golemAnimStart || (enemy.golemAnimUntil - 700));
+        const duration = Math.max(1, Number(enemy.golemAnimUntil || 0) - start);
+        actionProgress = Math.max(0, Math.min(1, (actionNow - start) / duration));
+      } else if (!online && Number(enemy.pulseEffect || 0) > 0) {
+        actionProgress = 1 - Math.max(0, Math.min(1, Number(enemy.pulseEffect || 0) / .65));
       }
-      if (Number(enemy.shield||0)>0) {ctx.strokeStyle='rgba(125,240,255,.85)';ctx.lineWidth=5;ctx.shadowColor='#6ee7ff';ctx.shadowBlur=16;ctx.beginPath();ctx.arc(0,0,r*1.42,0,Math.PI*2);ctx.stroke();ctx.shadowBlur=0;}
-      ctx.restore();
+
+      if (speedy) {
+        const spin = smoothTime * .011 * speedScale + Number(enemy.wingPhase || 0);
+        g.save();
+        g.translate(x, y);
+        g.fillStyle = 'rgba(0,0,0,.28)';
+        g.beginPath();
+        g.ellipse(0, r * .62, r * 1.20, r * .33, 0, 0, Math.PI * 2);
+        g.fill();
+
+        if (!highLoad) {
+          g.save();
+          g.rotate(Number(enemy.heading || 0));
+          g.strokeStyle = 'rgba(181,196,207,.24)';
+          g.lineWidth = Math.max(2, r * .10);
+          g.lineCap = 'round';
+          for (let i = 0; i < 3; i += 1) {
+            g.beginPath();
+            g.moveTo(-r * (1.45 + i * .23), -r * (.45 - i * .25));
+            g.lineTo(-r * (.72 + i * .12), -r * (.22 - i * .14));
+            g.stroke();
+          }
+          for (let i = 0; i < 6; i += 1) {
+            const t = (smoothTime * .004 + i * .23 + Number(enemy.wingPhase || 0)) % 1;
+            g.fillStyle = `rgba(177,151,116,${.56 * (1 - t)})`;
+            g.beginPath();
+            g.arc(-r * (.7 + t * 1.6), r * (.32 + Math.sin(i * 2.1) * .32), 1.5 + (1 - t) * 2.4, 0, Math.PI * 2);
+            g.fill();
+          }
+          g.restore();
+        }
+
+        g.rotate(spin);
+        drawGolemRockPiece(g, 0, 0, r * .78, r * .72, 0, palette, 31, !highLoad);
+        for (let i = 0; i < 5; i += 1) {
+          const a = i * Math.PI * 2 / 5;
+          drawGolemRockPiece(g, Math.cos(a) * r * .56, Math.sin(a) * r * .50, r * .30, r * .25, a, palette, 40 + i, !highLoad);
+        }
+        g.fillStyle = '#7ee7ff';
+        g.shadowColor = '#7ee7ff';
+        g.shadowBlur = 12;
+        g.beginPath();
+        g.arc(r * .34, -r * .16, r * .08, 0, Math.PI * 2);
+        g.fill();
+        g.shadowBlur = 0;
+        g.restore();
+        return;
+      }
+
+      let bodyBob = baseBob + breath;
+      let bodyTilt = step * .025;
+      let armSwing = step * .26;
+      let legSwing = step * .32;
+      let armPose = 0;
+      let crouch = 0;
+      let actionGlow = 0;
+
+      if (actionKind === 'slam') {
+        if (actionProgress < .36) {
+          const p = actionProgress / .36;
+          armPose = p;
+          bodyTilt -= p * .07;
+          bodyBob -= p * r * .08;
+        } else if (actionProgress < .58) {
+          const p = (actionProgress - .36) / .22;
+          armPose = 1 - p * .12;
+          crouch = p * r * .22;
+          bodyTilt += p * .11;
+        } else {
+          const p = (actionProgress - .58) / .42;
+          armPose = .88 * (1 - p);
+          crouch = (1 - p) * r * .20;
+        }
+        actionGlow = 1 - Math.abs(actionProgress - .52) * 1.9;
+      } else if (actionKind === 'shield') {
+        armPose = .62 * Math.sin(Math.min(1, actionProgress) * Math.PI);
+        actionGlow = Math.sin(Math.min(1, actionProgress) * Math.PI);
+        bodyBob -= actionGlow * r * .08;
+      } else if (actionKind === 'crystal') {
+        armPose = .78 * Math.sin(Math.min(1, actionProgress) * Math.PI);
+        actionGlow = Math.sin(Math.min(1, actionProgress) * Math.PI);
+        bodyTilt = 0;
+      } else if (actionKind === 'revive') {
+        actionGlow = Math.sin(Math.min(1, actionProgress) * Math.PI);
+        bodyBob -= actionGlow * r * .12;
+      }
+
+      g.save();
+      g.translate(x, y);
+      g.fillStyle = 'rgba(0,0,0,.28)';
+      g.beginPath();
+      g.ellipse(0, r * .74, r * (boss ? 1.28 : 1.08), r * .33, 0, 0, Math.PI * 2);
+      g.fill();
+
+      const heading = online ? 0 : Number(enemy.heading || 0);
+      g.translate(0, bodyBob + crouch);
+      g.rotate(heading + bodyTilt);
+
+      const detail = !highLoad;
+      const mass = giant ? 1.18 : combined ? 1.14 : crystal ? 1.10 : gemBoss ? 1.06 : 1;
+      const legLen = r * .83 * mass;
+      const armLen = r * (giant ? 1.14 : boss ? 1.02 : .88) * mass;
+      const limbThick = r * (giant ? .39 : boss ? .33 : .28);
+
+      // 뒤쪽 다리: 걷는 방향에 따라 교차하며 묵직하게 움직인다.
+      drawGolemLimb(g, -r * .40, -r * .28, legLen, limbThick * .90, Math.PI - .14 - legSwing, palette, 3, detail, 1.03);
+      drawGolemLimb(g, -r * .40, r * .28, legLen, limbThick * .90, Math.PI + .14 + legSwing, palette, 7, detail, 1.03);
+
+      // 몸통의 큰 바위판
+      drawGolemRockPiece(g, -r * .02, 0, r * .70 * mass, r * .58 * mass, 0, palette, 13, detail);
+      drawGolemRockPiece(g, -r * .20, -r * .06, r * .40, r * .36, -.08, palette, 14, detail);
+      drawGolemRockPiece(g, r * .28, r * .06, r * .38, r * .34, .10, palette, 15, detail);
+
+      // 견갑석
+      drawGolemRockPiece(g, -r * .04, -r * .62 * mass, r * (giant ? .48 : .39), r * .34, -.08, palette, 19, detail);
+      drawGolemRockPiece(g, -r * .04, r * .62 * mass, r * (giant ? .48 : .39), r * .34, .08, palette, 20, detail);
+
+      let upperArmA = -Math.PI / 2 + armSwing;
+      let lowerArmA = Math.PI / 2 - armSwing;
+      if (actionKind === 'slam') {
+        const slamAim = actionProgress < .42 ? -1.05 : .02;
+        const slamAim2 = actionProgress < .42 ? 1.05 : -.02;
+        upperArmA = upperArmA * (1 - armPose) + slamAim * armPose;
+        lowerArmA = lowerArmA * (1 - armPose) + slamAim2 * armPose;
+      } else if (actionKind === 'shield' || actionKind === 'crystal') {
+        upperArmA -= armPose * .40;
+        lowerArmA += armPose * .40;
+      }
+
+      // 팔과 주먹
+      drawGolemLimb(g, r * .02, -r * .62 * mass, armLen, limbThick, upperArmA, palette, 24, detail, giant ? 1.28 : 1.10);
+      drawGolemLimb(g, r * .02, r * .62 * mass, armLen, limbThick, lowerArmA, palette, 28, detail, giant ? 1.28 : 1.10);
+
+      // 머리: 몸통 앞쪽에 박힌 각진 돌머리
+      drawGolemRockPiece(g, r * .60 * mass, 0, r * (boss ? .46 : .38), r * (boss ? .40 : .34), -.02, palette, 33, detail);
+      g.shadowColor = crystal ? '#baf7ff' : gemBoss ? '#7ff6ff' : soil ? '#ffc47b' : '#7dd3fc';
+      g.shadowBlur = 10 + actionGlow * 16;
+      g.fillStyle = crystal ? '#dffcff' : gemBoss ? '#91f7ff' : soil ? '#ffca78' : '#86d9ff';
+      g.beginPath();
+      g.ellipse(r * .76 * mass, -r * .13, r * .085, r * .055, 0, 0, Math.PI * 2);
+      g.ellipse(r * .76 * mass, r * .13, r * .085, r * .055, 0, 0, Math.PI * 2);
+      g.fill();
+      g.shadowBlur = 0;
+
+      // 가슴 코어와 균열
+      if (!soil || combined) {
+        const coreColor = crystal ? '#bdf7ff' : gemBoss ? '#64efff' : giant ? '#f0b96d' : '#73cfff';
+        g.shadowColor = coreColor;
+        g.shadowBlur = (boss ? 17 : 10) + actionGlow * 25;
+        g.fillStyle = coreColor;
+        g.globalAlpha = .72 + actionGlow * .28;
+        g.beginPath();
+        g.moveTo(r * .10, -r * .22);
+        g.lineTo(r * .30, 0);
+        g.lineTo(r * .08, r * .23);
+        g.lineTo(-r * .12, 0);
+        g.closePath();
+        g.fill();
+        g.globalAlpha = 1;
+        g.shadowBlur = 0;
+
+        if (detail) {
+          g.strokeStyle = `${coreColor}aa`;
+          g.lineWidth = Math.max(1, r * .045);
+          const crackPulse = .75 + Math.sin(smoothTime * .005) * .18 + actionGlow * .25;
+          g.globalAlpha = crackPulse;
+          for (const side of [-1, 1]) {
+            g.beginPath();
+            g.moveTo(r * .07, side * r * .16);
+            g.lineTo(-r * .18, side * r * .28);
+            g.lineTo(-r * .37, side * r * .18);
+            g.stroke();
+          }
+          g.globalAlpha = 1;
+        }
+      }
+
+      // 흙 골렘은 작은 흙조각이 몸 주위를 떠다닌다.
+      if (soil && detail) {
+        for (let i = 0; i < (combined ? 9 : 5); i += 1) {
+          const a = smoothTime * .0014 * (i % 2 ? 1 : -1) + i * Math.PI * 2 / (combined ? 9 : 5);
+          const d = r * (combined ? .95 : .78);
+          const px = Math.cos(a) * d;
+          const py = Math.sin(a) * d * .62;
+          drawGolemRockPiece(g, px, py, r * .10, r * .075, a, palette, 60 + i, false);
+        }
+      }
+
+      // 보석 골렘 / 크리스탈 골렘의 결정 장식
+      if (gemBoss || crystal) {
+        const c = crystal ? '#a9f4ff' : '#66edff';
+        const count = crystal ? 9 : 5;
+        for (let i = 0; i < count; i += 1) {
+          const spread = count === 1 ? 0 : i / (count - 1);
+          const side = spread * 2 - 1;
+          const bx = -r * (.22 + Math.abs(side) * .18);
+          const by = side * r * (.66 + (crystal ? .22 : .08));
+          const size = r * (crystal ? (.34 + (1 - Math.abs(side)) * .14) : .30);
+          drawGolemCrystalShard(g, bx, by, size, side * .55 - Math.PI / 2, c, crystal ? 20 + actionGlow * 18 : 12 + actionGlow * 12, .92);
+        }
+
+        if (crystal && detail) {
+          // 왕관처럼 솟은 중앙 결정
+          drawGolemCrystalShard(g, r * .18, 0, r * .62, -Math.PI / 2, '#c7fbff', 26 + actionGlow * 20, 1);
+        }
+      }
+
+      // 능력 모션 이펙트
+      if (actionKind === 'slam' && actionProgress > .38) {
+        const p = Math.max(0, Math.min(1, (actionProgress - .38) / .62));
+        g.save();
+        g.rotate(-heading - bodyTilt);
+        g.globalAlpha = Math.max(0, 1 - p);
+        g.strokeStyle = 'rgba(220,190,148,.82)';
+        g.lineWidth = Math.max(2, r * .10 * (1 - p * .4));
+        g.beginPath();
+        g.ellipse(r * .78, 0, r * (.45 + p * 1.7), r * (.22 + p * .65), 0, 0, Math.PI * 2);
+        g.stroke();
+        if (detail) {
+          g.fillStyle = 'rgba(184,151,111,.72)';
+          for (let i = 0; i < 10; i += 1) {
+            const a = i * Math.PI * 2 / 10;
+            const d = r * (.65 + p * 1.55);
+            g.beginPath();
+            g.arc(r * .78 + Math.cos(a) * d, Math.sin(a) * d * .36, 1.8 + (1 - p) * 3.2, 0, Math.PI * 2);
+            g.fill();
+          }
+        }
+        g.restore();
+      }
+
+      if (actionKind === 'crystal' && actionGlow > 0) {
+        g.save();
+        g.globalCompositeOperation = 'lighter';
+        g.strokeStyle = `rgba(185,249,255,${.35 + actionGlow * .55})`;
+        g.lineWidth = Math.max(2, r * .06);
+        for (let i = 0; i < 8; i += 1) {
+          const a = i * Math.PI / 4;
+          g.beginPath();
+          g.moveTo(0, 0);
+          g.lineTo(Math.cos(a) * r * (1.1 + actionGlow * .55), Math.sin(a) * r * (1.1 + actionGlow * .55));
+          g.stroke();
+        }
+        g.restore();
+      }
+
+      g.restore();
+
+      // 보호막은 몸 회전과 무관하게 화면 기준으로 표현
+      if (Number(enemy.shield || 0) > 0) {
+        const sr = Math.max(0, Math.min(1, Number(enemy.shield || 0) / Math.max(1, Number(enemy.shieldMax || enemy.shield || 1))));
+        const pulse = .96 + Math.sin(smoothTime * .006) * .035;
+        g.save();
+        g.translate(x, y);
+        const shieldR = r * (boss ? 1.52 : 1.40) * pulse;
+        const shieldGrad = g.createRadialGradient(0, 0, shieldR * .48, 0, 0, shieldR);
+        shieldGrad.addColorStop(0, 'rgba(88,224,255,.02)');
+        shieldGrad.addColorStop(.72, `rgba(91,230,255,${.08 + sr * .08})`);
+        shieldGrad.addColorStop(1, `rgba(125,243,255,${.13 + sr * .12})`);
+        g.fillStyle = shieldGrad;
+        g.beginPath();
+        g.arc(0, 0, shieldR, 0, Math.PI * 2);
+        g.fill();
+        g.strokeStyle = `rgba(166,248,255,${.55 + sr * .34})`;
+        g.lineWidth = Math.max(2.5, r * .085);
+        g.shadowColor = '#62e8ff';
+        g.shadowBlur = 15 + actionGlow * 10;
+        g.setLineDash([r * .36, r * .17]);
+        g.lineDashOffset = -smoothTime * .025;
+        g.beginPath();
+        g.arc(0, 0, shieldR, 0, Math.PI * 2);
+        g.stroke();
+        g.setLineDash([]);
+        if (!highLoad) {
+          g.globalAlpha = .52;
+          for (let i = 0; i < 6; i += 1) {
+            const a = smoothTime * .0018 + i * Math.PI / 3;
+            drawGolemCrystalShard(g, Math.cos(a) * shieldR, Math.sin(a) * shieldR, r * .12, a + Math.PI / 2, '#a6f7ff', 8, .72);
+          }
+        }
+        g.restore();
+      }
+    }
+
+    function drawCanvasGolem(enemy, x, y, time) {
+      drawDetailedGolem(ctx, enemy, x, y, time, performance.now(), false, false);
     }
 
     function drawEnemy(enemy, time) {
@@ -16515,8 +16983,17 @@ function requestGachaDraw(count) {
     return null;
   }
 
+  function mpSetGolemAction(enemy, kind, duration = 850) {
+    if (!enemy) return;
+    const now = Date.now();
+    enemy.golemAnimKind = kind;
+    enemy.golemAnimStart = now;
+    enemy.golemAnimUntil = now + Math.max(120, Number(duration || 850));
+  }
+
   function mpFireCrystalEightWay(enemy, target, reason='shot') {
     const sideKey=mpTargetSideKey(target),range=Number(enemy.abilityRange||360),width=25,now=Date.now();
+    mpSetGolemAction(enemy, 'crystal', 900);
     let affected=0;
     for(let i=0;i<8;i+=1){const a=i*Math.PI/4,ux=Math.cos(a),uy=Math.sin(a),x2=enemy.x+ux*range,y2=enemy.y+uy*range;mpPushFx(enemy.x,enemy.y,x2,y2,'#79f2ff',8,sideKey,'crystalRay',{angle:a});
       for(const unit of target.units||[]){if(UNIT_DATA[unit.unitId]?.stunImmune)continue;const dx=unit.x-enemy.x,dy=unit.y-enemy.y,f=dx*ux+dy*uy;if(f<0||f>range)continue;const side=Math.abs(dx*(-uy)+dy*ux);if(side>width)continue;unit.stunUntil=Math.max(Number(unit.stunUntil||0),now+3000);affected++;}}
@@ -16543,7 +17020,7 @@ function requestGachaDraw(count) {
 
     if(enemy.type==='crystalGolemBoss'){
       if(enemy.crystalShotEvery && now>=Number(enemy.nextCrystalShotAt||0)){enemy.nextCrystalShotAt=now+enemy.crystalShotEvery*1000;mpFireCrystalEightWay(enemy,target,'shot');}
-      if(enemy.crystalShieldEvery && now>=Number(enemy.nextCrystalShieldAt||0)){enemy.nextCrystalShieldAt=now+enemy.crystalShieldEvery*1000;const amount=enemy.maxHp*Number(enemy.shieldRatio||.3);enemy.shield=amount;enemy.shieldMax=amount;mpState.announcement=`크리스탈 골렘이 최대체력 30% 보호막 ${Math.round(amount)} 생성`;mpState.announcementUntil=now+2200;}
+      if(enemy.crystalShieldEvery && now>=Number(enemy.nextCrystalShieldAt||0)){enemy.nextCrystalShieldAt=now+enemy.crystalShieldEvery*1000;const amount=enemy.maxHp*Number(enemy.shieldRatio||.3);enemy.shield=amount;enemy.shieldMax=amount;mpSetGolemAction(enemy,'shield',950);mpState.announcement=`크리스탈 골렘이 최대체력 30% 보호막 ${Math.round(amount)} 생성`;mpState.announcementUntil=now+2200;}
       return;
     }
 
@@ -16553,10 +17030,12 @@ function requestGachaDraw(count) {
     const stunnableUnits = units.filter(unit => !UNIT_DATA[unit.unitId]?.stunImmune);
 
     if(enemy.type==='gemGolemBoss'){
+      mpSetGolemAction(enemy,'shield',900);
       const amount=enemy.maxHp*Number(enemy.shieldRatio||.5);enemy.shield=amount;enemy.shieldMax=amount;
       mpState.announcement=`보석 골렘이 최대체력 50% 보호막 ${Math.round(amount)} 생성`;mpState.announcementUntil=now+2200;return;
     }
     if(enemy.type==='giantGolemBoss'){
+      mpSetGolemAction(enemy,'slam',1050);
       const spawned=mpSpawnRollingGolems(enemy,target);let affected=0;
       stunnableUnits.filter(unit=>Math.hypot(unit.x-enemy.x,unit.y-enemy.y)<=Number(enemy.abilityRange||205)).forEach(unit=>{unit.stunUntil=Math.max(Number(unit.stunUntil||0),now+2000);affected++;});
       mpState.announcement=`거대 골렘 강타 · 구르는 골렘 ${spawned}마리 · 주변 유닛 ${affected}개 2초 기절`;mpState.announcementUntil=now+2400;return;
@@ -16634,7 +17113,7 @@ function requestGachaDraw(count) {
     enemy.hp-=remaining;if(enemy.hp>0)return false;
 
     if(enemy.variant==='soilGolem'&&enemy.reviveOnce&&!enemy.noRevive&&!enemy.soilRevived){enemy.hp=0;enemy.soilPileUntil=Date.now()+1250;return false;}
-    if(enemy.type==='combinedSoilGolemBoss'&&Math.random()<Number(enemy.reviveChance||.75)){enemy.reviveCount=Number(enemy.reviveCount||0)+1;enemy.maxHp=Math.max(1,Math.round(enemy.maxHp*Number(enemy.reviveHpRatioBoss||.75)));enemy.hp=enemy.maxHp;enemy.radius=Math.max(34,Number(enemy.radius||54)*.96);mpState.announcement=`합쳐진 흙 골렘 ${enemy.reviveCount}회 부활 · HP ${enemy.maxHp}`;mpState.announcementUntil=Date.now()+2200;return false;}
+    if(enemy.type==='combinedSoilGolemBoss'&&Math.random()<Number(enemy.reviveChance||.75)){enemy.reviveCount=Number(enemy.reviveCount||0)+1;enemy.maxHp=Math.max(1,Math.round(enemy.maxHp*Number(enemy.reviveHpRatioBoss||.75)));enemy.hp=enemy.maxHp;enemy.radius=Math.max(34,Number(enemy.radius||54)*.96);mpSetGolemAction(enemy,'revive',1000);mpState.announcement=`합쳐진 흙 골렘 ${enemy.reviveCount}회 부활 · HP ${enemy.maxHp}`;mpState.announcementUntil=Date.now()+2200;return false;}
 
     enemy.hp=0;enemy.dead=true;
     if(enemy.native)target.nativeRemaining=Math.max(0,target.nativeRemaining-1);
@@ -16651,7 +17130,7 @@ function requestGachaDraw(count) {
       if (enemy.dead) continue;
       if (Number(enemy.soilPileUntil || 0) > 0) {
         if (now < enemy.soilPileUntil) continue;
-        enemy.soilPileUntil = 0; enemy.soilRevived = true; enemy.hp = Math.max(1,Math.round(enemy.maxHp*Number(enemy.reviveHpRatio||2/3)));
+        enemy.soilPileUntil = 0; enemy.soilRevived = true; enemy.hp = Math.max(1,Math.round(enemy.maxHp*Number(enemy.reviveHpRatio||2/3))); mpSetGolemAction(enemy,'revive',900);
       }
       if (Array.isArray(enemy.sakuraMarks) && enemy.sakuraMarks.length) {
         const keepMarks=[];
@@ -18441,9 +18920,7 @@ function requestGachaDraw(count) {
   }
 
   function mpDrawGolem(enemy,x,y,time){
-    const r=Number(enemy.radius||21),speedy=enemy.variant==='speedyGolem'||enemy.rolling,soil=enemy.variant==='soilGolem'||enemy.type==='combinedSoilGolemBoss',crystal=enemy.type==='crystalGolemBoss',gem=enemy.type==='gemGolemBoss',giant=enemy.type==='giantGolemBoss';
-    if(Number(enemy.soilPileUntil||0)>Date.now()){mpCtx.save();mpCtx.translate(x,y);mpCtx.fillStyle='#71563d';mpCtx.strokeStyle='#3c2c20';for(let i=0;i<6;i++){const a=i*Math.PI/3+(enemy.wingPhase||0);mpCtx.beginPath();mpCtx.ellipse(Math.cos(a)*r*.42,Math.sin(a)*r*.22,r*.5,r*.28,a*.3,0,Math.PI*2);mpCtx.fill();mpCtx.stroke();}mpCtx.restore();return;}
-    mpCtx.save();mpCtx.translate(x,y);if(speedy)mpCtx.rotate(time*.008+(enemy.wingPhase||0));const stone=soil?'#846548':crystal?'#3f6f82':gem?'#596777':giant?'#4d5661':'#687483',dark=soil?'#4b3728':'#2d3540';mpCtx.fillStyle='rgba(0,0,0,.25)';mpCtx.beginPath();mpCtx.ellipse(0,r*.85,r*1.18,r*.31,0,0,Math.PI*2);mpCtx.fill();const chunks=[[-.65,.25,.55],[.64,.28,.58],[-.5,-.35,.7],[.52,-.32,.68],[0,.05,1.05],[0,-.72,.62]];chunks.forEach(([ox,oy,sc],i)=>{mpCtx.fillStyle=i===4?stone:(i%2?stone:dark);mpCtx.strokeStyle='#1d242d';mpCtx.lineWidth=Math.max(1.3,r*.065);mpCtx.beginPath();mpCtx.roundRect((ox-sc*.5)*r,(oy-sc*.5)*r,sc*r,sc*r,Math.max(3,r*.12));mpCtx.fill();mpCtx.stroke();});if(!soil){const c=crystal?'#b8f7ff':gem?'#70f0ff':'#7dd3fc';mpCtx.fillStyle=c;mpCtx.shadowColor=c;mpCtx.shadowBlur=crystal?20:9;const n=crystal?7:gem?4:1;for(let i=0;i<n;i++){const a=-Math.PI/2+i*Math.PI*2/n,d=(crystal?.44:.15)*r;mpCtx.save();mpCtx.translate(Math.cos(a)*d,Math.sin(a)*d);mpCtx.rotate(a);mpCtx.beginPath();mpCtx.moveTo(0,-r*.38);mpCtx.lineTo(r*.16,0);mpCtx.lineTo(0,r*.28);mpCtx.lineTo(-r*.16,0);mpCtx.closePath();mpCtx.fill();mpCtx.restore();}mpCtx.shadowBlur=0;}if(Number(enemy.shield||0)>0){mpCtx.strokeStyle='rgba(125,240,255,.86)';mpCtx.lineWidth=5;mpCtx.shadowColor='#6ee7ff';mpCtx.shadowBlur=14;mpCtx.beginPath();mpCtx.arc(0,0,r*1.42,0,Math.PI*2);mpCtx.stroke();}mpCtx.restore();
+    drawDetailedGolem(mpCtx, enemy, x, y, time, Date.now(), true, Boolean(mpHighLoadFrame));
   }
 
   function mpDrawPigeon(enemy, time, sideKey = 'shared') {
@@ -18752,7 +19229,7 @@ function requestGachaDraw(count) {
     mpCtx.fillStyle = '#fff';
     mpCtx.font = '700 15px Arial';
     mpCtx.textAlign = 'left';
-    mpCtx.figit add .llText(`WAVE ${wave} · 적 HP ${hp}`, MP_WIDTH - 232, 36);
+    mpCtx.fillText(`WAVE ${wave} · 적 HP ${hp}`, MP_WIDTH - 232, 36);
     mpCtx.font = '12px Arial';
     mpCtx.fillStyle = '#d0d9e8';
     mpCtx.fillText('10웨이브마다 HP ×1.1', MP_WIDTH - 232, 54);

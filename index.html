@@ -4000,6 +4000,53 @@ body {
   }
 }
 
+
+
+/* ===== Stage 2 · Crystal Cave ===== */
+.stage-preview-card { position: relative; }
+.stage-nav-button {
+  width: 38px; height: 47px; flex: 0 0 38px;
+  border: 1px solid rgba(255,255,255,.35); border-radius: 12px;
+  background: rgba(7,18,28,.52); color: #fff; font-size: 20px; font-weight: 900;
+  cursor: pointer; box-shadow: inset 0 1px rgba(255,255,255,.12);
+}
+.stage-nav-button:hover { background: rgba(42,83,112,.62); }
+.stage-nav-button:disabled { opacity: .32; cursor: not-allowed; }
+#menuScreen[data-stage-theme="cave"] {
+  --stage-sky-top: #111827;
+  --stage-sky-bottom: #24364a;
+  --stage-ground: #20252f;
+  --stage-hill-back: #303846;
+  --stage-hill-front: #161c26;
+  --stage-tree-trunk: #4b5563;
+  --stage-tree-leaf: #233044;
+  --stage-tree-leaf-light: #33506d;
+  --stage-tree-leaf-dark: #121925;
+}
+#menuScreen[data-stage-theme="cave"] .invasion-content::before {
+  content: '';
+  position: fixed; inset: 92px 0 0; pointer-events: none; opacity: .55;
+  background:
+    radial-gradient(circle at 12% 34%, rgba(91,227,255,.48) 0 4px, transparent 5px),
+    radial-gradient(circle at 83% 22%, rgba(193,121,255,.50) 0 5px, transparent 6px),
+    radial-gradient(circle at 70% 72%, rgba(55,240,211,.40) 0 4px, transparent 5px),
+    radial-gradient(circle at 26% 78%, rgba(98,136,255,.40) 0 5px, transparent 6px);
+}
+.stage-map-info-button {
+  position: absolute; top: 12px; right: 12px; z-index: 14;
+  width: 36px; height: 36px; border-radius: 50%; padding: 0;
+  border: 1px solid rgba(255,255,255,.45); background: rgba(10,17,28,.82);
+  color: #fff; font: 900 19px/1 Arial,sans-serif; box-shadow: 0 6px 18px rgba(0,0,0,.25);
+}
+.stage-map-info-panel {
+  position: absolute; top: 55px; right: 12px; z-index: 13;
+  width: min(330px, calc(100% - 24px)); max-height: 310px; overflow: auto;
+  padding: 13px 14px; border-radius: 14px; border: 1px solid rgba(126,224,255,.32);
+  background: rgba(10,17,28,.94); color: #eef8ff; box-shadow: 0 16px 36px rgba(0,0,0,.36);
+  backdrop-filter: blur(10px);
+}
+.stage-map-info-panel strong { display:block; margin-bottom:8px; color:#b8ecff; }
+.stage-map-info-panel p { margin: 5px 0; font-size: 12px; line-height: 1.45; color:#dce8f3; }
   
 
     .unit-skill-note {
@@ -5285,11 +5332,13 @@ body {
 
   <main class="invasion-content">
     <div class="stage-preview-card" aria-live="polite">
+      <button id="prevStageBtn" class="stage-nav-button" type="button" aria-label="이전 스테이지">‹</button>
       <span id="menuStageBadge" class="stage-preview-badge">STAGE 1</span>
       <span class="stage-preview-copy">
         <strong id="menuStageName">햇살 초원</strong>
         <small id="menuStageEnemies">등장 적 · 일반 비둘기 / 빠른 비둘기 / 비둘기 보스</small>
       </span>
+      <button id="nextStageBtn" class="stage-nav-button" type="button" aria-label="다음 스테이지">›</button>
     </div>
 
     <div class="invasion-hero">
@@ -5647,6 +5696,11 @@ body {
     <div class="battle-layout">
       <div class="battle-map-shell">
         <canvas id="gameCanvas" width="900" height="520"></canvas>
+        <button id="stageMapInfoBtn" class="stage-map-info-button" type="button" aria-expanded="false" aria-controls="stageMapInfoPanel">!</button>
+        <div id="stageMapInfoPanel" class="stage-map-info-panel hidden">
+          <strong id="stageMapInfoTitle">맵 정보</strong>
+          <div id="stageMapInfoBody"></div>
+        </div>
 
         <div class="battle-wave-center" aria-live="polite">
           <div class="map-wave-hud">
@@ -5718,7 +5772,7 @@ body {
         <button class="mp-mode-card active" type="button" data-mp-mode="coop">
           <span class="mp-mode-icon">🤝</span>
           <strong>2인 협동</strong>
-          <small>왼쪽 → 오른쪽 일자 길 · 위쪽은 상대, 아래쪽은 나의 설치 구역 · 웨이브 제한 없음 · 10웨이브마다 보스와 소환석 보상</small>
+          <small>왼쪽 → 오른쪽 일자 길 · 위쪽은 상대, 아래쪽은 나의 설치 구역 · 웨이브 제한 없음 · 50웨이브마다 맵과 적 종류 교체 · 보스와 소환석 보상</small>
         </button>
 
         <button class="mp-mode-card" type="button" data-mp-mode="pvp">
@@ -5732,7 +5786,7 @@ body {
         <ul class="mp-rule-list">
           <li>적 기본 HP 100</li>
           <li>10웨이브마다 HP가 10%씩 복리 증가하고 정수로 반올림</li>
-          <li>보스 순서: 비둘기 브라더스 → 기사 비둘기 → 킹 비둘기 → 각성한 킹 비둘기 → 반복</li>
+          <li>1~50웨이브 초원/비둘기 · 51~100웨이브 수정 동굴/골렘 · 이후 50웨이브마다 반복</li>
           <li>10웨이브 보상 100 소환석, 이후 10웨이브마다 +10</li>
         </ul>
       </div>
@@ -5857,7 +5911,7 @@ body {
   </div>
 
   <script>
-    window.BIDULGY_BUILD_VERSION = '2026-08-15-balance-skills-v1';
+    window.BIDULGY_BUILD_VERSION = '2026-08-15-stage2-golem-v1';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -5971,6 +6025,26 @@ function installAnimatedMenuPigeons() {
 }
 
 
+const GOLEM_MENU_SVG = `
+<svg viewBox="0 0 260 185" aria-hidden="true" focusable="false" style="width:100%;height:100%;overflow:visible">
+  <defs>
+    <linearGradient id="golemStone" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9aa6b5"/><stop offset=".55" stop-color="#5d6876"/><stop offset="1" stop-color="#313944"/></linearGradient>
+    <radialGradient id="golemCrystal" cx="45%" cy="40%" r="70%"><stop offset="0" stop-color="#ecfeff"/><stop offset=".32" stop-color="#68e8ff"/><stop offset="1" stop-color="#7c3aed"/></radialGradient>
+  </defs>
+  <ellipse cx="128" cy="162" rx="73" ry="13" fill="rgba(0,0,0,.28)"/>
+  <g stroke="#202833" stroke-width="5" stroke-linejoin="round">
+    <path d="M76 112 L48 126 L40 153 L69 159 L91 133 Z" fill="url(#golemStone)"/>
+    <path d="M184 112 L211 127 L219 151 L192 160 L170 134 Z" fill="url(#golemStone)"/>
+    <path d="M83 63 L58 78 L50 112 L79 126 L97 103 Z" fill="url(#golemStone)"/>
+    <path d="M177 63 L204 79 L211 111 L182 126 L164 103 Z" fill="url(#golemStone)"/>
+    <path d="M92 51 L128 35 L167 51 L184 101 L166 139 L94 139 L76 101 Z" fill="url(#golemStone)"/>
+    <path d="M104 28 L130 16 L157 30 L151 65 L109 65 Z" fill="#46515f"/>
+  </g>
+  <path d="M116 73 L129 55 L143 74 L134 96 L120 96 Z" fill="url(#golemCrystal)" stroke="#dffcff" stroke-width="3"/>
+  <path d="M112 43 L122 40 L121 47 Z M141 40 L151 44 L141 48 Z" fill="#74f2ff"/>
+  <circle cx="116" cy="47" r="4" fill="#8ef7ff"/><circle cx="145" cy="47" r="4" fill="#8ef7ff"/>
+</svg>`;
+
 /*
  * 스테이지 확장 설정
  * 새 스테이지를 만들 때 이 객체에 배경 테마, 등장 적, 웨이브 생성 함수를 추가합니다.
@@ -5998,27 +6072,28 @@ const STAGE_CONFIG = Object.freeze({
     waveFactory: createStageOneWaveQueue
   },
 
-  /* 아래 항목은 나중에 그림과 몹 로직을 넣기 위한 틀입니다. */
   2: {
     id: 2,
-    theme: 'forest',
-    name: '그늘진 숲',
-    description: '짙은 숲과 안개 속에서 새로운 적이 기다리고 있습니다.',
-    menuEnemies: ['숲 비둘기', '독 깃털 비둘기', '숲의 수호자'],
-    menuEnemyArt: () => REALISTIC_PIGEON_SVG,
+    theme: 'cave',
+    name: '수정 동굴',
+    description: '어두운 동굴 깊숙한 곳에서 골렘들이 깨어났습니다.\n드문드문 빛나는 보석 사이의 통로를 방어하세요!',
+    menuEnemies: ['골렘', '스피디 골렘', '흙 골렘', '크리스탈 골렘'],
+    menuEnemyArt: () => GOLEM_MENU_SVG,
     maxWave: 50,
     startingGold: 300,
     baseHp: 2000,
-    stageBonus: 1400,
-    available: false,
+    stageBonus: 2500,
+    rewardMultiplier: 2.5,
+    available: true,
+    unlockRule: 'stage1Hard',
     battlePalette: {
-      ground: '#315f3f',
-      grassLight: '#6f9f6a',
-      grassDark: '#18392b',
-      path: '#77634c',
-      pathEdge: '#a58c69'
+      ground: '#171c25',
+      grassLight: '#566170',
+      grassDark: '#0c1017',
+      path: '#34313b',
+      pathEdge: '#7e8998'
     },
-    waveFactory: null
+    waveFactory: createStageTwoWaveQueue
   },
 
   3: {
@@ -6106,14 +6181,14 @@ function applyDifficultyPreview(difficultyKey = selectedDifficulty) {
   if (summary) {
     summary.textContent =
       `${difficulty.name} · 적 HP ×${difficulty.hpMultiplier} · ` +
-      `웨이브 보상 ${difficulty.waveReward.toLocaleString()} · ` +
+      `웨이브 보상 ${Math.round(difficulty.waveReward * Number(stage.rewardMultiplier || 1)).toLocaleString()} · ` +
       `50웨이브 클리어 보너스 ${stageBonus.toLocaleString()}`;
   }
 
   if (subtitle) {
-    subtitle.textContent = stage.available
+    subtitle.textContent = isStageUnlocked(stage)
       ? `${stage.name} · ${difficulty.name} · ${stage.maxWave}웨이브 방어전`
-      : `${stage.name} · 준비 중`;
+      : `${stage.name} · 🔒 ${stageUnlockText(stage)}`;
   }
 }
 
@@ -6142,6 +6217,24 @@ function renderStageMenuEnemy(stageConfig) {
   });
 }
 
+function hasStageDifficultyClear(stageId, difficultyKey) {
+  return Boolean(player?.stageDifficultyClears?.[String(stageId)]?.[difficultyKey]);
+}
+
+function isStageUnlocked(stageConfig) {
+  if (!stageConfig) return false;
+  if (stageConfig.id === 1) return true;
+  if (stageConfig.unlockRule === 'stage1Hard') {
+    return hasStageDifficultyClear(1, 'hard') || hasStageDifficultyClear(1, 'veryHard');
+  }
+  return Boolean(stageConfig.available);
+}
+
+function stageUnlockText(stageConfig) {
+  if (stageConfig?.unlockRule === 'stage1Hard') return '1스테이지 어려움 이상 클리어 시 해금';
+  return '아직 준비 중';
+}
+
 function applyStagePreview(stageId = selectedStage) {
   const stage = getStageConfig(stageId);
   selectedStage = stage.id;
@@ -6164,22 +6257,28 @@ function applyStagePreview(stageId = selectedStage) {
   if (description) description.innerHTML = stage.description.replace('\n', '<br />');
 
   const alreadyCleared = Boolean(player && player.highestStage >= stage.id);
+  const unlocked = isStageUnlocked(stage);
   if (startTitle) {
     startTitle.textContent = alreadyCleared
       ? `스테이지 ${stage.id} 다시 플레이`
       : `스테이지 ${stage.id} 전투 시작`;
   }
   if (startSubtitle) {
-    startSubtitle.textContent = stage.available
+    startSubtitle.textContent = unlocked
       ? `${stage.name} · ${stage.maxWave}웨이브 방어전`
-      : `${stage.name} · 준비 중`;
+      : `${stage.name} · 🔒 ${stageUnlockText(stage)}`;
   }
-  if (startButton) startButton.disabled = !stage.available;
+  if (startButton) startButton.disabled = !unlocked;
   if (status) {
-    status.textContent = stage.available
-      ? `스테이지 ${stage.id} 플레이 가능 · 다음 지역은 준비 중`
-      : `스테이지 ${stage.id}은 아직 준비 중입니다.`;
+    status.textContent = unlocked
+      ? `스테이지 ${stage.id} 플레이 가능${stage.id === 2 ? ' · 소환석 보상 ×2.5' : ''}`
+      : `🔒 스테이지 ${stage.id} 잠금 · ${stageUnlockText(stage)}`;
   }
+
+  const prev = document.querySelector('#prevStageBtn');
+  const next = document.querySelector('#nextStageBtn');
+  if (prev) prev.disabled = stage.id <= 1;
+  if (next) next.disabled = !STAGE_CONFIG[stage.id + 1];
 
   renderStageMenuEnemy(stage);
   applyDifficultyPreview(selectedDifficulty);
@@ -6229,7 +6328,7 @@ function applyStagePreview(stageId = selectedStage) {
         rarityKey: 'rare',
         rarityClass: 'rarity-rare',
         cost: 165,
-        damage: 82.5,
+        damage: 41.25,
         range: 175,
         fireInterval: 1.05 / 1.3,
         chainEvery: 4,
@@ -6552,6 +6651,7 @@ function applyStagePreview(stageId = selectedStage) {
       return {
         gems: 500,
         highestStage: 0,
+        stageDifficultyClears: {},
         pendingBattleRewards: [],
         ownedUnits: {
           starterArcher: { level: 1, fragments: 0, copies: 1 },
@@ -6585,6 +6685,7 @@ function applyStagePreview(stageId = selectedStage) {
 
       if (typeof player.gems !== 'number') player.gems = 500;
       if (typeof player.highestStage !== 'number') player.highestStage = 0;
+      if (!player.stageDifficultyClears || typeof player.stageDifficultyClears !== 'object') player.stageDifficultyClears = {};
       if (!Array.isArray(player.pendingBattleRewards)) {
         player.pendingBattleRewards = [];
       }
@@ -6658,9 +6759,10 @@ function applyStagePreview(stageId = selectedStage) {
         return;
       }
 
+      const rewardStage = getStageConfig(stage);
       const amount = kind === 'wave'
-        ? difficulty.waveReward
-        : getStageClearBonus(getStageConfig(stage), difficulty);
+        ? Math.round(difficulty.waveReward * Number(rewardStage.rewardMultiplier || 1))
+        : getStageClearBonus(rewardStage, difficulty);
 
       player.pendingBattleRewards.push({
         claimKey,
@@ -6690,6 +6792,17 @@ function applyStagePreview(stageId = selectedStage) {
       }
 
       return true;
+    }
+
+    async function claimStageTwoServerBonus(claimKey, rewardKind, difficultyKey = 'normal', wave = null) {
+      const { data, error } = await supabaseClient.rpc('claim_stage2_bonus', {
+        p_claim_key: claimKey,
+        p_reward_kind: rewardKind,
+        p_difficulty: difficultyKey || 'normal',
+        p_wave: wave == null ? null : Number(wave)
+      });
+      if (error) throw error;
+      return data || null;
     }
 
     async function flushPendingBattleRewards() {
@@ -6726,6 +6839,22 @@ function applyStagePreview(stageId = selectedStage) {
           const serverGems = Number(data);
           if (Number.isFinite(serverGems)) {
             lastServerGems = serverGems;
+          }
+
+          if (Number(reward.stage) === 2) {
+            try {
+              const bonus = await claimStageTwoServerBonus(
+                `${reward.claimKey}:stage2x25`,
+                reward.kind === 'wave' ? 'wave' : 'stage',
+                reward.difficulty || 'normal',
+                reward.wave
+              );
+              const bonusGems = Number(bonus?.gems);
+              if (Number.isFinite(bonusGems)) lastServerGems = bonusGems;
+            } catch (bonusError) {
+              console.error('2스테이지 2.5배 추가 보상 서버 반영 실패:', bonusError?.message || bonusError);
+              return false;
+            }
           }
 
           player.pendingBattleRewards.shift();
@@ -9223,7 +9352,7 @@ function requestGachaDraw(count) {
 
       window.addEventListener('load', () => {
         navigator.serviceWorker
-          .register('./service-worker.js?v=20260813-1', { updateViaCache: 'none' })
+          .register('./service-worker.js?v=20260815-stage2-1', { updateViaCache: 'none' })
           .then(registration => registration.update())
           .catch(error => console.error('서비스 워커 등록 실패:', error));
       });
@@ -9318,8 +9447,8 @@ function requestGachaDraw(count) {
       const difficulty = getDifficultyConfig(selectedDifficulty);
       const deck = player.deck.filter(Boolean);
 
-      if (!stageConfig.available || typeof stageConfig.waveFactory !== 'function') {
-        alert('이 스테이지는 아직 준비 중입니다.');
+      if (!isStageUnlocked(stageConfig) || typeof stageConfig.waveFactory !== 'function') {
+        alert(stageUnlockText(stageConfig));
         return;
       }
 
@@ -9363,6 +9492,8 @@ function requestGachaDraw(count) {
         delayedAttacks: [],
         blackHoles: [],
         eclipseBursts: [],
+        dirtPiles: [],
+        dirtConverge: null,
         selectedDeployUnitId: deck[0],
         selectedPlacedUnit: null,
         ended: false,
@@ -9385,6 +9516,9 @@ function requestGachaDraw(count) {
 
       renderBattleDeck();
       showScreen('battle');
+      updateStageMapInfo();
+      document.querySelector('#stageMapInfoPanel')?.classList.add('hidden');
+      document.querySelector('#stageMapInfoBtn')?.setAttribute('aria-expanded', 'false');
       renderSelectedPanel();
       updateOrientationGuard();
       launchWave(1);
@@ -9468,6 +9602,182 @@ function requestGachaDraw(count) {
       return Array.from({ length: count }, () => makeNormalPigeonSpec(wave));
     }
 
+    function stageTwoRegularHp(baseHp, wave) {
+      return Math.round(Number(baseHp || 1) * (wave >= 25 ? 1.5 : 1));
+    }
+
+    function makeStageTwoNormalSpec(wave, index = 0, count = 1) {
+      const pigeonSpeed = Math.min(86, 58 + wave * .55);
+      const normalSpeed = pigeonSpeed * .75;
+      const hp = stageTwoRegularHp(200, wave);
+      const useSpeedy = wave >= 11 && index % 8 === 0;
+      const useSoil = wave >= 30 && index % 8 === 4;
+
+      if (useSoil) {
+        return {
+          type: 'normal', variant: 'soilGolem', name: '흙 골렘', icon: '🪨',
+          health: stageTwoRegularHp(300, wave), speed: normalSpeed * .86, radius: 22,
+          reward: 28 + Math.floor(wave / 5), reviveOnce: true, reviveHealthRatio: 2 / 3
+        };
+      }
+
+      if (useSpeedy) {
+        return {
+          type: 'normal', variant: 'speedyGolem', name: '스피디 골렘', icon: '🪨',
+          health: hp, speed: normalSpeed * 3, radius: 17,
+          reward: 24 + Math.floor(wave / 5), rolling: true
+        };
+      }
+
+      return {
+        type: 'normal', variant: 'golem', name: '골렘', icon: '🪨',
+        health: hp, speed: normalSpeed, radius: 21,
+        reward: 22 + Math.floor(wave / 5)
+      };
+    }
+
+    function createStageTwoWaveQueue(wave) {
+      if (wave === 10) {
+        return [{
+          type: 'gemGolemBoss', name: '보석이 박힌 골렘', icon: '💎',
+          health: 1000, speed: 43, radius: 36, reward: 260,
+          abilityInterval: 10, abilityTimer: 10, shieldRatio: .50
+        }];
+      }
+
+      if (wave === 30) {
+        return [{
+          type: 'giantGolemBoss', name: '거대 골렘', icon: '🗿',
+          health: 2000, speed: 34, radius: 48, reward: 600,
+          abilityInterval: 5, abilityTimer: 5, abilityRange: 205
+        }];
+      }
+
+      if (wave === 39) {
+        return Array.from({ length: 20 }, (_, index) => ({
+          type: 'normal', variant: 'soilGolem', name: '흙 골렘', icon: '🪨',
+          health: stageTwoRegularHp(300, wave), speed: Math.min(86, 58 + wave * .55) * .75 * .86,
+          radius: 22, reward: 30, noRevive: true, leavePermanentDirt: true,
+          wave39Soil: true, groupIndex: index
+        }));
+      }
+
+      if (wave === 40) {
+        return [{
+          type: 'combinedSoilGolemBoss', name: '합쳐진 흙 골렘', icon: '🗿',
+          health: 3000, speed: 31, radius: 54, reward: 900,
+          reviveChance: .75, reviveHpRatio: .75
+        }];
+      }
+
+      if (wave === 50) {
+        return [{
+          type: 'crystalGolemBoss', name: '크리스탈 골렘', icon: '💠',
+          health: 15000, speed: 28, radius: 58, reward: 1800,
+          crystalShotTimer: 5, crystalShotInterval: 5,
+          crystalShieldTimer: 10, crystalShieldInterval: 10,
+          shieldRatio: .30, abilityRange: 360
+        }];
+      }
+
+      const count = Math.min(24, 8 + Math.floor((wave - 1) / 3));
+      return Array.from({ length: count }, (_, index) => makeStageTwoNormalSpec(wave, index, count));
+    }
+
+    function isStageTwoBattle() {
+      return Number(battle?.stage || selectedStage) === 2;
+    }
+
+    function addBattleDirtPile(x, y, options = {}) {
+      if (!battle) return;
+      battle.dirtPiles ||= [];
+      battle.dirtPiles.push({
+        id: `dirt-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,
+        x, y, radius: Number(options.radius || 24), seed: Math.random() * 1000,
+        atBase: Boolean(options.atBase), createdAt: performance.now()
+      });
+    }
+
+    function spawnStageTwoRollingGolems(sourceEnemy) {
+      const waveState = getWaveState(sourceEnemy.waveNumber);
+      if (!waveState) return 0;
+      const count = 1 + Math.floor(Math.random() * 4);
+      for (let index = 0; index < count; index += 1) {
+        const spec = makeStageTwoNormalSpec(sourceEnemy.waveNumber, index + 1, count);
+        const maxHealth = stageTwoRegularHp(200, sourceEnemy.waveNumber);
+        battle.enemies.push({
+          ...spec,
+          id: `rolling-${sourceEnemy.waveNumber}-${Date.now()}-${index}-${Math.random().toString(36).slice(2,6)}`,
+          type: 'normal', variant: 'speedyGolem', name: '구르는 골렘', rolling: true,
+          waveNumber: sourceEnemy.waveNumber,
+          x: sourceEnemy.x + (Math.random() - .5) * 28,
+          y: sourceEnemy.y + (Math.random() - .5) * 22,
+          targetIndex: Math.max(1, Number(sourceEnemy.targetIndex || 1)),
+          health: maxHealth, maxHealth,
+          speed: Math.max(135, Number(spec.speed || 150)), radius: 17,
+          reward: 18, dead: false, resolvedRecorded: false, pulseEffect: 0, pulseKind: '',
+          abilityTimer: 0, wingPhase: Math.random() * Math.PI * 2, heading: 0,
+          timeStunRemaining: 0, timeStunDuration: 2, timeFieldRemaining: 0
+        });
+        waveState.total += 1;
+        waveState.spawned += 1;
+      }
+      return count;
+    }
+
+    function fireCrystalEightWay(enemy, reason = 'shot') {
+      if (!battle || !enemy || enemy.dead) return 0;
+      const range = Number(enemy.abilityRange || 360);
+      const beamWidth = 25;
+      let affected = 0;
+      for (let i = 0; i < 8; i += 1) {
+        const angle = i * Math.PI / 4;
+        const ux = Math.cos(angle), uy = Math.sin(angle);
+        const endX = enemy.x + ux * range, endY = enemy.y + uy * range;
+        battle.shots.push({
+          x1: enemy.x, y1: enemy.y, x2: endX, y2: endY,
+          life: .72, maxLife: .72, color: '#79f2ff', effect: 'crystalRay',
+          angle, seed: Math.random() * 1000
+        });
+        battle.placedUnits.forEach(unit => {
+          if (UNIT_DATA[unit.unitId]?.stunImmune) return;
+          const dx = unit.x - enemy.x, dy = unit.y - enemy.y;
+          const forward = dx * ux + dy * uy;
+          if (forward < 0 || forward > range) return;
+          const side = Math.abs(dx * (-uy) + dy * ux);
+          if (side > beamWidth) return;
+          unit.stunRemaining = Math.max(Number(unit.stunRemaining || 0), 3);
+          affected += 1;
+        });
+      }
+      enemy.pulseKind = 'crystal';
+      enemy.pulseEffect = .65;
+      if (reason === 'shieldBreak') setBattleMessage(`크리스탈 보호막이 깨지며 8방향으로 파편이 폭발했습니다! 유닛 ${affected}명이 기절했습니다.`);
+      else setBattleMessage(`크리스탈 골렘이 8방향 보석을 발사했습니다! 유닛 ${affected}명이 3초간 기절했습니다.`);
+      return affected;
+    }
+
+    function updateStageMapInfo() {
+      const title = document.querySelector('#stageMapInfoTitle');
+      const body = document.querySelector('#stageMapInfoBody');
+      if (!title || !body || !battle) return;
+      if (battle.stage === 2) {
+        title.textContent = '💎 수정 동굴 · 맵 정보';
+        body.innerHTML = [
+          '<p>골렘 기본 HP 200 · 이동속도는 비둘기의 0.75배</p>',
+          '<p>11웨이브부터 1/8 확률로 스피디 골렘 · 일반 골렘의 3배 속도</p>',
+          '<p>25웨이브부터 일반 적 HP ×1.5</p>',
+          '<p>30웨이브부터 1/8이 흙 골렘 · 최초 1회 2/3 HP로 부활</p>',
+          '<p>39웨이브는 스킵 불가 · 흙 골렘 20마리</p>',
+          '<p>🔥 화염 마도사는 이 맵에서 공격 피해가 1/2로 감소</p>',
+          '<p>💎 소환석 보상은 1스테이지의 2.5배</p>'
+        ].join('');
+      } else {
+        title.textContent = '🌿 햇살 초원 · 맵 정보';
+        body.innerHTML = '<p>비둘기 침공을 막는 50웨이브 방어전입니다.</p><p>난이도에 따른 적 HP와 보상 배율이 그대로 적용됩니다.</p>';
+      }
+    }
+
     function stunRandomPlacedUnits(count, seconds) {
       // 기절 면역 유닛은 기사/보스의 기절 대상에서 제외합니다.
       const candidates = battle.placedUnits.filter(unit => !UNIT_DATA[unit.unitId]?.stunImmune);
@@ -9530,7 +9840,17 @@ function requestGachaDraw(count) {
       let message = `${options.isSkip ? '웨이브 스킵! ' : ''}웨이브 ${wave} 시작!`;
       let bossName = '';
 
-      if (wave === 10) {
+      if (battle.stage === 2) {
+        if (wave === 10) { bossName = '보석이 박힌 골렘'; message = '보석 골렘 등장! 10초마다 최대체력 50%의 보호막을 만듭니다.'; }
+        else if (wave === 30) { bossName = '거대 골렘'; message = '거대 골렘 등장! 5초마다 지면을 내려쳐 구르는 골렘을 소환하고 주변 유닛을 기절시킵니다.'; }
+        else if (wave === 39) { message = '39웨이브 · 흙 골렘 20마리! 이 웨이브에서는 스킵할 수 없습니다.'; }
+        else if (wave === 40) {
+          bossName = '합쳐진 흙 골렘'; message = '남겨진 흙이 동굴 입구로 모여 거대한 흙 골렘으로 합쳐집니다!';
+          battle.dirtConverge = { remaining: 1.6, max: 1.6, piles: (battle.dirtPiles || []).map(p => ({...p})) };
+          waveState.spawnTimer = 1.6;
+        }
+        else if (wave === 50) { bossName = '크리스탈 골렘'; message = '최종 보스 크리스탈 골렘 등장! 8방향 보석과 크리스탈 보호막을 사용합니다.'; }
+      } else if (wave === 10) {
         bossName = '비둘기 브라더스';
         message = '비둘기 브라더스 5마리가 뭉쳐서 등장합니다!';
       } else if (wave === 25) {
@@ -9557,9 +9877,13 @@ function requestGachaDraw(count) {
     }
 
     function canSkipWave() {
+      if (!battle || battle.ended) return false;
+      if (battle.stage === 2) {
+        const current = Number(battle.highestLaunchedWave || 0);
+        const next = current + 1;
+        if (current === 39 || next === 39) return false;
+      }
       return Boolean(
-        battle &&
-        !battle.ended &&
         battle.highestLaunchedWave < battle.maxWave &&
         battle.skipUses < battle.maxSkipUses
       );
@@ -9568,9 +9892,11 @@ function requestGachaDraw(count) {
     function skipNextWave(isAutomatic = false) {
       if (!canSkipWave()) {
         if (!isAutomatic && battle) {
-          const reason = battle.highestLaunchedWave >= battle.maxWave
-            ? '50웨이브가 이미 시작되었습니다.'
-            : '연속 웨이브 스킵 3회를 모두 사용했습니다. 진행 중인 웨이브를 클리어하면 다시 사용할 수 있습니다.';
+          const reason = battle.stage === 2 && (battle.highestLaunchedWave === 39 || battle.highestLaunchedWave + 1 === 39)
+            ? '2스테이지 39웨이브는 스킵할 수 없습니다. 흙 골렘 20마리를 직접 상대해야 합니다.'
+            : battle.highestLaunchedWave >= battle.maxWave
+              ? '50웨이브가 이미 시작되었습니다.'
+              : '연속 웨이브 스킵 3회를 모두 사용했습니다. 진행 중인 웨이브를 클리어하면 다시 사용할 수 있습니다.';
           setBattleMessage(reason);
         }
         updateWaveSkipUi();
@@ -9840,7 +10166,15 @@ function requestGachaDraw(count) {
         heading: 0,
         timeStunRemaining: 0,
         timeStunDuration: 2,
-        timeFieldRemaining: 0
+        timeFieldRemaining: 0,
+        shield: Number(spec.startShield || 0),
+        shieldMax: Number(spec.startShield || 0),
+        soilPileState: false,
+        soilReviveTimer: 0,
+        soilRevived: false,
+        reviveCount: 0,
+        crystalShotTimer: Number(spec.crystalShotTimer || 0),
+        crystalShieldTimer: Number(spec.crystalShieldTimer || 0)
       });
 
       waveState.spawned += 1;
@@ -9886,6 +10220,22 @@ function requestGachaDraw(count) {
     }
 
     function useBossAbility(enemy) {
+      if (enemy.type === 'gemGolemBoss') {
+        const amount = enemy.maxHealth * Number(enemy.shieldRatio || .5);
+        enemy.shield = amount; enemy.shieldMax = amount;
+        enemy.pulseKind = 'shield'; enemy.pulseEffect = .65;
+        setBattleMessage(`보석 골렘이 최대체력의 50% 보호막 ${Math.round(amount)}을 생성했습니다!`);
+        return;
+      }
+
+      if (enemy.type === 'giantGolemBoss') {
+        const spawned = spawnStageTwoRollingGolems(enemy);
+        const affected = affectNearbyUnits(enemy, 'stun', 2);
+        enemy.pulseKind = 'slam'; enemy.pulseEffect = .65;
+        setBattleMessage(`거대 골렘이 지면을 내려쳤습니다! 구르는 골렘 ${spawned}마리 소환 · 주변 유닛 ${affected}명 2초 기절!`);
+        return;
+      }
+
       enemy.health = Math.min(
         enemy.maxHealth,
         enemy.health + enemy.maxHealth * .05
@@ -9916,6 +10266,33 @@ function requestGachaDraw(count) {
       enemy.pulseEffect = Math.max(0, (enemy.pulseEffect || 0) - dt);
       enemy.timeStunRemaining = Math.max(0, (enemy.timeStunRemaining || 0) - dt);
       enemy.timeFieldRemaining = Math.max(0, (enemy.timeFieldRemaining || 0) - dt);
+
+      if (enemy.soilPileState) {
+        enemy.soilReviveTimer = Math.max(0, Number(enemy.soilReviveTimer || 0) - dt);
+        if (enemy.soilReviveTimer <= 0) {
+          enemy.soilPileState = false;
+          enemy.soilRevived = true;
+          enemy.health = Math.max(1, Math.round(enemy.maxHealth * Number(enemy.reviveHealthRatio || 2/3)));
+          enemy.pulseKind = 'revive'; enemy.pulseEffect = .65;
+        }
+        return;
+      }
+
+      if (enemy.type === 'crystalGolemBoss') {
+        enemy.crystalShotTimer -= dt;
+        enemy.crystalShieldTimer -= dt;
+        if (enemy.crystalShotTimer <= 0) {
+          fireCrystalEightWay(enemy, 'shot');
+          enemy.crystalShotTimer += Number(enemy.crystalShotInterval || 5);
+        }
+        if (enemy.crystalShieldTimer <= 0) {
+          const amount = enemy.maxHealth * Number(enemy.shieldRatio || .3);
+          enemy.shield = amount; enemy.shieldMax = amount;
+          enemy.pulseKind = 'shield'; enemy.pulseEffect = .65;
+          setBattleMessage(`크리스탈 골렘이 최대체력의 30% 보호막 ${Math.round(amount)}을 생성했습니다!`);
+          enemy.crystalShieldTimer += Number(enemy.crystalShieldInterval || 10);
+        }
+      }
 
       if (Array.isArray(enemy.sakuraMarks) && enemy.sakuraMarks.length) {
         const remainingMarks = [];
@@ -9963,6 +10340,9 @@ function requestGachaDraw(count) {
         // 성에 도달한 적의 남은 HP만큼 거점 HP가 감소한다.
         // 예: HP 100이 남은 일반 비둘기 → 거점 피해 100.
         const baseDamage = Math.max(1, Math.ceil(enemy.health));
+        if (battle.stage === 2 && enemy.variant === 'soilGolem' && enemy.waveNumber === 39) {
+          addBattleDirtPile(BASE_POSITION.x - 36 + Math.random() * 28, BASE_POSITION.y + (Math.random() - .5) * 50, { atBase: true, radius: 25 });
+        }
         battle.lives = Math.max(0, battle.lives - baseDamage);
         battle.baseHitFlash = .58;
         battle.baseDamageText = baseDamage;
@@ -10068,10 +10448,42 @@ function requestGachaDraw(count) {
     }
 
     function applyDamageToEnemy(enemy, damage) {
-      if (!enemy || enemy.dead) return false;
+      if (!enemy || enemy.dead || enemy.soilPileState) return false;
 
-      enemy.health -= damage;
+      let remainingDamage = Math.max(0, Number(damage || 0));
+      if (Number(enemy.shield || 0) > 0 && remainingDamage > 0) {
+        const before = Number(enemy.shield || 0);
+        const absorbed = Math.min(before, remainingDamage);
+        enemy.shield = Math.max(0, before - absorbed);
+        remainingDamage -= absorbed;
+        if (before > 0 && enemy.shield <= 0 && enemy.type === 'crystalGolemBoss') {
+          fireCrystalEightWay(enemy, 'shieldBreak');
+        }
+      }
+      if (remainingDamage <= 0) return false;
+
+      enemy.health -= remainingDamage;
       if (enemy.health > 0) return false;
+
+      // 일반 흙 골렘은 최초 1회 흙더미가 된 뒤 같은 자리에서 2/3 HP로 재결합한다.
+      if (enemy.variant === 'soilGolem' && enemy.reviveOnce && !enemy.noRevive && !enemy.soilRevived) {
+        enemy.health = 0;
+        enemy.soilPileState = true;
+        enemy.soilReviveTimer = 1.25;
+        enemy.pulseKind = 'soil'; enemy.pulseEffect = .65;
+        return false;
+      }
+
+      // 합쳐진 흙 골렘은 죽을 때마다 75% 확률로 더 작은 최대 HP로 재생한다.
+      if (enemy.type === 'combinedSoilGolemBoss' && Math.random() < Number(enemy.reviveChance || .75)) {
+        enemy.reviveCount = Number(enemy.reviveCount || 0) + 1;
+        enemy.maxHealth = Math.max(1, Math.round(enemy.maxHealth * Number(enemy.reviveHpRatio || .75)));
+        enemy.health = enemy.maxHealth;
+        enemy.radius = Math.max(34, Number(enemy.radius || 54) * .96);
+        enemy.pulseKind = 'revive'; enemy.pulseEffect = .65;
+        setBattleMessage(`합쳐진 흙 골렘이 다시 뭉쳤습니다! ${enemy.reviveCount}회 부활 · HP ${enemy.maxHealth}`);
+        return false;
+      }
 
       enemy.health = 0;
       enemy.dead = true;
@@ -10079,7 +10491,11 @@ function requestGachaDraw(count) {
       battle.gold += enemy.reward;
       battle.kills += 1;
 
-      if (enemy.type === 'awakenedKing') {
+      if (battle.stage === 2 && enemy.variant === 'soilGolem' && enemy.leavePermanentDirt) {
+        addBattleDirtPile(enemy.x, enemy.y, { radius: enemy.radius + 4 });
+      }
+
+      if ((battle.stage === 1 && enemy.type === 'awakenedKing') || (battle.stage === 2 && enemy.type === 'crystalGolemBoss')) {
         battle.finalBossDefeated = true;
       }
 
@@ -10102,7 +10518,7 @@ function requestGachaDraw(count) {
       let closestDistance = Infinity;
 
       for (const enemy of battle.enemies) {
-        if (enemy.dead) continue;
+        if (enemy.dead || enemy.soilPileState) continue;
         const distance = Math.hypot(enemy.x - placed.x, enemy.y - placed.y);
         if (distance <= maxRange && distance < closestDistance) {
           closest = enemy;
@@ -10640,7 +11056,7 @@ function requestGachaDraw(count) {
 
     function getFrontmostEnemyInRange(placed, maxRange) {
       const candidates = battle.enemies.filter(enemy =>
-        !enemy.dead && Math.hypot(enemy.x - placed.x, enemy.y - placed.y) <= maxRange
+        !enemy.dead && !enemy.soilPileState && Math.hypot(enemy.x - placed.x, enemy.y - placed.y) <= maxRange
       );
       candidates.sort((a, b) => {
         const progress = Number(b.targetIndex || 0) - Number(a.targetIndex || 0);
@@ -11041,7 +11457,7 @@ function requestGachaDraw(count) {
       let bestProgress = -1;
 
       for (const enemy of battle.enemies) {
-        if (enemy.dead) continue;
+        if (enemy.dead || enemy.soilPileState) continue;
         const distance = Math.hypot(enemy.x - placed.x, enemy.y - placed.y);
         if (distance <= placed.range && enemy.targetIndex > bestProgress) {
           target = enemy;
@@ -11276,7 +11692,7 @@ function requestGachaDraw(count) {
       if (!waveState || waveState.rewardGranted) return;
 
       const difficulty = battle.difficulty || getDifficultyConfig(battle.difficultyKey);
-      const rewardAmount = difficulty.waveReward;
+      const rewardAmount = Math.round(difficulty.waveReward * Number(battle.stageConfig?.rewardMultiplier || 1));
 
       waveState.rewardGranted = true;
       battle.earnedWaveGems += rewardAmount;
@@ -11321,13 +11737,23 @@ function requestGachaDraw(count) {
         (battle.baseDamageTextTimer || 0) - dt
       );
 
+      if (battle.dirtConverge) {
+        battle.dirtConverge.remaining = Math.max(0, battle.dirtConverge.remaining - dt);
+        if (battle.dirtConverge.remaining <= 0) {
+          battle.dirtConverge = null;
+          battle.dirtPiles = [];
+        }
+      }
+
       battle.activeWaves.forEach(waveState => {
         if (waveState.completed || waveState.spawned >= waveState.total) return;
 
         waveState.spawnTimer -= dt;
         if (waveState.spawnTimer <= 0) {
           spawnEnemyFromWave(waveState);
-          waveState.spawnTimer = waveState.wave === 10 ? .12 : .78;
+          waveState.spawnTimer = battle.stage === 2
+            ? (waveState.wave === 39 ? .34 : .70)
+            : (waveState.wave === 10 ? .12 : .78);
         }
       });
 
@@ -11365,7 +11791,9 @@ function requestGachaDraw(count) {
           if (battle.finalBossDefeated && !battle.bossEscaped) {
             if (battle.waveDelay >= 1.1) endBattle(true);
           } else if (battle.waveDelay >= .4) {
-            endBattle(false, '각성한 킹 비둘기를 직접 처치해야 스테이지를 클리어할 수 있습니다.');
+            endBattle(false, battle.stage === 2
+              ? '크리스탈 골렘을 직접 처치해야 2스테이지를 클리어할 수 있습니다.'
+              : '각성한 킹 비둘기를 직접 처치해야 스테이지를 클리어할 수 있습니다.');
           }
         } else if (battle.waveDelay >= 1.4) {
           battle.gold += 80;
@@ -11380,6 +11808,26 @@ function requestGachaDraw(count) {
 
     function drawBackground() {
       const palette = battle?.stageConfig?.battlePalette || STAGE_CONFIG[1].battlePalette;
+      if (battle?.stage === 2) {
+        const cave = ctx.createRadialGradient(canvas.width*.52, canvas.height*.44, 45, canvas.width*.52, canvas.height*.44, 600);
+        cave.addColorStop(0, '#344152'); cave.addColorStop(.52, '#202733'); cave.addColorStop(1, '#0a0d13');
+        ctx.fillStyle = cave; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.save();
+        for (let i=0;i<34;i+=1) {
+          const x=(i*137+53)%canvas.width, y=(i*83+29)%canvas.height;
+          const size=5+(i%5)*2;
+          ctx.translate(x,y);
+          ctx.rotate((i*.73)%Math.PI);
+          const colors=['#63e8ff','#a78bfa','#4ade80','#60a5fa'];
+          ctx.fillStyle=colors[i%colors.length]; ctx.shadowColor=ctx.fillStyle; ctx.shadowBlur=9;
+          ctx.beginPath(); ctx.moveTo(0,-size*1.7); ctx.lineTo(size*.7,0); ctx.lineTo(0,size*1.3); ctx.lineTo(-size*.7,0); ctx.closePath(); ctx.fill();
+          ctx.shadowBlur=0; ctx.setTransform(1,0,0,1,0,0);
+        }
+        ctx.globalAlpha=.22; ctx.strokeStyle='#8da0b7';
+        for(let i=0;i<16;i+=1){const y=18+i*34;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(130+(i%4)*90,y+10);ctx.stroke();ctx.beginPath();ctx.moveTo(canvas.width,y+4);ctx.lineTo(canvas.width-120-(i%5)*70,y+18);ctx.stroke();}
+        ctx.restore();
+        return;
+      }
       ctx.fillStyle = palette.ground;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -12081,6 +12529,36 @@ function requestGachaDraw(count) {
       ctx.restore();
     }
 
+    function drawCanvasGolem(enemy, x, y, time) {
+      const r = Number(enemy.radius || 21);
+      const speedy = enemy.variant === 'speedyGolem' || enemy.rolling;
+      const soil = enemy.variant === 'soilGolem' || enemy.type === 'combinedSoilGolemBoss';
+      const gemBoss = enemy.type === 'gemGolemBoss';
+      const giant = enemy.type === 'giantGolemBoss';
+      const crystal = enemy.type === 'crystalGolemBoss';
+      if (enemy.soilPileState) {
+        ctx.save();ctx.translate(x,y);ctx.fillStyle='#71563d';ctx.strokeStyle='#3c2c20';ctx.lineWidth=2;
+        for(let i=0;i<7;i++){const a=i*Math.PI*2/7+(enemy.wingPhase||0);ctx.beginPath();ctx.ellipse(Math.cos(a)*r*.42,Math.sin(a)*r*.22,r*.52,r*.28,a*.3,0,Math.PI*2);ctx.fill();ctx.stroke();}
+        ctx.fillStyle='#d3a86e';ctx.font='bold 12px Arial';ctx.textAlign='center';ctx.fillText('재결합',0,-r*.8);ctx.restore();return;
+      }
+      ctx.save();ctx.translate(x,y);
+      if(speedy) ctx.rotate(time*.008 + (enemy.wingPhase||0));
+      const stone = soil ? '#846548' : crystal ? '#3f6f82' : gemBoss ? '#596777' : giant ? '#4d5661' : '#687483';
+      const dark = soil ? '#4b3728' : '#2d3540';
+      ctx.fillStyle='rgba(0,0,0,.26)';ctx.beginPath();ctx.ellipse(0,r*.85,r*1.18,r*.31,0,0,Math.PI*2);ctx.fill();
+      const chunks=[[-.65,.25,.55], [.64,.28,.58], [-.5,-.35,.7],[.52,-.32,.68],[0,.05,1.05],[0,-.72,.62]];
+      chunks.forEach(([ox,oy,sc],i)=>{ctx.fillStyle=i===4?stone:(i%2?stone:dark);ctx.strokeStyle='#1d242d';ctx.lineWidth=Math.max(1.4,r*.07);ctx.beginPath();ctx.roundRect((ox-sc*.5)*r,(oy-sc*.5)*r,sc*r,sc*r,Math.max(3,r*.12));ctx.fill();ctx.stroke();});
+      if(!soil){
+        const crystalColor=crystal?'#b8f7ff':gemBoss?'#70f0ff':'#7dd3fc';
+        ctx.fillStyle=crystalColor;ctx.shadowColor=crystalColor;ctx.shadowBlur=crystal?22:10;
+        const crystals=crystal?7:gemBoss?4:1;
+        for(let i=0;i<crystals;i++){const a=-Math.PI/2+i*Math.PI*2/crystals;const d=(crystal?.44:.15)*r;ctx.save();ctx.translate(Math.cos(a)*d,Math.sin(a)*d);ctx.rotate(a);ctx.beginPath();ctx.moveTo(0,-r*.38);ctx.lineTo(r*.16,0);ctx.lineTo(0,r*.28);ctx.lineTo(-r*.16,0);ctx.closePath();ctx.fill();ctx.restore();}
+        ctx.shadowBlur=0;
+      }
+      if (Number(enemy.shield||0)>0) {ctx.strokeStyle='rgba(125,240,255,.85)';ctx.lineWidth=5;ctx.shadowColor='#6ee7ff';ctx.shadowBlur=16;ctx.beginPath();ctx.arc(0,0,r*1.42,0,Math.PI*2);ctx.stroke();ctx.shadowBlur=0;}
+      ctx.restore();
+    }
+
     function drawEnemy(enemy, time) {
       const formation = enemy.type === 'brother'
         ? BROTHER_FORMATION[enemy.groupIndex] || { x: 0, y: 0 }
@@ -12088,6 +12566,7 @@ function requestGachaDraw(count) {
       const drawX = enemy.x + formation.x;
       const drawY = enemy.y + formation.y;
       const isBoss = enemy.type !== 'normal';
+      const isGolem = battle?.stage === 2 || Boolean(enemy.variant?.includes('Golem')) || /Golem/.test(enemy.type || '');
 
       ctx.save();
 
@@ -12117,8 +12596,8 @@ function requestGachaDraw(count) {
         ctx.fill();
       }
 
-      drawCanvasPigeon(enemy, drawX, drawY, time);
-      drawKnightPigeonArmor(enemy, drawX, drawY, time);
+      if (isGolem) drawCanvasGolem(enemy, drawX, drawY, time);
+      else { drawCanvasPigeon(enemy, drawX, drawY, time); drawKnightPigeonArmor(enemy, drawX, drawY, time); }
 
       if (enemy.timeFieldRemaining > 0) {
         ctx.beginPath();
@@ -12214,12 +12693,20 @@ function requestGachaDraw(count) {
 
       ctx.fillStyle = '#202736';
       ctx.fillRect(drawX - barWidth / 2, barY, barWidth, barHeight);
-      ctx.fillStyle = enemy.type === 'awakenedKing'
-        ? '#ef4444'
-        : enemy.type === 'king'
-          ? '#facc15'
-          : '#45df7d';
+      ctx.fillStyle = enemy.type === 'crystalGolemBoss'
+        ? '#67e8f9'
+        : enemy.type === 'combinedSoilGolemBoss'
+          ? '#a97850'
+          : enemy.type === 'awakenedKing'
+            ? '#ef4444'
+            : enemy.type === 'king'
+              ? '#facc15'
+              : '#45df7d';
       ctx.fillRect(drawX - barWidth / 2, barY, barWidth * ratio, barHeight);
+      if (Number(enemy.shield || 0) > 0) {
+        const sr=Math.max(0,Math.min(1,Number(enemy.shield||0)/Math.max(1,Number(enemy.shieldMax||enemy.shield||1))));
+        ctx.fillStyle='rgba(108,232,255,.92)';ctx.fillRect(drawX-barWidth/2,barY+barHeight+2,barWidth*sr,3);
+      }
       ctx.strokeStyle = 'rgba(255,255,255,.28)';
       ctx.lineWidth = 1;
       ctx.strokeRect(drawX - barWidth / 2, barY, barWidth, barHeight);
@@ -13661,7 +14148,16 @@ function requestGachaDraw(count) {
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
 
-        if (shot.effect === 'arrow') {
+        if (shot.effect === 'crystalRay') {
+          const pulse=Math.sin(progress*Math.PI);
+          ctx.save();ctx.globalCompositeOperation='lighter';
+          const endProgress=Math.min(1,progress*2.4);
+          const ex=shot.x1+dx*endProgress, ey=shot.y1+dy*endProgress;
+          ctx.strokeStyle=`rgba(101,235,255,${.36+fade*.35})`;ctx.lineWidth=14*pulse+4;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.lineTo(ex,ey);ctx.stroke();
+          ctx.strokeStyle=`rgba(235,253,255,${.82*fade})`;ctx.lineWidth=3.5;ctx.stroke();
+          for(let j=0;j<5;j++){const t=Math.max(0,endProgress-j*.055);const px=shot.x1+dx*t,py=shot.y1+dy*t;ctx.save();ctx.translate(px,py);ctx.rotate(angle+j*.5);ctx.fillStyle=`rgba(${j%2?160:110},${220+j*6},255,${.75*fade})`;ctx.beginPath();ctx.moveTo(0,-7);ctx.lineTo(4,0);ctx.lineTo(0,7);ctx.lineTo(-4,0);ctx.closePath();ctx.fill();ctx.restore();}
+          ctx.restore();
+        } else if (shot.effect === 'arrow') {
           const tailX = x - ux * 29;
           const tailY = y - uy * 29;
           const trail = ctx.createLinearGradient(tailX, tailY, x, y);
@@ -14187,9 +14683,31 @@ function requestGachaDraw(count) {
       }
     }
 
+    function drawStageTwoDirtAndEffects(time) {
+      if (!battle || battle.stage !== 2) return;
+      const converge = battle.dirtConverge;
+      const drawPile = (pile, x, y, alpha = 1, scale = 1) => {
+        ctx.save(); ctx.translate(x,y); ctx.globalAlpha=alpha; ctx.scale(scale,scale);
+        ctx.fillStyle='#6f553b'; ctx.strokeStyle='#3d2e20'; ctx.lineWidth=2;
+        for(let i=0;i<6;i++){const a=(pile.seed||0)+i*Math.PI*2/6;ctx.beginPath();ctx.ellipse(Math.cos(a)*9,Math.sin(a)*4,12-(i%3)*2,7+(i%2)*2,a*.15,0,Math.PI*2);ctx.fill();ctx.stroke();}
+        ctx.fillStyle='rgba(198,159,107,.48)';ctx.beginPath();ctx.ellipse(-4,-4,12,4,-.2,0,Math.PI*2);ctx.fill();ctx.restore();
+      };
+      if (!converge) (battle.dirtPiles||[]).forEach(p=>drawPile(p,p.x,p.y,.95,1));
+      if (converge) {
+        const progress = 1 - converge.remaining / Math.max(.001, converge.max);
+        for (const p of converge.piles || []) {
+          const ease = progress*progress*(3-2*progress);
+          const x=p.x+(path[0].x-p.x)*ease, y=p.y+(path[0].y-p.y)*ease;
+          drawPile(p,x,y,1-progress*.25,1-progress*.35);
+          ctx.strokeStyle=`rgba(177,126,78,${.32*(1-progress)})`;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(x,y);ctx.stroke();
+        }
+      }
+    }
+
     function drawBattle(time) {
       drawBackground();
       drawPath();
+      drawStageTwoDirtAndEffects(time);
       drawBaseCastle(time);
       drawEclipseEffects(time);
       drawSelectedPlacedUnitRange();
@@ -14236,6 +14754,9 @@ function requestGachaDraw(count) {
         player.gems += stageBonus;
         queueBattleReward('stage', battle.stage, null, difficulty.key);
         player.highestStage = Math.max(player.highestStage, battle.stage);
+        player.stageDifficultyClears ||= {};
+        player.stageDifficultyClears[String(battle.stage)] ||= {};
+        player.stageDifficultyClears[String(battle.stage)][difficulty.key] = true;
         battle.resultText = `스테이지 ${battle.stage} 클리어!`;
         setBattleMessage(
           `최종 보스를 처치했습니다! ${difficulty.name} 난이도 웨이브 보상 ${battle.earnedWaveGems.toLocaleString()}개와 스테이지 보너스 ${stageBonus.toLocaleString()}개를 획득했습니다. ${stageConfig.name}에 다시 도전할 수 있습니다.`
@@ -14349,6 +14870,12 @@ function requestGachaDraw(count) {
       return check.valid;
     }
 
+    function getStageAdjustedUnitDamage(unitData) {
+      const base = Number(unitData?.damage || 0);
+      if (battle?.stage === 2 && unitData?.id === 'flameWizard') return base * .5;
+      return base;
+    }
+
     function placeSelectedUnitAt(point) {
       if (!battle || battle.ended || !battle.selectedDeployUnitId) return false;
 
@@ -14365,8 +14892,8 @@ function requestGachaDraw(count) {
         unitId: unitData.id,
         x: point.x,
         y: point.y,
-        baseDamage: unitData.damage,
-        damage: unitData.damage,
+        baseDamage: getStageAdjustedUnitDamage(unitData),
+        damage: getStageAdjustedUnitDamage(unitData),
         upgradeLevel: 0,
         range: unitData.range,
         fireInterval: unitData.fireInterval,
@@ -14661,6 +15188,23 @@ function requestGachaDraw(count) {
       if (event.key === 'Enter') login();
     });
 
+    document.querySelector('#prevStageBtn')?.addEventListener('click', () => {
+      const nextId = Math.max(1, selectedStage - 1);
+      applyStagePreview(nextId);
+    });
+    document.querySelector('#nextStageBtn')?.addEventListener('click', () => {
+      const nextId = selectedStage + 1;
+      if (STAGE_CONFIG[nextId]) applyStagePreview(nextId);
+    });
+
+    const stageMapInfoBtn = document.querySelector('#stageMapInfoBtn');
+    const stageMapInfoPanel = document.querySelector('#stageMapInfoPanel');
+    stageMapInfoBtn?.addEventListener('click', () => {
+      const opening = stageMapInfoPanel?.classList.contains('hidden');
+      stageMapInfoPanel?.classList.toggle('hidden', !opening);
+      stageMapInfoBtn.setAttribute('aria-expanded', opening ? 'true' : 'false');
+    });
+
     installAnimatedMenuPigeons();
     applyStagePreview(selectedStage);
     refreshInstallButton();
@@ -14819,105 +15363,106 @@ function requestGachaDraw(count) {
     return d;
   }
 
+  function mpOnlineStageIdForWave(wave) {
+    const segment = Math.floor((Math.max(1, Number(wave || 1)) - 1) / 50);
+    return segment % 2 === 0 ? 1 : 2;
+  }
+
+  function mpLocalStageWave(wave) {
+    return ((Math.max(1, Math.floor(Number(wave) || 1)) - 1) % 50) + 1;
+  }
+
   function mpOriginalBaseEnemyHp(wave) {
     const safeWave = Math.max(1, Math.floor(Number(wave) || 1));
-    const steps = Math.floor((safeWave - 1) / 10);
+    const localWave = mpLocalStageWave(safeWave);
+    if (mpOnlineStageIdForWave(safeWave) === 2) {
+      return 200 * (localWave >= 25 ? 1.5 : 1);
+    }
+    const steps = Math.floor((localWave - 1) / 10);
     return 100 * Math.pow(1.1, steps);
   }
 
   function mpBaseEnemyHp(wave) {
+    const stageId = mpOnlineStageIdForWave(wave);
+    if (stageId === 2) return Math.max(1, Math.round(mpOriginalBaseEnemyHp(wave)));
     return Math.max(1, Math.round(mpOriginalBaseEnemyHp(wave) * (2 / 3)));
   }
 
   function mpWaveReward(wave) {
     const safeWave = Math.max(1, Math.floor(Number(wave) || 1));
-    return 100 + Math.floor((safeWave - 1) / 10) * 10;
+    const base = 100 + Math.floor((safeWave - 1) / 10) * 10;
+    return Math.round(base * (mpOnlineStageIdForWave(safeWave) === 2 ? 2.5 : 1));
+  }
+
+  function mpStageTwoRegularSpec(wave, index = 0) {
+    const localWave = mpLocalStageWave(wave);
+    const pigeonSpeed = Math.min(86, 58 + localWave * .55);
+    const normalSpeed = pigeonSpeed * .75;
+    const hp = Math.round(200 * (localWave >= 25 ? 1.5 : 1));
+    if (localWave >= 30 && index % 8 === 4) {
+      return { type:'normal', variant:'soilGolem', name:'흙 골렘', hp:Math.round(300*(localWave>=25?1.5:1)), speed:normalSpeed*.86, radius:22, reward:30, reviveOnce:true, reviveHpRatio:2/3 };
+    }
+    if (localWave >= 11 && index % 8 === 0) {
+      return { type:'normal', variant:'speedyGolem', name:'스피디 골렘', hp, speed:normalSpeed*3, radius:17, reward:26, rolling:true };
+    }
+    return { type:'normal', variant:'golem', name:'골렘', hp, speed:normalSpeed, radius:21, reward:24 };
   }
 
   function mpBossInfoForWave(wave, baseHp = mpBaseEnemyHp(wave)) {
-    if (wave % 10 !== 0) return null;
-    const bossIndex = ((wave / 10) - 1) % 4;
-    // 온라인 스테이지 1 보스는 기존 HP의 정확히 1/2을 사용합니다.
+    const localWave = mpLocalStageWave(wave);
+    const stageId = mpOnlineStageIdForWave(wave);
+    if (stageId === 2) {
+      if (localWave === 10) return { name:'보석이 박힌 골렘', specs:[{type:'gemGolemBoss',name:'보석이 박힌 골렘',hp:1000,speed:43,radius:36,reward:260,abilityEvery:10,shieldRatio:.5}] };
+      if (localWave === 30) return { name:'거대 골렘', specs:[{type:'giantGolemBoss',name:'거대 골렘',hp:2000,speed:34,radius:48,reward:600,abilityEvery:5,abilityRange:205}] };
+      if (localWave === 40) return { name:'합쳐진 흙 골렘', specs:[{type:'combinedSoilGolemBoss',name:'합쳐진 흙 골렘',hp:3000,speed:31,radius:54,reward:900,reviveChance:.75,reviveHpRatio:.75}] };
+      if (localWave === 50) return { name:'크리스탈 골렘', specs:[{type:'crystalGolemBoss',name:'크리스탈 골렘',hp:15000,speed:28,radius:58,reward:1800,crystalShotEvery:5,crystalShieldEvery:10,shieldRatio:.3,abilityRange:360}] };
+      return null;
+    }
+
+    if (localWave % 10 !== 0) return null;
+    const bossIndex = ((localWave / 10) - 1) % 4;
     const bossBaseHp = mpOriginalBaseEnemyHp(wave) * 0.5;
 
     if (bossIndex === 0) {
       return {
         name: '비둘기 브라더스',
         specs: Array.from({ length: 5 }, (_, index) => ({
-          type: 'brother',
-          name: '비둘기 브라더스',
-          hp: Math.round(bossBaseHp * 10),
-          speed: 50,
-          radius: 28,
-          reward: 90,
-          groupIndex: index
+          type: 'brother', name: '비둘기 브라더스', hp: Math.round(bossBaseHp * 10),
+          speed: 50, radius: 28, reward: 90, groupIndex: index
         }))
       };
     }
-
-    if (bossIndex === 1) {
-      return {
-        name: '기사 비둘기',
-        specs: [{
-          type: 'knight',
-          name: '기사 비둘기',
-          hp: Math.round(bossBaseHp * 50),
-          speed: 47,
-          radius: 31,
-          reward: 360,
-          abilityEvery: 12
-        }]
-      };
-    }
-
-    if (bossIndex === 2) {
-      return {
-        name: '킹 비둘기',
-        specs: [{
-          type: 'king',
-          name: '킹 비둘기',
-          hp: Math.round(bossBaseHp * 150),
-          speed: 43,
-          radius: 35,
-          reward: 720,
-          abilityEvery: 5
-        }]
-      };
-    }
-
-    return {
-      name: '각성한 킹 비둘기',
-      specs: [{
-        type: 'awakenedKing',
-        name: '각성한 킹 비둘기',
-        hp: Math.round(bossBaseHp * 225),
-        speed: 46,
-        radius: 39,
-        reward: 1200,
-        abilityEvery: 3
-      }]
-    };
+    if (bossIndex === 1) return { name:'기사 비둘기', specs:[{type:'knight',name:'기사 비둘기',hp:Math.round(bossBaseHp*50),speed:47,radius:31,reward:360,abilityEvery:12}] };
+    if (bossIndex === 2) return { name:'킹 비둘기', specs:[{type:'king',name:'킹 비둘기',hp:Math.round(bossBaseHp*150),speed:43,radius:35,reward:720,abilityEvery:5}] };
+    return { name:'각성한 킹 비둘기', specs:[{type:'awakenedKing',name:'각성한 킹 비둘기',hp:Math.round(bossBaseHp*225),speed:46,radius:39,reward:1200,abilityEvery:3}] };
   }
 
   function mpBuildWaveSpecs(wave) {
+    const stageId = mpOnlineStageIdForWave(wave);
+    const localWave = mpLocalStageWave(wave);
     const baseHp = mpBaseEnemyHp(wave);
-    const isBossWave = wave % 10 === 0;
-    const count = isBossWave
-      ? Math.min(14, 4 + Math.floor(wave / 4))
-      : Math.min(28, 6 + Math.floor(wave / 2));
 
-    const specs = Array.from({ length: count }, () => ({
-      type: 'normal',
-      name: '비둘기',
-      hp: baseHp,
-      speed: Math.min(96, 52 + wave * .55),
-      radius: 18,
-      reward: 18 + Math.floor(wave / 5) * 2
-    }));
+    if (stageId === 2) {
+      if (localWave === 39) {
+        const specs = Array.from({length:20},(_,i)=>({
+          type:'normal',variant:'soilGolem',name:'흙 골렘',hp:Math.round(300*1.5),
+          speed:(Math.min(86,58+localWave*.55)*.75*.86),radius:22,reward:30,
+          noRevive:true,leavePermanentDirt:true,wave39Soil:true,groupIndex:i
+        }));
+        return {specs,bossName:null,baseHp};
+      }
+      const boss = mpBossInfoForWave(wave, baseHp);
+      if (boss) return {specs:[...boss.specs],bossName:boss.name,baseHp};
+      const count=Math.min(28,8+Math.floor((localWave-1)/2));
+      const specs=Array.from({length:count},(_,i)=>mpStageTwoRegularSpec(wave,i));
+      return {specs,bossName:null,baseHp};
+    }
 
-    const boss = mpBossInfoForWave(wave, baseHp);
-    if (boss) specs.push(...boss.specs);
-    return { specs, bossName: boss?.name || null, baseHp };
+    const isBossWave = localWave % 10 === 0;
+    const count = isBossWave ? Math.min(14,4+Math.floor(localWave/4)) : Math.min(28,6+Math.floor(localWave/2));
+    const specs=Array.from({length:count},()=>({type:'normal',name:'비둘기',hp:baseHp,speed:Math.min(96,52+localWave*.55),radius:18,reward:18+Math.floor(localWave/5)*2}));
+    const boss=mpBossInfoForWave(wave,baseHp); if(boss) specs.push(...boss.specs);
+    return {specs,bossName:boss?.name||null,baseHp};
   }
 
   function mpCreateEnemy(spec, wave, native = true, forwarded = false) {
@@ -14945,7 +15490,22 @@ function requestGachaDraw(count) {
         ? Date.now() + spec.abilityEvery * 1000
         : 0,
       timeStunUntil: 0,
-      timeFieldUntil: 0
+      timeFieldUntil: 0,
+      stageId: mpOnlineStageIdForWave(wave),
+      localWave: mpLocalStageWave(wave),
+      variant: spec.variant || null,
+      rolling: Boolean(spec.rolling),
+      reviveOnce: Boolean(spec.reviveOnce),
+      reviveHpRatio: Number(spec.reviveHpRatio || 2/3),
+      noRevive: Boolean(spec.noRevive),
+      leavePermanentDirt: Boolean(spec.leavePermanentDirt),
+      soilRevived: false, soilPileUntil: 0,
+      reviveChance: Number(spec.reviveChance || 0), reviveHpRatioBoss: Number(spec.reviveHpRatio || .75), reviveCount: 0,
+      shield: 0, shieldMax: 0, shieldRatio: Number(spec.shieldRatio || 0),
+      crystalShotEvery: Number(spec.crystalShotEvery || 0), crystalShieldEvery: Number(spec.crystalShieldEvery || 0),
+      nextCrystalShotAt: spec.crystalShotEvery ? Date.now()+Number(spec.crystalShotEvery)*1000 : 0,
+      nextCrystalShieldAt: spec.crystalShieldEvery ? Date.now()+Number(spec.crystalShieldEvery)*1000 : 0,
+      abilityRange: Number(spec.abilityRange || 0)
     };
   }
 
@@ -14957,7 +15517,8 @@ function requestGachaDraw(count) {
       kills: 0,
       units: [],
       enemies: [],
-      nativeRemaining: 0
+      nativeRemaining: 0,
+      dirtPiles: []
     };
   }
 
@@ -15009,7 +15570,8 @@ function requestGachaDraw(count) {
         kills: { host: 0, guest: 0 },
         units: [],
         enemies: [],
-        nativeRemaining: 0
+        nativeRemaining: 0,
+        dirtPiles: []
       },
       matchFinished: false,
       winnerRole: null,
@@ -15853,6 +16415,13 @@ function requestGachaDraw(count) {
     const { specs, bossName, baseHp } = mpBuildWaveSpecs(wave);
     mpState.wave = wave;
     mpState.waveInProgress = true;
+    const stageId = mpOnlineStageIdForWave(wave);
+    const localWave = mpLocalStageWave(wave);
+    mpState.currentStageId = stageId;
+    if (localWave === 40 && stageId === 2) {
+      const targets = mpState.mode === 'coop' ? [mpState.shared] : [mpState.sides.host, mpState.sides.guest];
+      targets.forEach(t => { t.dirtConvergeUntil = Date.now()+1600; t.dirtConvergeFrom = [...(t.dirtPiles||[])]; });
+    }
 
     if (mpState.mode === 'coop') {
       mpHostRuntime.spawnQueues.shared = specs.map(spec => ({ ...spec }));
@@ -15866,11 +16435,19 @@ function requestGachaDraw(count) {
       mpState.sides.host.nativeRemaining = specs.length;
       mpState.sides.guest.nativeRemaining = specs.length;
     }
+    if (stageId === 2 && localWave === 40) {
+      if (mpState.mode === 'coop') mpHostRuntime.spawnTimers.shared = 1.6;
+      else { mpHostRuntime.spawnTimers.host = 1.6; mpHostRuntime.spawnTimers.guest = 1.6; }
+    }
 
     const hpText = baseHp.toLocaleString();
+    const mapName = stageId === 2 ? '수정 동굴' : '햇살 초원';
+    const mapChanged = localWave === 1;
     mpState.announcement = bossName
-      ? `⚠ WAVE ${wave} · ${bossName} 등장! · 일반 적 HP ${hpText}`
-      : `WAVE ${wave} 시작 · 적 HP ${hpText}`;
+      ? `⚠ WAVE ${wave} · ${mapName} · ${bossName} 등장! · 일반 적 HP ${hpText}`
+      : mapChanged
+        ? `🗺️ 맵 변경 · ${mapName}! WAVE ${wave} 시작`
+        : `WAVE ${wave} · ${mapName} · 적 HP ${hpText}`;
     mpState.announcementUntil = Date.now() + (bossName ? 4200 : 2200);
     if (bossName) {
       try { showBossSpawnAlert(bossName); } catch (_) {}
@@ -15885,7 +16462,9 @@ function requestGachaDraw(count) {
       if (mpHostRuntime.spawnTimers[key] > 0) return;
       const spec = queue.shift();
       target.enemies.push(mpCreateEnemy(spec, mpState.wave, true, false));
-      mpHostRuntime.spawnTimers[key] = spec.type === 'normal' ? .52 : .78;
+      mpHostRuntime.spawnTimers[key] = mpOnlineStageIdForWave(mpState.wave) === 2 && mpLocalStageWave(mpState.wave) === 39
+        ? .34
+        : (spec.type === 'normal' ? .52 : .78);
     };
 
     if (mpState.mode === 'coop') {
@@ -15929,31 +16508,71 @@ function requestGachaDraw(count) {
     return target.units || [];
   }
 
-  function mpApplyBossAbility(enemy, target) {
-    if (!enemy.abilityEvery || enemy.dead || Date.now() < enemy.nextAbilityAt) return;
-    enemy.nextAbilityAt = Date.now() + enemy.abilityEvery * 1000;
-    const units = mpGetUnitsForTarget(target).filter(unit => Math.abs(unit.x - enemy.x) < 270);
-    const stunnableUnits = units.filter(unit => !UNIT_DATA[unit.unitId]?.stunImmune);
+  function mpTargetSideKey(target) {
+    if (mpState?.mode === 'coop') return 'shared';
+    if (target === mpState?.sides?.host) return 'host';
+    if (target === mpState?.sides?.guest) return 'guest';
+    return null;
+  }
 
-    if (enemy.type === 'knight') {
-      const shuffled = [...stunnableUnits].sort(() => Math.random() - .5).slice(0, 3);
-      shuffled.forEach(unit => { unit.stunUntil = Math.max(unit.stunUntil || 0, Date.now() + 10000); });
-      mpState.announcement = `기사 비둘기가 유닛 ${shuffled.length}개를 10초 동안 기절시켰습니다!`;
-      mpState.announcementUntil = Date.now() + 2600;
+  function mpFireCrystalEightWay(enemy, target, reason='shot') {
+    const sideKey=mpTargetSideKey(target),range=Number(enemy.abilityRange||360),width=25,now=Date.now();
+    let affected=0;
+    for(let i=0;i<8;i+=1){const a=i*Math.PI/4,ux=Math.cos(a),uy=Math.sin(a),x2=enemy.x+ux*range,y2=enemy.y+uy*range;mpPushFx(enemy.x,enemy.y,x2,y2,'#79f2ff',8,sideKey,'crystalRay',{angle:a});
+      for(const unit of target.units||[]){if(UNIT_DATA[unit.unitId]?.stunImmune)continue;const dx=unit.x-enemy.x,dy=unit.y-enemy.y,f=dx*ux+dy*uy;if(f<0||f>range)continue;const side=Math.abs(dx*(-uy)+dy*ux);if(side>width)continue;unit.stunUntil=Math.max(Number(unit.stunUntil||0),now+3000);affected++;}}
+    mpState.announcement=reason==='shieldBreak'?`크리스탈 보호막 파괴! 8방향 파편 · 유닛 ${affected}개 3초 기절`:`크리스탈 골렘 8방향 보석 발사 · 유닛 ${affected}개 3초 기절`;
+    mpState.announcementUntil=now+2400;
+  }
+
+  function mpSpawnRollingGolems(enemy,target) {
+    const count=1+Math.floor(Math.random()*4),sideKey=mpTargetSideKey(target);
+    for(let i=0;i<count;i+=1){const spec=mpStageTwoRegularSpec(mpState.wave,i+1);spec.type='normal';spec.variant='speedyGolem';spec.name='구르는 골렘';spec.rolling=true;spec.speed=Math.max(135,Number(spec.speed||150));spec.reward=18;const child=mpCreateEnemy(spec,mpState.wave,true,false);child.x=enemy.x+(Math.random()-.5)*28;child.y=enemy.y+(Math.random()-.5)*22;target.enemies.push(child);target.nativeRemaining=Number(target.nativeRemaining||0)+1;}
+    mpState.announcement=`거대 골렘 지면 강타! 구르는 골렘 ${count}마리 소환`;
+    mpState.announcementUntil=Date.now()+2200;
+    return count;
+  }
+
+  function mpEffectiveUnitDamage(unit) {
+    const base=Number(unit?.damage||0);
+    return mpOnlineStageIdForWave(mpState?.wave||1)===2 && unit?.unitId==='flameWizard' ? base*.5 : base;
+  }
+
+  function mpApplyBossAbility(enemy, target) {
+    const now=Date.now();
+    if (enemy.dead) return;
+
+    if(enemy.type==='crystalGolemBoss'){
+      if(enemy.crystalShotEvery && now>=Number(enemy.nextCrystalShotAt||0)){enemy.nextCrystalShotAt=now+enemy.crystalShotEvery*1000;mpFireCrystalEightWay(enemy,target,'shot');}
+      if(enemy.crystalShieldEvery && now>=Number(enemy.nextCrystalShieldAt||0)){enemy.nextCrystalShieldAt=now+enemy.crystalShieldEvery*1000;const amount=enemy.maxHp*Number(enemy.shieldRatio||.3);enemy.shield=amount;enemy.shieldMax=amount;mpState.announcement=`크리스탈 골렘이 최대체력 30% 보호막 ${Math.round(amount)} 생성`;mpState.announcementUntil=now+2200;}
       return;
     }
 
+    if (!enemy.abilityEvery || now < enemy.nextAbilityAt) return;
+    enemy.nextAbilityAt = now + enemy.abilityEvery * 1000;
+    const units = mpGetUnitsForTarget(target).filter(unit => Math.abs(unit.x - enemy.x) < 300);
+    const stunnableUnits = units.filter(unit => !UNIT_DATA[unit.unitId]?.stunImmune);
+
+    if(enemy.type==='gemGolemBoss'){
+      const amount=enemy.maxHp*Number(enemy.shieldRatio||.5);enemy.shield=amount;enemy.shieldMax=amount;
+      mpState.announcement=`보석 골렘이 최대체력 50% 보호막 ${Math.round(amount)} 생성`;mpState.announcementUntil=now+2200;return;
+    }
+    if(enemy.type==='giantGolemBoss'){
+      const spawned=mpSpawnRollingGolems(enemy,target);let affected=0;
+      stunnableUnits.filter(unit=>Math.hypot(unit.x-enemy.x,unit.y-enemy.y)<=Number(enemy.abilityRange||205)).forEach(unit=>{unit.stunUntil=Math.max(Number(unit.stunUntil||0),now+2000);affected++;});
+      mpState.announcement=`거대 골렘 강타 · 구르는 골렘 ${spawned}마리 · 주변 유닛 ${affected}개 2초 기절`;mpState.announcementUntil=now+2400;return;
+    }
+    if (enemy.type === 'knight') {
+      const shuffled = [...stunnableUnits].sort(() => Math.random() - .5).slice(0, 3);
+      shuffled.forEach(unit => { unit.stunUntil = Math.max(unit.stunUntil || 0, now + 10000); });
+      mpState.announcement = `기사 비둘기가 유닛 ${shuffled.length}개를 10초 동안 기절시켰습니다!`; mpState.announcementUntil = now + 2600; return;
+    }
     enemy.hp = Math.min(enemy.maxHp, enemy.hp + enemy.maxHp * .05);
     if (enemy.type === 'king') {
-      stunnableUnits.filter(unit => Math.hypot(unit.x - enemy.x, unit.y - enemy.y) <= 190)
-        .forEach(unit => { unit.stunUntil = Math.max(unit.stunUntil || 0, Date.now() + 1000); });
-      mpState.announcement = '킹 비둘기가 체력을 회복하고 주변 유닛을 마비시켰습니다!';
-      mpState.announcementUntil = Date.now() + 2200;
+      stunnableUnits.filter(unit => Math.hypot(unit.x - enemy.x, unit.y - enemy.y) <= 190).forEach(unit => { unit.stunUntil = Math.max(unit.stunUntil || 0, now + 1000); });
+      mpState.announcement = '킹 비둘기가 체력을 회복하고 주변 유닛을 마비시켰습니다!'; mpState.announcementUntil = now + 2200;
     } else if (enemy.type === 'awakenedKing') {
-      units.filter(unit => Math.hypot(unit.x - enemy.x, unit.y - enemy.y) <= 235)
-        .forEach(unit => { unit.slowUntil = Math.max(unit.slowUntil || 0, Date.now() + 2000); });
-      mpState.announcement = '각성한 킹 비둘기가 체력을 회복하고 주변 공격속도를 느리게 했습니다!';
-      mpState.announcementUntil = Date.now() + 2200;
+      units.filter(unit => Math.hypot(unit.x - enemy.x, unit.y - enemy.y) <= 235).forEach(unit => { unit.slowUntil = Math.max(unit.slowUntil || 0, now + 2000); });
+      mpState.announcement = '각성한 킹 비둘기가 체력을 회복하고 주변 공격속도를 느리게 했습니다!'; mpState.announcementUntil = now + 2200;
     }
   }
 
@@ -15961,6 +16580,9 @@ function requestGachaDraw(count) {
     const ratio = enemy.type === 'normal' ? .07 : enemy.type === 'brother' ? .12 : .18;
     const damage = Math.max(10, Math.round(enemy.maxHp * ratio));
     target.baseHp = Math.max(0, target.baseHp - damage);
+    if (enemy.stageId === 2 && enemy.localWave === 39 && enemy.variant === 'soilGolem') {
+      target.dirtPiles ||= []; target.dirtPiles.push({x:MP_BASE_X-45+Math.random()*30,y:MP_PATH_Y+(Math.random()-.5)*50,seed:Math.random()*1000});
+    }
     enemy.dead = true;
     if (enemy.native) target.nativeRemaining = Math.max(0, target.nativeRemaining - 1);
 
@@ -16005,21 +16627,32 @@ function requestGachaDraw(count) {
   }
 
   function mpApplyDamage(target, enemy, damage, ownerRole, sideKey = null) {
-    if (!enemy || enemy.dead) return false;
-    enemy.hp -= Math.max(0, damage);
-    if (enemy.hp > 0) return false;
-    enemy.hp = 0;
-    enemy.dead = true;
-    if (enemy.native) target.nativeRemaining = Math.max(0, target.nativeRemaining - 1);
-    mpRewardKill(target, ownerRole, enemy);
-    if (mpState.mode === 'pvp') mpForwardEnemy(sideKey, enemy);
+    if (!enemy || enemy.dead || Number(enemy.soilPileUntil||0)>Date.now()) return false;
+    let remaining=Math.max(0,Number(damage||0));
+    if(Number(enemy.shield||0)>0){const before=enemy.shield,absorb=Math.min(before,remaining);enemy.shield=Math.max(0,before-absorb);remaining-=absorb;if(before>0&&enemy.shield<=0&&enemy.type==='crystalGolemBoss')mpFireCrystalEightWay(enemy,target,'shieldBreak');}
+    if(remaining<=0)return false;
+    enemy.hp-=remaining;if(enemy.hp>0)return false;
+
+    if(enemy.variant==='soilGolem'&&enemy.reviveOnce&&!enemy.noRevive&&!enemy.soilRevived){enemy.hp=0;enemy.soilPileUntil=Date.now()+1250;return false;}
+    if(enemy.type==='combinedSoilGolemBoss'&&Math.random()<Number(enemy.reviveChance||.75)){enemy.reviveCount=Number(enemy.reviveCount||0)+1;enemy.maxHp=Math.max(1,Math.round(enemy.maxHp*Number(enemy.reviveHpRatioBoss||.75)));enemy.hp=enemy.maxHp;enemy.radius=Math.max(34,Number(enemy.radius||54)*.96);mpState.announcement=`합쳐진 흙 골렘 ${enemy.reviveCount}회 부활 · HP ${enemy.maxHp}`;mpState.announcementUntil=Date.now()+2200;return false;}
+
+    enemy.hp=0;enemy.dead=true;
+    if(enemy.native)target.nativeRemaining=Math.max(0,target.nativeRemaining-1);
+    if(enemy.stageId===2&&enemy.localWave===39&&enemy.variant==='soilGolem'&&enemy.leavePermanentDirt){target.dirtPiles ||= [];target.dirtPiles.push({x:enemy.x,y:enemy.y,seed:Math.random()*1000});}
+    mpRewardKill(target,ownerRole,enemy);
+    if(mpState.mode==='pvp')mpForwardEnemy(sideKey,enemy);
     return true;
   }
 
   function mpUpdateEnemies(target, dt, sideKey = null) {
     const now = Date.now();
+    if (Number(target.dirtConvergeUntil || 0) && now >= Number(target.dirtConvergeUntil || 0)) { target.dirtPiles=[]; target.dirtConvergeUntil=0; target.dirtConvergeFrom=[]; }
     for (const enemy of target.enemies) {
       if (enemy.dead) continue;
+      if (Number(enemy.soilPileUntil || 0) > 0) {
+        if (now < enemy.soilPileUntil) continue;
+        enemy.soilPileUntil = 0; enemy.soilRevived = true; enemy.hp = Math.max(1,Math.round(enemy.maxHp*Number(enemy.reviveHpRatio||2/3)));
+      }
       if (Array.isArray(enemy.sakuraMarks) && enemy.sakuraMarks.length) {
         const keepMarks=[];
         for(const mark of enemy.sakuraMarks){
@@ -16045,7 +16678,7 @@ function requestGachaDraw(count) {
     let target = null;
     let bestX = -Infinity;
     for (const enemy of enemies) {
-      if (enemy.dead) continue;
+      if (enemy.dead || Number(enemy.soilPileUntil || 0) > Date.now()) continue;
       const d = Math.hypot(enemy.x - unit.x, enemy.y - unit.y);
       if (d <= unit.range && enemy.x > bestX) {
         target = enemy;
@@ -16077,6 +16710,7 @@ function requestGachaDraw(count) {
       sakuraIssen: .82,
       sakuraUltimateCut: .96,
       sakuraMarkBurst: .90,
+      crystalRay: .72,
       line: .24
     };
     return durations[kind] || .28;
@@ -16134,7 +16768,7 @@ function requestGachaDraw(count) {
     const x1 = unit.x + Math.cos(phase) * radius;
     const y1 = unit.y + Math.sin(phase) * radius;
     mpPushFx(x1, y1, enemy.x, enemy.y, golden ? '#ffd84f' : '#d8b4fe', golden ? 6 : 4, sideKey, golden ? 'chronoGolden' : 'chrono');
-    mpApplyDamage(targetState, enemy, unit.damage, unit.ownerRole, sideKey);
+    mpApplyDamage(targetState, enemy, mpEffectiveUnitDamage(unit), unit.ownerRole, sideKey);
     if (golden && !enemy.dead) {
       const isBoss = enemy.type !== 'normal';
       const stunSeconds = isBoss
@@ -16386,9 +17020,9 @@ function requestGachaDraw(count) {
     const a=Math.atan2(target.y-unit.y,target.x-unit.x),dist=Math.hypot(target.x-unit.x,target.y-unit.y);unit.angle=a;unit.attackAnimation=1;unit.cooldown=unit.fireInterval;unit.samuraiNormalCount=Number(unit.samuraiNormalCount||0)+1;mpRegisterCherrySamuraiAttack(targetState,sideKey,unit);
     if(dist<=(data.meleeRange||120)){
       unit.attackMode='sakuraMelee';const half=((data.meleeConeAngle||180)*Math.PI/180)/2,victims=[...targetState.enemies].filter(e=>{if(e.dead)return false;const dx=e.x-unit.x,dy=e.y-unit.y,d=Math.hypot(dx,dy);return d<=(data.meleeRange||120)&&Math.abs(mpAngleDelta(Math.atan2(dy,dx),a))<=half;});
-      mpPushFx(unit.x,unit.y,target.x,target.y,'#ff9bd0',10,sideKey,'sakuraMelee',{angle:a,radius:data.meleeRange||120,coneAngle:data.meleeConeAngle||180});victims.forEach(e=>mpApplyDamage(targetState,e,unit.damage,unit.ownerRole,sideKey));return;
+      mpPushFx(unit.x,unit.y,target.x,target.y,'#ff9bd0',10,sideKey,'sakuraMelee',{angle:a,radius:data.meleeRange||120,coneAngle:data.meleeConeAngle||180});victims.forEach(e=>mpApplyDamage(targetState,e,mpEffectiveUnitDamage(unit),unit.ownerRole,sideKey));return;
     }
-    unit.attackMode='sakuraWave';const waveTargets=mpCherrySamuraiWaveTargets(targetState,unit,target),visual=waveTargets.length>=2?waveTargets:[target,target];visual.slice(0,2).forEach((t,i)=>{const wa=Math.atan2(t.y-unit.y,t.x-unit.x),ux=Math.cos(wa),uy=Math.sin(wa),nx=-uy,ny=ux,o=i===0?-9:9;mpPushFx(unit.x+ux*28+nx*o,unit.y+uy*28+ny*o,t.x,t.y,'#dffaff',8,sideKey,'sakuraWave',{seed:Math.random()*1000+i*17,waveIndex:i});});const splashRadius=data.swordWaveSplashRadius||35,waveVictims=new Map();waveTargets.forEach(t=>{[...targetState.enemies].forEach(e=>{if(!e.dead&&Math.hypot(e.x-t.x,e.y-t.y)<=splashRadius)waveVictims.set(e.id,e);});});waveVictims.forEach(e=>mpApplyDamage(targetState,e,unit.damage,unit.ownerRole,sideKey));
+    unit.attackMode='sakuraWave';const waveTargets=mpCherrySamuraiWaveTargets(targetState,unit,target),visual=waveTargets.length>=2?waveTargets:[target,target];visual.slice(0,2).forEach((t,i)=>{const wa=Math.atan2(t.y-unit.y,t.x-unit.x),ux=Math.cos(wa),uy=Math.sin(wa),nx=-uy,ny=ux,o=i===0?-9:9;mpPushFx(unit.x+ux*28+nx*o,unit.y+uy*28+ny*o,t.x,t.y,'#dffaff',8,sideKey,'sakuraWave',{seed:Math.random()*1000+i*17,waveIndex:i});});const splashRadius=data.swordWaveSplashRadius||35,waveVictims=new Map();waveTargets.forEach(t=>{[...targetState.enemies].forEach(e=>{if(!e.dead&&Math.hypot(e.x-t.x,e.y-t.y)<=splashRadius)waveVictims.set(e.id,e);});});waveVictims.forEach(e=>mpApplyDamage(targetState,e,mpEffectiveUnitDamage(unit),unit.ownerRole,sideKey));
   }
 
   function mpPerformUnitAttack(targetState, sideKey, unit, target) {
@@ -16450,7 +17084,7 @@ function requestGachaDraw(count) {
       [...targetState.enemies]
         .filter(enemy => !enemy.dead && Math.hypot(enemy.x - target.x, enemy.y - target.y) <= slashRadius)
         .forEach(enemy => {
-          const killed = mpApplyDamage(targetState, enemy, unit.damage, unit.ownerRole, sideKey);
+          const killed = mpApplyDamage(targetState, enemy, mpEffectiveUnitDamage(unit), unit.ownerRole, sideKey);
           if (killed) mpTriggerEclipseGrowth(unit, enemy, sideKey);
         });
       if (Math.random() < (eclipseData.hitBlackHoleChance || .05)) mpCreateEclipseBlackHole(targetState, sideKey, unit, target);
@@ -16468,7 +17102,7 @@ function requestGachaDraw(count) {
         const d = Math.hypot(dx, dy);
         return d <= unit.range && Math.abs(mpAngleDelta(Math.atan2(dy, dx), angle)) <= half;
       });
-      const damage = unit.damage * (heavy ? (knightData.heavySlashMultiplier || 2) : 1);
+      const damage = mpEffectiveUnitDamage(unit) * (heavy ? (knightData.heavySlashMultiplier || 2) : 1);
       mpPushFx(unit.x, unit.y, target.x, target.y, knightData.color || '#dce6f3', heavy ? 10 : 7, sideKey, 'steelSlash', { angle, radius: unit.range, coneAngle });
       victims.forEach(enemy => mpApplyDamage(targetState, enemy, damage, unit.ownerRole, sideKey));
       return;
@@ -16484,7 +17118,7 @@ function requestGachaDraw(count) {
         .slice(0, archerData.volleyShots || 3);
       volleyTargets.forEach((enemy, index) => {
         mpPushFx(unit.x, unit.y, enemy.x, enemy.y, archerData.color || '#4d8fff', 4, sideKey, 'arrow', { seed: Math.random() * 1000 + index * 13 });
-        mpApplyDamage(targetState, enemy, unit.damage, unit.ownerRole, sideKey);
+        mpApplyDamage(targetState, enemy, mpEffectiveUnitDamage(unit), unit.ownerRole, sideKey);
       });
       return;
     }
@@ -16499,7 +17133,7 @@ function requestGachaDraw(count) {
         .slice(0, mageData.chainExtraTargets || 2);
       [target, ...extras].forEach((enemy, index) => {
         mpPushFx(unit.x, unit.y, enemy.x, enemy.y, mageData.color || '#9b64ff', 5, sideKey, 'arcane', { seed: Math.random() * 1000 + index * 19 });
-        mpApplyDamage(targetState, enemy, index === 0 ? unit.damage : unit.damage * (mageData.chainDamageMultiplier || .7), unit.ownerRole, sideKey);
+        mpApplyDamage(targetState, enemy, index === 0 ? mpEffectiveUnitDamage(unit) : mpEffectiveUnitDamage(unit) * (mageData.chainDamageMultiplier || .7), unit.ownerRole, sideKey);
       });
       return;
     }
@@ -16510,7 +17144,7 @@ function requestGachaDraw(count) {
       mpPushFx(unit.x, unit.y, target.x, target.y, flameData.color || '#ff6d42', 12, sideKey, 'fireball', { radius });
       [...targetState.enemies].forEach(enemy => {
         if (!enemy.dead && Math.hypot(enemy.x - target.x, enemy.y - target.y) <= radius) {
-          mpApplyDamage(targetState, enemy, unit.damage * (flameData.infernoMultiplier || 2), unit.ownerRole, sideKey);
+          mpApplyDamage(targetState, enemy, mpEffectiveUnitDamage(unit) * (flameData.infernoMultiplier || 2), unit.ownerRole, sideKey);
         }
       });
       return;
@@ -16528,7 +17162,7 @@ function requestGachaDraw(count) {
       const endX = unit.x + Math.cos(angle) * unit.range;
       const endY = unit.y + Math.sin(angle) * unit.range;
       mpPushFx(unit.x, unit.y, endX, endY, '#77f2ba', 10, sideKey, 'windPiercing');
-      hits.forEach(enemy => mpApplyDamage(targetState, enemy, unit.damage, unit.ownerRole, sideKey));
+      hits.forEach(enemy => mpApplyDamage(targetState, enemy, mpEffectiveUnitDamage(unit), unit.ownerRole, sideKey));
       return;
     }
 
@@ -16544,7 +17178,7 @@ function requestGachaDraw(count) {
         return Math.abs(mpAngleDelta(Math.atan2(dy, dx), angle)) <= half;
       });
       mpPushFx(unit.x, unit.y, target.x, target.y, '#ffd04a', 8, sideKey, 'royalCone', { angle, radius: data.meleeRange || 120, coneAngle: data.coneAngle || 120 });
-      victims.forEach(enemy => mpApplyDamage(targetState, enemy, unit.damage, unit.ownerRole, sideKey));
+      victims.forEach(enemy => mpApplyDamage(targetState, enemy, mpEffectiveUnitDamage(unit), unit.ownerRole, sideKey));
       return;
     }
 
@@ -16553,33 +17187,33 @@ function requestGachaDraw(count) {
       mpPushFx(unit.x, unit.y, target.x, target.y, data.color || '#ffd04a', 8, sideKey, 'royalWave', { radius: waveRadius });
       [...targetState.enemies].forEach(enemy => {
         if (!enemy.dead && Math.hypot(enemy.x - target.x, enemy.y - target.y) <= waveRadius) {
-          mpApplyDamage(targetState, enemy, unit.damage, unit.ownerRole, sideKey);
+          mpApplyDamage(targetState, enemy, mpEffectiveUnitDamage(unit), unit.ownerRole, sideKey);
         }
       });
       return;
     }
 
     mpPushFx(unit.x, unit.y, target.x, target.y, data.color || '#fff', 3, sideKey, mpAttackEffectKind(unit.unitId));
-    mpApplyDamage(targetState, target, unit.damage, unit.ownerRole, sideKey);
+    mpApplyDamage(targetState, target, mpEffectiveUnitDamage(unit), unit.ownerRole, sideKey);
 
     if (unit.unitId === 'flameWizard') {
       [...targetState.enemies].forEach(enemy => {
         if (enemy.dead || enemy.id === target.id) return;
         if (Math.hypot(enemy.x - target.x, enemy.y - target.y) <= 88) {
-          mpApplyDamage(targetState, enemy, unit.damage / 3, unit.ownerRole, sideKey);
+          mpApplyDamage(targetState, enemy, mpEffectiveUnitDamage(unit) / 3, unit.ownerRole, sideKey);
         }
       });
     }
 
     if (unit.unitId === 'skyDragonKnight') {
       if (Math.random() < (data.lightningChance || .5)) {
-        mpScheduleLightning(sideKey, target, unit.damage, unit.ownerRole);
+        mpScheduleLightning(sideKey, target, mpEffectiveUnitDamage(unit), unit.ownerRole);
       }
       if (unit.attackCount % (data.laneSweepEvery || 7) === 0) {
         mpPushFx(0, MP_PATH_Y, MP_WIDTH, MP_PATH_Y, '#ffe072', 12, sideKey, 'dragonLane');
         [...targetState.enemies].forEach(enemy => {
           if (!enemy.dead && Math.abs(enemy.y - MP_PATH_Y) <= 45) {
-            mpApplyDamage(targetState, enemy, unit.damage * (data.laneSweepMultiplier || 5), unit.ownerRole, sideKey);
+            mpApplyDamage(targetState, enemy, mpEffectiveUnitDamage(unit) * (data.laneSweepMultiplier || 5), unit.ownerRole, sideKey);
           }
         });
       }
@@ -16764,11 +17398,16 @@ function requestGachaDraw(count) {
             p_wave: wave
           });
           if (error) throw error;
-          if (data?.gems != null) {
-            player.gems = Number(data.gems);
+          let rewardGems = data?.gems != null ? Number(data.gems) : null;
+          if (mpOnlineStageIdForWave(wave) === 2) {
+            const bonus = await claimStageTwoServerBonus(`${key}:stage2x25`, 'coop_wave', 'normal', wave);
+            if (bonus?.gems != null) rewardGems = Number(bonus.gems);
+          }
+          if (Number.isFinite(rewardGems)) {
+            player.gems = rewardGems;
             document.querySelector('#mpBattleGemsLabel').textContent = player.gems.toLocaleString();
             if (data.newly_claimed && wave === completed) {
-              mpSetMessage(`WAVE ${wave} 보상 · 소환석 ${data.amount}개 획득!`);
+              mpSetMessage(`WAVE ${wave} 보상 · 소환석 ${mpWaveReward(wave).toLocaleString()}개 획득!`);
             }
             void savePlayer();
           }
@@ -16876,53 +17515,34 @@ function requestGachaDraw(count) {
   }
 
   function mpEnsureBackgroundCache() {
-    if (mpBackgroundCache) return mpBackgroundCache;
-    const canvas = document.createElement('canvas');
-    canvas.width = MP_WIDTH;
-    canvas.height = MP_HEIGHT;
-    const ctx = canvas.getContext('2d');
-
-    const gradient = ctx.createLinearGradient(0, 0, 0, MP_HEIGHT);
-    gradient.addColorStop(0, '#4d7f4b');
-    gradient.addColorStop(1, '#2f613b');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, MP_WIDTH, MP_HEIGHT);
-
-    ctx.globalAlpha = .16;
-    ctx.strokeStyle = '#d7f0bc';
-    ctx.lineWidth = 1;
-    for (let x = 0; x <= MP_WIDTH; x += 50) {
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, MP_HEIGHT); ctx.stroke();
+    const stageId=mpOnlineStageIdForWave(mpState?.wave||1);
+    if (mpBackgroundCache?.stageId===stageId && mpBackgroundCache.canvas) return mpBackgroundCache.canvas;
+    const canvas=document.createElement('canvas');canvas.width=MP_WIDTH;canvas.height=MP_HEIGHT;const ctx=canvas.getContext('2d');
+    if(stageId===2){
+      const g=ctx.createRadialGradient(MP_WIDTH*.5,MP_HEIGHT*.45,40,MP_WIDTH*.5,MP_HEIGHT*.45,720);g.addColorStop(0,'#39485b');g.addColorStop(.52,'#202733');g.addColorStop(1,'#090d13');ctx.fillStyle=g;ctx.fillRect(0,0,MP_WIDTH,MP_HEIGHT);
+      for(let i=0;i<42;i++){const x=(i*157+41)%MP_WIDTH,y=(i*89+31)%MP_HEIGHT,size=5+(i%5)*2,colors=['#67e8f9','#a78bfa','#60a5fa','#4ade80'];ctx.save();ctx.translate(x,y);ctx.rotate(i*.67);ctx.fillStyle=colors[i%4];ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=9;ctx.beginPath();ctx.moveTo(0,-size*1.7);ctx.lineTo(size*.7,0);ctx.lineTo(0,size*1.3);ctx.lineTo(-size*.7,0);ctx.closePath();ctx.fill();ctx.restore();}
+      ctx.fillStyle='#35313b';ctx.fillRect(0,MP_PATH_Y-46,MP_WIDTH,92);ctx.fillStyle='#55505c';ctx.fillRect(0,MP_PATH_Y-35,MP_WIDTH,70);ctx.strokeStyle='rgba(180,196,220,.28)';ctx.setLineDash([18,16]);ctx.beginPath();ctx.moveTo(0,MP_PATH_Y);ctx.lineTo(MP_WIDTH,MP_PATH_Y);ctx.stroke();ctx.setLineDash([]);
+    }else{
+      const gradient=ctx.createLinearGradient(0,0,0,MP_HEIGHT);gradient.addColorStop(0,'#4d7f4b');gradient.addColorStop(1,'#2f613b');ctx.fillStyle=gradient;ctx.fillRect(0,0,MP_WIDTH,MP_HEIGHT);
+      ctx.globalAlpha=.16;ctx.strokeStyle='#d7f0bc';ctx.lineWidth=1;for(let x=0;x<=MP_WIDTH;x+=50){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,MP_HEIGHT);ctx.stroke();}for(let y=0;y<=MP_HEIGHT;y+=50){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(MP_WIDTH,y);ctx.stroke();}ctx.globalAlpha=1;
+      ctx.fillStyle='#a9815e';ctx.fillRect(0,MP_PATH_Y-46,MP_WIDTH,92);ctx.fillStyle='#d6b489';ctx.fillRect(0,MP_PATH_Y-35,MP_WIDTH,70);ctx.strokeStyle='rgba(91,61,39,.35)';ctx.setLineDash([18,16]);ctx.beginPath();ctx.moveTo(0,MP_PATH_Y);ctx.lineTo(MP_WIDTH,MP_PATH_Y);ctx.stroke();ctx.setLineDash([]);
     }
-    for (let y = 0; y <= MP_HEIGHT; y += 50) {
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(MP_WIDTH, y); ctx.stroke();
-    }
-    ctx.globalAlpha = 1;
-
-    ctx.fillStyle = '#a9815e';
-    ctx.fillRect(0, MP_PATH_Y - 46, MP_WIDTH, 92);
-    ctx.fillStyle = '#d6b489';
-    ctx.fillRect(0, MP_PATH_Y - 35, MP_WIDTH, 70);
-    ctx.strokeStyle = 'rgba(91,61,39,.35)';
-    ctx.setLineDash([18, 16]);
-    ctx.beginPath(); ctx.moveTo(0, MP_PATH_Y); ctx.lineTo(MP_WIDTH, MP_PATH_Y); ctx.stroke();
-    ctx.setLineDash([]);
-
-    ctx.fillStyle = '#5b4739';
-    ctx.fillRect(MP_BASE_X - 10, MP_PATH_Y - 52, 34, 104);
-    ctx.fillStyle = '#7789a6';
-    ctx.fillRect(MP_BASE_X, MP_PATH_Y - 68, 32, 136);
-    ctx.fillStyle = '#c9d3e2';
-    for (let y = MP_PATH_Y - 58; y < MP_PATH_Y + 55; y += 27) ctx.fillRect(MP_BASE_X + 7, y, 18, 12);
-
-    mpBackgroundCache = canvas;
-    return canvas;
+    ctx.fillStyle='#5b4739';ctx.fillRect(MP_BASE_X-10,MP_PATH_Y-52,34,104);ctx.fillStyle=stageId===2?'#596879':'#7789a6';ctx.fillRect(MP_BASE_X,MP_PATH_Y-68,32,136);ctx.fillStyle='#c9d3e2';for(let y=MP_PATH_Y-58;y<MP_PATH_Y+55;y+=27)ctx.fillRect(MP_BASE_X+7,y,18,12);
+    mpBackgroundCache={stageId,canvas};return canvas;
   }
 
   function mpDrawBackground(viewRole = mpRole) {
     const ctx = mpCtx;
     ctx.clearRect(0, 0, MP_WIDTH, MP_HEIGHT);
     ctx.drawImage(mpEnsureBackgroundCache(), 0, 0);
+
+    const viewedTarget = mpState.mode === 'coop' ? mpState.shared : mpState.sides?.[viewRole];
+    if (mpOnlineStageIdForWave(mpState.wave||1) === 2 && viewedTarget) {
+      const now=Date.now(), until=Number(viewedTarget.dirtConvergeUntil||0), from=viewedTarget.dirtConvergeFrom||[];
+      const piles=until>now&&from.length?from:(viewedTarget.dirtPiles||[]);
+      const progress=until>now?1-(until-now)/1600:0;
+      for(const pile of piles){const px=until>now?pile.x+(MP_START_X-pile.x)*progress:pile.x,py=until>now?pile.y+(MP_PATH_Y-pile.y)*progress:pile.y;ctx.save();ctx.translate(px,mpState.mode==='coop'?mpDisplayY(py):py);ctx.fillStyle='#72563d';ctx.strokeStyle='#3b2d21';ctx.lineWidth=2;for(let i=0;i<5;i++){const a=(pile.seed||0)+i*1.25;ctx.beginPath();ctx.ellipse(Math.cos(a)*8,Math.sin(a)*4,11,6,a*.2,0,Math.PI*2);ctx.fill();ctx.stroke();}ctx.restore();}
+    }
 
     if (mpState.mode === 'coop') {
       ctx.fillStyle = 'rgba(91, 157, 255, .09)';
@@ -17820,6 +18440,12 @@ function requestGachaDraw(count) {
     mpCtx.restore();
   }
 
+  function mpDrawGolem(enemy,x,y,time){
+    const r=Number(enemy.radius||21),speedy=enemy.variant==='speedyGolem'||enemy.rolling,soil=enemy.variant==='soilGolem'||enemy.type==='combinedSoilGolemBoss',crystal=enemy.type==='crystalGolemBoss',gem=enemy.type==='gemGolemBoss',giant=enemy.type==='giantGolemBoss';
+    if(Number(enemy.soilPileUntil||0)>Date.now()){mpCtx.save();mpCtx.translate(x,y);mpCtx.fillStyle='#71563d';mpCtx.strokeStyle='#3c2c20';for(let i=0;i<6;i++){const a=i*Math.PI/3+(enemy.wingPhase||0);mpCtx.beginPath();mpCtx.ellipse(Math.cos(a)*r*.42,Math.sin(a)*r*.22,r*.5,r*.28,a*.3,0,Math.PI*2);mpCtx.fill();mpCtx.stroke();}mpCtx.restore();return;}
+    mpCtx.save();mpCtx.translate(x,y);if(speedy)mpCtx.rotate(time*.008+(enemy.wingPhase||0));const stone=soil?'#846548':crystal?'#3f6f82':gem?'#596777':giant?'#4d5661':'#687483',dark=soil?'#4b3728':'#2d3540';mpCtx.fillStyle='rgba(0,0,0,.25)';mpCtx.beginPath();mpCtx.ellipse(0,r*.85,r*1.18,r*.31,0,0,Math.PI*2);mpCtx.fill();const chunks=[[-.65,.25,.55],[.64,.28,.58],[-.5,-.35,.7],[.52,-.32,.68],[0,.05,1.05],[0,-.72,.62]];chunks.forEach(([ox,oy,sc],i)=>{mpCtx.fillStyle=i===4?stone:(i%2?stone:dark);mpCtx.strokeStyle='#1d242d';mpCtx.lineWidth=Math.max(1.3,r*.065);mpCtx.beginPath();mpCtx.roundRect((ox-sc*.5)*r,(oy-sc*.5)*r,sc*r,sc*r,Math.max(3,r*.12));mpCtx.fill();mpCtx.stroke();});if(!soil){const c=crystal?'#b8f7ff':gem?'#70f0ff':'#7dd3fc';mpCtx.fillStyle=c;mpCtx.shadowColor=c;mpCtx.shadowBlur=crystal?20:9;const n=crystal?7:gem?4:1;for(let i=0;i<n;i++){const a=-Math.PI/2+i*Math.PI*2/n,d=(crystal?.44:.15)*r;mpCtx.save();mpCtx.translate(Math.cos(a)*d,Math.sin(a)*d);mpCtx.rotate(a);mpCtx.beginPath();mpCtx.moveTo(0,-r*.38);mpCtx.lineTo(r*.16,0);mpCtx.lineTo(0,r*.28);mpCtx.lineTo(-r*.16,0);mpCtx.closePath();mpCtx.fill();mpCtx.restore();}mpCtx.shadowBlur=0;}if(Number(enemy.shield||0)>0){mpCtx.strokeStyle='rgba(125,240,255,.86)';mpCtx.lineWidth=5;mpCtx.shadowColor='#6ee7ff';mpCtx.shadowBlur=14;mpCtx.beginPath();mpCtx.arc(0,0,r*1.42,0,Math.PI*2);mpCtx.stroke();}mpCtx.restore();
+  }
+
   function mpDrawPigeon(enemy, time, sideKey = 'shared') {
     const visualPosition = mpGetEnemyRenderPosition(enemy, time, sideKey);
     const x = visualPosition.x;
@@ -17836,7 +18462,10 @@ function requestGachaDraw(count) {
       mpCtx.fill();
     }
 
-    if (enemy.type === 'normal' && mpHighLoadFrame) {
+    const isGolem = enemy.stageId === 2 || Boolean(enemy.variant?.includes('Golem')) || /Golem/.test(enemy.type || '');
+    if (isGolem) {
+      mpDrawGolem(enemy,x,y,time);
+    } else if (enemy.type === 'normal' && mpHighLoadFrame) {
       mpDrawFastPigeon(enemy, x, y, time);
     } else {
       mpDetailCanvasPigeon(enemy, x, y, time);
@@ -17909,14 +18538,19 @@ function requestGachaDraw(count) {
 
     mpCtx.fillStyle = 'rgba(20,27,39,.88)';
     mpCtx.fillRect(x - barW / 2, barY, barW, barH);
-    mpCtx.fillStyle = enemy.type === 'awakenedKing'
-      ? '#ef4444'
-      : enemy.type === 'king'
-        ? '#facc15'
-        : enemy.forwarded
-          ? '#ff9d5f'
-          : '#45df7d';
+    mpCtx.fillStyle = enemy.type === 'crystalGolemBoss'
+      ? '#67e8f9'
+      : enemy.type === 'combinedSoilGolemBoss'
+        ? '#a97850'
+        : enemy.type === 'awakenedKing'
+          ? '#ef4444'
+          : enemy.type === 'king'
+            ? '#facc15'
+            : enemy.forwarded
+              ? '#ff9d5f'
+              : '#45df7d';
     mpCtx.fillRect(x - barW / 2, barY, barW * ratio, barH);
+    if(Number(enemy.shield||0)>0){const sr=mpClamp(Number(enemy.shield||0)/Math.max(1,Number(enemy.shieldMax||enemy.shield||1)),0,1);mpCtx.fillStyle='rgba(108,232,255,.94)';mpCtx.fillRect(x-barW/2,barY+barH+2,barW*sr,3);}
     mpCtx.strokeStyle = 'rgba(255,255,255,.28)';
     mpCtx.lineWidth = 1;
     mpCtx.strokeRect(x - barW / 2, barY, barW, barH);
@@ -17972,7 +18606,10 @@ function requestGachaDraw(count) {
       mpCtx.lineCap = 'round';
       mpCtx.lineJoin = 'round';
 
-      if (fx.kind === 'arrow') {
+      if (fx.kind === 'crystalRay') {
+        const p=1-Math.max(0,fx.ttl)/Math.max(.001,fx.maxTtl||.72),pulse=Math.sin(Math.min(1,p)*Math.PI);
+        mpCtx.save();mpCtx.globalCompositeOperation='lighter';mpCtx.strokeStyle=`rgba(107,238,255,${.3+.55*(1-p)})`;mpCtx.lineWidth=5+10*pulse;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.lineTo(fx.x2,y2);mpCtx.stroke();mpCtx.strokeStyle=`rgba(240,254,255,${.9*(1-p)})`;mpCtx.lineWidth=2.8;mpCtx.stroke();mpCtx.restore();
+      } else if (fx.kind === 'arrow') {
         const tailX = x - ux * 27, tailY = y - uy * 27;
         const g = mpCtx.createLinearGradient(tailX - ux*18, tailY - uy*18, x, y);
         g.addColorStop(0,'rgba(160,205,255,0)'); g.addColorStop(1,`rgba(235,247,255,${.9*fade})`);
@@ -18115,7 +18752,7 @@ function requestGachaDraw(count) {
     mpCtx.fillStyle = '#fff';
     mpCtx.font = '700 15px Arial';
     mpCtx.textAlign = 'left';
-    mpCtx.fillText(`WAVE ${wave} · 적 HP ${hp}`, MP_WIDTH - 232, 36);
+    mpCtx.figit add .llText(`WAVE ${wave} · 적 HP ${hp}`, MP_WIDTH - 232, 36);
     mpCtx.font = '12px Arial';
     mpCtx.fillStyle = '#d0d9e8';
     mpCtx.fillText('10웨이브마다 HP ×1.1', MP_WIDTH - 232, 54);

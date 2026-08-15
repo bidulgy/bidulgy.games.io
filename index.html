@@ -5911,7 +5911,7 @@ body {
   </div>
 
   <script>
-    window.BIDULGY_BUILD_VERSION = '2026-08-15-stage2-golem-motion-v2';
+    window.BIDULGY_BUILD_VERSION = '2026-08-15-chrono-revive-v1';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -6504,20 +6504,21 @@ function applyStagePreview(stageId = selectedStage) {
         rarityKey: 'secret',
         rarityClass: 'rarity-secret',
         cost: 470,
-        damage: 396,
+        damage: 316.8,
         range: 235,
-        fireInterval: 0.92 / 1.2,
+        fireInterval: (0.92 / 1.2) * 1.5,
         multiShot2Chance: 0.50,
         multiShot3Chance: 0.25,
         multiShot4Chance: 0.10,
         goldenShotChance: 0.20,
         goldenStunDuration: 2,
         goldenBossStunDuration: 0.5,
-        timeFieldEvery: 30,
+        timeFieldEvery: 60,
         timeFieldRange: 300,
         timeFieldDuration: 5,
+        maxOrbitingShots: 10,
         color: '#d8b4fe',
-        skillText: '공격할 때 50% 확률로 2발, 25% 확률로 3발, 10% 확률로 4발을 서로 다른 적에게 발사합니다(나머지 15%는 1발). 남는 탄환은 유닛 주위를 공전하다 새 적이 사거리 안에 들어오면 발사됩니다. 각 탄환은 독립적으로 20% 확률로 황금 탄환이 되어 일반 적은 2초, 보스는 0.5초 기절시킵니다. 30번 공격할 때마다 사거리 300의 시간 영역을 5초간 펼쳐 일반 적의 이동을 멈추며 보스에게는 적용되지 않습니다.'
+        skillText: '공격할 때 50% 확률로 2발, 25% 확률로 3발, 10% 확률로 4발을 서로 다른 적에게 발사합니다(나머지 15%는 1발). 남는 탄환은 최대 10발까지 유닛 주위를 공전하다 새 적이 사거리 안에 들어오면 발사됩니다. 각 탄환은 독립적으로 20% 확률로 황금 시간탄이 되어 일반 적은 2초, 보스는 0.5초 시간 기절시킵니다. 60번 공격할 때마다 사거리 300의 시간 영역을 5초간 펼쳐 일반 적의 이동을 멈추며 보스에게는 적용되지 않습니다.'
       }
     };
 
@@ -9352,7 +9353,7 @@ function requestGachaDraw(count) {
 
       window.addEventListener('load', () => {
         navigator.serviceWorker
-          .register('./service-worker.js?v=20260815-stage2-1', { updateViaCache: 'none' })
+          .register('./service-worker.js?v=20260815-chrono-revive-1', { updateViaCache: 'none' })
           .then(registration => registration.update())
           .catch(error => console.error('서비스 워커 등록 실패:', error));
       });
@@ -9422,6 +9423,132 @@ function requestGachaDraw(count) {
       sirenGain.connect(master);
       siren.start(now + .08);
       siren.stop(now + 1.18);
+    }
+
+    // 유닛 공격 효과음: 외부 음원 파일 없이 Web Audio로 합성한다.
+    // 연사 유닛이 많아도 소리가 과도하게 겹치지 않도록 짧은 시간당 재생 수를 제한한다.
+    let attackSfxNoiseBuffer = null;
+    let attackSfxWindowStartedAt = 0;
+    let attackSfxWindowCount = 0;
+    const attackSfxLastByUnit = new Map();
+
+    function getAttackSfxNoiseBuffer(audio) {
+      if (attackSfxNoiseBuffer && attackSfxNoiseBuffer.sampleRate === audio.sampleRate) return attackSfxNoiseBuffer;
+      const length = Math.max(1, Math.floor(audio.sampleRate * .34));
+      const buffer = audio.createBuffer(1, length, audio.sampleRate);
+      const data = buffer.getChannelData(0);
+      let last = 0;
+      for (let i = 0; i < length; i += 1) {
+        const white = Math.random() * 2 - 1;
+        last = last * .72 + white * .28;
+        data[i] = last;
+      }
+      attackSfxNoiseBuffer = buffer;
+      return buffer;
+    }
+
+    function attackSfxTone(audio, destination, start, duration, fromHz, toHz, type = 'sine', gainValue = .1) {
+      const osc = audio.createOscillator();
+      const gain = audio.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(Math.max(20, fromHz), start);
+      osc.frequency.exponentialRampToValueAtTime(Math.max(20, toHz), start + Math.max(.015, duration));
+      gain.gain.setValueAtTime(.0001, start);
+      gain.gain.exponentialRampToValueAtTime(Math.max(.0002, gainValue), start + .008);
+      gain.gain.exponentialRampToValueAtTime(.0001, start + duration);
+      osc.connect(gain);
+      gain.connect(destination);
+      osc.start(start);
+      osc.stop(start + duration + .025);
+    }
+
+    function attackSfxNoise(audio, destination, start, duration, gainValue = .08, cutoff = 2600) {
+      const source = audio.createBufferSource();
+      const filter = audio.createBiquadFilter();
+      const gain = audio.createGain();
+      source.buffer = getAttackSfxNoiseBuffer(audio);
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(cutoff, start);
+      filter.Q.setValueAtTime(.75, start);
+      gain.gain.setValueAtTime(.0001, start);
+      gain.gain.exponentialRampToValueAtTime(Math.max(.0002, gainValue), start + .006);
+      gain.gain.exponentialRampToValueAtTime(.0001, start + duration);
+      source.connect(filter);
+      filter.connect(gain);
+      gain.connect(destination);
+      source.start(start);
+      source.stop(start + duration + .02);
+    }
+
+    function playUnitAttackSound(unitId, options = {}) {
+      const data = UNIT_DATA?.[unitId];
+      if (!data || unitId === 'moneyTree') return;
+      const audio = ensureBattleAudio();
+      if (!audio || audio.state !== 'running') return;
+
+      const perfNow = performance.now();
+      if (perfNow - attackSfxWindowStartedAt > 120) {
+        attackSfxWindowStartedAt = perfNow;
+        attackSfxWindowCount = 0;
+      }
+      const rarityKey = String(data.rarityKey || 'common');
+      const highTier = ['mythic', 'secret', 'galaxy', 'admin'].includes(rarityKey);
+      const lastAt = Number(attackSfxLastByUnit.get(unitId) || 0);
+      const minGap = highTier ? 38 : 55;
+      if (perfNow - lastAt < minGap) return;
+      if (attackSfxWindowCount >= (highTier ? 10 : 7)) return;
+      attackSfxWindowCount += 1;
+      attackSfxLastByUnit.set(unitId, perfNow);
+
+      const now = audio.currentTime;
+      const master = audio.createGain();
+      const baseVolume = Number(options.volume || 1);
+      master.gain.setValueAtTime(Math.max(.018, Math.min(.085, .048 * baseVolume)), now);
+      master.gain.exponentialRampToValueAtTime(.0001, now + (highTier ? .46 : .28));
+      master.connect(audio.destination);
+
+      const swordUnits = new Set(['starterKnight', 'royalGuardian', 'cherrySamurai', 'eclipse']);
+      const bowUnits = new Set(['starterArcher', 'windRanger']);
+
+      if (swordUnits.has(unitId)) {
+        // 칼이 공기를 가르는 소리 + 짧은 금속성 칼날 잔향.
+        attackSfxNoise(audio, master, now, .16, .32, highTier ? 3600 : 2800);
+        attackSfxTone(audio, master, now + .012, .14, highTier ? 1450 : 1120, highTier ? 520 : 390, 'triangle', .22);
+        attackSfxTone(audio, master, now + .035, .12, highTier ? 2350 : 1750, highTier ? 1700 : 1160, 'sine', .10);
+      } else if (bowUnits.has(unitId)) {
+        attackSfxTone(audio, master, now, .075, 310, 145, 'triangle', .20);
+        attackSfxNoise(audio, master, now + .018, .105, .24, unitId === 'windRanger' ? 4100 : 3200);
+      } else if (unitId === 'flameWizard') {
+        attackSfxNoise(audio, master, now, .18, .28, 1400);
+        attackSfxTone(audio, master, now, .20, 210, 640, 'sawtooth', .15);
+      } else if (unitId === 'starterMage') {
+        attackSfxTone(audio, master, now, .19, 520, 1160, 'sine', .18);
+        attackSfxTone(audio, master, now + .025, .15, 780, 1480, 'triangle', .09);
+      } else {
+        attackSfxTone(audio, master, now, .16, 430, 760, 'triangle', .16);
+        attackSfxNoise(audio, master, now + .012, .10, .16, 2900);
+      }
+
+      // 신화 이상은 기본 무기음 위에 등급별 고유 레이어를 추가한다.
+      if (rarityKey === 'mythic') {
+        attackSfxTone(audio, master, now, .30, 112, 58, 'sine', .24);
+        attackSfxTone(audio, master, now + .035, .24, 880, 1760, 'triangle', .11);
+      } else if (rarityKey === 'secret') {
+        [0, .035, .072].forEach((delay, index) => {
+          attackSfxTone(audio, master, now + delay, .22, 660 * (1 + index * .22), 1320 * (1 + index * .20), 'sine', .095);
+        });
+        attackSfxTone(audio, master, now, .32, 96, 54, 'sine', .17);
+      } else if (rarityKey === 'galaxy') {
+        attackSfxTone(audio, master, now, .30, 132, 52, 'sine', .28);
+        attackSfxNoise(audio, master, now + .01, .23, .22, 5200);
+        [0, .035, .075].forEach((delay, index) => {
+          attackSfxTone(audio, master, now + delay, .26, 1180 + index * 380, 2140 + index * 460, 'sine', .095);
+        });
+      } else if (rarityKey === 'admin') {
+        attackSfxTone(audio, master, now, .38, 86, 34, 'sawtooth', .27);
+        attackSfxNoise(audio, master, now, .24, .20, 1800);
+        attackSfxTone(audio, master, now + .028, .28, 1320, 330, 'triangle', .13);
+      }
     }
 
     function showBossSpawnAlert(name) {
@@ -10021,7 +10148,7 @@ function requestGachaDraw(count) {
         moneyTree: '공격 없음 · 기본 1초마다 15골드 · 업그레이드 시 최대 0.7초마다 25골드',
         cherrySamurai: `기절 면역 · 근접 120 전방 180° 범위 · 원거리 ${unit.range} 검기 2발(각 적중지 반경 ${unit.swordWaveSplashRadius || 35} 범위) · 벚꽃 영역 ${unit.blossomAuraRange || 170}: 0.1초마다 ${unit.blossomAuraDamage || 10} 피해 · 일반 3타 후 일섬(폭 ${unit.issenWidth || 60}·거리 ${unit.issenRange || 200})×5 · 일섬 4회마다 오의 각 참격×10 · 10번째 공격마다 적 전체 3초 표식 후 ×5`,
         eclipse: `평타 적중지 반경 ${unit.normalSlashRadius || 55} 범위 베기 · 처치 시 5% 성장(공격력·공속 +2%, 회전참 범위 +5%) · 타격 시 5% 블랙홀 · 4타마다 회전참×3 + 1초 기절 · 기절 면역`,
-        astralChronomancer: '평타 다중발사(2/3/4발) · 각 탄환 20% 황금 기절 · 30회 공격마다 사거리 300 시간정지 5초'
+        astralChronomancer: '다중발사(2/3/4발) · 공전탄 최대 10발 · 각 탄환 20% 황금 시간기절 · 60회 공격마다 사거리 300 시간정지 5초'
       };
       return summaries[unit.id] || '기본 공격 유닛';
     }
@@ -10167,7 +10294,9 @@ function requestGachaDraw(count) {
         heading: 0,
         timeStunRemaining: 0,
         timeStunDuration: 2,
+        timeStunSource: '',
         timeFieldRemaining: 0,
+        reviveInvulnerableRemaining: 0,
         shield: Number(spec.startShield || 0),
         shieldMax: Number(spec.startShield || 0),
         soilPileState: false,
@@ -10276,7 +10405,9 @@ function requestGachaDraw(count) {
 
       enemy.pulseEffect = Math.max(0, (enemy.pulseEffect || 0) - dt);
       enemy.timeStunRemaining = Math.max(0, (enemy.timeStunRemaining || 0) - dt);
+      if (enemy.timeStunRemaining <= 0) enemy.timeStunSource = '';
       enemy.timeFieldRemaining = Math.max(0, (enemy.timeFieldRemaining || 0) - dt);
+      enemy.reviveInvulnerableRemaining = Math.max(0, Number(enemy.reviveInvulnerableRemaining || 0) - dt);
 
       if (enemy.soilPileState) {
         enemy.soilReviveTimer = Math.max(0, Number(enemy.soilReviveTimer || 0) - dt);
@@ -10284,6 +10415,9 @@ function requestGachaDraw(count) {
           enemy.soilPileState = false;
           enemy.soilRevived = true;
           enemy.health = Math.max(1, Math.round(enemy.maxHealth * Number(enemy.reviveHealthRatio || 2/3)));
+          enemy.reviveInvulnerableRemaining = Math.max(Number(enemy.reviveInvulnerableRemaining || 0), 0.9);
+          enemy.timeStunRemaining = 0;
+          enemy.timeStunSource = '';
           setGolemAction(enemy, 'revive', 900);
           enemy.pulseKind = 'revive'; enemy.pulseEffect = .65;
         }
@@ -10461,7 +10595,7 @@ function requestGachaDraw(count) {
     }
 
     function applyDamageToEnemy(enemy, damage) {
-      if (!enemy || enemy.dead || enemy.soilPileState) return false;
+      if (!enemy || enemy.dead || enemy.soilPileState || Number(enemy.reviveInvulnerableRemaining || 0) > 0) return false;
 
       let remainingDamage = Math.max(0, Number(damage || 0));
       if (Number(enemy.shield || 0) > 0 && remainingDamage > 0) {
@@ -10483,6 +10617,9 @@ function requestGachaDraw(count) {
         enemy.health = 0;
         enemy.soilPileState = true;
         enemy.soilReviveTimer = 1.25;
+        enemy.reviveInvulnerableRemaining = 1.25;
+        enemy.timeStunRemaining = 0;
+        enemy.timeStunSource = '';
         enemy.pulseKind = 'soil'; enemy.pulseEffect = .65;
         return false;
       }
@@ -10493,6 +10630,9 @@ function requestGachaDraw(count) {
         enemy.maxHealth = Math.max(1, Math.round(enemy.maxHealth * Number(enemy.reviveHpRatio || .75)));
         enemy.health = enemy.maxHealth;
         enemy.radius = Math.max(34, Number(enemy.radius || 54) * .96);
+        enemy.reviveInvulnerableRemaining = Math.max(Number(enemy.reviveInvulnerableRemaining || 0), 1.0);
+        enemy.timeStunRemaining = 0;
+        enemy.timeStunSource = '';
         setGolemAction(enemy, 'revive', 1000);
         enemy.pulseKind = 'revive'; enemy.pulseEffect = .65;
         setBattleMessage(`합쳐진 흙 골렘이 다시 뭉쳤습니다! ${enemy.reviveCount}회 부활 · HP ${enemy.maxHealth}`);
@@ -10701,6 +10841,7 @@ function requestGachaDraw(count) {
     function performRoyalGuardianAttack(placed, targetInfo, slowMultiplier) {
       const data = UNIT_DATA.royalGuardian;
       const target = targetInfo.enemy;
+      playUnitAttackSound(placed.unitId);
       const targetAngle = Math.atan2(target.y - placed.y, target.x - placed.x);
       const meleeRange = data.meleeRange || 120;
       const halfAngle = ((data.coneAngle || 120) * Math.PI / 180) / 2;
@@ -10861,7 +11002,7 @@ function requestGachaDraw(count) {
 
     function getChronoTargetsInRange(placed) {
       return battle.enemies
-        .filter(enemy => !enemy.dead && Math.hypot(enemy.x - placed.x, enemy.y - placed.y) <= placed.range)
+        .filter(enemy => !enemy.dead && !enemy.soilPileState && Number(enemy.reviveInvulnerableRemaining || 0) <= 0 && Math.hypot(enemy.x - placed.x, enemy.y - placed.y) <= placed.range)
         .sort((a, b) => {
           const progress = (b.targetIndex || 0) - (a.targetIndex || 0);
           if (progress !== 0) return progress;
@@ -10902,12 +11043,14 @@ function requestGachaDraw(count) {
           : (data.goldenStunDuration || 2);
         enemy.timeStunDuration = stunSeconds;
         enemy.timeStunRemaining = Math.max(enemy.timeStunRemaining || 0, stunSeconds);
+        enemy.timeStunSource = 'chrono';
       }
       return true;
     }
 
     function updateChronoOrbitingShots(placed) {
-      const orbiting = Array.isArray(placed.chronoOrbitingShots) ? placed.chronoOrbitingShots : [];
+      const maxOrbiting = UNIT_DATA.astralChronomancer.maxOrbitingShots || 10;
+      const orbiting = (Array.isArray(placed.chronoOrbitingShots) ? placed.chronoOrbitingShots : []).slice(0, maxOrbiting);
       placed.chronoOrbitingShots = orbiting;
       if (!orbiting.length) return;
 
@@ -10974,8 +11117,9 @@ function requestGachaDraw(count) {
       });
 
       const extraCount = Math.max(0, shotCount - directTargets.length);
-      for (let index = 0; index < extraCount; index += 1) {
-        placed.chronoOrbitingShots ||= [];
+      placed.chronoOrbitingShots ||= [];
+      const maxOrbiting = data.maxOrbitingShots || 10;
+      for (let index = 0; index < extraCount && placed.chronoOrbitingShots.length < maxOrbiting; index += 1) {
         placed.chronoOrbitingShots.push({
           golden: Math.random() < (data.goldenShotChance || .20),
           phase: Math.random() * Math.PI * 2,
@@ -10983,7 +11127,7 @@ function requestGachaDraw(count) {
         });
       }
 
-      const fieldEvery = data.timeFieldEvery || 30;
+      const fieldEvery = data.timeFieldEvery || 60;
       if (placed.chronoAttackCount % fieldEvery === 0) {
         activateChronoTimeField(placed);
       }
@@ -11347,6 +11491,7 @@ function requestGachaDraw(count) {
     function performCherrySamuraiAttack(placed, target, slowMultiplier) {
       const data = UNIT_DATA.cherrySamurai;
       if (!target || target.dead) return;
+      playUnitAttackSound(placed.unitId);
 
       const specialReady = Number(placed.samuraiNormalCount || 0) >= Number(data.normalBeforeIssen || 3);
       if (specialReady) {
@@ -11481,6 +11626,7 @@ function requestGachaDraw(count) {
 
       if (!target) return;
 
+      playUnitAttackSound(placed.unitId);
       const targetAngle = Math.atan2(target.y - placed.y, target.x - placed.x);
       placed.angle = targetAngle;
       placed.cooldown = placed.fireInterval * slowMultiplier;
@@ -11539,6 +11685,7 @@ function requestGachaDraw(count) {
             if (!enemy.dead) {
               enemy.timeStunDuration = stunSeconds;
               enemy.timeStunRemaining = Math.max(enemy.timeStunRemaining || 0, stunSeconds);
+              enemy.timeStunSource = 'eclipse';
             }
             if (killed) triggerEclipseGrowth(placed, enemy);
           });
@@ -12788,37 +12935,50 @@ function requestGachaDraw(count) {
         return;
       }
 
-      let bodyBob = baseBob + breath;
-      let bodyTilt = step * .025;
-      let armSwing = step * .26;
-      let legSwing = step * .32;
+      // 일반 골렘은 위에서 내려다보는 형태가 아니라, 화면에서 옆모습으로 서서 걷도록 그린다.
+      // enemy.heading은 좌/우 방향만 결정하고 몸 자체는 화면의 위/아래 축을 유지한다.
+      const rawHeading = Number(enemy.heading || 0);
+      const headingX = Math.cos(rawHeading);
+      const headingY = Math.sin(rawHeading);
+      const facing = Math.abs(headingX) > .22 ? (headingX >= 0 ? 1 : -1) : (headingY >= 0 ? 1 : -1);
+      const walkSin = Math.sin(phase);
+      const walkCos = Math.cos(phase);
+      const leftImpact = Math.pow(Math.max(0, walkCos), 12);
+      const rightImpact = Math.pow(Math.max(0, -walkCos), 12);
+      const stompImpact = Math.max(leftImpact, rightImpact);
+      const heavyFactor = boss ? 1.18 : 1;
+      let bodyBob = breath + Math.abs(walkSin) * -r * .018 + stompImpact * r * .082 * heavyFactor;
+      let bodyTilt = -walkSin * .035;
+      let armSwing = walkSin * .44;
+      let legSwing = walkSin * .42;
       let armPose = 0;
       let crouch = 0;
       let actionGlow = 0;
 
       if (actionKind === 'slam') {
-        if (actionProgress < .36) {
-          const p = actionProgress / .36;
+        if (actionProgress < .34) {
+          const p = actionProgress / .34;
           armPose = p;
-          bodyTilt -= p * .07;
-          bodyBob -= p * r * .08;
-        } else if (actionProgress < .58) {
-          const p = (actionProgress - .36) / .22;
-          armPose = 1 - p * .12;
-          crouch = p * r * .22;
-          bodyTilt += p * .11;
+          bodyTilt -= p * .10;
+          bodyBob -= p * r * .07;
+        } else if (actionProgress < .56) {
+          const p = (actionProgress - .34) / .22;
+          armPose = 1;
+          crouch = p * r * .26;
+          bodyTilt += p * .16;
         } else {
-          const p = (actionProgress - .58) / .42;
-          armPose = .88 * (1 - p);
-          crouch = (1 - p) * r * .20;
+          const p = (actionProgress - .56) / .44;
+          armPose = 1 - p;
+          crouch = (1 - p) * r * .25;
+          bodyTilt += (1 - p) * .12;
         }
-        actionGlow = 1 - Math.abs(actionProgress - .52) * 1.9;
+        actionGlow = Math.max(0, 1 - Math.abs(actionProgress - .54) * 2.1);
       } else if (actionKind === 'shield') {
-        armPose = .62 * Math.sin(Math.min(1, actionProgress) * Math.PI);
+        armPose = .72 * Math.sin(Math.min(1, actionProgress) * Math.PI);
         actionGlow = Math.sin(Math.min(1, actionProgress) * Math.PI);
-        bodyBob -= actionGlow * r * .08;
+        bodyBob -= actionGlow * r * .07;
       } else if (actionKind === 'crystal') {
-        armPose = .78 * Math.sin(Math.min(1, actionProgress) * Math.PI);
+        armPose = .88 * Math.sin(Math.min(1, actionProgress) * Math.PI);
         actionGlow = Math.sin(Math.min(1, actionProgress) * Math.PI);
         bodyTilt = 0;
       } else if (actionKind === 'revive') {
@@ -12828,62 +12988,98 @@ function requestGachaDraw(count) {
 
       g.save();
       g.translate(x, y);
-      g.fillStyle = 'rgba(0,0,0,.28)';
-      g.beginPath();
-      g.ellipse(0, r * .74, r * (boss ? 1.28 : 1.08), r * .33, 0, 0, Math.PI * 2);
-      g.fill();
-
-      const heading = online ? 0 : Number(enemy.heading || 0);
-      g.translate(0, bodyBob + crouch);
-      g.rotate(heading + bodyTilt);
 
       const detail = !highLoad;
-      const mass = giant ? 1.18 : combined ? 1.14 : crystal ? 1.10 : gemBoss ? 1.06 : 1;
-      const legLen = r * .83 * mass;
-      const armLen = r * (giant ? 1.14 : boss ? 1.02 : .88) * mass;
-      const limbThick = r * (giant ? .39 : boss ? .33 : .28);
+      const mass = giant ? 1.22 : combined ? 1.17 : crystal ? 1.13 : gemBoss ? 1.09 : 1;
+      const groundY = r * (boss ? 1.08 : 1.02);
 
-      // 뒤쪽 다리: 걷는 방향에 따라 교차하며 묵직하게 움직인다.
-      drawGolemLimb(g, -r * .40, -r * .28, legLen, limbThick * .90, Math.PI - .14 - legSwing, palette, 3, detail, 1.03);
-      drawGolemLimb(g, -r * .40, r * .28, legLen, limbThick * .90, Math.PI + .14 + legSwing, palette, 7, detail, 1.03);
+      // 발밑 그림자: 몸의 높이는 고정되고 보행 충격 때만 넓어져 '떠다님'을 없앤다.
+      g.fillStyle = `rgba(0,0,0,${.25 + stompImpact * .10})`;
+      g.beginPath();
+      g.ellipse(0, groundY + r * .06, r * (boss ? 1.22 : .98) * (1 + stompImpact * .05), r * .23, 0, 0, Math.PI * 2);
+      g.fill();
 
-      // 몸통의 큰 바위판
-      drawGolemRockPiece(g, -r * .02, 0, r * .70 * mass, r * .58 * mass, 0, palette, 13, detail);
-      drawGolemRockPiece(g, -r * .20, -r * .06, r * .40, r * .36, -.08, palette, 14, detail);
-      drawGolemRockPiece(g, r * .28, r * .06, r * .38, r * .34, .10, palette, 15, detail);
-
-      // 견갑석
-      drawGolemRockPiece(g, -r * .04, -r * .62 * mass, r * (giant ? .48 : .39), r * .34, -.08, palette, 19, detail);
-      drawGolemRockPiece(g, -r * .04, r * .62 * mass, r * (giant ? .48 : .39), r * .34, .08, palette, 20, detail);
-
-      let upperArmA = -Math.PI / 2 + armSwing;
-      let lowerArmA = Math.PI / 2 - armSwing;
-      if (actionKind === 'slam') {
-        const slamAim = actionProgress < .42 ? -1.05 : .02;
-        const slamAim2 = actionProgress < .42 ? 1.05 : -.02;
-        upperArmA = upperArmA * (1 - armPose) + slamAim * armPose;
-        lowerArmA = lowerArmA * (1 - armPose) + slamAim2 * armPose;
-      } else if (actionKind === 'shield' || actionKind === 'crystal') {
-        upperArmA -= armPose * .40;
-        lowerArmA += armPose * .40;
+      // 쿵 하고 디딜 때 발에서 작은 먼지와 지면 충격 고리가 나온다.
+      if (!highLoad && stompImpact > .12) {
+        const impactX = (leftImpact >= rightImpact ? -1 : 1) * r * .27 * facing;
+        const alpha = Math.min(.72, stompImpact * .82);
+        g.strokeStyle = `rgba(196,164,126,${alpha})`;
+        g.lineWidth = Math.max(1.2, r * .045);
+        g.beginPath();
+        g.ellipse(impactX, groundY + r * .02, r * (.18 + stompImpact * .22), r * (.055 + stompImpact * .035), 0, 0, Math.PI * 2);
+        g.stroke();
+        g.fillStyle = `rgba(180,146,108,${alpha * .72})`;
+        for (let i = 0; i < 5; i += 1) {
+          const spread = (i - 2) * r * .11;
+          const lift = (1 - stompImpact) * r * .05 + (i % 2) * 2;
+          g.beginPath();
+          g.arc(impactX + spread, groundY - lift, 1.2 + stompImpact * 2, 0, Math.PI * 2);
+          g.fill();
+        }
       }
 
-      // 팔과 주먹
-      drawGolemLimb(g, r * .02, -r * .62 * mass, armLen, limbThick, upperArmA, palette, 24, detail, giant ? 1.28 : 1.10);
-      drawGolemLimb(g, r * .02, r * .62 * mass, armLen, limbThick, lowerArmA, palette, 28, detail, giant ? 1.28 : 1.10);
+      // 화면 기준 옆모습을 유지하면서 진행 방향에 따라 좌우로만 뒤집는다.
+      g.scale(facing, 1);
+      g.translate(0, bodyBob + crouch);
+      g.rotate(bodyTilt);
 
-      // 머리: 몸통 앞쪽에 박힌 각진 돌머리
-      drawGolemRockPiece(g, r * .60 * mass, 0, r * (boss ? .46 : .38), r * (boss ? .40 : .34), -.02, palette, 33, detail);
+      const torsoY = -r * .12;
+      const hipY = r * .34;
+      const shoulderY = -r * .42;
+      const legLen = r * .72 * mass;
+      const armLen = r * (giant ? 1.02 : boss ? .91 : .80) * mass;
+      const limbThick = r * (giant ? .38 : boss ? .32 : .27);
+
+      // 뒤쪽 다리부터 그린다. 두 다리는 아래 지면을 향하며 서로 반대로 내딛는다.
+      let backLegAngle = Math.PI / 2 - legSwing * .78;
+      let frontLegAngle = Math.PI / 2 + legSwing * .78;
+      if (actionKind === 'slam') {
+        backLegAngle = Math.PI / 2 - .16;
+        frontLegAngle = Math.PI / 2 + .16;
+      }
+      drawGolemLimb(g, -r * .18, hipY, legLen, limbThick * .84, backLegAngle, palette, 3, detail, 1.18);
+
+      // 뒤팔은 몸 뒤로 흔들린다.
+      let backArmAngle = Math.PI / 2 + armSwing;
+      if (actionKind === 'slam') backArmAngle = -Math.PI / 2 + armPose * .18;
+      else if (actionKind === 'shield' || actionKind === 'crystal') backArmAngle = Math.PI / 2 + armPose * .95;
+      drawGolemLimb(g, -r * .20, shoulderY, armLen, limbThick, backArmAngle, palette, 24, detail, giant ? 1.34 : 1.12);
+
+      // 몸통은 앞뒤가 구분되는 비대칭 옆모습. 가슴이 진행 방향 쪽(+x)으로 튀어나온다.
+      drawGolemRockPiece(g, -r * .06, torsoY, r * .62 * mass, r * .67 * mass, -.03, palette, 13, detail);
+      drawGolemRockPiece(g, r * .24, torsoY - r * .03, r * .38, r * .47, .08, palette, 15, detail);
+      drawGolemRockPiece(g, -r * .35, torsoY + r * .04, r * .34, r * .48, -.10, palette, 14, detail);
+
+      // 한쪽 어깨가 크게 보이는 측면 견갑.
+      drawGolemRockPiece(g, -r * .10, shoulderY - r * .10, r * (giant ? .52 : .42), r * .32, -.10, palette, 19, detail);
+      drawGolemRockPiece(g, r * .11, shoulderY - r * .03, r * (giant ? .47 : .37), r * .29, .08, palette, 20, detail);
+
+      // 머리는 몸 앞쪽에 낮게 달리고 눈은 하나만 보여 확실한 옆얼굴 실루엣이 된다.
+      const headX = r * .58 * mass;
+      const headY = -r * .45;
+      drawGolemRockPiece(g, headX, headY, r * (boss ? .46 : .39), r * (boss ? .39 : .33), -.08, palette, 33, detail);
+      drawGolemRockPiece(g, headX + r * .28, headY + r * .10, r * .20, r * .16, .12, palette, 34, detail);
       g.shadowColor = crystal ? '#baf7ff' : gemBoss ? '#7ff6ff' : soil ? '#ffc47b' : '#7dd3fc';
       g.shadowBlur = 10 + actionGlow * 16;
       g.fillStyle = crystal ? '#dffcff' : gemBoss ? '#91f7ff' : soil ? '#ffca78' : '#86d9ff';
       g.beginPath();
-      g.ellipse(r * .76 * mass, -r * .13, r * .085, r * .055, 0, 0, Math.PI * 2);
-      g.ellipse(r * .76 * mass, r * .13, r * .085, r * .055, 0, 0, Math.PI * 2);
+      g.ellipse(headX + r * .20, headY - r * .055, r * .095, r * .060, -.06, 0, Math.PI * 2);
       g.fill();
       g.shadowBlur = 0;
 
-      // 가슴 코어와 균열
+      // 앞쪽 다리와 팔은 몸 앞으로 지나가면서 보행 깊이를 만든다.
+      drawGolemLimb(g, r * .17, hipY, legLen, limbThick * .90, frontLegAngle, palette, 7, detail, 1.20);
+      let frontArmAngle = Math.PI / 2 - armSwing;
+      if (actionKind === 'slam') {
+        frontArmAngle = actionProgress < .42
+          ? (-Math.PI / 2 - .22)
+          : (.22 + (1 - armPose) * .35);
+      } else if (actionKind === 'shield' || actionKind === 'crystal') {
+        frontArmAngle = Math.PI / 2 - armPose * 1.20;
+      }
+      drawGolemLimb(g, r * .10, shoulderY - r * .02, armLen, limbThick * 1.03, frontArmAngle, palette, 28, detail, giant ? 1.42 : 1.16);
+
+      // 가슴 코어와 측면 균열
       if (!soil || combined) {
         const coreColor = crystal ? '#bdf7ff' : gemBoss ? '#64efff' : giant ? '#f0b96d' : '#73cfff';
         g.shadowColor = coreColor;
@@ -12891,79 +13087,68 @@ function requestGachaDraw(count) {
         g.fillStyle = coreColor;
         g.globalAlpha = .72 + actionGlow * .28;
         g.beginPath();
-        g.moveTo(r * .10, -r * .22);
-        g.lineTo(r * .30, 0);
-        g.lineTo(r * .08, r * .23);
-        g.lineTo(-r * .12, 0);
+        g.moveTo(r * .17, -r * .30);
+        g.lineTo(r * .34, -r * .12);
+        g.lineTo(r * .16, r * .10);
+        g.lineTo(-r * .04, -r * .09);
         g.closePath();
         g.fill();
         g.globalAlpha = 1;
         g.shadowBlur = 0;
-
         if (detail) {
           g.strokeStyle = `${coreColor}aa`;
           g.lineWidth = Math.max(1, r * .045);
-          const crackPulse = .75 + Math.sin(smoothTime * .005) * .18 + actionGlow * .25;
-          g.globalAlpha = crackPulse;
-          for (const side of [-1, 1]) {
-            g.beginPath();
-            g.moveTo(r * .07, side * r * .16);
-            g.lineTo(-r * .18, side * r * .28);
-            g.lineTo(-r * .37, side * r * .18);
-            g.stroke();
-          }
+          g.globalAlpha = .72 + Math.sin(smoothTime * .005) * .13;
+          g.beginPath();
+          g.moveTo(r * .15, -r * .10);
+          g.lineTo(-r * .10, r * .03);
+          g.lineTo(-r * .33, r * .17);
+          g.stroke();
           g.globalAlpha = 1;
         }
       }
 
-      // 흙 골렘은 작은 흙조각이 몸 주위를 떠다닌다.
+      // 흙 골렘의 부유 흙은 몸 주변 전체가 아니라 등 뒤/발 주변 위주로 보여 떠 있는 느낌을 줄인다.
       if (soil && detail) {
-        for (let i = 0; i < (combined ? 9 : 5); i += 1) {
-          const a = smoothTime * .0014 * (i % 2 ? 1 : -1) + i * Math.PI * 2 / (combined ? 9 : 5);
-          const d = r * (combined ? .95 : .78);
-          const px = Math.cos(a) * d;
-          const py = Math.sin(a) * d * .62;
-          drawGolemRockPiece(g, px, py, r * .10, r * .075, a, palette, 60 + i, false);
+        for (let i = 0; i < (combined ? 8 : 4); i += 1) {
+          const t = (smoothTime * .00065 + i * .21) % 1;
+          const px = -r * (.45 + (i % 3) * .16) - t * r * .28;
+          const py = r * (.42 - t * .72) + (i % 2) * r * .11;
+          drawGolemRockPiece(g, px, py, r * .09, r * .065, -.25 + t * .5, palette, 60 + i, false);
         }
       }
 
-      // 보석 골렘 / 크리스탈 골렘의 결정 장식
+      // 보석/크리스탈은 등에서 뒤쪽으로 솟아 측면 실루엣을 강조한다.
       if (gemBoss || crystal) {
         const c = crystal ? '#a9f4ff' : '#66edff';
-        const count = crystal ? 9 : 5;
+        const count = crystal ? 7 : 4;
         for (let i = 0; i < count; i += 1) {
-          const spread = count === 1 ? 0 : i / (count - 1);
-          const side = spread * 2 - 1;
-          const bx = -r * (.22 + Math.abs(side) * .18);
-          const by = side * r * (.66 + (crystal ? .22 : .08));
-          const size = r * (crystal ? (.34 + (1 - Math.abs(side)) * .14) : .30);
-          drawGolemCrystalShard(g, bx, by, size, side * .55 - Math.PI / 2, c, crystal ? 20 + actionGlow * 18 : 12 + actionGlow * 12, .92);
+          const t = count === 1 ? .5 : i / (count - 1);
+          const bx = -r * (.25 + t * .34);
+          const by = -r * (.58 - t * .55);
+          const size = r * (crystal ? (.32 + (1 - Math.abs(t - .45)) * .16) : .28);
+          drawGolemCrystalShard(g, bx, by, size, -1.72 - t * .35, c, crystal ? 20 + actionGlow * 18 : 12 + actionGlow * 12, .92);
         }
-
-        if (crystal && detail) {
-          // 왕관처럼 솟은 중앙 결정
-          drawGolemCrystalShard(g, r * .18, 0, r * .62, -Math.PI / 2, '#c7fbff', 26 + actionGlow * 20, 1);
-        }
+        if (crystal && detail) drawGolemCrystalShard(g, r * .05, -r * .70, r * .58, -1.58, '#c7fbff', 26 + actionGlow * 20, 1);
       }
 
-      // 능력 모션 이펙트
-      if (actionKind === 'slam' && actionProgress > .38) {
-        const p = Math.max(0, Math.min(1, (actionProgress - .38) / .62));
+      // 거대 골렘의 땅찍기: 주먹이 지면에 닿는 짧은 순간에만 충격파가 퍼진다.
+      if (actionKind === 'slam' && actionProgress > .48) {
+        const p = Math.max(0, Math.min(1, (actionProgress - .48) / .52));
         g.save();
-        g.rotate(-heading - bodyTilt);
+        g.scale(facing, 1); // 위에서 facing으로 뒤집은 것을 시각 이펙트 좌표에 보정
         g.globalAlpha = Math.max(0, 1 - p);
-        g.strokeStyle = 'rgba(220,190,148,.82)';
+        g.strokeStyle = 'rgba(220,190,148,.84)';
         g.lineWidth = Math.max(2, r * .10 * (1 - p * .4));
         g.beginPath();
-        g.ellipse(r * .78, 0, r * (.45 + p * 1.7), r * (.22 + p * .65), 0, 0, Math.PI * 2);
+        g.ellipse(r * .42, groundY - bodyBob, r * (.38 + p * 1.8), r * (.08 + p * .28), 0, 0, Math.PI * 2);
         g.stroke();
         if (detail) {
           g.fillStyle = 'rgba(184,151,111,.72)';
-          for (let i = 0; i < 10; i += 1) {
-            const a = i * Math.PI * 2 / 10;
-            const d = r * (.65 + p * 1.55);
+          for (let i = 0; i < 9; i += 1) {
+            const dx = (i - 4) * r * (.13 + p * .08);
             g.beginPath();
-            g.arc(r * .78 + Math.cos(a) * d, Math.sin(a) * d * .36, 1.8 + (1 - p) * 3.2, 0, Math.PI * 2);
+            g.arc(r * .42 + dx, groundY - bodyBob - Math.sin(i * 1.7) * r * .07, 1.6 + (1 - p) * 3, 0, Math.PI * 2);
             g.fill();
           }
         }
@@ -12978,8 +13163,8 @@ function requestGachaDraw(count) {
         for (let i = 0; i < 8; i += 1) {
           const a = i * Math.PI / 4;
           g.beginPath();
-          g.moveTo(0, 0);
-          g.lineTo(Math.cos(a) * r * (1.1 + actionGlow * .55), Math.sin(a) * r * (1.1 + actionGlow * .55));
+          g.moveTo(0, -r * .08);
+          g.lineTo(Math.cos(a) * r * (1.1 + actionGlow * .55), -r * .08 + Math.sin(a) * r * (1.1 + actionGlow * .55));
           g.stroke();
         }
         g.restore();
@@ -13105,7 +13290,7 @@ function requestGachaDraw(count) {
         ctx.restore();
       }
 
-      if (enemy.timeStunRemaining > 0) {
+      if (enemy.timeStunRemaining > 0 && enemy.timeStunSource === 'chrono') {
         const duration = enemy.timeStunDuration || 2;
         const elapsed = Math.max(0, duration - enemy.timeStunRemaining);
         const handAngle = -Math.PI / 2 + (elapsed / duration) * Math.PI * 2;
@@ -15958,7 +16143,9 @@ function requestGachaDraw(count) {
         ? Date.now() + spec.abilityEvery * 1000
         : 0,
       timeStunUntil: 0,
+      timeStunSource: '',
       timeFieldUntil: 0,
+      reviveInvulnerableUntil: 0,
       stageId: mpOnlineStageIdForWave(wave),
       localWave: mpLocalStageWave(wave),
       variant: spec.variant || null,
@@ -17090,7 +17277,9 @@ function requestGachaDraw(count) {
       nextAbilityAt: enemy.abilityEvery ? Date.now() + enemy.abilityEvery * 1000 : 0,
       wingPhase: Math.random() * Math.PI * 2,
       timeStunUntil: 0,
-      timeFieldUntil: 0
+      timeStunSource: '',
+      timeFieldUntil: 0,
+      reviveInvulnerableUntil: 0
     };
     target.enemies.push(clone);
   }
@@ -17106,14 +17295,14 @@ function requestGachaDraw(count) {
   }
 
   function mpApplyDamage(target, enemy, damage, ownerRole, sideKey = null) {
-    if (!enemy || enemy.dead || Number(enemy.soilPileUntil||0)>Date.now()) return false;
+    if (!enemy || enemy.dead || Number(enemy.soilPileUntil||0)>Date.now() || Number(enemy.reviveInvulnerableUntil||0)>Date.now()) return false;
     let remaining=Math.max(0,Number(damage||0));
     if(Number(enemy.shield||0)>0){const before=enemy.shield,absorb=Math.min(before,remaining);enemy.shield=Math.max(0,before-absorb);remaining-=absorb;if(before>0&&enemy.shield<=0&&enemy.type==='crystalGolemBoss')mpFireCrystalEightWay(enemy,target,'shieldBreak');}
     if(remaining<=0)return false;
     enemy.hp-=remaining;if(enemy.hp>0)return false;
 
-    if(enemy.variant==='soilGolem'&&enemy.reviveOnce&&!enemy.noRevive&&!enemy.soilRevived){enemy.hp=0;enemy.soilPileUntil=Date.now()+1250;return false;}
-    if(enemy.type==='combinedSoilGolemBoss'&&Math.random()<Number(enemy.reviveChance||.75)){enemy.reviveCount=Number(enemy.reviveCount||0)+1;enemy.maxHp=Math.max(1,Math.round(enemy.maxHp*Number(enemy.reviveHpRatioBoss||.75)));enemy.hp=enemy.maxHp;enemy.radius=Math.max(34,Number(enemy.radius||54)*.96);mpSetGolemAction(enemy,'revive',1000);mpState.announcement=`합쳐진 흙 골렘 ${enemy.reviveCount}회 부활 · HP ${enemy.maxHp}`;mpState.announcementUntil=Date.now()+2200;return false;}
+    if(enemy.variant==='soilGolem'&&enemy.reviveOnce&&!enemy.noRevive&&!enemy.soilRevived){enemy.hp=0;enemy.soilPileUntil=Date.now()+1250;enemy.reviveInvulnerableUntil=enemy.soilPileUntil+900;enemy.timeStunUntil=0;enemy.timeStunSource='';return false;}
+    if(enemy.type==='combinedSoilGolemBoss'&&Math.random()<Number(enemy.reviveChance||.75)){enemy.reviveCount=Number(enemy.reviveCount||0)+1;enemy.maxHp=Math.max(1,Math.round(enemy.maxHp*Number(enemy.reviveHpRatioBoss||.75)));enemy.hp=enemy.maxHp;enemy.radius=Math.max(34,Number(enemy.radius||54)*.96);enemy.reviveInvulnerableUntil=Date.now()+1000;enemy.timeStunUntil=0;enemy.timeStunSource='';mpSetGolemAction(enemy,'revive',1000);mpState.announcement=`합쳐진 흙 골렘 ${enemy.reviveCount}회 부활 · HP ${enemy.maxHp}`;mpState.announcementUntil=Date.now()+2200;return false;}
 
     enemy.hp=0;enemy.dead=true;
     if(enemy.native)target.nativeRemaining=Math.max(0,target.nativeRemaining-1);
@@ -17130,7 +17319,7 @@ function requestGachaDraw(count) {
       if (enemy.dead) continue;
       if (Number(enemy.soilPileUntil || 0) > 0) {
         if (now < enemy.soilPileUntil) continue;
-        enemy.soilPileUntil = 0; enemy.soilRevived = true; enemy.hp = Math.max(1,Math.round(enemy.maxHp*Number(enemy.reviveHpRatio||2/3))); mpSetGolemAction(enemy,'revive',900);
+        enemy.soilPileUntil = 0; enemy.soilRevived = true; enemy.hp = Math.max(1,Math.round(enemy.maxHp*Number(enemy.reviveHpRatio||2/3))); enemy.reviveInvulnerableUntil=Math.max(Number(enemy.reviveInvulnerableUntil||0),now+900); enemy.timeStunUntil=0; enemy.timeStunSource=''; mpSetGolemAction(enemy,'revive',900);
       }
       if (Array.isArray(enemy.sakuraMarks) && enemy.sakuraMarks.length) {
         const keepMarks=[];
@@ -17236,7 +17425,7 @@ function requestGachaDraw(count) {
 
   function mpChronoTargets(unit, targetState) {
     return [...targetState.enemies]
-      .filter(enemy => !enemy.dead && Math.hypot(enemy.x - unit.x, enemy.y - unit.y) <= unit.range)
+      .filter(enemy => !enemy.dead && Number(enemy.soilPileUntil || 0) <= Date.now() && Number(enemy.reviveInvulnerableUntil || 0) <= Date.now() && Math.hypot(enemy.x - unit.x, enemy.y - unit.y) <= unit.range)
       .sort((a, b) => b.x - a.x);
   }
 
@@ -17255,6 +17444,7 @@ function requestGachaDraw(count) {
         : (UNIT_DATA.astralChronomancer.goldenStunDuration || 2);
       enemy.timeStunDurationMs = stunSeconds * 1000;
       enemy.timeStunUntil = Math.max(Number(enemy.timeStunUntil || 0), Date.now() + stunSeconds * 1000);
+      enemy.timeStunSource = 'chrono';
     }
     return true;
   }
@@ -17272,7 +17462,8 @@ function requestGachaDraw(count) {
       }
     }
 
-    const orbiting = Array.isArray(unit.chronoOrbitingShots) ? unit.chronoOrbitingShots : [];
+    const maxOrbiting = data.maxOrbitingShots || 10;
+    const orbiting = (Array.isArray(unit.chronoOrbitingShots) ? unit.chronoOrbitingShots : []).slice(0, maxOrbiting);
     unit.chronoOrbitingShots = orbiting;
     if (!orbiting.length) return;
     const candidates = mpChronoTargets(unit, targetState);
@@ -17309,8 +17500,9 @@ function requestGachaDraw(count) {
     });
 
     const extra = Math.max(0, shotCount - directTargets.length);
-    for (let i = 0; i < extra; i += 1) {
-      unit.chronoOrbitingShots ||= [];
+    unit.chronoOrbitingShots ||= [];
+    const maxOrbiting = data.maxOrbitingShots || 10;
+    for (let i = 0; i < extra && unit.chronoOrbitingShots.length < maxOrbiting; i += 1) {
       unit.chronoOrbitingShots.push({
         golden: Math.random() < (data.goldenShotChance || .20),
         phase: Math.random() * Math.PI * 2,
@@ -17318,7 +17510,7 @@ function requestGachaDraw(count) {
       });
     }
 
-    if (unit.attackCount % (data.timeFieldEvery || 30) === 0) {
+    if (unit.attackCount % (data.timeFieldEvery || 60) === 0) {
       unit.chronoFieldUntil = Date.now() + (data.timeFieldDuration || 5) * 1000;
       mpState.announcement = '🌌 별빛 시간술사: 시간 영역 전개! 사거리 300 안의 일반 적 이동이 5초간 정지합니다. 보스는 면역입니다.';
       mpState.announcementUntil = Date.now() + 2800;
@@ -17507,6 +17699,7 @@ function requestGachaDraw(count) {
   function mpPerformUnitAttack(targetState, sideKey, unit, target) {
     const data = UNIT_DATA[unit.unitId];
     if (!data || !target || target.dead) return;
+    playUnitAttackSound(unit.unitId, { volume: .88 });
     unit.attackCount = (unit.attackCount || 0) + 1;
     const angle = Math.atan2(target.y - unit.y, target.x - unit.x);
     unit.angle = angle;
@@ -17550,6 +17743,7 @@ function requestGachaDraw(count) {
           if (!enemy.dead) {
             enemy.timeStunDurationMs = stunMs;
             enemy.timeStunUntil = Math.max(Number(enemy.timeStunUntil || 0), stunUntil);
+            enemy.timeStunSource = 'eclipse';
           }
           if (killed) mpTriggerEclipseGrowth(unit, enemy, sideKey);
         });
@@ -18967,7 +19161,7 @@ function requestGachaDraw(count) {
       mpCtx.strokeStyle='#fff';mpCtx.lineWidth=2.8;mpCtx.beginPath();mpCtx.arc(0,0,19,-Math.PI/2,-Math.PI/2+Math.PI*2*progress);mpCtx.stroke();mpCtx.restore();
     }
 
-    if (now < Number(enemy.timeStunUntil || 0)) {
+    if (now < Number(enemy.timeStunUntil || 0) && enemy.timeStunSource === 'chrono') {
       const remaining = Math.max(0, Number(enemy.timeStunUntil || 0) - now);
       const durationMs = Number(enemy.timeStunDurationMs || (isBoss ? 500 : 2000));
       const elapsed = Math.max(0, durationMs - remaining);

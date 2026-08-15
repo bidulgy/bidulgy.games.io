@@ -4211,6 +4211,50 @@ body {
 @keyframes edenFadeIn{to{opacity:1}}
 @keyframes edenFlash{0%,48%,63%,100%{opacity:0}50%{opacity:.92}52%{opacity:.05}65%{opacity:.62}67%{opacity:0}}
 
+/* EDEN PREMIUM REVEAL V2 — 계약자 + 공허체 + 검은 액체 */
+.eden-reveal-shell{background:
+  radial-gradient(circle at 50% 46%,rgba(255,255,255,.13),transparent 13%),
+  radial-gradient(circle at 50% 54%,#121319 0 14%,#060608 31%,#010102 68%,#000 100%);
+  box-shadow:0 0 120px rgba(255,255,255,.18),inset 0 0 150px #000;}
+.eden-vortex{width:620px;height:260px;top:60%;
+  background:
+    conic-gradient(from 30deg,rgba(255,255,255,.22),rgba(0,0,0,.95) 13%,rgba(255,255,255,.08) 26%,rgba(0,0,0,.95) 41%,rgba(255,255,255,.2) 57%,rgba(0,0,0,.95) 74%,rgba(255,255,255,.08) 88%,rgba(0,0,0,.95)),
+    radial-gradient(ellipse at center,rgba(255,255,255,.18),rgba(0,0,0,.86) 44%,transparent 73%);
+  filter:contrast(1.18);box-shadow:0 0 110px rgba(255,255,255,.18),inset 0 0 90px #000;}
+.eden-vortex-ring{top:60%}.eden-vortex-ring.r1{width:430px;height:164px}.eden-vortex-ring.r2{width:560px;height:220px}
+.eden-contract-glyph{position:absolute;left:50%;top:57%;width:390px;height:158px;transform:translate(-50%,-50%) rotateX(66deg);border-radius:50%;z-index:3;opacity:0;animation:edenGlyphBorn .7s ease 1.25s forwards;}
+.eden-contract-glyph::before,.eden-contract-glyph::after{content:'';position:absolute;inset:7%;border:1px solid rgba(255,255,255,.58);border-radius:50%;box-shadow:0 0 22px rgba(255,255,255,.28)}
+.eden-contract-glyph::after{inset:25%;border-style:dashed;animation:edenGlyphSpin 2.4s linear infinite}
+.eden-contractor{position:absolute;left:47%;top:44%;width:126px;height:230px;transform:translate(-50%,-50%) scale(.08);z-index:6;opacity:0;animation:edenContractorBorn 1.2s cubic-bezier(.08,.72,.13,1) .9s forwards,edenContractorHover 2.8s ease-in-out 2.1s infinite;}
+.eden-contractor-body{position:absolute;left:31px;top:70px;width:67px;height:135px;clip-path:polygon(18% 0,82% 0,100% 100%,62% 82%,50% 100%,38% 82%,0 100%);background:linear-gradient(108deg,#f8f8f9 0 29%,#777980 39%,#17181d 52%,#030305 72%);filter:drop-shadow(0 0 18px rgba(255,255,255,.26))}
+.eden-contractor-head{position:absolute;left:44px;top:37px;width:42px;height:42px;border-radius:50%;background:#030305;box-shadow:inset 0 0 12px rgba(255,255,255,.08),0 0 16px rgba(255,255,255,.12)}
+.eden-contractor-head::after{content:'';position:absolute;left:9px;right:9px;top:19px;height:2px;background:#fff;box-shadow:0 0 9px #fff}
+.eden-contract-arm{position:absolute;width:15px;border-radius:12px;transform-origin:50% 90%;filter:drop-shadow(0 0 8px rgba(255,255,255,.2))}
+.eden-contract-arm.right{left:85px;top:59px;height:82px;background:linear-gradient(#fff,#85878e);transform:rotate(18deg)}
+.eden-contract-arm.right::after{content:'';position:absolute;left:2px;top:-10px;width:11px;height:11px;border-radius:50%;background:#fff;box-shadow:0 0 14px #fff}
+.eden-contract-arm.left{left:26px;top:77px;height:70px;background:#090a0d;transform:rotate(-23deg)}
+.eden-companion{position:absolute;left:59%;top:44%;width:176px;height:174px;transform:translate(-50%,-50%) scale(.08);opacity:0;z-index:7;border-radius:48% 52% 58% 42% / 52% 44% 56% 48%;background:radial-gradient(circle at 36% 30%,#393a40 0 5%,#111216 25%,#020204 68%,#000 100%);box-shadow:0 0 20px #fff,0 0 90px rgba(255,255,255,.24),inset 0 0 36px #000;animation:edenCompanionBorn 1.25s cubic-bezier(.07,.75,.12,1) 1.15s forwards,edenCompanionFloat 2.1s ease-in-out 2.4s infinite;}
+.eden-mouth{position:absolute;width:48px;height:20px;border-radius:50%;background:#000;border:1px solid rgba(255,255,255,.12);overflow:hidden;filter:drop-shadow(0 0 5px rgba(255,255,255,.15))}
+.eden-mouth::before,.eden-mouth::after{content:'▲ ▲ ▲ ▲';position:absolute;left:4px;color:#fff;font-size:8px;letter-spacing:1px;line-height:8px;white-space:nowrap}
+.eden-mouth::before{top:0}.eden-mouth::after{bottom:0;transform:rotate(180deg)}
+.eden-mouth.m1{left:18px;top:38px;transform:rotate(-13deg)}.eden-mouth.m2{right:17px;top:68px;transform:rotate(12deg) scale(.85)}.eden-mouth.m3{left:52px;bottom:24px;transform:rotate(4deg) scale(.72)}
+.eden-drip{position:absolute;top:82%;width:8px;height:0;background:linear-gradient(#000,rgba(0,0,0,0));border-radius:0 0 50% 50%;animation:edenDrip 1.2s ease-in infinite;filter:drop-shadow(0 0 3px #000)}
+.eden-ink-rain{position:absolute;inset:0;z-index:2;overflow:hidden;pointer-events:none}
+.eden-ink-rain i{position:absolute;top:-12%;width:2px;height:90px;background:linear-gradient(rgba(255,255,255,0),rgba(255,255,255,.25),rgba(0,0,0,.75));opacity:0;animation:edenInkFall 1.4s linear infinite}
+.eden-contract-quote{position:absolute;z-index:8;left:38px;top:34px;text-align:left;text-transform:uppercase;opacity:0;animation:edenQuoteIn .55s ease 2.08s forwards;filter:drop-shadow(0 0 10px rgba(255,255,255,.22))}
+.eden-contract-quote strong{display:block;color:#fff;font:900 clamp(16px,2.2vw,26px)/1.1 Georgia,serif;letter-spacing:.17em}.eden-contract-quote span{display:block;margin-top:7px;color:rgba(255,255,255,.48);font-size:11px;font-weight:800;letter-spacing:.35em}
+.eden-reveal-title{bottom:116px;animation-delay:2.72s}.eden-reveal-sub{bottom:82px;animation-delay:3.02s}
+.eden-reveal-results{animation-delay:4.15s}.eden-flash{animation-duration:4.05s}
+@keyframes edenGlyphBorn{0%{opacity:0;filter:blur(8px);transform:translate(-50%,-50%) rotateX(66deg) scale(.25)}100%{opacity:1;filter:blur(0);transform:translate(-50%,-50%) rotateX(66deg) scale(1)}}
+@keyframes edenGlyphSpin{to{transform:rotate(360deg)}}
+@keyframes edenContractorBorn{0%{opacity:0;transform:translate(-50%,-50%) scale(.08) translateY(80px);filter:blur(15px)}70%{opacity:1;transform:translate(-50%,-50%) scale(1.08) translateY(-8px);filter:blur(0)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes edenContractorHover{50%{margin-top:-10px}}
+@keyframes edenCompanionBorn{0%{opacity:0;transform:translate(-50%,-50%) scale(.05) rotate(-28deg);filter:blur(16px)}68%{opacity:1;transform:translate(-50%,-50%) scale(1.16) rotate(5deg);filter:blur(0)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes edenCompanionFloat{50%{margin-top:12px;margin-left:8px;filter:brightness(1.17)}}
+@keyframes edenDrip{0%{height:0;opacity:0}30%{opacity:1}75%{height:68px}100%{height:92px;opacity:0;transform:translateY(18px)}}
+@keyframes edenInkFall{0%{transform:translateY(-20vh);opacity:0}15%{opacity:.55}100%{transform:translateY(120vh);opacity:0}}
+@keyframes edenQuoteIn{0%{opacity:0;transform:translateX(-24px);filter:blur(8px)}100%{opacity:1;transform:none;filter:blur(0)}}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style id="multiplayerStyles">
@@ -5984,7 +6028,7 @@ body {
   </div>
 
   <script>
-    window.BIDULGY_BUILD_VERSION = '2026-08-15-four-units-v1';
+    window.BIDULGY_BUILD_VERSION = '2026-08-15-premium-four-units-v2';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -6625,16 +6669,28 @@ function applyStagePreview(stageId = selectedStage) {
         maxCharge: 100,
         chargeDamagePerStack: 0.005,
         barrageEvery: 5,
-        barrageCount: 6,
-        barrageMultiplier: 0.75,
+        barrageCount: 8,
+        barrageMultiplier: 0.62,
+        impaleEvery: 9,
+        impaleRange: 230,
+        impaleWidth: 52,
+        impaleMultiplier: 2.5,
         cutEvery: 12,
-        cutRadius: 150,
+        cutRadius: 155,
         cutMultiplier: 3,
+        tauntEvery: 15,
+        tauntCharge: 15,
         voidRushEvery: 20,
-        voidRushWidth: 70,
-        voidRushMultiplier: 4,
+        voidRushChargeCost: 30,
+        voidRushWidth: 78,
+        voidRushMultiplier: 4.5,
+        deadeyeEvery: 30,
+        deadeyeMinCharge: 60,
+        deadeyeWindup: 2.7,
+        deadeyeWidth: 44,
+        deadeyeMultiplier: 9,
         color: '#f4f4f5',
-        skillText: '공격이 적중할 때마다 공허 충전이 1 쌓이며 최대 100까지 누적됩니다. 충전 1당 피해가 0.5% 증가합니다. 5번째 공격마다 공허 분신 6개가 여러 적을 난사하고, 12번째 공격마다 반경 150을 공허 칼날로 베어 평타의 3배 피해를 줍니다. 20번째 공격마다 전방을 공허 돌진으로 관통해 평타의 4배 피해를 줍니다. 한 맵에 1기만 배치할 수 있습니다.'
+        skillText: 'Charge 최대 100(1당 피해 +0.5%). 5타 암흑물질 난사 · 9타 공허 찌르기 · 12타 원형 공허참 · 15타마다 Charge +15. Charge 30 이상인 20타에는 보이드러시를 사용해 공허 속으로 사라진 뒤 연속 참격과 돌진을 가합니다. Charge 60 이상인 30타에는 2.7초 조준 후 전방을 관통하는 데드아이를 발사하며 Charge를 모두 소모합니다. 한 맵에 1기만 배치할 수 있습니다.'
       },
       eclipse: {
         id: 'eclipse',
@@ -9088,12 +9144,24 @@ function requestGachaDraw(count) {
       const shards = Array.from({length:14},(_,i)=>`<i class="eden-wing-shard" style="--a:${(i-6.5)*13}deg;animation-delay:${1.45+(i%5)*.035}s"></i>`).join('');
       const fog = Array.from({length:10},(_,i)=>`<i class="eden-fog" style="width:${90+(i%4)*35}px;height:${40+(i%3)*22}px;left:${6+(i*9)%82}%;top:${12+(i*17)%67}%;animation-delay:${-(i*.31)}s"></i>`).join('');
       const cracks = Array.from({length:12},(_,i)=>`<i class="eden-crack" style="--len:${80+(i%5)*35}px;transform:rotate(${i*30+(i%2)*12}deg);animation-delay:${1.08+i*.035}s"></i>`).join('');
+      const inkRain = Array.from({length:28},(_,i)=>`<i style="left:${2+(i*37)%96}%;animation-delay:${-(i*.083)}s;animation-duration:${.95+(i%6)*.16}s"></i>`).join('');
+      const drips = Array.from({length:7},(_,i)=>`<i class="eden-drip" style="left:${12+i*12}%;animation-delay:${1.85+i*.12}s"></i>`).join('');
       content.innerHTML = `
         <div class="eden-reveal-shell">
+          <div class="eden-ink-rain">${inkRain}</div>
           <div class="eden-vortex"></div><div class="eden-vortex-ring r1"></div><div class="eden-vortex-ring r2"></div>
+          <div class="eden-contract-glyph"></div>
           ${fog}${cracks}${shards}
-          <div class="eden-void-core"></div><div class="eden-flash"></div>
-          <div class="eden-reveal-title">EDEN</div><div class="eden-reveal-sub">GALAXY · VOID AWAKENING</div>
+          <div class="eden-contractor">
+            <i class="eden-contractor-body"></i><i class="eden-contractor-head"></i>
+            <i class="eden-contract-arm right"></i><i class="eden-contract-arm left"></i>
+          </div>
+          <div class="eden-companion">
+            <i class="eden-mouth m1"></i><i class="eden-mouth m2"></i><i class="eden-mouth m3"></i>${drips}
+          </div>
+          <div class="eden-contract-quote"><strong>VOID CONTRACT</strong><span>THE VOID ANSWERS.</span></div>
+          <div class="eden-flash"></div>
+          <div class="eden-reveal-title">EDEN</div><div class="eden-reveal-sub">GALAXY · THE VOID CONTRACTOR</div>
           <div class="eden-reveal-results">
             <div id="edenRewardPanel" class="reward-panel visible">
               <span class="section-kicker">GALAXY ACQUIRED</span>
@@ -9105,7 +9173,7 @@ function requestGachaDraw(count) {
         </div>`;
       playUnitAttackSound('eden',{skill:'edenReveal',volume:1.35});
       if (navigator.vibrate) navigator.vibrate([45,30,90,45,160]);
-      await wait(3250);
+      await wait(4220);
       content.querySelector('#closeEdenCutscene')?.addEventListener('click',()=>{
         closeCutscene(); activeInventoryTab='units'; renderInventory();
       },{once:true});
@@ -9576,7 +9644,7 @@ function requestGachaDraw(count) {
 
       window.addEventListener('load', () => {
         navigator.serviceWorker
-          .register('./service-worker.js?v=20260815-four-units-1', { updateViaCache: 'none' })
+          .register('./service-worker.js?v=20260815-premium-units-2', { updateViaCache: 'none' })
           .then(registration => registration.update())
           .catch(error => console.error('서비스 워커 등록 실패:', error));
       });
@@ -9945,6 +10013,35 @@ function requestGachaDraw(count) {
       if (skill === 'edenBarrage') {
         attackSfxMagicBurst(audio, master, now, 1.1, 'dark');
         [0,.045,.09,.135,.18,.225].forEach((d,i)=>attackSfxTone(audio,master,now+d,.18,1750+i*90,310+i*20,'triangle',.085,.001));
+        return;
+      }
+
+      if (skill === 'edenTaunt') {
+        attackSfxTone(audio, master, now, .74, 72, 34, 'sine', .46, .006);
+        attackSfxNoise(audio, master, now+.03, .44, .36, 3200, 220, .72);
+        [0,.11,.22].forEach((d,i)=>attackSfxTone(audio,master,now+.08+d,.26,480+i*180,1320+i*260,'triangle',.10,.006));
+        return;
+      }
+
+      if (skill === 'edenImpale') {
+        attackSfxNoise(audio, master, now, .21, .64, 10800, 740, .52);
+        attackSfxTone(audio, master, now+.012, .30, 2600, 210, 'triangle', .20, .001);
+        attackSfxImpact(audio, master, now+.055, .92);
+        return;
+      }
+
+      if (skill === 'edenDeadeyeCharge') {
+        attackSfxTone(audio, master, now, 2.55, 56, 980, 'sine', .22, .012);
+        attackSfxTone(audio, master, now+.10, 2.35, 240, 3260, 'triangle', .08, .02);
+        attackSfxNoise(audio, master, now+.18, 2.1, .16, 6200, 900, .92);
+        return;
+      }
+
+      if (skill === 'edenDeadeye') {
+        attackSfxNoise(audio, master, now, .34, .88, 11800, 180, .34);
+        attackSfxTone(audio, master, now, .48, 2200, 48, 'sawtooth', .33, .001);
+        attackSfxImpact(audio, master, now+.035, 1.58);
+        attackSfxTone(audio, master, now+.10, .62, 72, 31, 'sine', .34, .004);
         return;
       }
 
@@ -10577,7 +10674,7 @@ function requestGachaDraw(count) {
         moneyTree: '공격 없음 · 기본 1초마다 15골드 · 업그레이드 시 최대 0.7초마다 25골드',
         phoenix: '0.01초 불꽃 숨결 범위공격 · 20초마다 6초 둔화+화상 · 젖음에는 화상 불가 · 60초마다 10초간 사거리×2',
         cherrySamurai: `기절 면역 · 근접 120 전방 180° 범위 · 원거리 ${unit.range} 검기 2발(각 적중지 반경 ${unit.swordWaveSplashRadius || 35} 범위) · 벚꽃 영역 ${unit.blossomAuraRange || 170}: 0.1초마다 ${unit.blossomAuraDamage || 10} 피해 · 일반 3타 후 일섬(폭 ${unit.issenWidth || 60}·거리 ${unit.issenRange || 200})×5 · 일섬 4회마다 오의 각 참격×10 · 10번째 공격마다 적 전체 3초 표식 후 ×5`,
-        eden: '공허 충전 최대 100(1당 피해 +0.5%) · 5타 공허난사 · 12타 반경150 공허절단×3 · 20타 관통 돌진×4 · 맵당 1기',
+        eden: 'Charge 최대100(1당 피해 +0.5%) · 5타 암흑물질 난사 · 9타 공허 찌르기 · 12타 공허참 · 15타 Charge+15 · 20타 Charge30↑ 보이드러시 · 30타 Charge60↑ 데드아이(2.7초 조준) · 맵당 1기',
         eclipse: `평타 적중지 반경 ${unit.normalSlashRadius || 55} 범위 베기 · 처치 시 5% 성장(공격력·공속 +2%, 회전참 범위 +5%) · 타격 시 5% 블랙홀 · 4타마다 회전참×3 + 1초 기절 · 기절 면역`,
         astralChronomancer: '다중발사(2/3/4발) · 공전탄 최대 10발 · 각 탄환 20% 황금 시간기절 · 60회 공격마다 사거리 300 시간정지 5초'
       };
@@ -11300,35 +11397,92 @@ function requestGachaDraw(count) {
       placed.angle = Math.atan2(target.y - placed.y, target.x - placed.x);
       placed.cooldown = Number(placed.fireInterval || data.fireInterval) * slowMultiplier;
       placed.attackAnimation = 1;
-      const damage = Number(placed.damage || data.damage) * edenDamageMultiplier(placed);
 
-      if (placed.attackCount % Number(data.voidRushEvery || 20) === 0) {
-        playUnitAttackSound('eden', { skill: 'edenRush', volume: 1.20 });
+      // Sol's RNG의 Charge/Taunt 감각을 타워디펜스용 패시브로 재해석:
+      // 15타마다 공허체가 포효하며 Charge를 추가 획득합니다.
+      if (placed.attackCount % Number(data.tauntEvery || 15) === 0) {
+        addEdenCharge(placed, Number(data.tauntCharge || 15));
+        playUnitAttackSound('eden', { skill: 'edenTaunt', volume: 1.18 });
+        battle.shots.push({
+          x1: placed.x, y1: placed.y, x2: placed.x, y2: placed.y,
+          life: getAttackEffectDuration('edenTaunt'), maxLife: getAttackEffectDuration('edenTaunt'),
+          color: '#fff', effect: 'edenTaunt', seed: Math.random()*1000, radius: 92
+        });
+      }
+
+      const damage = Number(placed.damage || data.damage) * edenDamageMultiplier(placed);
+      const charge = Math.min(Number(data.maxCharge || 100), Number(placed.edenCharge || 0));
+
+      // Deadeye — 충분한 Charge가 있을 때 30타마다 2.7초 조준 후 전방 관통 저격.
+      if (
+        placed.attackCount % Number(data.deadeyeEvery || 30) === 0 &&
+        charge >= Number(data.deadeyeMinCharge || 60)
+      ) {
+        const windup = Number(data.deadeyeWindup || 2.7);
+        const endX = placed.x + Math.cos(placed.angle) * Math.max(placed.range, 360);
+        const endY = placed.y + Math.sin(placed.angle) * Math.max(placed.range, 360);
+        placed.attackMode = 'edenDeadeye';
+        placed.cooldown = Math.max(placed.cooldown, windup + .32);
+        placed.edenDeadeyeCast = {
+          startAt: performance.now(),
+          endAt: performance.now() + windup * 1000,
+          targetX: endX, targetY: endY
+        };
+        playUnitAttackSound('eden', { skill: 'edenDeadeyeCharge', volume: 1.22 });
+        scheduleDelayedAttack({
+          kind: 'edenDeadeye',
+          timer: windup,
+          x1: placed.x, y1: placed.y,
+          x2: endX, y2: endY,
+          width: Number(data.deadeyeWidth || 44),
+          damage: damage * Number(data.deadeyeMultiplier || 9)
+        });
+        placed.edenCharge = 0;
+        return;
+      }
+
+      // Voidrush — Charge 30을 소모해 포탈 속으로 사라지고 연속 참격 후 전방 돌진.
+      if (
+        placed.attackCount % Number(data.voidRushEvery || 20) === 0 &&
+        charge >= Number(data.voidRushChargeCost || 30)
+      ) {
+        playUnitAttackSound('eden', { skill: 'edenRush', volume: 1.24 });
         placed.attackMode = 'edenRush';
+        placed.edenCharge = Math.max(0, charge - Number(data.voidRushChargeCost || 30));
         const endX = placed.x + Math.cos(placed.angle) * placed.range;
         const endY = placed.y + Math.sin(placed.angle) * placed.range;
         battle.shots.push({
           x1: placed.x, y1: placed.y, x2: endX, y2: endY,
           life: getAttackEffectDuration('edenRush'), maxLife: getAttackEffectDuration('edenRush'),
           color: '#f8fafc', effect: 'edenRush', angle: placed.angle, seed: Math.random() * 1000,
-          width: data.voidRushWidth || 70
+          width: data.voidRushWidth || 78
         });
-        enemiesAlongLine(placed.x, placed.y, endX, endY, Number(data.voidRushWidth || 70) / 2)
-          .forEach(enemy => applyDamageToEnemy(enemy, damage * Number(data.voidRushMultiplier || 4)));
-        addEdenCharge(placed, 1);
+        // 지면 포탈 위에 빠른 공허 참격이 여러 번 생기는 연출.
+        for (let i=0;i<7;i++) {
+          const q=(i+1)/8, px=placed.x+(endX-placed.x)*q, py=placed.y+(endY-placed.y)*q;
+          battle.shots.push({
+            x1:px,y1:py,x2:px,y2:py,
+            life:getAttackEffectDuration('edenCut')*.72,maxLife:getAttackEffectDuration('edenCut')*.72,
+            color:'#fff',effect:'edenCut',angle:placed.angle+(i%2?1:-1)*.75,
+            seed:Math.random()*1000+i*17,radius:46+(i%3)*9
+          });
+        }
+        enemiesAlongLine(placed.x, placed.y, endX, endY, Number(data.voidRushWidth || 78) / 2)
+          .forEach(enemy => applyDamageToEnemy(enemy, damage * Number(data.voidRushMultiplier || 4.5)));
         return;
       }
 
+      // Cut Into Nothing — 넓은 원형 공허 참격.
       if (placed.attackCount % Number(data.cutEvery || 12) === 0) {
-        playUnitAttackSound('eden', { skill: 'edenCut', volume: 1.16 });
+        playUnitAttackSound('eden', { skill: 'edenCut', volume: 1.20 });
         placed.attackMode = 'edenCut';
         battle.shots.push({
           x1: target.x, y1: target.y, x2: target.x, y2: target.y,
           life: getAttackEffectDuration('edenCut'), maxLife: getAttackEffectDuration('edenCut'),
-          color: '#ffffff', effect: 'edenCut', angle: placed.angle, seed: Math.random() * 1000, radius: data.cutRadius || 150
+          color: '#ffffff', effect: 'edenCut', angle: placed.angle, seed: Math.random() * 1000, radius: data.cutRadius || 155
         });
         for (const enemy of battle.enemies) {
-          if (!enemy.dead && Math.hypot(enemy.x - target.x, enemy.y - target.y) <= Number(data.cutRadius || 150)) {
+          if (!enemy.dead && Math.hypot(enemy.x - target.x, enemy.y - target.y) <= Number(data.cutRadius || 155)) {
             applyDamageToEnemy(enemy, damage * Number(data.cutMultiplier || 3));
           }
         }
@@ -11336,23 +11490,44 @@ function requestGachaDraw(count) {
         return;
       }
 
+      // Impale — 공허체가 단검/창으로 변해 짧고 빠르게 전방을 찌릅니다.
+      if (placed.attackCount % Number(data.impaleEvery || 9) === 0) {
+        playUnitAttackSound('eden', { skill: 'edenImpale', volume: 1.17 });
+        placed.attackMode = 'edenImpale';
+        const reach = Number(data.impaleRange || 230);
+        const ex = placed.x + Math.cos(placed.angle) * reach;
+        const ey = placed.y + Math.sin(placed.angle) * reach;
+        battle.shots.push({
+          x1: placed.x, y1: placed.y, x2: ex, y2: ey,
+          life: getAttackEffectDuration('edenImpale'), maxLife: getAttackEffectDuration('edenImpale'),
+          color:'#fff', effect:'edenImpale', angle:placed.angle, seed:Math.random()*1000,
+          width:Number(data.impaleWidth||52)
+        });
+        enemiesAlongLine(placed.x, placed.y, ex, ey, Number(data.impaleWidth || 52)/2)
+          .forEach(enemy => applyDamageToEnemy(enemy, damage * Number(data.impaleMultiplier || 2.5)));
+        addEdenCharge(placed, 1);
+        return;
+      }
+
+      // Darkmatter Barrage — 공허체가 다연장 형태로 변형되어 여러 적을 난사.
       if (placed.attackCount % Number(data.barrageEvery || 5) === 0) {
-        playUnitAttackSound('eden', { skill: 'edenBarrage', volume: 1.14 });
+        playUnitAttackSound('eden', { skill: 'edenBarrage', volume: 1.18 });
         placed.attackMode = 'edenBarrage';
         const candidates = battle.enemies
           .filter(enemy => !enemy.dead && !enemy.soilPileState && Math.hypot(enemy.x - placed.x, enemy.y - placed.y) <= placed.range)
           .sort((a,b) => Number(b.targetIndex||0) - Number(a.targetIndex||0))
-          .slice(0, Number(data.barrageCount || 6));
+          .slice(0, Number(data.barrageCount || 8));
         const targets = candidates.length ? candidates : [target];
-        for (let i = 0; i < Number(data.barrageCount || 6); i += 1) {
+        for (let i = 0; i < Number(data.barrageCount || 8); i += 1) {
           const enemy = targets[i % targets.length];
           battle.shots.push({
-            x1: placed.x + (i%2 ? 20 : -20), y1: placed.y - 18 + (i%3)*8,
+            x1: placed.x + (i%2 ? 23 : -19), y1: placed.y - 21 + (i%4)*7,
             x2: enemy.x, y2: enemy.y,
             life: getAttackEffectDuration('edenBarrage'), maxLife: getAttackEffectDuration('edenBarrage'),
-            color: '#f8fafc', effect: 'edenBarrage', angle: Math.atan2(enemy.y-placed.y,enemy.x-placed.x), seed: Math.random()*1000+i*13
+            color: '#f8fafc', effect: 'edenBarrage',
+            angle: Math.atan2(enemy.y-placed.y,enemy.x-placed.x), seed: Math.random()*1000+i*13
           });
-          applyDamageToEnemy(enemy, damage * Number(data.barrageMultiplier || .75));
+          applyDamageToEnemy(enemy, damage * Number(data.barrageMultiplier || .62));
         }
         addEdenCharge(placed, 1);
         return;
@@ -11361,7 +11536,7 @@ function requestGachaDraw(count) {
       playUnitAttackSound('eden');
       placed.attackMode = 'edenBolt';
       battle.shots.push({
-        x1: placed.x, y1: placed.y - 8, x2: target.x, y2: target.y,
+        x1: placed.x + 22, y1: placed.y - 8, x2: target.x, y2: target.y,
         life: getAttackEffectDuration('edenBolt'), maxLife: getAttackEffectDuration('edenBolt'),
         color: '#f8fafc', effect: 'edenBolt', angle: placed.angle, seed: Math.random() * 1000
       });
@@ -11413,9 +11588,12 @@ function requestGachaDraw(count) {
         phoenixBreath: .20,
         phoenixRoar: 1.20,
         edenBolt: .42,
-        edenBarrage: .50,
-        edenCut: .58,
-        edenRush: .62,
+        edenBarrage: .56,
+        edenImpale: .46,
+        edenCut: .66,
+        edenRush: .82,
+        edenTaunt: .78,
+        edenDeadeye: .92,
         timeRift: .48,
         timeRiftGolden: .52,
         eclipseSlash: .34,
@@ -11599,6 +11777,21 @@ function requestGachaDraw(count) {
         });
         enemiesAlongLine(attack.x1, attack.y1, attack.x2, attack.y2, attack.width || 20)
           .forEach(enemy => applyDamageToEnemy(enemy, attack.damage));
+        return;
+      }
+
+      if (attack.kind === 'edenDeadeye') {
+        playUnitAttackSound('eden', { skill: 'edenDeadeye', volume: 1.30 });
+        battle.shots.push({
+          x1: attack.x1, y1: attack.y1, x2: attack.x2, y2: attack.y2,
+          life: getAttackEffectDuration('edenDeadeye'), maxLife: getAttackEffectDuration('edenDeadeye'),
+          color:'#fff', effect:'edenDeadeye',
+          angle:Math.atan2(attack.y2-attack.y1, attack.x2-attack.x1),
+          seed:Math.random()*1000, width:attack.width || 44
+        });
+        const victims = enemiesAlongLine(attack.x1, attack.y1, attack.x2, attack.y2, Number(attack.width || 44)/2);
+        victims.forEach(enemy => applyDamageToEnemy(enemy, attack.damage));
+        setBattleMessage(`◈ 에덴 · DEAD EYE · ${victims.length}명 관통`);
         return;
       }
 
@@ -15564,6 +15757,335 @@ function requestGachaDraw(count) {
       g.restore();
     }
 
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Premium unit art — Poseidon / Phoenix / Ice Queen / Eden
+    // 공용 Canvas 함수라 싱글과 온라인이 같은 고퀄리티 실루엣을 사용합니다.
+    // ─────────────────────────────────────────────────────────────────────────────
+    function drawPoseidonPremiumBodyArt(g, time, unit, quality = 1) {
+      const t = time * .001;
+      const pulse = .78 + Math.sin(t * 3.2 + Number(unit.animationOffset || 0)) * .18;
+      const sway = Math.sin(t * 1.8 + Number(unit.animationOffset || 0)) * 2;
+      g.save();
+
+      // 물로 이루어진 긴 망토
+      g.save();
+      g.globalCompositeOperation = 'lighter';
+      const cape = g.createLinearGradient(0, -12, 0, 32);
+      cape.addColorStop(0, 'rgba(123,238,255,.54)');
+      cape.addColorStop(.55, 'rgba(34,151,208,.28)');
+      cape.addColorStop(1, 'rgba(15,61,111,0)');
+      g.fillStyle = cape;
+      g.beginPath();
+      g.moveTo(-15, -8); g.quadraticCurveTo(-28 + sway, 8, -23 + sway, 28);
+      g.quadraticCurveTo(-9, 22, 0, 31); g.quadraticCurveTo(10, 21, 24 + sway, 28);
+      g.quadraticCurveTo(27 + sway, 7, 15, -8); g.closePath(); g.fill();
+      g.restore();
+
+      // 다리 / 부츠
+      const boot = g.createLinearGradient(0, 11, 0, 28);
+      boot.addColorStop(0, '#153f5d'); boot.addColorStop(1, '#071b2a');
+      g.fillStyle = boot;
+      for (const side of [-1,1]) { g.beginPath(); g.roundRect(side*8-6, 11, 12, 17, 4); g.fill(); }
+
+      // 갑옷 치마
+      const skirt = g.createLinearGradient(-17, 0, 17, 20);
+      skirt.addColorStop(0, '#0b3653'); skirt.addColorStop(.35, '#147ca9');
+      skirt.addColorStop(.7, '#0c496b'); skirt.addColorStop(1, '#061c2d');
+      g.fillStyle = skirt;
+      g.beginPath(); g.moveTo(-18, 2); g.lineTo(-14,-5); g.lineTo(14,-5); g.lineTo(19,2);
+      g.lineTo(14,20); g.lineTo(4,16); g.lineTo(0,23); g.lineTo(-4,16); g.lineTo(-14,20); g.closePath(); g.fill();
+
+      // 흉갑
+      const armor = g.createLinearGradient(-20,-18,21,15);
+      armor.addColorStop(0,'#d8fbff'); armor.addColorStop(.16,'#5de2ff');
+      armor.addColorStop(.45,'#147da8'); armor.addColorStop(.72,'#0d4b70'); armor.addColorStop(1,'#06283e');
+      g.fillStyle = armor;
+      g.beginPath(); g.moveTo(-18,11); g.lineTo(-17,-10); g.lineTo(-9,-17); g.lineTo(9,-17);
+      g.lineTo(18,-10); g.lineTo(18,11); g.lineTo(9,16); g.lineTo(-9,16); g.closePath(); g.fill();
+      g.strokeStyle='rgba(223,251,255,.75)'; g.lineWidth=1.2; g.stroke();
+
+      // 비늘 판금
+      g.strokeStyle='rgba(135,233,255,.48)'; g.lineWidth=1;
+      for (let row=0; row<3; row++) {
+        const y=-8+row*7;
+        for (let col=-1; col<=1; col++) {
+          g.beginPath(); g.arc(col*8, y, 5, .1, Math.PI-.1); g.stroke();
+        }
+      }
+
+      // 조개/파도 어깨갑
+      for (const side of [-1,1]) {
+        g.save(); g.translate(side*20,-9); g.scale(side,1);
+        const shoulder=g.createLinearGradient(-5,-9,17,8);
+        shoulder.addColorStop(0,'#e9feff'); shoulder.addColorStop(.35,'#65e2ff'); shoulder.addColorStop(1,'#0d5579');
+        g.fillStyle=shoulder;
+        g.beginPath(); g.moveTo(-8,2); g.quadraticCurveTo(0,-13,18,-9); g.quadraticCurveTo(13,0,6,8); g.closePath(); g.fill();
+        g.strokeStyle='#dffbff'; g.lineWidth=1.1; g.stroke();
+        for(let i=0;i<3;i++){g.beginPath();g.moveTo(0,-6+i*4);g.lineTo(12,-4+i*4);g.stroke();}
+        g.restore();
+      }
+
+      // 얼굴 + 바다왕관. 작은 화면에서도 왕의 실루엣이 읽히게 크게 잡음.
+      g.fillStyle='#cf9d79'; g.beginPath(); g.arc(0,-23,9,0,Math.PI*2); g.fill();
+      g.fillStyle='#e8eef1';
+      g.beginPath(); g.moveTo(-8,-18); g.quadraticCurveTo(-7,-7,-1,-4); g.lineTo(0,2);
+      g.lineTo(1,-4); g.quadraticCurveTo(8,-8,8,-18); g.quadraticCurveTo(0,-12,-8,-18); g.fill();
+      g.fillStyle='#123a55'; g.fillRect(-8,-27,16,4);
+      g.fillStyle='#ddfbff';
+      for (const side of [-1,0,1]) {
+        g.beginPath(); g.moveTo(side*7,-28); g.lineTo(side*10,-40+(side===0?-5:0)); g.lineTo(side*3,-31); g.closePath(); g.fill();
+      }
+      g.strokeStyle='#62e6ff'; g.lineWidth=2;
+      g.beginPath(); g.arc(0,-28,14,Math.PI*.08,Math.PI*.92); g.stroke();
+
+      // 가슴의 바다 코어
+      g.save(); g.shadowBlur=18*pulse; g.shadowColor='#35d9ff';
+      const core=g.createRadialGradient(-2,-4,1,0,-3,8); core.addColorStop(0,'#fff');core.addColorStop(.28,'#92f3ff');core.addColorStop(1,'rgba(37,205,255,0)');
+      g.fillStyle=core; g.beginPath(); g.arc(0,-3,8,0,Math.PI*2); g.fill(); g.restore();
+
+      // 주변 물방울/해류
+      g.save(); g.globalCompositeOperation='lighter';
+      const drops = quality > .7 ? 9 : 5;
+      for(let i=0;i<drops;i++){
+        const a=t*(.8+(i%3)*.13)+i*2.19, r=28+(i%4)*7;
+        const x=Math.cos(a)*r, y=-6+Math.sin(a)*13;
+        g.fillStyle=`rgba(126,236,255,${.28+.05*(i%3)})`;
+        g.beginPath(); g.ellipse(x,y,2.2,5.5,a,0,Math.PI*2); g.fill();
+      }
+      g.restore();
+      g.restore();
+    }
+
+    function drawPhoenixPremiumBodyArt(g, time, unit, quality = 1) {
+      const t=time*.001, flying=Number(unit.phoenixFlightRemaining||0)>0;
+      const flap=Math.sin(t*(flying?8.5:5.7)+Number(unit.animationOffset||0));
+      const lift=flying?-6:0;
+      g.save(); g.translate(0,lift);
+
+      // 열기류 고리
+      g.save();g.globalCompositeOperation='lighter';
+      for(let i=0;i<3;i++){
+        g.strokeStyle=`rgba(255,${110+i*45},${26+i*24},${.16+.05*i})`;
+        g.lineWidth=3-i*.5;g.beginPath();g.ellipse(0,18,24+i*9,8+i*3,t*.7+i*.8,0,Math.PI*2);g.stroke();
+      }
+      g.restore();
+
+      // 3층 깃털 날개
+      for(const side of [-1,1]){
+        g.save(); g.rotate(side*(.26+flap*.18));
+        for(let layer=0;layer<3;layer++){
+          const len=48-layer*8, y=-12+layer*6;
+          for(let i=0;i<5;i++){
+            const a=(i-2)*.12;
+            g.save();g.translate(side*(8+i*6),y+i*1.7);g.rotate(side*(a-.18));
+            const feather=g.createLinearGradient(0,0,side*len,0);
+            feather.addColorStop(0,layer===0?'#fff2a4':'#ffd34e');
+            feather.addColorStop(.36,layer===0?'#ffb12d':'#ff8d20');
+            feather.addColorStop(.72,'#ef3c18');feather.addColorStop(1,'rgba(157,16,10,.08)');
+            g.fillStyle=feather;g.beginPath();g.moveTo(0,-3);g.quadraticCurveTo(side*len*.55,-8,side*len,0);g.quadraticCurveTo(side*len*.55,7,0,3);g.closePath();g.fill();
+            g.restore();
+          }
+        }
+        g.restore();
+      }
+
+      // 몸통
+      const body=g.createRadialGradient(-5,-11,2,0,-2,25);
+      body.addColorStop(0,'#fffbd2');body.addColorStop(.22,'#ffd75e');body.addColorStop(.55,'#ff7b22');body.addColorStop(1,'#8e1712');
+      g.fillStyle=body; g.beginPath(); g.ellipse(0,-2,15,24,-.08,0,Math.PI*2); g.fill();
+      g.strokeStyle='rgba(255,242,160,.65)';g.lineWidth=1.2;g.beginPath();g.ellipse(0,-2,11,18,-.08,0,Math.PI*2);g.stroke();
+
+      // 목/머리/부리
+      g.fillStyle='#ffbd36';g.beginPath();g.ellipse(9,-23,9,11,-.2,0,Math.PI*2);g.fill();
+      g.fillStyle='#4c180c';g.beginPath();g.moveTo(16,-24);g.lineTo(31,-20);g.lineTo(17,-16);g.closePath();g.fill();
+      g.fillStyle='#fff6bf';g.beginPath();g.arc(12,-27,2.6,0,Math.PI*2);g.fill();
+      g.fillStyle='#60130d';g.beginPath();g.arc(12.6,-27,1.25,0,Math.PI*2);g.fill();
+
+      // 왕관 같은 불꽃 볏
+      for(let i=0;i<4;i++){
+        const x=-3+i*5;
+        const h=12+(i%2)*7;
+        const cg=g.createLinearGradient(x,-28,x,-28-h);cg.addColorStop(0,'#ff8f20');cg.addColorStop(.6,'#ffd65b');cg.addColorStop(1,'rgba(255,245,170,0)');
+        g.fillStyle=cg;g.beginPath();g.moveTo(x-3,-27);g.quadraticCurveTo(x,-30-h,x+3,-27);g.closePath();g.fill();
+      }
+
+      // 길고 갈라진 불꽃 꼬리
+      for(let i=0;i<7;i++){
+        const side=i-3, a=side*.16+Math.sin(t*4+i)*.05;
+        g.save();g.translate(side*2,17);g.rotate(a);
+        const tail=g.createLinearGradient(0,0,0,46+(i%3)*7);tail.addColorStop(0,'#ffd73e');tail.addColorStop(.4,'#ff7420');tail.addColorStop(.76,'#e52c18');tail.addColorStop(1,'rgba(180,20,12,0)');
+        g.fillStyle=tail;g.beginPath();g.moveTo(-4,0);g.quadraticCurveTo(-8,24,0,53+(i%2)*7);g.quadraticCurveTo(8,24,4,0);g.closePath();g.fill();g.restore();
+      }
+
+      // 불티
+      if(quality>.55){g.save();g.globalCompositeOperation='lighter';for(let i=0;i<10;i++){const a=t*(1.1+i*.03)+i*1.73,r=21+(i%4)*10;const x=Math.cos(a)*r,y=Math.sin(a)*12-8;g.fillStyle=`rgba(255,${128+(i%3)*42},${32+(i%2)*32},${.35+(i%3)*.1})`;g.beginPath();g.arc(x,y,1.4+i%2,0,Math.PI*2);g.fill();}g.restore();}
+      g.restore();
+    }
+
+    function drawIceQueenPremiumBodyArt(g, time, unit, quality = 1) {
+      const t=time*.001, hover=Math.sin(t*2.2+Number(unit.animationOffset||0))*1.4;
+      g.save();g.translate(0,hover);
+
+      // 바닥 서리 문양
+      g.save();g.globalCompositeOperation='lighter';g.strokeStyle='rgba(161,240,255,.28)';g.lineWidth=1.4;g.rotate(t*.18);
+      for(let i=0;i<6;i++){g.rotate(Math.PI/3);g.beginPath();g.moveTo(8,0);g.lineTo(31,0);g.moveTo(23,0);g.lineTo(28,-5);g.moveTo(23,0);g.lineTo(28,5);g.stroke();}
+      g.restore();
+
+      // 긴 빙결 망토
+      const cape=g.createLinearGradient(0,-14,0,29);cape.addColorStop(0,'#effeff');cape.addColorStop(.24,'#91e8ff');cape.addColorStop(.65,'#377db4');cape.addColorStop(1,'rgba(22,58,111,.18)');
+      g.fillStyle=cape;g.beginPath();g.moveTo(-17,-10);g.quadraticCurveTo(-24,4,-24,27);g.lineTo(-8,18);g.lineTo(0,31);g.lineTo(8,18);g.lineTo(24,27);g.quadraticCurveTo(24,4,17,-10);g.closePath();g.fill();
+
+      // 몸 갑옷
+      const armor=g.createLinearGradient(-15,-18,16,16);armor.addColorStop(0,'#f8ffff');armor.addColorStop(.28,'#b9f6ff');armor.addColorStop(.58,'#6fc8ed');armor.addColorStop(1,'#244f87');
+      g.fillStyle=armor;g.beginPath();g.moveTo(-15,13);g.lineTo(-13,-11);g.lineTo(-6,-18);g.lineTo(6,-18);g.lineTo(13,-11);g.lineTo(15,13);g.lineTo(6,18);g.lineTo(-6,18);g.closePath();g.fill();
+      g.strokeStyle='rgba(255,255,255,.8)';g.lineWidth=1.2;g.stroke();
+
+      // 수정 견갑
+      for(const side of [-1,1]){
+        g.fillStyle='#c9f8ff';g.strokeStyle='#7edfff';g.lineWidth=1;
+        g.beginPath();g.moveTo(side*10,-12);g.lineTo(side*22,-22);g.lineTo(side*18,-7);g.lineTo(side*28,-8);g.lineTo(side*17,2);g.closePath();g.fill();g.stroke();
+      }
+
+      // 얼굴 + 수정 가면
+      g.fillStyle='#eaf8ff';g.beginPath();g.arc(0,-24,8,0,Math.PI*2);g.fill();
+      g.fillStyle='rgba(63,123,170,.82)';g.beginPath();g.moveTo(-9,-25);g.lineTo(9,-25);g.lineTo(6,-19);g.lineTo(-6,-19);g.closePath();g.fill();
+      g.strokeStyle='#dffcff';g.lineWidth=1;g.beginPath();g.moveTo(-5,-22);g.lineTo(5,-22);g.stroke();
+
+      // 높은 수정 왕관
+      g.fillStyle='#dcfbff';g.strokeStyle='#82ddff';g.lineWidth=1;
+      const pts=[[-10,-31],[-7,-43],[-2,-35],[0,-49],[3,-35],[8,-44],[11,-30]];
+      g.beginPath();g.moveTo(pts[0][0],pts[0][1]);pts.slice(1).forEach(p=>g.lineTo(p[0],p[1]));g.lineTo(9,-28);g.lineTo(-9,-28);g.closePath();g.fill();g.stroke();
+
+      // 가슴 눈꽃 코어
+      g.save();g.translate(0,-4);g.shadowBlur=15;g.shadowColor='#9beeff';g.strokeStyle='#efffff';g.lineWidth=1.3;
+      for(let i=0;i<6;i++){const a=i*Math.PI/3;g.beginPath();g.moveTo(0,0);g.lineTo(Math.cos(a)*7,Math.sin(a)*7);g.stroke();}
+      g.restore();
+
+      // 공전 얼음 결정
+      if(quality>.55){for(let i=0;i<6;i++){const a=t*.65+i*Math.PI/3,r=30+(i%2)*6,x=Math.cos(a)*r,y=-10+Math.sin(a)*14;g.save();g.translate(x,y);g.rotate(a+t);g.fillStyle='rgba(207,250,255,.72)';g.beginPath();g.moveTo(0,-5);g.lineTo(3,0);g.lineTo(0,5);g.lineTo(-3,0);g.closePath();g.fill();g.restore();}}
+      g.restore();
+    }
+
+    function drawEdenPremiumBodyArt(g, time, unit, quality = 1) {
+      const t=time*.001, charge=Math.min(100,Number(unit.edenCharge||0));
+      const hover=Math.sin(t*2.15+Number(unit.animationOffset||0))*2.1;
+      const deadeyeClock = Number(unit.edenDeadeyeCast?.startAt || 0) > 1e12 ? Date.now() : time;
+      const deadeye=unit.edenDeadeyeCast && deadeyeClock>=Number(unit.edenDeadeyeCast.startAt||0) && deadeyeClock<=Number(unit.edenDeadeyeCast.endAt||0);
+      g.save();g.translate(0,hover);
+
+      // 계약자: 흑백 비대칭 긴 코트, 오른팔을 위로 든 자세
+      const coat=g.createLinearGradient(-18,-18,20,24);coat.addColorStop(0,'#f8fafc');coat.addColorStop(.34,'#a5a8ae');coat.addColorStop(.5,'#1b1c20');coat.addColorStop(1,'#020204');
+      g.fillStyle=coat;g.beginPath();g.moveTo(-19,22);g.lineTo(-13,-14);g.lineTo(12,-14);g.lineTo(20,22);g.lineTo(6,15);g.lineTo(0,28);g.lineTo(-6,15);g.closePath();g.fill();
+      g.strokeStyle='rgba(255,255,255,.45)';g.lineWidth=1;g.stroke();
+
+      // 다리
+      g.fillStyle='#08090c';g.beginPath();g.roundRect(-12,12,9,17,3);g.roundRect(3,12,9,17,3);g.fill();
+
+      // 머리 — 얼굴을 세부 묘사하지 않고 공허에 잠긴 실루엣
+      g.fillStyle='#050507';g.beginPath();g.arc(0,-22,10,0,Math.PI*2);g.fill();
+      g.strokeStyle='#fff';g.lineWidth=1.5;g.beginPath();g.moveTo(-6,-23);g.lineTo(6,-23);g.stroke();
+
+      // 오른팔을 들어 올린 계약 포즈
+      g.strokeStyle='#dedfe2';g.lineWidth=7;g.lineCap='round';
+      g.beginPath();g.moveTo(8,-9);g.lineTo(15,-25);g.lineTo(12,-39);g.stroke();
+      g.fillStyle='#fff';g.beginPath();g.arc(12,-41,4,0,Math.PI*2);g.fill();
+      // 왼팔
+      g.strokeStyle='#121318';g.lineWidth=7;g.beginPath();g.moveTo(-9,-8);g.lineTo(-17,7);g.stroke();
+
+      // 옆에 떠 있는 '공허체': 불규칙한 검은 덩어리 + 액체 + 여러 입
+      const ox=31+Math.sin(t*1.5)*4, oy=-10+Math.cos(t*1.9)*5;
+      g.save();g.translate(ox,oy);g.rotate(Math.sin(t*.8)*.12);
+      g.shadowBlur=18+charge*.08;g.shadowColor='rgba(255,255,255,.38)';
+      const vg=g.createRadialGradient(-5,-7,2,0,0,22+charge*.04);vg.addColorStop(0,'#34353b');vg.addColorStop(.28,'#101014');vg.addColorStop(.7,'#020204');vg.addColorStop(1,'rgba(0,0,0,0)');
+      g.fillStyle=vg;
+      g.beginPath();g.moveTo(-20,-5);g.quadraticCurveTo(-16,-22,1,-20);g.quadraticCurveTo(17,-25,22,-8);g.quadraticCurveTo(28,5,15,17);g.quadraticCurveTo(-3,24,-19,13);g.quadraticCurveTo(-28,4,-20,-5);g.fill();
+      // 입/치아
+      const mouths=quality>.65?3:2;
+      for(let i=0;i<mouths;i++){
+        const mx=-7+(i%2)*13,my=-8+i*8;
+        g.fillStyle='#000';g.beginPath();g.ellipse(mx,my,7,3.2,(i-1)*.25,0,Math.PI*2);g.fill();
+        g.fillStyle='#f7f7f8';
+        for(let j=0;j<4;j++){const tx=mx-4.5+j*3;g.beginPath();g.moveTo(tx,my-2.4);g.lineTo(tx+1.4,my);g.lineTo(tx+2.6,my-2.4);g.closePath();g.fill();}
+      }
+      // 검은 액체 방울
+      for(let i=0;i<4;i++){const dx=-11+i*7,drop=6+((t*22+i*9)%13);g.fillStyle='rgba(0,0,0,.92)';g.beginPath();g.ellipse(dx,15+drop*.28,2.1,4.5+drop*.12,0,0,Math.PI*2);g.fill();}
+      g.restore();
+
+      // Deadeye 조준 중에는 흰 십자선이 잠깐 떠오름
+      if(deadeye){const p=(deadeyeClock-unit.edenDeadeyeCast.startAt)/Math.max(1,unit.edenDeadeyeCast.endAt-unit.edenDeadeyeCast.startAt);g.save();g.globalCompositeOperation='lighter';g.strokeStyle=`rgba(255,255,255,${.45+.45*p})`;g.lineWidth=1.4;g.beginPath();g.arc(0,-4,32+8*p,0,Math.PI*2);g.stroke();g.beginPath();g.moveTo(-42,-4);g.lineTo(42,-4);g.moveTo(0,-46);g.lineTo(0,38);g.stroke();g.restore();}
+      g.restore();
+    }
+
+    function drawPoseidonPremiumWeaponArt(g, unit, time, attack=0) {
+      const t=time*.001;
+      g.save();g.shadowBlur=16+attack*10;g.shadowColor='#45ddff';
+      // 회전하는 물고리
+      g.globalCompositeOperation='lighter';g.strokeStyle='rgba(125,236,255,.48)';g.lineWidth=2;
+      for(let i=0;i<2;i++){g.save();g.translate(26,0);g.rotate(t*(i?2.1:-1.7));g.beginPath();g.ellipse(0,0,16+i*5,5+i*2,0,0,Math.PI*2);g.stroke();g.restore();}
+      g.globalCompositeOperation='source-over';
+      const shaft=g.createLinearGradient(-10,0,62,0);shaft.addColorStop(0,'#072a40');shaft.addColorStop(.22,'#187da3');shaft.addColorStop(.58,'#8aefff');shaft.addColorStop(1,'#f6ffff');
+      g.strokeStyle=shaft;g.lineWidth=5.5;g.beginPath();g.moveTo(-10,0);g.lineTo(59,0);g.stroke();
+      // 중앙 보석
+      g.fillStyle='#dffcff';g.beginPath();g.arc(15,0,4.2,0,Math.PI*2);g.fill();g.strokeStyle='#52dfff';g.lineWidth=1.2;g.stroke();
+      // 세 갈래 날
+      for(const off of [-10,0,10]){
+        const blade=g.createLinearGradient(55,off,79,off);blade.addColorStop(0,'#65dfff');blade.addColorStop(.55,'#f8ffff');blade.addColorStop(1,'#a8f5ff');
+        g.fillStyle=blade;g.strokeStyle='#eaffff';g.lineWidth=1;
+        g.beginPath();g.moveTo(54,0);g.lineTo(73,off-4);g.lineTo(82,off);g.lineTo(73,off+4);g.closePath();g.fill();g.stroke();
+      }
+      g.restore();
+    }
+
+    function drawIceQueenPremiumWeaponArt(g, unit, time, attack=0) {
+      const t=time*.001;g.save();g.shadowBlur=15+attack*7;g.shadowColor='#9eeeff';
+      // 다층 수정 활
+      g.strokeStyle='#dffcff';g.lineWidth=3.4;g.beginPath();g.arc(24,0,27,-1.28,1.28);g.stroke();
+      g.strokeStyle='#63cfee';g.lineWidth=2;g.beginPath();g.arc(24,0,22,-1.22,1.22);g.stroke();
+      for(const y of [-19,-10,10,19]){g.fillStyle='#bff6ff';g.beginPath();g.moveTo(30,y);g.lineTo(40,y+(y<0?-5:5));g.lineTo(34,y+(y<0?4:-4));g.closePath();g.fill();}
+      g.strokeStyle='rgba(255,255,255,.92)';g.lineWidth=1.1;g.beginPath();g.moveTo(32,-25);g.lineTo(32,25);g.stroke();
+      // 눈꽃 중심 + 얼음 화살
+      g.save();g.translate(5,0);g.rotate(t*.8);g.strokeStyle='#fff';g.lineWidth=1;for(let i=0;i<6;i++){const a=i*Math.PI/3;g.beginPath();g.moveTo(0,0);g.lineTo(Math.cos(a)*6,Math.sin(a)*6);g.stroke();}g.restore();
+      const ag=g.createLinearGradient(28,0,68,0);ag.addColorStop(0,'rgba(155,237,255,.45)');ag.addColorStop(.6,'#ecffff');ag.addColorStop(1,'#a4eaff');
+      g.strokeStyle=ag;g.lineWidth=2.6;g.beginPath();g.moveTo(1,0);g.lineTo(59,0);g.stroke();
+      g.fillStyle='#eaffff';g.beginPath();g.moveTo(70,0);g.lineTo(57,-6);g.lineTo(60,0);g.lineTo(57,6);g.closePath();g.fill();
+      g.restore();
+    }
+
+    function drawEdenPremiumWeaponArt(g, unit, time, attack=0) {
+      const mode=unit.attackMode||'edenBolt', t=time*.001;
+      g.save();g.shadowBlur=22+attack*10;g.shadowColor='rgba(255,255,255,.88)';
+      if(mode==='edenDeadeye'){
+        // 공허체가 길고 각진 저격총으로 변형
+        const rifle=g.createLinearGradient(-8,-4,80,5);rifle.addColorStop(0,'#020203');rifle.addColorStop(.55,'#111217');rifle.addColorStop(.82,'#f5f5f6');rifle.addColorStop(1,'#2a2b30');
+        g.fillStyle=rifle;g.beginPath();g.roundRect(-8,-5,75,10,3);g.fill();
+        g.fillStyle='#050507';g.beginPath();g.moveTo(12,5);g.lineTo(29,5);g.lineTo(22,17);g.lineTo(10,17);g.closePath();g.fill();
+        g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.arc(42,-9,8,0,Math.PI*2);g.stroke();g.fillStyle='#fff';g.beginPath();g.arc(42,-9,2,0,Math.PI*2);g.fill();
+        g.strokeStyle='rgba(255,255,255,.65)';g.lineWidth=1;g.beginPath();g.moveTo(68,0);g.lineTo(88,0);g.stroke();
+      } else if(mode==='edenCut'){
+        const blade=g.createLinearGradient(-8,0,82,0);blade.addColorStop(0,'#000');blade.addColorStop(.55,'#07080b');blade.addColorStop(.77,'#fff');blade.addColorStop(1,'rgba(255,255,255,0)');
+        g.fillStyle=blade;g.beginPath();g.moveTo(-8,-5);g.lineTo(59,-7);g.lineTo(84,0);g.lineTo(59,7);g.lineTo(-8,5);g.closePath();g.fill();
+        g.fillStyle='#fff';g.fillRect(-11,-8,4,16);
+      } else if(mode==='edenImpale'){
+        g.fillStyle='#060609';g.beginPath();g.moveTo(-8,-4);g.lineTo(50,-3);g.lineTo(72,0);g.lineTo(50,3);g.lineTo(-8,4);g.closePath();g.fill();
+        g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.moveTo(18,0);g.lineTo(72,0);g.stroke();
+      } else if(mode==='edenBarrage'){
+        // 총구처럼 변형된 공허 팔
+        g.fillStyle='#050507';g.beginPath();g.roundRect(-6,-11,54,22,10);g.fill();
+        for(let i=0;i<3;i++){g.fillStyle='#fff';g.beginPath();g.arc(44,-7+i*7,2.6+attack,0,Math.PI*2);g.fill();}
+        g.strokeStyle='rgba(255,255,255,.42)';g.lineWidth=1.2;g.beginPath();g.ellipse(25,0,31,14,0,0,Math.PI*2);g.stroke();
+      } else if(mode==='edenRush'){
+        for(const off of [-7,7]){g.save();g.translate(0,off);g.fillStyle=off<0?'#fff':'#08090c';g.beginPath();g.moveTo(-4,-3);g.lineTo(46,-4);g.lineTo(66,0);g.lineTo(46,4);g.lineTo(-4,3);g.closePath();g.fill();g.restore();}
+      } else {
+        // 평타는 작은 공허 창
+        g.fillStyle='#09090c';g.beginPath();g.moveTo(-7,-4);g.lineTo(42,-3);g.lineTo(62,0);g.lineTo(42,3);g.lineTo(-7,4);g.closePath();g.fill();
+        g.strokeStyle='#fff';g.lineWidth=1.8;g.beginPath();g.moveTo(17,0);g.lineTo(61,0);g.stroke();
+      }
+      // 미세한 흑백 입자
+      g.globalCompositeOperation='lighter';for(let i=0;i<5;i++){const a=t*2+i*1.7,r=12+i*5;g.fillStyle=`rgba(255,255,255,${.18+i*.035})`;g.beginPath();g.arc(22+Math.cos(a)*r*.25,Math.sin(a)*r*.2,1+i%2,0,Math.PI*2);g.fill();}
+      g.restore();
+    }
+
     function drawStandingUnitBody(unit, time) {
       const id = unit.unitId;
       const attackPulse = (unit.attackAnimation || 0) * .8;
@@ -15581,6 +16103,11 @@ function requestGachaDraw(count) {
         ctx.roundRect(spread - 4, 13, 9, 13, 3);
         ctx.fill();
       };
+
+      if (id === 'poseidon') { drawPoseidonPremiumBodyArt(ctx, time, unit, 1); return; }
+      if (id === 'phoenix') { drawPhoenixPremiumBodyArt(ctx, time, unit, 1); return; }
+      if (id === 'iceQueen') { drawIceQueenPremiumBodyArt(ctx, time, unit, 1); return; }
+      if (id === 'eden') { drawEdenPremiumBodyArt(ctx, time, unit, 1); return; }
 
       if (id === 'starterArcher') {
         drawBoots('#493326', 7);
@@ -15784,15 +16311,14 @@ function requestGachaDraw(count) {
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
-      if (unit.unitId === 'starterArcher' || unit.unitId === 'windRanger' || unit.unitId === 'iceQueen') {
+      if (unit.unitId === 'starterArcher' || unit.unitId === 'windRanger') {
         const wind = unit.unitId === 'windRanger';
-        const ice = unit.unitId === 'iceQueen';
-        ctx.strokeStyle = ice ? '#dffbff' : (wind ? '#8ff4bd' : '#d49a55');
+        ctx.strokeStyle = wind ? '#8ff4bd' : '#d49a55';
         ctx.lineWidth = 3;
         ctx.beginPath(); ctx.arc(12,0,17,-1.18,1.18); ctx.stroke();
         ctx.strokeStyle = '#f8fbff'; ctx.lineWidth = 1.1; ctx.beginPath(); ctx.moveTo(19,-15); ctx.lineTo(19,15); ctx.stroke();
-        ctx.strokeStyle = ice ? '#b8f3ff' : (wind ? '#d7ffe8' : '#e7edf5'); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-5,0); ctx.lineTo(35,0); ctx.stroke();
-        ctx.fillStyle = ice ? '#e9fdff' : (wind ? '#62e89c' : '#dbeafe'); ctx.beginPath(); ctx.moveTo(42,0); ctx.lineTo(33,-5); ctx.lineTo(33,5); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = wind ? '#d7ffe8' : '#e7edf5'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-5,0); ctx.lineTo(35,0); ctx.stroke();
+        ctx.fillStyle = wind ? '#62e89c' : '#dbeafe'; ctx.beginPath(); ctx.moveTo(42,0); ctx.lineTo(33,-5); ctx.lineTo(33,5); ctx.closePath(); ctx.fill();
       } else if (unit.unitId === 'starterKnight' || unit.unitId === 'royalGuardian') {
         const royal = unit.unitId === 'royalGuardian';
         const blade = ctx.createLinearGradient(0,0,46,0); blade.addColorStop(0,royal?'#8c5a00':'#596979'); blade.addColorStop(.38,'#ffffff'); blade.addColorStop(1,royal?'#ffe76b':'#b8d9f5');
@@ -15807,14 +16333,10 @@ function requestGachaDraw(count) {
         const orb=ctx.createRadialGradient(orbX-3,-4,1,orbX,0,12); orb.addColorStop(0,'#fff'); orb.addColorStop(.3,orbColor); orb.addColorStop(1,'rgba(20,20,40,0)');
         ctx.fillStyle=orb;ctx.beginPath();ctx.arc(orbX,0,11+attack*2,0,Math.PI*2);ctx.fill();
         if (chrono){ctx.strokeStyle='#fff';ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(orbX,0,15,0,Math.PI*2);ctx.stroke();}
+      } else if (unit.unitId === 'iceQueen') {
+        drawIceQueenPremiumWeaponArt(ctx, unit, time, attack);
       } else if (unit.unitId === 'poseidon') {
-        const glow=unit.attackAnimation||0;
-        ctx.shadowBlur=14+glow*10;ctx.shadowColor='#35c9ff';
-        const shaft=ctx.createLinearGradient(-8,0,58,0);shaft.addColorStop(0,'#154c6d');shaft.addColorStop(.4,'#69dcff');shaft.addColorStop(1,'#e9fdff');
-        ctx.strokeStyle=shaft;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-8,0);ctx.lineTo(55,0);ctx.stroke();
-        ctx.strokeStyle='#dffaff';ctx.lineWidth=3;
-        for(const off of [-9,0,9]){ctx.beginPath();ctx.moveTo(52,0);ctx.lineTo(70,off);ctx.stroke();}
-        ctx.strokeStyle='#62d9ff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(55,0);ctx.lineTo(61,-12);ctx.moveTo(55,0);ctx.lineTo(61,12);ctx.stroke();
+        drawPoseidonPremiumWeaponArt(ctx, unit, time, attack);
       } else if (unit.unitId === 'cherrySamurai') {
         const bloomCast = unit.samuraiBloomCast;
         const bloomActive = bloomCast && time >= Number(bloomCast.startAt || 0) && time <= Number(bloomCast.endAt || 0);
@@ -15843,10 +16365,7 @@ function requestGachaDraw(count) {
           ctx.restore();
         }
       } else if (unit.unitId === 'eden') {
-        ctx.shadowBlur=22;ctx.shadowColor='#ffffff';
-        const blade=ctx.createLinearGradient(-4,-2,62,2);blade.addColorStop(0,'#050506');blade.addColorStop(.45,'#1a1b1e');blade.addColorStop(.72,'#ffffff');blade.addColorStop(1,'rgba(255,255,255,0)');
-        ctx.fillStyle=blade;ctx.beginPath();ctx.moveTo(-4,-4);ctx.lineTo(47,-5);ctx.lineTo(65,0);ctx.lineTo(47,5);ctx.lineTo(-4,4);ctx.closePath();ctx.fill();
-        ctx.fillStyle='#fff';ctx.fillRect(-8,-7,4,14);
+        drawEdenPremiumWeaponArt(ctx, unit, time, attack);
       } else if (unit.unitId === 'eclipse') {
         drawEclipseTwinBladesArt(ctx, time, unit, attack, 1);
       } else if (unit.unitId === 'skyDragonKnight') {
@@ -15899,14 +16418,66 @@ function requestGachaDraw(count) {
 
 
     function drawEdenAuraArt(g, time, unit, quality = 1) {
-      const t=time*.001, charge=Math.min(100,Number(unit.edenCharge||0)), pulse=.82+Math.sin(t*2.7)*.12;
+      const t=time*.001, charge=Math.min(100,Number(unit.edenCharge||0));
+      const pulse=.80+Math.sin(t*2.6)*.16, r=78+charge*.18;
       g.save();
-      const r=70+charge*.16;
-      const floor=g.createRadialGradient(0,8,4,0,8,r);floor.addColorStop(0,`rgba(255,255,255,${.10*pulse})`);floor.addColorStop(.20,'rgba(10,10,12,.38)');floor.addColorStop(.58,'rgba(0,0,0,.22)');floor.addColorStop(1,'rgba(0,0,0,0)');
-      g.fillStyle=floor;g.beginPath();g.ellipse(0,11,r,r*.38,0,0,Math.PI*2);g.fill();
-      g.save();g.rotate(t*.23);g.strokeStyle=`rgba(255,255,255,${.46*pulse})`;g.lineWidth=2.4;g.setLineDash([15,9]);g.beginPath();g.ellipse(0,9,52+charge*.08,20+charge*.025,.25,0,Math.PI*2);g.stroke();g.setLineDash([]);g.restore();
-      const fogCount=quality>.7?10:6;
-      for(let i=0;i<fogCount;i++){const a=t*(.12+i*.011)+i*2.31,rr=26+(i%4)*11,x=Math.cos(a)*rr,y=-4+Math.sin(a*1.4)*(14+(i%3)*5);g.fillStyle=`rgba(${i%2?255:30},${i%2?255:30},${i%2?255:34},${.08+(i%3)*.03})`;g.beginPath();g.arc(x,y,5+(i%3)*2,0,Math.PI*2);g.fill();}
+
+      // 검정/흰색이 서로 삼키는 바닥 소용돌이
+      g.save();g.translate(0,10);g.scale(1,.38);g.rotate(t*.22);
+      const floor=g.createRadialGradient(0,0,2,0,0,r);
+      floor.addColorStop(0,'rgba(255,255,255,.22)');
+      floor.addColorStop(.18,'rgba(8,8,10,.92)');
+      floor.addColorStop(.47,'rgba(245,245,246,.18)');
+      floor.addColorStop(.72,'rgba(0,0,0,.82)');
+      floor.addColorStop(1,'rgba(0,0,0,0)');
+      g.fillStyle=floor;g.beginPath();g.arc(0,0,r,0,Math.PI*2);g.fill();
+      for(let i=0;i<8;i++){
+        g.rotate(Math.PI/4);
+        g.strokeStyle=i%2?`rgba(255,255,255,${(.18+.06*(i%3))*pulse})`:`rgba(4,4,6,${.72*pulse})`;
+        g.lineWidth=10-(i%3)*2;
+        g.beginPath();g.arc(0,0,27+(i%4)*11,-.18,.92);g.stroke();
+      }
+      g.restore();
+
+      // 바닥 가장자리의 부서진 흰 고리
+      g.save();g.translate(0,9);g.scale(1,.42);g.rotate(-t*.31);
+      g.strokeStyle=`rgba(255,255,255,${.52*pulse})`;g.lineWidth=2.1;g.setLineDash([12,8,4,10]);
+      g.beginPath();g.arc(0,0,58+charge*.08,0,Math.PI*2);g.stroke();g.setLineDash([]);
+      g.restore();
+
+      // 위로 솟는 검은 안개
+      const fogCount=quality>.7?14:8;
+      g.save();
+      for(let i=0;i<fogCount;i++){
+        const a=t*(.24+(i%4)*.025)+i*2.13;
+        const rr=22+(i%5)*9, x=Math.cos(a)*rr;
+        const y=8-((t*18+i*13)%52);
+        const alpha=.055+(i%4)*.018;
+        const fog=g.createRadialGradient(x,y,1,x,y,9+(i%3)*4);
+        fog.addColorStop(0,`rgba(${i%3===0?255:12},${i%3===0?255:12},${i%3===0?255:15},${alpha*1.8})`);
+        fog.addColorStop(1,'rgba(0,0,0,0)');
+        g.fillStyle=fog;g.beginPath();g.arc(x,y,10+(i%3)*4,0,Math.PI*2);g.fill();
+      }
+      g.restore();
+
+      // 공허 액체가 바닥으로 떨어져 생기는 검은 방울/웅덩이
+      if(quality>.55){
+        for(let i=0;i<6;i++){
+          const a=t*.45+i*Math.PI/3, x=Math.cos(a)*(34+(i%2)*12), y=11+Math.sin(a)*7;
+          g.fillStyle='rgba(0,0,0,.72)';g.beginPath();g.ellipse(x,y,5+(i%3)*2,2.4+(i%2),a,0,Math.PI*2);g.fill();
+          g.strokeStyle='rgba(255,255,255,.12)';g.lineWidth=.8;g.stroke();
+        }
+      }
+
+      // Charge가 높을수록 떠다니는 흰 파편 증가
+      const shards=quality>.65?8:4;
+      for(let i=0;i<shards;i++){
+        const a=t*(.55+(i%3)*.07)+i*Math.PI*2/shards,r2=34+(i%4)*10+charge*.05;
+        const x=Math.cos(a)*r2,y=-8+Math.sin(a)*17;
+        g.save();g.translate(x,y);g.rotate(a+t);
+        g.fillStyle=`rgba(255,255,255,${.22+.18*(charge/100)})`;
+        g.beginPath();g.moveTo(0,-4);g.lineTo(2,0);g.lineTo(0,5);g.lineTo(-2,0);g.closePath();g.fill();g.restore();
+      }
       g.restore();
     }
 
@@ -16713,22 +17284,41 @@ function requestGachaDraw(count) {
           for(let i=0;i<8;i+=1){const a=i*Math.PI/4+progress*.7;const r=18+i%3*7;ctx.fillStyle=`rgba(255,120,140,${.65*pulse})`;ctx.beginPath();ctx.arc(Math.cos(a)*r,Math.sin(a)*r,1.5+i%2,0,Math.PI*2);ctx.fill();}
           ctx.restore();
         } else if (shot.effect === 'iceArrow') {
-          const tailX=x-ux*34,tailY=y-uy*34;
-          ctx.shadowBlur=16;ctx.shadowColor='#8ee7ff';
-          ctx.strokeStyle=`rgba(126,229,255,${.72*fade})`;ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(tailX,tailY);ctx.lineTo(x,y);ctx.stroke();
-          ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.fillStyle='#e9fdff';ctx.strokeStyle='#78dbff';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(16,0);ctx.lineTo(-4,-6);ctx.lineTo(-1,0);ctx.lineTo(-4,6);ctx.closePath();ctx.fill();ctx.stroke();
-          for(let i=0;i<3;i++){ctx.fillStyle=`rgba(180,244,255,${.75*fade})`;ctx.beginPath();ctx.moveTo(-8-i*8,0);ctx.lineTo(-2-i*8,-4);ctx.lineTo(-2-i*8,4);ctx.closePath();ctx.fill();}ctx.restore();
+          const tailX=x-ux*46,tailY=y-uy*46;
+          ctx.save();ctx.globalCompositeOperation='lighter';
+          ctx.shadowBlur=22;ctx.shadowColor='#8ee7ff';
+          const trail=ctx.createLinearGradient(tailX,tailY,x,y);trail.addColorStop(0,'rgba(100,220,255,0)');trail.addColorStop(.48,`rgba(126,229,255,${.48*fade})`);trail.addColorStop(1,`rgba(240,255,255,${.94*fade})`);
+          ctx.strokeStyle=trail;ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(tailX,tailY);ctx.lineTo(x,y);ctx.stroke();
+          ctx.save();ctx.translate(x,y);ctx.rotate(angle);
+          const iceg=ctx.createLinearGradient(-12,-6,22,5);iceg.addColorStop(0,'#6fd8ff');iceg.addColorStop(.45,'#eaffff');iceg.addColorStop(1,'#9eeeff');
+          ctx.fillStyle=iceg;ctx.strokeStyle='#fff';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(22,0);ctx.lineTo(-7,-7);ctx.lineTo(-2,0);ctx.lineTo(-7,7);ctx.closePath();ctx.fill();ctx.stroke();
+          for(let i=0;i<3;i++){ctx.fillStyle='rgba(210,250,255,.84)';ctx.beginPath();ctx.moveTo(-11-i*9,0);ctx.lineTo(-4-i*9,-5);ctx.lineTo(-4-i*9,5);ctx.closePath();ctx.fill();}
+          ctx.restore();
+          // 작은 눈꽃 파편
+          for(let i=0;i<7;i++){const a=shot.seed+i*2.17+progress*4,r=8+(i%3)*7;const px=x-ux*(8+i*5)+nx*Math.sin(a)*r*.35,py=y-uy*(8+i*5)+ny*Math.sin(a)*r*.35;ctx.save();ctx.translate(px,py);ctx.rotate(a);ctx.strokeStyle=`rgba(225,253,255,${.55*fade})`;ctx.lineWidth=1;for(let j=0;j<4;j++){ctx.rotate(Math.PI/2);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(3+i%2,0);ctx.stroke();}ctx.restore();}
+          if(progress>.68){const q=(progress-.68)/.32;ctx.translate(shot.x2,shot.y2);ctx.strokeStyle=`rgba(210,250,255,${1-q})`;ctx.lineWidth=2.2;for(let i=0;i<6;i++){const a=i*Math.PI/3;ctx.beginPath();ctx.moveTo(Math.cos(a)*5,Math.sin(a)*5);ctx.lineTo(Math.cos(a)*(12+q*18),Math.sin(a)*(12+q*18));ctx.stroke();}}
+          ctx.restore();
         } else if (shot.effect === 'poseidonThrust') {
           const pulse=Math.sin(progress*Math.PI);ctx.save();ctx.translate(shot.x1,shot.y1);ctx.rotate(shot.angle);ctx.globalCompositeOperation='lighter';
           ctx.strokeStyle=`rgba(230,253,255,${.92*pulse})`;ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(4,0);ctx.lineTo(95*progress,0);ctx.stroke();
           ctx.strokeStyle=`rgba(49,201,255,${.48*pulse})`;ctx.lineWidth=14;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(90*progress,0);ctx.stroke();
           for(const off of [-8,0,8]){ctx.strokeStyle=`rgba(220,250,255,${.75*pulse})`;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(72*progress,0);ctx.lineTo(96*progress,off);ctx.stroke();}ctx.restore();
         } else if (shot.effect === 'poseidonTrident' || shot.effect === 'poseidonReturn') {
-          const returning=shot.effect==='poseidonReturn',tail=returning?28:46,tailX=x-ux*tail,tailY=y-uy*tail;
-          ctx.shadowBlur=20;ctx.shadowColor='#35c9ff';ctx.strokeStyle=`rgba(62,205,255,${.52*fade})`;ctx.lineWidth=13;ctx.beginPath();ctx.moveTo(tailX,tailY);ctx.lineTo(x,y);ctx.stroke();
-          ctx.save();ctx.translate(x,y);ctx.rotate(angle);const tg=ctx.createLinearGradient(-22,0,28,0);tg.addColorStop(0,'#0e5779');tg.addColorStop(.45,'#59d8ff');tg.addColorStop(1,'#f0feff');ctx.strokeStyle=tg;ctx.lineWidth=4.5;ctx.beginPath();ctx.moveTo(-22,0);ctx.lineTo(25,0);ctx.stroke();
-          ctx.strokeStyle='#e7fdff';ctx.lineWidth=2.5;for(const off of [-8,0,8]){ctx.beginPath();ctx.moveTo(22,0);ctx.lineTo(38,off);ctx.stroke();}ctx.restore();
-          for(let i=0;i<5;i++){const px=x-ux*(12+i*10)+nx*Math.sin(progress*13+i)*5,py=y-uy*(12+i*10)+ny*Math.sin(progress*13+i)*5;ctx.fillStyle=`rgba(123,230,255,${.5*fade})`;ctx.beginPath();ctx.arc(px,py,2+i%2,0,Math.PI*2);ctx.fill();}
+          const returning=shot.effect==='poseidonReturn',tail=returning?34:58,tailX=x-ux*tail,tailY=y-uy*tail;
+          ctx.save();ctx.globalCompositeOperation='lighter';ctx.shadowBlur=24;ctx.shadowColor='#35d9ff';
+          // 해류 꼬리
+          for(let layer=0;layer<3;layer++){ctx.strokeStyle=`rgba(${95+layer*45},${220+layer*12},255,${(.44-layer*.09)*fade})`;ctx.lineWidth=16-layer*5;ctx.beginPath();ctx.moveTo(tailX+nx*layer*3,tailY+ny*layer*3);ctx.quadraticCurveTo((tailX+x)/2+nx*Math.sin(progress*18+layer)*10,(tailY+y)/2+ny*Math.sin(progress*18+layer)*10,x,y);ctx.stroke();}
+          // 회전 물고리
+          for(let i=0;i<3;i++){const q=(progress*1.7+i*.31)%1,px=tailX+(x-tailX)*q,py=tailY+(y-tailY)*q;ctx.save();ctx.translate(px,py);ctx.rotate(angle);ctx.scale(1,.35);ctx.strokeStyle=`rgba(210,252,255,${.55*fade})`;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(0,0,8+i*2,0,Math.PI*2);ctx.stroke();ctx.restore();}
+          ctx.save();ctx.translate(x,y);ctx.rotate(angle+(returning?Math.PI:0));
+          const tg=ctx.createLinearGradient(-28,0,38,0);tg.addColorStop(0,'#07314b');tg.addColorStop(.35,'#1c8db6');tg.addColorStop(.68,'#95f3ff');tg.addColorStop(1,'#fff');
+          ctx.strokeStyle=tg;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-29,0);ctx.lineTo(29,0);ctx.stroke();
+          ctx.fillStyle='#dffcff';ctx.beginPath();ctx.arc(0,0,3.4,0,Math.PI*2);ctx.fill();
+          for(const off of [-10,0,10]){ctx.fillStyle=off===0?'#f7ffff':'#a7f2ff';ctx.beginPath();ctx.moveTo(46,off);ctx.lineTo(26,off-5);ctx.lineTo(30,off+5);ctx.closePath();ctx.fill();ctx.strokeStyle='#eaffff';ctx.lineWidth=1;ctx.stroke();}
+          ctx.restore();
+          // 물방울
+          for(let i=0;i<8;i++){const px=x-ux*(12+i*7)+nx*Math.sin(progress*17+i)*7,py=y-uy*(12+i*7)+ny*Math.sin(progress*17+i)*7;ctx.fillStyle=`rgba(153,240,255,${.48*fade})`;ctx.beginPath();ctx.ellipse(px,py,1.6+(i%2),3.8+(i%3),angle,0,Math.PI*2);ctx.fill();}
+          ctx.restore();
         } else if (shot.effect === 'poseidonWave') {
           const pulse=Math.sin(progress*Math.PI),points=Array.isArray(shot.pathPoints)?shot.pathPoints:[{x:shot.x1,y:shot.y1},{x:shot.x2,y:shot.y2}];
           ctx.save();ctx.globalCompositeOperation='lighter';ctx.lineCap='round';ctx.lineJoin='round';
@@ -16738,8 +17328,11 @@ function requestGachaDraw(count) {
         } else if (shot.effect === 'phoenixBreath') {
           const pulse=Math.sin(progress*Math.PI),radius=Number(shot.radius||205),half=(Number(shot.coneAngle||78)*Math.PI/180)/2;
           ctx.save();ctx.translate(shot.x1,shot.y1);ctx.rotate(shot.angle);ctx.globalCompositeOperation='lighter';
-          const flame=ctx.createRadialGradient(0,0,5,0,0,Math.min(radius,160));flame.addColorStop(0,`rgba(255,248,170,${.78*pulse})`);flame.addColorStop(.35,`rgba(255,154,39,${.55*pulse})`);flame.addColorStop(.72,`rgba(255,59,20,${.28*pulse})`);flame.addColorStop(1,'rgba(255,20,0,0)');ctx.fillStyle=flame;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,Math.min(radius,160),-half,half);ctx.closePath();ctx.fill();
-          for(let i=0;i<8;i++){const a=-half+(i/7)*(half*2)+Math.sin(progress*12+i)*.05,rr=30+progress*100+(i%3)*10;ctx.fillStyle=`rgba(255,${120+(i%3)*45},${25+i%2*55},${.68*fade})`;ctx.beginPath();ctx.arc(Math.cos(a)*rr,Math.sin(a)*rr,5+(i%3)*2,0,Math.PI*2);ctx.fill();}ctx.restore();
+          const flame=ctx.createRadialGradient(0,0,4,0,0,Math.min(radius,190));flame.addColorStop(0,`rgba(255,255,224,${.92*pulse})`);flame.addColorStop(.18,`rgba(255,224,88,${.76*pulse})`);flame.addColorStop(.45,`rgba(255,122,28,${.55*pulse})`);flame.addColorStop(.76,`rgba(239,45,18,${.30*pulse})`);flame.addColorStop(1,'rgba(160,10,0,0)');ctx.fillStyle=flame;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,Math.min(radius,190),-half,half);ctx.closePath();ctx.fill();
+          // 불꽃 깃털처럼 갈라지는 스트림
+          for(let i=0;i<12;i++){const a=-half+(i/11)*(half*2)+Math.sin(progress*16+i)*.04,rr=24+progress*135+(i%4)*8;ctx.save();ctx.translate(Math.cos(a)*rr,Math.sin(a)*rr);ctx.rotate(a);const fg=ctx.createLinearGradient(-8,0,12,0);fg.addColorStop(0,'rgba(255,80,20,0)');fg.addColorStop(.5,i%3?'#ffad31':'#fff19a');fg.addColorStop(1,'rgba(255,235,120,0)');ctx.fillStyle=fg;ctx.beginPath();ctx.moveTo(-10,-3);ctx.quadraticCurveTo(2,-7,14,0);ctx.quadraticCurveTo(2,7,-10,3);ctx.closePath();ctx.fill();ctx.restore();}
+          for(let i=0;i<10;i++){const a=-half+((i*37)%100)/100*(half*2),rr=30+((i*53)%130)*progress;ctx.fillStyle=`rgba(255,${130+(i%3)*42},${28+(i%2)*55},${.58*fade})`;ctx.beginPath();ctx.arc(Math.cos(a)*rr,Math.sin(a)*rr,2+(i%3),0,Math.PI*2);ctx.fill();}
+          ctx.restore();
         } else if (shot.effect === 'phoenixRoar') {
           const p=Math.sin(progress*Math.PI);ctx.save();ctx.globalCompositeOperation='lighter';ctx.translate(shot.x1,shot.y1);for(let i=0;i<4;i++){ctx.strokeStyle=`rgba(255,${165+i*18},${55+i*28},${p*(.7-i*.12)})`;ctx.lineWidth=10-i*2;ctx.beginPath();ctx.arc(0,0,30+progress*(190+i*34),0,Math.PI*2);ctx.stroke();}ctx.restore();
         } else if (shot.effect === 'edenBolt' || shot.effect === 'edenBarrage') {
@@ -16747,6 +17340,29 @@ function requestGachaDraw(count) {
           ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle=`rgba(255,255,255,${.86*fade})`;ctx.lineWidth=barrage?5:4;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.bezierCurveTo(shot.x1+dx*.3+nx*wave,shot.y1+dy*.3+ny*wave,shot.x1+dx*.7-nx*wave,shot.y1+dy*.7-ny*wave,x,y);ctx.stroke();
           ctx.strokeStyle=`rgba(15,15,18,${.95*fade})`;ctx.lineWidth=barrage?11:8;ctx.globalCompositeOperation='source-over';ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.quadraticCurveTo(shot.x1+dx*.5+nx*wave*.6,shot.y1+dy*.5+ny*wave*.6,x,y);ctx.stroke();ctx.globalCompositeOperation='lighter';
           ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(x,y,barrage?5:6,0,Math.PI*2);ctx.fill();ctx.restore();
+        } else if (shot.effect === 'edenTaunt') {
+          const p=Math.sin(progress*Math.PI),r=Number(shot.radius||92);
+          ctx.save();ctx.translate(shot.x1,shot.y1);ctx.globalCompositeOperation='lighter';
+          ctx.fillStyle=`rgba(0,0,0,${.52*p})`;ctx.beginPath();ctx.arc(0,0,24+progress*r*.45,0,Math.PI*2);ctx.fill();
+          for(let i=0;i<4;i++){ctx.strokeStyle=i%2?`rgba(255,255,255,${p*(.72-i*.1)})`:`rgba(18,18,22,${p*(.9-i*.1)})`;ctx.lineWidth=8-i*1.5;ctx.beginPath();ctx.ellipse(0,4,28+progress*(r+i*13),10+progress*(r*.33+i*5),progress*1.4+i*.5,0,Math.PI*2);ctx.stroke();}
+          ctx.restore();
+        } else if (shot.effect === 'edenImpale') {
+          const p=Math.sin(progress*Math.PI),w=Number(shot.width||52);
+          ctx.save();ctx.translate(shot.x1,shot.y1);ctx.rotate(shot.angle);ctx.globalCompositeOperation='lighter';
+          const reach=Math.hypot(shot.x2-shot.x1,shot.y2-shot.y1),tip=reach*Math.min(1,progress*2.2);
+          ctx.strokeStyle=`rgba(255,255,255,${.94*p})`;ctx.lineWidth=5;ctx.shadowBlur=24;ctx.shadowColor='#fff';ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(tip,0);ctx.stroke();
+          ctx.strokeStyle=`rgba(3,3,5,${.98*p})`;ctx.lineWidth=w;ctx.shadowBlur=0;ctx.beginPath();ctx.moveTo(6,0);ctx.lineTo(tip,0);ctx.stroke();
+          ctx.strokeStyle=`rgba(255,255,255,${.72*p})`;ctx.lineWidth=2;for(const off of [-w*.38,w*.38]){ctx.beginPath();ctx.moveTo(0,off);ctx.lineTo(tip,off*.08);ctx.stroke();}
+          ctx.restore();
+        } else if (shot.effect === 'edenDeadeye') {
+          const p=Math.sin(progress*Math.PI),w=Number(shot.width||44);
+          ctx.save();ctx.globalCompositeOperation='lighter';
+          // 검은 중심을 흰 광선이 감싸는 관통 저격
+          ctx.shadowBlur=36;ctx.shadowColor='#fff';ctx.strokeStyle=`rgba(255,255,255,${.96*p})`;ctx.lineWidth=w*.42;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.lineTo(shot.x2,shot.y2);ctx.stroke();
+          ctx.shadowBlur=0;ctx.strokeStyle=`rgba(0,0,0,${.98*p})`;ctx.lineWidth=w*.24;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.lineTo(shot.x2,shot.y2);ctx.stroke();
+          ctx.strokeStyle=`rgba(255,255,255,${.88*p})`;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.lineTo(shot.x2,shot.y2);ctx.stroke();
+          ctx.translate(shot.x2,shot.y2);for(let i=0;i<4;i++){ctx.strokeStyle=`rgba(255,255,255,${p*(.7-i*.12)})`;ctx.lineWidth=4-i*.6;ctx.beginPath();ctx.arc(0,0,16+progress*(44+i*16),0,Math.PI*2);ctx.stroke();}
+          ctx.restore();
         } else if (shot.effect === 'edenCut') {
           const pulse=Math.sin(progress*Math.PI),r=Number(shot.radius||150);ctx.save();ctx.translate(shot.x1,shot.y1);ctx.globalCompositeOperation='lighter';
           ctx.fillStyle=`rgba(0,0,0,${.26*pulse})`;ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();
@@ -18961,11 +19577,81 @@ function requestGachaDraw(count) {
   function mpEdenDamageMultiplier(unit){const d=UNIT_DATA.eden;return 1+Math.min(Number(d.maxCharge||100),Number(unit.edenCharge||0))*Number(d.chargeDamagePerStack||.005);}
   function mpAddEdenCharge(unit,a=1){unit.edenCharge=Math.min(Number(UNIT_DATA.eden.maxCharge||100),Number(unit.edenCharge||0)+Number(a||1));}
   function mpPerformEdenAttack(targetState,sideKey,unit,target){
-    const d=UNIT_DATA.eden,damage=mpEffectiveUnitDamage(unit)*mpEdenDamageMultiplier(unit);unit.attackMode='edenBolt';
-    if(unit.attackCount%Number(d.voidRushEvery||20)===0){playUnitAttackSound('eden',{skill:'edenRush',volume:1.2});unit.attackMode='edenRush';const ex=unit.x+Math.cos(unit.angle)*unit.range,ey=unit.y+Math.sin(unit.angle)*unit.range;mpPushFx(unit.x,unit.y,ex,ey,'#fff',14,sideKey,'edenRush',{width:d.voidRushWidth||70});mpEnemiesAlongLine(targetState,unit.x,unit.y,ex,ey,Number(d.voidRushWidth||70)/2).forEach(e=>mpApplyDamage(targetState,e,damage*Number(d.voidRushMultiplier||4),unit.ownerRole,sideKey));mpAddEdenCharge(unit);return;}
-    if(unit.attackCount%Number(d.cutEvery||12)===0){playUnitAttackSound('eden',{skill:'edenCut',volume:1.16});unit.attackMode='edenCut';mpPushFx(target.x,target.y,target.x,target.y,'#fff',18,sideKey,'edenCut',{radius:d.cutRadius||150});for(const e of targetState.enemies||[])if(!e.dead&&Math.hypot(e.x-target.x,e.y-target.y)<=Number(d.cutRadius||150))mpApplyDamage(targetState,e,damage*Number(d.cutMultiplier||3),unit.ownerRole,sideKey);mpAddEdenCharge(unit);return;}
-    if(unit.attackCount%Number(d.barrageEvery||5)===0){playUnitAttackSound('eden',{skill:'edenBarrage',volume:1.14});unit.attackMode='edenBarrage';const targets=[...(targetState.enemies||[])].filter(e=>!e.dead&&Math.hypot(e.x-unit.x,e.y-unit.y)<=unit.range).sort((a,b)=>b.x-a.x);for(let i=0;i<Number(d.barrageCount||6);i++){const e=targets[i%Math.max(1,targets.length)]||target;mpPushFx(unit.x+(i%2?18:-18),unit.y-15+(i%3)*7,e.x,e.y,'#fff',6,sideKey,'edenBarrage');mpApplyDamage(targetState,e,damage*Number(d.barrageMultiplier||.75),unit.ownerRole,sideKey);}mpAddEdenCharge(unit);return;}
-    playUnitAttackSound('eden');mpPushFx(unit.x,unit.y,target.x,target.y,'#fff',6,sideKey,'edenBolt');mpApplyDamage(targetState,target,damage,unit.ownerRole,sideKey);mpAddEdenCharge(unit);
+    const d=UNIT_DATA.eden;
+    unit.angle=Math.atan2(target.y-unit.y,target.x-unit.x);
+
+    if(unit.attackCount%Number(d.tauntEvery||15)===0){
+      mpAddEdenCharge(unit,Number(d.tauntCharge||15));
+      playUnitAttackSound('eden',{skill:'edenTaunt',volume:1.16});
+      mpPushFx(unit.x,unit.y,unit.x,unit.y,'#fff',16,sideKey,'edenTaunt',{radius:92});
+    }
+
+    const damage=mpEffectiveUnitDamage(unit)*mpEdenDamageMultiplier(unit);
+    const charge=Math.min(Number(d.maxCharge||100),Number(unit.edenCharge||0));
+
+    if(unit.attackCount%Number(d.deadeyeEvery||30)===0 && charge>=Number(d.deadeyeMinCharge||60)){
+      const windup=Number(d.deadeyeWindup||2.7), ex=unit.x+Math.cos(unit.angle)*Math.max(unit.range,360), ey=unit.y+Math.sin(unit.angle)*Math.max(unit.range,360);
+      unit.attackMode='edenDeadeye';
+      unit.edenDeadeyeCast={startAt:Date.now(),endAt:Date.now()+windup*1000,targetX:ex,targetY:ey};
+      unit._attackCooldownOverride=windup+.32;
+      unit.edenCharge=0;
+      playUnitAttackSound('eden',{skill:'edenDeadeyeCharge',volume:1.20});
+      mpState.delayedAttacks ||= [];
+      mpState.delayedAttacks.push({
+        kind:'edenDeadeye',sideKey,unitId:unit.id,ownerRole:unit.ownerRole,
+        x1:unit.x,y1:unit.y,x2:ex,y2:ey,width:Number(d.deadeyeWidth||44),
+        damage:damage*Number(d.deadeyeMultiplier||9),at:Date.now()+windup*1000
+      });
+      return;
+    }
+
+    if(unit.attackCount%Number(d.voidRushEvery||20)===0 && charge>=Number(d.voidRushChargeCost||30)){
+      playUnitAttackSound('eden',{skill:'edenRush',volume:1.22});
+      unit.attackMode='edenRush';
+      unit.edenCharge=Math.max(0,charge-Number(d.voidRushChargeCost||30));
+      const ex=unit.x+Math.cos(unit.angle)*unit.range,ey=unit.y+Math.sin(unit.angle)*unit.range;
+      mpPushFx(unit.x,unit.y,ex,ey,'#fff',18,sideKey,'edenRush',{width:d.voidRushWidth||78});
+      for(let i=0;i<7;i++){
+        const q=(i+1)/8,px=unit.x+(ex-unit.x)*q,py=unit.y+(ey-unit.y)*q;
+        mpPushFx(px,py,px,py,'#fff',14,sideKey,'edenCut',{radius:46+(i%3)*9,angle:unit.angle+(i%2?1:-1)*.75});
+      }
+      mpEnemiesAlongLine(targetState,unit.x,unit.y,ex,ey,Number(d.voidRushWidth||78)/2)
+        .forEach(e=>mpApplyDamage(targetState,e,damage*Number(d.voidRushMultiplier||4.5),unit.ownerRole,sideKey));
+      return;
+    }
+
+    if(unit.attackCount%Number(d.cutEvery||12)===0){
+      playUnitAttackSound('eden',{skill:'edenCut',volume:1.18});unit.attackMode='edenCut';
+      mpPushFx(target.x,target.y,target.x,target.y,'#fff',20,sideKey,'edenCut',{radius:d.cutRadius||155});
+      for(const e of targetState.enemies||[]) if(!e.dead&&Math.hypot(e.x-target.x,e.y-target.y)<=Number(d.cutRadius||155))
+        mpApplyDamage(targetState,e,damage*Number(d.cutMultiplier||3),unit.ownerRole,sideKey);
+      mpAddEdenCharge(unit);return;
+    }
+
+    if(unit.attackCount%Number(d.impaleEvery||9)===0){
+      playUnitAttackSound('eden',{skill:'edenImpale',volume:1.15});unit.attackMode='edenImpale';
+      const reach=Number(d.impaleRange||230),ex=unit.x+Math.cos(unit.angle)*reach,ey=unit.y+Math.sin(unit.angle)*reach;
+      mpPushFx(unit.x,unit.y,ex,ey,'#fff',14,sideKey,'edenImpale',{width:Number(d.impaleWidth||52)});
+      mpEnemiesAlongLine(targetState,unit.x,unit.y,ex,ey,Number(d.impaleWidth||52)/2)
+        .forEach(e=>mpApplyDamage(targetState,e,damage*Number(d.impaleMultiplier||2.5),unit.ownerRole,sideKey));
+      mpAddEdenCharge(unit);return;
+    }
+
+    if(unit.attackCount%Number(d.barrageEvery||5)===0){
+      playUnitAttackSound('eden',{skill:'edenBarrage',volume:1.17});unit.attackMode='edenBarrage';
+      const targets=[...(targetState.enemies||[])].filter(e=>!e.dead&&Math.hypot(e.x-unit.x,e.y-unit.y)<=unit.range).sort((a,b)=>b.x-a.x);
+      for(let i=0;i<Number(d.barrageCount||8);i++){
+        const e=targets[i%Math.max(1,targets.length)]||target;
+        mpPushFx(unit.x+(i%2?23:-19),unit.y-21+(i%4)*7,e.x,e.y,'#fff',7,sideKey,'edenBarrage');
+        mpApplyDamage(targetState,e,damage*Number(d.barrageMultiplier||.62),unit.ownerRole,sideKey);
+      }
+      mpAddEdenCharge(unit);return;
+    }
+
+    unit.attackMode='edenBolt';
+    playUnitAttackSound('eden');
+    mpPushFx(unit.x+22,unit.y-8,target.x,target.y,'#fff',7,sideKey,'edenBolt');
+    mpApplyDamage(targetState,target,damage,unit.ownerRole,sideKey);mpAddEdenCharge(unit);
   }
 
   function mpUpdateEnemies(target, dt, sideKey = null) {
@@ -19054,9 +19740,12 @@ function requestGachaDraw(count) {
       phoenixBreath: .30,
       phoenixRoar: .85,
       edenBolt: .42,
-      edenBarrage: .52,
-      edenCut: .62,
-      edenRush: .58,
+      edenBarrage: .56,
+      edenImpale: .46,
+      edenCut: .66,
+      edenRush: .82,
+      edenTaunt: .78,
+      edenDeadeye: .92,
       crystalRay: .72,
       line: .24
     };
@@ -19619,7 +20308,8 @@ function requestGachaDraw(count) {
       const target = mpFindTarget(unit, targetState.enemies);
       if (!target) continue;
       mpPerformUnitAttack(targetState, sideKey, unit, target);
-      unit.cooldown = unit.fireInterval;
+      unit.cooldown = Math.max(Number(unit.fireInterval || 0), Number(unit._attackCooldownOverride || 0));
+      unit._attackCooldownOverride = 0;
     }
   }
 
@@ -19640,6 +20330,14 @@ function requestGachaDraw(count) {
         playUnitAttackSound('poseidon',{skill:'poseidonReturn',volume:1.02});
         mpPushFx(attack.x1,attack.y1,attack.x2,attack.y2,'#8cecff',9,attack.sideKey,'poseidonReturn');
         mpEnemiesAlongLine(targetState,attack.x1,attack.y1,attack.x2,attack.y2,attack.width||20).forEach(e=>mpApplyDamage(targetState,e,attack.damage,owner.ownerRole||attack.ownerRole,attack.sideKey));
+        continue;
+      }
+      if (attack.kind === 'edenDeadeye') {
+        const owner=(targetState.units||[]).find(u=>u.id===attack.unitId) || {ownerRole:attack.ownerRole};
+        playUnitAttackSound('eden',{skill:'edenDeadeye',volume:1.28});
+        mpPushFx(attack.x1,attack.y1,attack.x2,attack.y2,'#fff',22,attack.sideKey,'edenDeadeye',{width:attack.width||44});
+        mpEnemiesAlongLine(targetState,attack.x1,attack.y1,attack.x2,attack.y2,Number(attack.width||44)/2)
+          .forEach(e=>mpApplyDamage(targetState,e,attack.damage,owner.ownerRole||attack.ownerRole,attack.sideKey));
         continue;
       }
       if (attack.kind === 'iceQueenArrow') {
@@ -20419,6 +21117,11 @@ function requestGachaDraw(count) {
           mpCtx.fill();
         };
   
+        if (id === 'poseidon') { drawPoseidonPremiumBodyArt(mpCtx, time, unit, mpHighLoadFrame ? .62 : .92); return; }
+        if (id === 'phoenix') { drawPhoenixPremiumBodyArt(mpCtx, time, unit, mpHighLoadFrame ? .60 : .90); return; }
+        if (id === 'iceQueen') { drawIceQueenPremiumBodyArt(mpCtx, time, unit, mpHighLoadFrame ? .60 : .90); return; }
+        if (id === 'eden') { drawEdenPremiumBodyArt(mpCtx, time, unit, mpHighLoadFrame ? .62 : .92); return; }
+
         if (id === 'starterArcher') {
           drawBoots('#493326', 7);
           mpCtx.fillStyle = '#244b84';
@@ -20597,13 +21300,11 @@ function requestGachaDraw(count) {
           mpCtx.fillStyle=orb;mpCtx.beginPath();mpCtx.arc(orbX,0,11+attack*2,0,Math.PI*2);mpCtx.fill();
           if (chrono){mpCtx.strokeStyle='#fff';mpCtx.lineWidth=1.4;mpCtx.beginPath();mpCtx.arc(orbX,0,15,0,Math.PI*2);mpCtx.stroke();}
         } else if (unit.unitId === 'iceQueen') {
-          mpCtx.strokeStyle='#bdf6ff';mpCtx.lineWidth=3.5;mpCtx.beginPath();mpCtx.arc(24,0,24,-1.25,1.25);mpCtx.stroke();mpCtx.strokeStyle='#fff';mpCtx.lineWidth=1.2;mpCtx.beginPath();mpCtx.moveTo(31,-22);mpCtx.lineTo(31,22);mpCtx.stroke();
-          mpCtx.fillStyle='#dffcff';mpCtx.beginPath();mpCtx.moveTo(35,0);mpCtx.lineTo(62,-3);mpCtx.lineTo(62,3);mpCtx.closePath();mpCtx.fill();
+          drawIceQueenPremiumWeaponArt(mpCtx, unit, time, attack);
         } else if (unit.unitId === 'poseidon') {
-          const tr=mpCtx.createLinearGradient(-8,0,68,0);tr.addColorStop(0,'#124a66');tr.addColorStop(.5,'#58e3ff');tr.addColorStop(1,'#eaffff');mpCtx.strokeStyle=tr;mpCtx.lineWidth=5;mpCtx.beginPath();mpCtx.moveTo(-8,0);mpCtx.lineTo(58,0);mpCtx.stroke();
-          mpCtx.fillStyle='#bdf8ff';for(const yy of [-9,0,9]){mpCtx.beginPath();mpCtx.moveTo(78,yy);mpCtx.lineTo(55,yy-5);mpCtx.lineTo(59,yy+5);mpCtx.closePath();mpCtx.fill();}mpCtx.strokeStyle='#74e8ff';mpCtx.lineWidth=3;mpCtx.beginPath();mpCtx.moveTo(58,-9);mpCtx.lineTo(58,9);mpCtx.stroke();
+          drawPoseidonPremiumWeaponArt(mpCtx, unit, time, attack);
         } else if (unit.unitId === 'eden') {
-          mpCtx.shadowBlur=20;mpCtx.shadowColor='#fff';const vg=mpCtx.createLinearGradient(-5,0,64,0);vg.addColorStop(0,'#050507');vg.addColorStop(.58,'#15161a');vg.addColorStop(.84,'#fff');vg.addColorStop(1,'rgba(255,255,255,0)');mpCtx.fillStyle=vg;mpCtx.beginPath();mpCtx.moveTo(-5,-4);mpCtx.lineTo(48,-5);mpCtx.lineTo(67,0);mpCtx.lineTo(48,5);mpCtx.lineTo(-5,4);mpCtx.closePath();mpCtx.fill();
+          drawEdenPremiumWeaponArt(mpCtx, unit, time, attack);
         } else if (unit.unitId === 'cherrySamurai') {
           const wallNow=Date.now(),bloom=unit.samuraiBloomCast,bloomActive=bloom&&wallNow>=Number(bloom.startAt||0)&&wallNow<=Number(bloom.endAt||0),bp=bloomActive?Math.max(0,Math.min(1,(wallNow-bloom.startAt)/Math.max(1,bloom.endAt-bloom.startAt))):0;
           for(const offset of [-7,7]){mpCtx.save();mpCtx.translate(0,offset);mpCtx.shadowBlur=bloomActive?(mpHighLoadFrame?18:30):(mpHighLoadFrame?8:13);mpCtx.shadowColor=bloomActive?'#ff4fa5':'#ff9bca';const steel=mpCtx.createLinearGradient(-6,0,63,0);steel.addColorStop(0,bloomActive?'#5b123a':'#23151e');steel.addColorStop(.18,bloomActive?'#ff5eaf':'#987286');steel.addColorStop(.48,'#fffdfd');steel.addColorStop(.72,bloomActive?'#ffaad4':'#dff7ff');steel.addColorStop(1,bloomActive?'#ff3f9d':'#ffb8d8');mpCtx.fillStyle=steel;mpCtx.strokeStyle=bloomActive?'#fff4fb':'#fff2fa';mpCtx.lineWidth=bloomActive?2.2:1.2;mpCtx.beginPath();mpCtx.moveTo(-2,-2.7);mpCtx.lineTo(48,-2.2);mpCtx.quadraticCurveTo(58,-1,66,0);mpCtx.quadraticCurveTo(57,2,48,2.6);mpCtx.lineTo(-2,3);mpCtx.closePath();mpCtx.fill();mpCtx.stroke();mpCtx.shadowBlur=0;mpCtx.fillStyle='#3a2030';mpCtx.fillRect(-11,-4,11,8);mpCtx.fillStyle='#ff8fc8';mpCtx.fillRect(-14,-7,3,14);if(bloomActive&&!mpHighLoadFrame){for(let i=0;i<10;i++){const a=wallNow*.010+i*Math.PI*2/10,px=34+Math.cos(a)*(15+bp*7),py=Math.sin(a)*(8+bp*4);mpCtx.save();mpCtx.translate(px,py);mpCtx.rotate(a+wallNow*.004);mpCtx.fillStyle=`rgba(255,${118+(i%3)*26},${187+(i%2)*28},${.62+bp*.28})`;mpCtx.beginPath();mpCtx.ellipse(0,0,2.4,5.4,.2,0,Math.PI*2);mpCtx.fill();mpCtx.restore();}}mpCtx.restore();}
@@ -21131,6 +21832,22 @@ function requestGachaDraw(count) {
       } else if (fx.kind === 'edenBolt' || fx.kind === 'edenBarrage') {
         const barrage=fx.kind==='edenBarrage',wave=Math.sin(progress*Math.PI*(barrage?11:7)+fx.seed)*(barrage?18:12);mpCtx.shadowBlur=22;mpCtx.shadowColor='#fff';for(let i=0;i<3;i++){mpCtx.strokeStyle=i===0?`rgba(255,255,255,${.86*fade})`:`rgba(${i===1?18:190},${i===1?18:190},${i===1?22:195},${(.62-i*.12)*fade})`;mpCtx.lineWidth=7-i*2;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.bezierCurveTo(fx.x1+dx*.3+nx*(wave+i*6),y1+dy*.3+ny*(wave+i*6),fx.x1+dx*.7-nx*(wave+i*5),y1+dy*.7-ny*(wave+i*5),x,y);mpCtx.stroke();}
         mpCtx.fillStyle='#fff';mpCtx.beginPath();mpCtx.arc(x,y,barrage?6:8,0,Math.PI*2);mpCtx.fill();
+      } else if (fx.kind === 'edenTaunt') {
+        const p=Math.sin(progress*Math.PI),rr=Number(fx.radius||92);mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.globalCompositeOperation='lighter';
+        mpCtx.fillStyle=`rgba(0,0,0,${.52*p})`;mpCtx.beginPath();mpCtx.arc(0,0,24+progress*rr*.45,0,Math.PI*2);mpCtx.fill();
+        for(let i=0;i<4;i++){mpCtx.strokeStyle=i%2?`rgba(255,255,255,${p*(.72-i*.1)})`:`rgba(18,18,22,${p*(.9-i*.1)})`;mpCtx.lineWidth=8-i*1.5;mpCtx.beginPath();mpCtx.ellipse(0,4,28+progress*(rr+i*13),10+progress*(rr*.33+i*5),progress*1.4+i*.5,0,Math.PI*2);mpCtx.stroke();}mpCtx.restore();
+      } else if (fx.kind === 'edenImpale') {
+        const p=Math.sin(progress*Math.PI),w=Number(fx.width||52),reach=Math.hypot(dx,dy),tip=reach*Math.min(1,progress*2.2);
+        mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.rotate(angle);mpCtx.globalCompositeOperation='lighter';
+        mpCtx.shadowBlur=24;mpCtx.shadowColor='#fff';mpCtx.strokeStyle=`rgba(255,255,255,${.94*p})`;mpCtx.lineWidth=5;mpCtx.beginPath();mpCtx.moveTo(0,0);mpCtx.lineTo(tip,0);mpCtx.stroke();
+        mpCtx.shadowBlur=0;mpCtx.strokeStyle=`rgba(3,3,5,${.98*p})`;mpCtx.lineWidth=w;mpCtx.beginPath();mpCtx.moveTo(6,0);mpCtx.lineTo(tip,0);mpCtx.stroke();
+        mpCtx.strokeStyle=`rgba(255,255,255,${.72*p})`;mpCtx.lineWidth=2;for(const off of [-w*.38,w*.38]){mpCtx.beginPath();mpCtx.moveTo(0,off);mpCtx.lineTo(tip,off*.08);mpCtx.stroke();}mpCtx.restore();
+      } else if (fx.kind === 'edenDeadeye') {
+        const p=Math.sin(progress*Math.PI),w=Number(fx.width||44);mpCtx.save();mpCtx.globalCompositeOperation='lighter';
+        mpCtx.shadowBlur=36;mpCtx.shadowColor='#fff';mpCtx.strokeStyle=`rgba(255,255,255,${.96*p})`;mpCtx.lineWidth=w*.42;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.lineTo(fx.x2,y2);mpCtx.stroke();
+        mpCtx.shadowBlur=0;mpCtx.strokeStyle=`rgba(0,0,0,${.98*p})`;mpCtx.lineWidth=w*.24;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.lineTo(fx.x2,y2);mpCtx.stroke();
+        mpCtx.strokeStyle=`rgba(255,255,255,${.88*p})`;mpCtx.lineWidth=2;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.lineTo(fx.x2,y2);mpCtx.stroke();
+        mpCtx.translate(fx.x2,y2);for(let i=0;i<4;i++){mpCtx.strokeStyle=`rgba(255,255,255,${p*(.7-i*.12)})`;mpCtx.lineWidth=4-i*.6;mpCtx.beginPath();mpCtx.arc(0,0,16+progress*(44+i*16),0,Math.PI*2);mpCtx.stroke();}mpCtx.restore();
       } else if (fx.kind === 'edenCut') {
         const rr=Number(fx.radius||150),pulse=Math.sin(progress*Math.PI);mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.globalCompositeOperation='lighter';for(const rot of [-.58,.58]){mpCtx.save();mpCtx.rotate(rot);const cg=mpCtx.createLinearGradient(-rr,0,rr,0);cg.addColorStop(0,'rgba(255,255,255,0)');cg.addColorStop(.42,`rgba(255,255,255,${.92*pulse})`);cg.addColorStop(.5,'#fff');cg.addColorStop(.58,`rgba(20,20,25,${.8*pulse})`);cg.addColorStop(1,'rgba(0,0,0,0)');mpCtx.strokeStyle=cg;mpCtx.lineWidth=12;mpCtx.beginPath();mpCtx.moveTo(-rr,0);mpCtx.lineTo(rr,0);mpCtx.stroke();mpCtx.restore();}mpCtx.restore();
       } else if (fx.kind === 'edenRush') {

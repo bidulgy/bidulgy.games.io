@@ -5857,7 +5857,7 @@ body {
   </div>
 
   <script>
-    window.BIDULGY_BUILD_VERSION = '2026-08-13-samurai-v4-cachefix1';
+    window.BIDULGY_BUILD_VERSION = '2026-08-15-balance-skills-v1';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -6195,10 +6195,13 @@ function applyStagePreview(stageId = selectedStage) {
         rarityKey: 'common',
         rarityClass: 'rarity-common',
         cost: 90,
-        damage: 18,
+        damage: 27,
         range: 145,
-        fireInterval: 0.48,
-        color: '#4d8fff'
+        fireInterval: 0.48 / 1.3,
+        volleyEvery: 5,
+        volleyShots: 3,
+        color: '#4d8fff',
+        skillText: '5번째 공격마다 사거리 안의 서로 다른 적 최대 3명에게 화살을 동시에 발사합니다.'
       },
       starterKnight: {
         id: 'starterKnight',
@@ -6208,10 +6211,15 @@ function applyStagePreview(stageId = selectedStage) {
         rarityKey: 'common',
         rarityClass: 'rarity-common',
         cost: 120,
-        damage: 34,
+        damage: 51,
         range: 95,
-        fireInterval: 0.82,
-        color: '#9ca8ba'
+        fireInterval: 0.82 / 1.3,
+        meleeConeAngle: 120,
+        heavySlashEvery: 4,
+        heavySlashAngle: 180,
+        heavySlashMultiplier: 2,
+        color: '#9ca8ba',
+        skillText: '모든 공격이 전방 120° 범위 베기입니다. 4번째 공격은 전방 180°를 크게 베어 평타의 2배 피해를 줍니다.'
       },
       starterMage: {
         id: 'starterMage',
@@ -6221,10 +6229,15 @@ function applyStagePreview(stageId = selectedStage) {
         rarityKey: 'rare',
         rarityClass: 'rarity-rare',
         cost: 165,
-        damage: 55,
+        damage: 82.5,
         range: 175,
-        fireInterval: 1.05,
-        color: '#9b64ff'
+        fireInterval: 1.05 / 1.3,
+        chainEvery: 4,
+        chainExtraTargets: 2,
+        chainRadius: 115,
+        chainDamageMultiplier: 0.7,
+        color: '#9b64ff',
+        skillText: '4번째 공격마다 마법이 연쇄되어 첫 대상 주변의 적 최대 2명에게 평타의 70% 피해를 추가로 줍니다.'
       },
       windRanger: {
         id: 'windRanger',
@@ -6234,9 +6247,9 @@ function applyStagePreview(stageId = selectedStage) {
         rarityKey: 'epic',
         rarityClass: 'rarity-epic',
         cost: 150,
-        damage: 28,
+        damage: 42,
         range: 185,
-        fireInterval: 0.38,
+        fireInterval: 0.38 / 1.3,
         piercingEvery: 3,
         piercingWidth: 20,
         color: '#43d890',
@@ -6250,10 +6263,14 @@ function applyStagePreview(stageId = selectedStage) {
         rarityKey: 'epic',
         rarityClass: 'rarity-epic',
         cost: 230,
-        damage: 88,
+        damage: 132,
         range: 190,
-        fireInterval: 1.12,
-        color: '#ff6d42'
+        fireInterval: 1.12 / 1.3,
+        infernoEvery: 5,
+        infernoRadius: 115,
+        infernoMultiplier: 2,
+        color: '#ff6d42',
+        skillText: '평타가 작은 폭발을 일으킵니다. 5번째 공격은 폭염으로 변해 반경 115 안의 모든 적에게 평타의 2배 피해를 줍니다.'
       },
       royalGuardian: {
         id: 'royalGuardian',
@@ -6263,13 +6280,14 @@ function applyStagePreview(stageId = selectedStage) {
         rarityKey: 'legendary',
         rarityClass: 'rarity-legend',
         cost: 300,
-        damage: 150,
+        damage: 225,
         range: 250,
         meleeRange: 120,
         coneAngle: 120,
-        fireInterval: 1.3,
+        swordWaveRadius: 55,
+        fireInterval: 1.3 / 1.3,
         color: '#ffd04a',
-        skillText: '120 범위 안에서는 전방 120°를 베어 범위 안의 모든 적에게 피해를 줍니다. 가장 가까운 적이 120 밖·250 안에 있으면 검을 내리쳐 검기를 날려 단일 공격합니다.'
+        skillText: '120 범위 안에서는 전방 120° 범위 베기를 사용합니다. 120 밖·250 안에서는 검기를 날리며, 검기가 적중한 지점 반경 55의 적들에게 범위 피해를 줍니다.'
       },
       skyDragonKnight: {
         id: 'skyDragonKnight',
@@ -6279,9 +6297,9 @@ function applyStagePreview(stageId = selectedStage) {
         rarityKey: 'mythic',
         rarityClass: 'rarity-mythic',
         cost: 390,
-        damage: 225,
+        damage: 270,
         range: 205,
-        fireInterval: 1.05,
+        fireInterval: 1.05 / 1.2,
         lightningChance: 0.5,
         lightningDelay: 0.5,
         lightningRadius: 20,
@@ -6317,11 +6335,11 @@ function applyStagePreview(stageId = selectedStage) {
         rarityKey: 'galaxy',
         rarityClass: 'rarity-galaxy',
         cost: 600,
-        damage: 700,
+        damage: 1008,
         range: 300,
         meleeRange: 120,
         meleeConeAngle: 180,
-        fireInterval: 0.9,
+        fireInterval: 0.75 / 1.2,
         stunImmune: true,
         normalBeforeIssen: 3,
         issenRange: 200,
@@ -6337,6 +6355,7 @@ function applyStagePreview(stageId = selectedStage) {
         ultimateAirHoldSeconds: 2.65,
         ultimateSomersaults: 4,
         swordWaveCount: 2,
+        swordWaveSplashRadius: 35,
         blossomAuraRange: 170,
         blossomAuraDamage: 10,
         blossomAuraInterval: 0.1,
@@ -6348,7 +6367,7 @@ function applyStagePreview(stageId = selectedStage) {
         multiplayerFootprintRadius: 72,
         maxPlacedPerPlayer: 1,
         color: '#ff8fc8',
-        skillText: '기절 면역. 근접 120에서는 전방 180° 범위 베기, 원거리 300에서는 검기 2발을 서로 다른 적에게 발사합니다. 반경 170 벚꽃 영역은 0.1초마다 10 피해를 줍니다. 일반 공격 3회마다 폭 60·이동거리 최대 200의 일섬(평타 5배), 일섬 4회마다 오의(각 참격 평타 10배)를 사용합니다. 모든 10번째 공격에는 현재 적 전체에 벚꽃 표식을 남기고 3초 뒤 평타 5배 피해를 줍니다. 한 플레이어당 1기만 배치할 수 있습니다.'
+        skillText: '기절 면역. 근접 120에서는 전방 180° 범위 베기, 원거리 300에서는 검기 2발을 서로 다른 적에게 발사하며 각 검기는 적중 지점 반경 35에 범위 피해를 줍니다. 반경 170 벚꽃 영역은 0.1초마다 10 피해를 줍니다. 일반 공격 3회마다 폭 60·이동거리 최대 200의 일섬(평타 5배), 일섬 4회마다 오의(각 참격 평타 10배)를 사용합니다. 모든 10번째 공격에는 현재 적 전체에 벚꽃 표식을 남기고 3초 뒤 평타 5배 피해를 줍니다. 한 플레이어당 1기만 배치할 수 있습니다.'
       },
       eclipse: {
         id: 'eclipse',
@@ -6358,9 +6377,10 @@ function applyStagePreview(stageId = selectedStage) {
         rarityKey: 'admin',
         rarityClass: 'rarity-admin',
         cost: 650,
-        damage: 500,
+        damage: 600,
         range: 230,
-        fireInterval: 0.75,
+        fireInterval: 0.75 / 1.2,
+        normalSlashRadius: 55,
         killGrowthChance: 0.05,
         hitBlackHoleChance: 0.05,
         blackHoleRadius: 150,
@@ -6375,7 +6395,7 @@ function applyStagePreview(stageId = selectedStage) {
         multiplayerFootprintRadius: 96,
         maxPlaced: 1,
         color: '#ff355d',
-        skillText: '양손에 붉은 빛이 흐르는 장검을 듭니다. 적을 처치할 때마다 5% 확률로 일식이 떠오르며 그 순간의 공격력과 공격속도가 각각 2% 영구 증가하고 월식 회전참의 범위도 5% 영구 증가합니다. 평타가 적중할 때마다 5% 확률로 3초 동안 블랙홀을 생성해 반경 150 안의 적을 끌어당긴 뒤 폭발하며 생성 당시 평타와 같은 피해를 줍니다. 4번 벨 때마다 사거리 안의 가장 가까운 적 위에 장검이 검끝을 위로 향한 채 나타나 반시계방향으로 아주 빠르게 한 바퀴 회전합니다. 회전참은 기본 반경 90의 범위 공격이며 범위 안 모든 적에게 현재 평타의 3배 피해를 주고 1초간 기절시킵니다. 이클립스는 모든 기절 효과에 면역입니다. 유닛 크기는 같지만 주변을 도는 일식 구체 때문에 일반 유닛의 2배 가로·세로 공간을 차지하며 전장에는 한 번에 1명만 배치할 수 있습니다.'
+        skillText: '모든 평타는 적중 지점 반경 55 범위 베기입니다. 적을 처치할 때마다 5% 확률로 공격력과 공격속도가 각각 2% 영구 증가하고 월식 회전참 범위가 5% 증가합니다. 평타 적중 시 5% 확률로 3초 블랙홀을 생성해 반경 150의 적을 끌어당긴 뒤 평타 피해로 폭발합니다. 4번 벨 때마다 기본 반경 90의 월식 회전참으로 범위 안 모든 적에게 평타의 3배 피해와 1초 기절을 줍니다. 이클립스는 기절 면역이며 전장에는 한 번에 1명만 배치할 수 있습니다.'
       },
       astralChronomancer: {
         id: 'astralChronomancer',
@@ -6385,9 +6405,9 @@ function applyStagePreview(stageId = selectedStage) {
         rarityKey: 'secret',
         rarityClass: 'rarity-secret',
         cost: 470,
-        damage: 330,
+        damage: 396,
         range: 235,
-        fireInterval: 0.92,
+        fireInterval: 0.92 / 1.2,
         multiShot2Chance: 0.50,
         multiShot3Chance: 0.25,
         multiShot4Chance: 0.10,
@@ -9054,6 +9074,8 @@ function requestGachaDraw(count) {
 
 
     const NORMAL_PIGEON_HP = 100;
+    const STAGE_ONE_NORMAL_HP_MULTIPLIER = 2 / 3;
+    const STAGE_ONE_BOSS_HP_MULTIPLIER = 1 / 2;
     const BASE_MAX_HP = 2000;
     const BASE_POSITION = path[path.length - 1];
     const STAGE_ONE_MAX_WAVE = 50;
@@ -9379,7 +9401,7 @@ function requestGachaDraw(count) {
         type: 'normal',
         name: '일반 비둘기',
         icon: '🕊️',
-        health: NORMAL_PIGEON_HP * healthMultiplier,
+        health: NORMAL_PIGEON_HP * healthMultiplier * STAGE_ONE_NORMAL_HP_MULTIPLIER,
         speed: Math.min(86, 58 + wave * .55),
         radius: 17,
         reward: 15 + Math.floor(wave / 5)
@@ -9392,7 +9414,7 @@ function requestGachaDraw(count) {
           type: 'brother',
           name: '비둘기 브라더스',
           icon: '🕊️',
-          health: NORMAL_PIGEON_HP * 10,
+          health: NORMAL_PIGEON_HP * 10 * STAGE_ONE_BOSS_HP_MULTIPLIER,
           speed: 54,
           radius: 51,
           reward: 85,
@@ -9405,7 +9427,7 @@ function requestGachaDraw(count) {
           type: 'knight',
           name: '기사 비둘기',
           icon: '🕊️',
-          health: NORMAL_PIGEON_HP * 50,
+          health: NORMAL_PIGEON_HP * 50 * STAGE_ONE_BOSS_HP_MULTIPLIER,
           speed: 50,
           radius: 29,
           reward: 350
@@ -9417,7 +9439,7 @@ function requestGachaDraw(count) {
           type: 'king',
           name: '킹 비둘기',
           icon: '🕊️',
-          health: NORMAL_PIGEON_HP * 150,
+          health: NORMAL_PIGEON_HP * 150 * STAGE_ONE_BOSS_HP_MULTIPLIER,
           speed: 45,
           radius: 32,
           reward: 700,
@@ -9432,7 +9454,7 @@ function requestGachaDraw(count) {
           type: 'awakenedKing',
           name: '각성한 킹 비둘기',
           icon: '🕊️',
-          health: NORMAL_PIGEON_HP * 225,
+          health: NORMAL_PIGEON_HP * 225 * STAGE_ONE_BOSS_HP_MULTIPLIER,
           speed: 48,
           radius: 36,
           reward: 1200,
@@ -9662,16 +9684,16 @@ function requestGachaDraw(count) {
 
     function getUnitStatusSummary(unit, placed) {
       const summaries = {
-        starterArcher: '빠른 원거리 단일 공격',
-        starterKnight: '근거리 단일 베기',
-        starterMage: '원거리 마법 단일 공격',
+        starterArcher: '5타마다 서로 다른 적 최대 3명 동시 사격',
+        starterKnight: '모든 평타 전방 120° 범위 베기 · 4타마다 전방 180° 강베기×2',
+        starterMage: '4타마다 연쇄 마법 · 주변 적 최대 2명에게 평타 70% 추가 피해',
         windRanger: '3회 공격마다 거대 관통 화살 · 경로 적에게 평타 피해',
-        flameWizard: '고화력 원거리 마법 공격',
-        royalGuardian: `120 이내 전방 120° 범위 베기 · 121~${unit.range} 검기 단일 공격`,
+        flameWizard: '평타 폭발 피해 · 5타마다 반경 115 폭염 범위공격×2',
+        royalGuardian: `120 이내 전방 120° 범위 베기 · 121~${unit.range} 검기 적중지 반경 ${unit.swordWaveRadius || 55} 범위공격`,
         skyDragonKnight: '명중 시 50% 번개(0.5초 후·반경 20) · 7회 공격마다 가로 길 평타×5',
         moneyTree: '공격 없음 · 기본 1초마다 15골드 · 업그레이드 시 최대 0.7초마다 25골드',
-        cherrySamurai: `기절 면역 · 근접 120 전방 180° 범위 · 원거리 ${unit.range} 검기 2발 · 벚꽃 영역 ${unit.blossomAuraRange || 170}: 0.1초마다 ${unit.blossomAuraDamage || 10} 피해 · 일반 3타 후 일섬(폭 ${unit.issenWidth || 60}·거리 ${unit.issenRange || 200})×5 · 일섬 4회마다 오의 각 참격×10 · 10번째 공격마다 적 전체 3초 표식 후 ×5`,
-        eclipse: `처치 시 5% 일식 성장(공격력·공속 +2%, 회전참 범위 +5%) · 타격 시 5% 블랙홀 · 4타마다 회전참×3 + 1초 기절 · 기절 면역`,
+        cherrySamurai: `기절 면역 · 근접 120 전방 180° 범위 · 원거리 ${unit.range} 검기 2발(각 적중지 반경 ${unit.swordWaveSplashRadius || 35} 범위) · 벚꽃 영역 ${unit.blossomAuraRange || 170}: 0.1초마다 ${unit.blossomAuraDamage || 10} 피해 · 일반 3타 후 일섬(폭 ${unit.issenWidth || 60}·거리 ${unit.issenRange || 200})×5 · 일섬 4회마다 오의 각 참격×10 · 10번째 공격마다 적 전체 3초 표식 후 ×5`,
+        eclipse: `평타 적중지 반경 ${unit.normalSlashRadius || 55} 범위 베기 · 처치 시 5% 성장(공격력·공속 +2%, 회전참 범위 +5%) · 타격 시 5% 블랙홀 · 4타마다 회전참×3 + 1초 기절 · 기절 면역`,
         astralChronomancer: '평타 다중발사(2/3/4발) · 각 탄환 20% 황금 기절 · 30회 공격마다 사거리 300 시간정지 5초'
       };
       return summaries[unit.id] || '기본 공격 유닛';
@@ -10297,7 +10319,12 @@ function requestGachaDraw(count) {
         seed: Math.random() * 1000
       });
 
-      applyDamageToEnemy(target, placed.damage);
+      const waveRadius = data.swordWaveRadius || 55;
+      battle.enemies.forEach(enemy => {
+        if (!enemy.dead && Math.hypot(enemy.x - target.x, enemy.y - target.y) <= waveRadius) {
+          applyDamageToEnemy(enemy, placed.damage);
+        }
+      });
     }
 
     function triggerSkyDragonSpecials(placed, target, targetAngle) {
@@ -10949,7 +10976,16 @@ function requestGachaDraw(count) {
           seed: Math.random() * 1000 + index * 17, waveIndex: index
         });
       });
-      waveTargets.forEach(enemy => applyDamageToEnemy(enemy, placed.damage));
+      const splashRadius = data.swordWaveSplashRadius || 35;
+      const waveVictims = new Set();
+      waveTargets.forEach(waveTarget => {
+        battle.enemies.forEach(enemy => {
+          if (!enemy.dead && Math.hypot(enemy.x - waveTarget.x, enemy.y - waveTarget.y) <= splashRadius) {
+            waveVictims.add(enemy);
+          }
+        });
+      });
+      waveVictims.forEach(enemy => applyDamageToEnemy(enemy, placed.damage));
     }
 
     function updatePlacedUnit(placed, dt) {
@@ -11020,6 +11056,7 @@ function requestGachaDraw(count) {
       placed.cooldown = placed.fireInterval * slowMultiplier;
       placed.attackAnimation = 1;
       placed.attackMode = 'normal';
+      placed.attackCount = Number(placed.attackCount || 0) + 1;
 
       if (placed.unitId === 'astralChronomancer') {
         performChronoAttack(placed);
@@ -11093,11 +11130,96 @@ function requestGachaDraw(count) {
           angle: targetAngle,
           seed: Math.random() * 1000
         });
-        const killed = applyDamageToEnemy(target, placed.damage);
-        if (killed) triggerEclipseGrowth(placed, target);
+        const slashRadius = eclipseData.normalSlashRadius || 55;
+        const slashVictims = battle.enemies.filter(enemy =>
+          !enemy.dead && Math.hypot(enemy.x - target.x, enemy.y - target.y) <= slashRadius
+        );
+        slashVictims.forEach(enemy => {
+          const killed = applyDamageToEnemy(enemy, placed.damage);
+          if (killed) triggerEclipseGrowth(placed, enemy);
+        });
         if (Math.random() < (eclipseData.hitBlackHoleChance || .05)) {
           createEclipseBlackHole(placed, target);
         }
+        return;
+      }
+
+      if (placed.unitId === 'starterKnight') {
+        const data = UNIT_DATA.starterKnight;
+        const heavy = placed.attackCount % (data.heavySlashEvery || 4) === 0;
+        const coneAngle = heavy ? (data.heavySlashAngle || 180) : (data.meleeConeAngle || 120);
+        const halfAngle = (coneAngle * Math.PI / 180) / 2;
+        const victims = battle.enemies.filter(enemy =>
+          !enemy.dead && isEnemyInsideCone(enemy, placed, targetAngle, placed.range, halfAngle)
+        );
+        const slashDamage = placed.damage * (heavy ? (data.heavySlashMultiplier || 2) : 1);
+        battle.shots.push({
+          x1: placed.x, y1: placed.y - 4, x2: target.x, y2: target.y,
+          life: heavy ? .34 : getAttackEffectDuration('steelSlash'),
+          maxLife: heavy ? .34 : getAttackEffectDuration('steelSlash'),
+          color: data.color, effect: 'steelSlash', angle: targetAngle,
+          seed: Math.random() * 1000, radius: placed.range, coneAngle
+        });
+        victims.forEach(enemy => applyDamageToEnemy(enemy, slashDamage));
+        return;
+      }
+
+      if (placed.unitId === 'starterArcher' && placed.attackCount % (UNIT_DATA.starterArcher.volleyEvery || 5) === 0) {
+        const data = UNIT_DATA.starterArcher;
+        const candidates = battle.enemies
+          .filter(enemy => !enemy.dead && Math.hypot(enemy.x - placed.x, enemy.y - placed.y) <= placed.range)
+          .sort((a, b) => (b.targetIndex - a.targetIndex) || (Math.hypot(a.x - placed.x, a.y - placed.y) - Math.hypot(b.x - placed.x, b.y - placed.y)));
+        const volleyTargets = [target, ...candidates.filter(enemy => enemy !== target)]
+          .filter((enemy, index, array) => array.indexOf(enemy) === index)
+          .slice(0, data.volleyShots || 3);
+        volleyTargets.forEach((enemy, index) => {
+          const angle = Math.atan2(enemy.y - placed.y, enemy.x - placed.x);
+          battle.shots.push({
+            x1: placed.x + Math.cos(angle) * 28, y1: placed.y - 7 + Math.sin(angle) * 28,
+            x2: enemy.x, y2: enemy.y, life: getAttackEffectDuration('arrow'),
+            maxLife: getAttackEffectDuration('arrow'), color: data.color, effect: 'arrow',
+            angle, seed: Math.random() * 1000 + index * 13
+          });
+          applyDamageToEnemy(enemy, placed.damage);
+        });
+        return;
+      }
+
+      if (placed.unitId === 'starterMage' && placed.attackCount % (UNIT_DATA.starterMage.chainEvery || 4) === 0) {
+        const data = UNIT_DATA.starterMage;
+        const extras = battle.enemies
+          .filter(enemy => enemy !== target && !enemy.dead &&
+            Math.hypot(enemy.x - target.x, enemy.y - target.y) <= (data.chainRadius || 115) &&
+            Math.hypot(enemy.x - placed.x, enemy.y - placed.y) <= placed.range)
+          .sort((a, b) => Math.hypot(a.x - target.x, a.y - target.y) - Math.hypot(b.x - target.x, b.y - target.y))
+          .slice(0, data.chainExtraTargets || 2);
+        const chainTargets = [target, ...extras];
+        chainTargets.forEach((enemy, index) => {
+          const angle = Math.atan2(enemy.y - placed.y, enemy.x - placed.x);
+          battle.shots.push({
+            x1: placed.x + Math.cos(angle) * 28, y1: placed.y - 7 + Math.sin(angle) * 28,
+            x2: enemy.x, y2: enemy.y, life: getAttackEffectDuration('arcaneBolt'),
+            maxLife: getAttackEffectDuration('arcaneBolt'), color: data.color, effect: 'arcaneBolt',
+            angle, seed: Math.random() * 1000 + index * 19
+          });
+          applyDamageToEnemy(enemy, index === 0 ? placed.damage : placed.damage * (data.chainDamageMultiplier || .7));
+        });
+        return;
+      }
+
+      if (placed.unitId === 'flameWizard' && placed.attackCount % (UNIT_DATA.flameWizard.infernoEvery || 5) === 0) {
+        const data = UNIT_DATA.flameWizard;
+        const radius = data.infernoRadius || 115;
+        battle.shots.push({
+          x1: placed.x + Math.cos(targetAngle) * 31, y1: placed.y - 7 + Math.sin(targetAngle) * 31,
+          x2: target.x, y2: target.y, life: .62, maxLife: .62, color: data.color,
+          effect: 'fireball', angle: targetAngle, seed: Math.random() * 1000, splashRadius: radius
+        });
+        battle.enemies.forEach(enemy => {
+          if (!enemy.dead && Math.hypot(enemy.x - target.x, enemy.y - target.y) <= radius) {
+            applyDamageToEnemy(enemy, placed.damage * (data.infernoMultiplier || 2));
+          }
+        });
         return;
       }
 
@@ -13363,6 +13485,7 @@ function requestGachaDraw(count) {
         animationOffset: 0,
         attackAnimation: 0,
         attackMode: 'idle',
+        attackCount: 0,
         spearThrowCount: 0,
         windAttackCount: 0,
         chronoAttackCount: 0,
@@ -13594,7 +13717,16 @@ function requestGachaDraw(count) {
           for(let i=0;i<5;i+=1){const a=shot.seed+i*2.4+progress*10;ctx.fillStyle=`rgba(170,255,207,${.75*fade})`;ctx.beginPath();ctx.ellipse(x-ux*(10+i*7)+nx*Math.sin(a)*8,y-uy*(10+i*7)+ny*Math.sin(a)*8,4,1.7,a,0,Math.PI*2);ctx.fill();}
           ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.fillStyle='#d7ffe8';ctx.beginPath();ctx.moveTo(12,0);ctx.lineTo(-5,-7);ctx.lineTo(-1,0);ctx.lineTo(-5,7);ctx.closePath();ctx.fill();ctx.restore();
         } else if (shot.effect === 'steelSlash') {
-          const pulse=Math.sin(progress*Math.PI);ctx.translate(shot.x2,shot.y2);ctx.rotate(shot.angle);for(let i=0;i<3;i+=1){ctx.strokeStyle=`rgba(${210+i*15},${230+i*8},255,${pulse*(.85-i*.18)})`;ctx.lineWidth=7-i*2;ctx.beginPath();ctx.arc(-i*4,0,24+i*8,-1.05,.95);ctx.stroke();}for(let i=0;i<6;i+=1){const a=-.8+i*.32;ctx.fillStyle=`rgba(255,255,255,${pulse*.8})`;ctx.beginPath();ctx.arc(Math.cos(a)*35,Math.sin(a)*35,1.5+i%2,0,Math.PI*2);ctx.fill();}
+          const pulse=Math.sin(progress*Math.PI);
+          if (shot.radius) {
+            const radius=Number(shot.radius||95),half=((Number(shot.coneAngle||120)*Math.PI/180)/2);
+            ctx.translate(shot.x1,shot.y1);ctx.rotate(shot.angle);
+            const g=ctx.createRadialGradient(0,0,10,0,0,radius);g.addColorStop(0,`rgba(235,245,255,${.34*pulse})`);g.addColorStop(.72,`rgba(170,205,245,${.24*pulse})`);g.addColorStop(1,'rgba(120,170,230,0)');
+            ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,radius,-half,half);ctx.closePath();ctx.fill();
+            for(let i=0;i<3;i+=1){ctx.strokeStyle=`rgba(${220+i*12},${236+i*6},255,${pulse*(.9-i*.2)})`;ctx.lineWidth=7-i*1.7;ctx.beginPath();ctx.arc(0,0,radius*(.58+i*.16),-half,half);ctx.stroke();}
+          } else {
+            ctx.translate(shot.x2,shot.y2);ctx.rotate(shot.angle);for(let i=0;i<3;i+=1){ctx.strokeStyle=`rgba(${210+i*15},${230+i*8},255,${pulse*(.85-i*.18)})`;ctx.lineWidth=7-i*2;ctx.beginPath();ctx.arc(-i*4,0,24+i*8,-1.05,.95);ctx.stroke();}for(let i=0;i<6;i+=1){const a=-.8+i*.32;ctx.fillStyle=`rgba(255,255,255,${pulse*.8})`;ctx.beginPath();ctx.arc(Math.cos(a)*35,Math.sin(a)*35,1.5+i%2,0,Math.PI*2);ctx.fill();}
+          }
         } else if (shot.effect === 'goldenWave') {
           const pulse=Math.sin(progress*Math.PI);ctx.translate(shot.x2,shot.y2);ctx.rotate(shot.angle);for(let i=0;i<4;i+=1){ctx.strokeStyle=`rgba(255,${225-i*12},${100-i*15},${pulse*(.9-i*.16)})`;ctx.lineWidth=8-i*1.5;ctx.beginPath();ctx.arc(-i*3,0,24+i*9,-1.08,1.08);ctx.stroke();}const core=ctx.createRadialGradient(0,0,0,0,0,42);core.addColorStop(0,`rgba(255,255,230,${pulse})`);core.addColorStop(.35,`rgba(255,215,55,${pulse*.58})`);core.addColorStop(1,'rgba(255,190,20,0)');ctx.fillStyle=core;ctx.beginPath();ctx.arc(0,0,42,0,Math.PI*2);ctx.fill();
         } else if (shot.effect === 'royalConeSlash') {
@@ -13800,7 +13932,6 @@ function requestGachaDraw(count) {
           ctx.strokeStyle=`rgba(255,240,250,${.88*alpha})`;ctx.lineWidth=4;ctx.beginPath();ctx.arc(0,0,8+p*radius*.85,0,Math.PI*2);ctx.stroke();
           for(let i=0;i<18;i++){const a=shot.seed+i*Math.PI*2/18;const d=8+p*(32+(i%5)*7);ctx.save();ctx.translate(Math.cos(a)*d,Math.sin(a)*d);ctx.rotate(a+progress*7);ctx.fillStyle=`rgba(255,${128+(i%4)*24},${192+(i%3)*18},${alpha})`;ctx.beginPath();ctx.ellipse(0,0,3,7,.2,0,Math.PI*2);ctx.fill();ctx.restore();}
           ctx.restore();
-        } else if (shot.effect === 'arcaneBolt') {
         } else if (shot.effect === 'arcaneBolt') {
           for(let i=0;i<7;i+=1){const back=8+i*7;const swirl=Math.sin(shot.seed+i*1.8+progress*16)*(4+i*.8);ctx.fillStyle=`rgba(${180+i*4},${120+i*6},255,${fade*(.85-i*.08)})`;ctx.beginPath();ctx.arc(x-ux*back+nx*swirl,y-uy*back+ny*swirl,Math.max(1.2,4.5-i*.45),0,Math.PI*2);ctx.fill();}
           const orb=ctx.createRadialGradient(x-4,y-4,1,x,y,15);orb.addColorStop(0,'#fff');orb.addColorStop(.25,'#ead7ff');orb.addColorStop(.55,'#a766ff');orb.addColorStop(1,'rgba(80,20,160,0)');ctx.fillStyle=orb;ctx.beginPath();ctx.arc(x,y,15,0,Math.PI*2);ctx.fill();ctx.strokeStyle=`rgba(235,215,255,${fade})`;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,17+Math.sin(progress*20)*3,0,Math.PI*2);ctx.stroke();
@@ -14244,6 +14375,7 @@ function requestGachaDraw(count) {
         animationOffset: Math.random() * Math.PI * 2,
         attackAnimation: 0,
         attackMode: 'idle',
+        attackCount: 0,
         spearThrowCount: 0,
         windAttackCount: 0,
         chronoAttackCount: 0,
@@ -14687,10 +14819,14 @@ function requestGachaDraw(count) {
     return d;
   }
 
-  function mpBaseEnemyHp(wave) {
+  function mpOriginalBaseEnemyHp(wave) {
     const safeWave = Math.max(1, Math.floor(Number(wave) || 1));
     const steps = Math.floor((safeWave - 1) / 10);
-    return Math.round(100 * Math.pow(1.1, steps));
+    return 100 * Math.pow(1.1, steps);
+  }
+
+  function mpBaseEnemyHp(wave) {
+    return Math.max(1, Math.round(mpOriginalBaseEnemyHp(wave) * (2 / 3)));
   }
 
   function mpWaveReward(wave) {
@@ -14701,6 +14837,8 @@ function requestGachaDraw(count) {
   function mpBossInfoForWave(wave, baseHp = mpBaseEnemyHp(wave)) {
     if (wave % 10 !== 0) return null;
     const bossIndex = ((wave / 10) - 1) % 4;
+    // 온라인 스테이지 1 보스는 기존 HP의 정확히 1/2을 사용합니다.
+    const bossBaseHp = mpOriginalBaseEnemyHp(wave) * 0.5;
 
     if (bossIndex === 0) {
       return {
@@ -14708,7 +14846,7 @@ function requestGachaDraw(count) {
         specs: Array.from({ length: 5 }, (_, index) => ({
           type: 'brother',
           name: '비둘기 브라더스',
-          hp: Math.round(baseHp * 10),
+          hp: Math.round(bossBaseHp * 10),
           speed: 50,
           radius: 28,
           reward: 90,
@@ -14723,7 +14861,7 @@ function requestGachaDraw(count) {
         specs: [{
           type: 'knight',
           name: '기사 비둘기',
-          hp: Math.round(baseHp * 50),
+          hp: Math.round(bossBaseHp * 50),
           speed: 47,
           radius: 31,
           reward: 360,
@@ -14738,7 +14876,7 @@ function requestGachaDraw(count) {
         specs: [{
           type: 'king',
           name: '킹 비둘기',
-          hp: Math.round(baseHp * 150),
+          hp: Math.round(bossBaseHp * 150),
           speed: 43,
           radius: 35,
           reward: 720,
@@ -14752,7 +14890,7 @@ function requestGachaDraw(count) {
       specs: [{
         type: 'awakenedKing',
         name: '각성한 킹 비둘기',
-        hp: Math.round(baseHp * 225),
+        hp: Math.round(bossBaseHp * 225),
         speed: 46,
         radius: 39,
         reward: 1200,
@@ -16250,7 +16388,7 @@ function requestGachaDraw(count) {
       unit.attackMode='sakuraMelee';const half=((data.meleeConeAngle||180)*Math.PI/180)/2,victims=[...targetState.enemies].filter(e=>{if(e.dead)return false;const dx=e.x-unit.x,dy=e.y-unit.y,d=Math.hypot(dx,dy);return d<=(data.meleeRange||120)&&Math.abs(mpAngleDelta(Math.atan2(dy,dx),a))<=half;});
       mpPushFx(unit.x,unit.y,target.x,target.y,'#ff9bd0',10,sideKey,'sakuraMelee',{angle:a,radius:data.meleeRange||120,coneAngle:data.meleeConeAngle||180});victims.forEach(e=>mpApplyDamage(targetState,e,unit.damage,unit.ownerRole,sideKey));return;
     }
-    unit.attackMode='sakuraWave';const waveTargets=mpCherrySamuraiWaveTargets(targetState,unit,target),visual=waveTargets.length>=2?waveTargets:[target,target];visual.slice(0,2).forEach((t,i)=>{const wa=Math.atan2(t.y-unit.y,t.x-unit.x),ux=Math.cos(wa),uy=Math.sin(wa),nx=-uy,ny=ux,o=i===0?-9:9;mpPushFx(unit.x+ux*28+nx*o,unit.y+uy*28+ny*o,t.x,t.y,'#dffaff',8,sideKey,'sakuraWave',{seed:Math.random()*1000+i*17,waveIndex:i});});waveTargets.forEach(e=>mpApplyDamage(targetState,e,unit.damage,unit.ownerRole,sideKey));
+    unit.attackMode='sakuraWave';const waveTargets=mpCherrySamuraiWaveTargets(targetState,unit,target),visual=waveTargets.length>=2?waveTargets:[target,target];visual.slice(0,2).forEach((t,i)=>{const wa=Math.atan2(t.y-unit.y,t.x-unit.x),ux=Math.cos(wa),uy=Math.sin(wa),nx=-uy,ny=ux,o=i===0?-9:9;mpPushFx(unit.x+ux*28+nx*o,unit.y+uy*28+ny*o,t.x,t.y,'#dffaff',8,sideKey,'sakuraWave',{seed:Math.random()*1000+i*17,waveIndex:i});});const splashRadius=data.swordWaveSplashRadius||35,waveVictims=new Map();waveTargets.forEach(t=>{[...targetState.enemies].forEach(e=>{if(!e.dead&&Math.hypot(e.x-t.x,e.y-t.y)<=splashRadius)waveVictims.set(e.id,e);});});waveVictims.forEach(e=>mpApplyDamage(targetState,e,unit.damage,unit.ownerRole,sideKey));
   }
 
   function mpPerformUnitAttack(targetState, sideKey, unit, target) {
@@ -16307,10 +16445,74 @@ function requestGachaDraw(count) {
         return;
       }
 
-      mpPushFx(unit.x, unit.y, target.x, target.y, '#ff355d', 7, sideKey, 'eclipseSlash');
-      const killed = mpApplyDamage(targetState, target, unit.damage, unit.ownerRole, sideKey);
-      if (killed) mpTriggerEclipseGrowth(unit, target, sideKey);
+      mpPushFx(unit.x, unit.y, target.x, target.y, '#ff355d', 7, sideKey, 'eclipseSlash', { radius: eclipseData.normalSlashRadius || 55 });
+      const slashRadius = eclipseData.normalSlashRadius || 55;
+      [...targetState.enemies]
+        .filter(enemy => !enemy.dead && Math.hypot(enemy.x - target.x, enemy.y - target.y) <= slashRadius)
+        .forEach(enemy => {
+          const killed = mpApplyDamage(targetState, enemy, unit.damage, unit.ownerRole, sideKey);
+          if (killed) mpTriggerEclipseGrowth(unit, enemy, sideKey);
+        });
       if (Math.random() < (eclipseData.hitBlackHoleChance || .05)) mpCreateEclipseBlackHole(targetState, sideKey, unit, target);
+      return;
+    }
+
+    if (unit.unitId === 'starterKnight') {
+      const knightData = UNIT_DATA.starterKnight;
+      const heavy = unit.attackCount % (knightData.heavySlashEvery || 4) === 0;
+      const coneAngle = heavy ? (knightData.heavySlashAngle || 180) : (knightData.meleeConeAngle || 120);
+      const half = (coneAngle * Math.PI / 180) / 2;
+      const victims = [...targetState.enemies].filter(enemy => {
+        if (enemy.dead) return false;
+        const dx = enemy.x - unit.x, dy = enemy.y - unit.y;
+        const d = Math.hypot(dx, dy);
+        return d <= unit.range && Math.abs(mpAngleDelta(Math.atan2(dy, dx), angle)) <= half;
+      });
+      const damage = unit.damage * (heavy ? (knightData.heavySlashMultiplier || 2) : 1);
+      mpPushFx(unit.x, unit.y, target.x, target.y, knightData.color || '#dce6f3', heavy ? 10 : 7, sideKey, 'steelSlash', { angle, radius: unit.range, coneAngle });
+      victims.forEach(enemy => mpApplyDamage(targetState, enemy, damage, unit.ownerRole, sideKey));
+      return;
+    }
+
+    if (unit.unitId === 'starterArcher' && unit.attackCount % (UNIT_DATA.starterArcher.volleyEvery || 5) === 0) {
+      const archerData = UNIT_DATA.starterArcher;
+      const candidates = [...targetState.enemies]
+        .filter(enemy => !enemy.dead && Math.hypot(enemy.x - unit.x, enemy.y - unit.y) <= unit.range)
+        .sort((a, b) => b.x - a.x);
+      const volleyTargets = [target, ...candidates.filter(enemy => enemy.id !== target.id)]
+        .filter((enemy, index, array) => array.findIndex(item => item.id === enemy.id) === index)
+        .slice(0, archerData.volleyShots || 3);
+      volleyTargets.forEach((enemy, index) => {
+        mpPushFx(unit.x, unit.y, enemy.x, enemy.y, archerData.color || '#4d8fff', 4, sideKey, 'arrow', { seed: Math.random() * 1000 + index * 13 });
+        mpApplyDamage(targetState, enemy, unit.damage, unit.ownerRole, sideKey);
+      });
+      return;
+    }
+
+    if (unit.unitId === 'starterMage' && unit.attackCount % (UNIT_DATA.starterMage.chainEvery || 4) === 0) {
+      const mageData = UNIT_DATA.starterMage;
+      const extras = [...targetState.enemies]
+        .filter(enemy => enemy.id !== target.id && !enemy.dead &&
+          Math.hypot(enemy.x - target.x, enemy.y - target.y) <= (mageData.chainRadius || 115) &&
+          Math.hypot(enemy.x - unit.x, enemy.y - unit.y) <= unit.range)
+        .sort((a, b) => Math.hypot(a.x - target.x, a.y - target.y) - Math.hypot(b.x - target.x, b.y - target.y))
+        .slice(0, mageData.chainExtraTargets || 2);
+      [target, ...extras].forEach((enemy, index) => {
+        mpPushFx(unit.x, unit.y, enemy.x, enemy.y, mageData.color || '#9b64ff', 5, sideKey, 'arcane', { seed: Math.random() * 1000 + index * 19 });
+        mpApplyDamage(targetState, enemy, index === 0 ? unit.damage : unit.damage * (mageData.chainDamageMultiplier || .7), unit.ownerRole, sideKey);
+      });
+      return;
+    }
+
+    if (unit.unitId === 'flameWizard' && unit.attackCount % (UNIT_DATA.flameWizard.infernoEvery || 5) === 0) {
+      const flameData = UNIT_DATA.flameWizard;
+      const radius = flameData.infernoRadius || 115;
+      mpPushFx(unit.x, unit.y, target.x, target.y, flameData.color || '#ff6d42', 12, sideKey, 'fireball', { radius });
+      [...targetState.enemies].forEach(enemy => {
+        if (!enemy.dead && Math.hypot(enemy.x - target.x, enemy.y - target.y) <= radius) {
+          mpApplyDamage(targetState, enemy, unit.damage * (flameData.infernoMultiplier || 2), unit.ownerRole, sideKey);
+        }
+      });
       return;
     }
 
@@ -16346,14 +16548,25 @@ function requestGachaDraw(count) {
       return;
     }
 
+    if (unit.unitId === 'royalGuardian') {
+      const waveRadius = data.swordWaveRadius || 55;
+      mpPushFx(unit.x, unit.y, target.x, target.y, data.color || '#ffd04a', 8, sideKey, 'royalWave', { radius: waveRadius });
+      [...targetState.enemies].forEach(enemy => {
+        if (!enemy.dead && Math.hypot(enemy.x - target.x, enemy.y - target.y) <= waveRadius) {
+          mpApplyDamage(targetState, enemy, unit.damage, unit.ownerRole, sideKey);
+        }
+      });
+      return;
+    }
+
     mpPushFx(unit.x, unit.y, target.x, target.y, data.color || '#fff', 3, sideKey, mpAttackEffectKind(unit.unitId));
     mpApplyDamage(targetState, target, unit.damage, unit.ownerRole, sideKey);
 
     if (unit.unitId === 'flameWizard') {
       [...targetState.enemies].forEach(enemy => {
         if (enemy.dead || enemy.id === target.id) return;
-        if (Math.hypot(enemy.x - target.x, enemy.y - target.y) <= 58) {
-          mpApplyDamage(targetState, enemy, unit.damage * .55, unit.ownerRole, sideKey);
+        if (Math.hypot(enemy.x - target.x, enemy.y - target.y) <= 88) {
+          mpApplyDamage(targetState, enemy, unit.damage / 3, unit.ownerRole, sideKey);
         }
       });
     }
@@ -17790,8 +18003,16 @@ function requestGachaDraw(count) {
           mpCtx.strokeStyle=`rgba(255,255,230,${fade})`;mpCtx.lineWidth=2.4;mpCtx.beginPath();mpCtx.moveTo(-40,-2);mpCtx.quadraticCurveTo(0,-15,28,-1);mpCtx.stroke();mpCtx.restore();
           mpCtx.strokeStyle=`rgba(255,202,45,${.34*fade})`;mpCtx.lineWidth=8;mpCtx.beginPath();mpCtx.moveTo(tailX,tailY);mpCtx.lineTo(x,y);mpCtx.stroke();
         } else {
-          mpCtx.translate(fx.x2,y2); mpCtx.rotate(angle);
-          for(let i=0;i<4;i+=1){mpCtx.strokeStyle=`rgba(${210+i*12},${230+i*8},255,${pulse*(.9-i*.18)})`;mpCtx.lineWidth=8-i*1.6;mpCtx.beginPath();mpCtx.arc(-i*3,0,24+i*8,-1.05,1.05);mpCtx.stroke();}
+          if (fx.radius) {
+            const radius=Number(fx.radius||95),half=((Number(fx.coneAngle||120)*Math.PI/180)/2);
+            mpCtx.translate(fx.x1,y1);mpCtx.rotate(fx.angle||angle);
+            const g=mpCtx.createRadialGradient(0,0,10,0,0,radius);g.addColorStop(0,`rgba(235,245,255,${.34*pulse})`);g.addColorStop(.72,`rgba(170,205,245,${.24*pulse})`);g.addColorStop(1,'rgba(120,170,230,0)');
+            mpCtx.fillStyle=g;mpCtx.beginPath();mpCtx.moveTo(0,0);mpCtx.arc(0,0,radius,-half,half);mpCtx.closePath();mpCtx.fill();
+            for(let i=0;i<3;i+=1){mpCtx.strokeStyle=`rgba(${220+i*12},${236+i*6},255,${pulse*(.9-i*.2)})`;mpCtx.lineWidth=7-i*1.7;mpCtx.beginPath();mpCtx.arc(0,0,radius*(.58+i*.16),-half,half);mpCtx.stroke();}
+          } else {
+            mpCtx.translate(fx.x2,y2); mpCtx.rotate(angle);
+            for(let i=0;i<4;i+=1){mpCtx.strokeStyle=`rgba(${210+i*12},${230+i*8},255,${pulse*(.9-i*.18)})`;mpCtx.lineWidth=8-i*1.6;mpCtx.beginPath();mpCtx.arc(-i*3,0,24+i*8,-1.05,1.05);mpCtx.stroke();}
+          }
         }
       } else if (fx.kind === 'royalCone') {
         const pulse=Math.sin(progress*Math.PI); const radius=fx.radius||120; const half=((fx.coneAngle||120)*Math.PI/180)/2;
@@ -17813,7 +18034,6 @@ function requestGachaDraw(count) {
       } else if (fx.kind === 'sakuraMarkBurst') {
         const radius=Number(fx.radius||52),p=Math.min(1,progress*1.18),alpha=Math.max(0,1-progress);mpCtx.translate(fx.x1,y1);mpCtx.globalCompositeOperation='lighter';const b=mpCtx.createRadialGradient(0,0,2,0,0,radius*(.35+p));b.addColorStop(0,`rgba(255,255,255,${.95*alpha})`);b.addColorStop(.22,`rgba(255,177,221,${.8*alpha})`);b.addColorStop(.62,`rgba(255,74,155,${.38*alpha})`);b.addColorStop(1,'rgba(255,60,150,0)');mpCtx.fillStyle=b;mpCtx.beginPath();mpCtx.arc(0,0,radius*(.35+p),0,Math.PI*2);mpCtx.fill();mpCtx.strokeStyle=`rgba(255,240,250,${.88*alpha})`;mpCtx.lineWidth=4;mpCtx.beginPath();mpCtx.arc(0,0,8+p*radius*.85,0,Math.PI*2);mpCtx.stroke();if(!mpHighLoadFrame){for(let i=0;i<16;i++){const a=fx.seed+i*Math.PI*2/16,d=8+p*(32+(i%5)*7);mpCtx.save();mpCtx.translate(Math.cos(a)*d,Math.sin(a)*d);mpCtx.rotate(a+progress*7);mpCtx.fillStyle=`rgba(255,${128+(i%4)*24},${192+(i%3)*18},${alpha})`;mpCtx.beginPath();mpCtx.ellipse(0,0,3,7,.2,0,Math.PI*2);mpCtx.fill();mpCtx.restore();}}
       } else if (fx.kind === 'arcane') {
-      } else if (fx.kind === 'arcane') {
         const wave=Math.sin(progress*Math.PI*7+fx.seed)*18;
         mpCtx.shadowBlur=14;mpCtx.shadowColor='#9b64ff';
         for(let i=0;i<3;i+=1){mpCtx.strokeStyle=`rgba(${190+i*18},${135+i*22},255,${(.78-i*.16)*fade})`;mpCtx.lineWidth=5-i*1.2;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.bezierCurveTo(fx.x1+dx*.3+nx*(wave+i*6),y1+dy*.3+ny*(wave+i*6),fx.x1+dx*.7-nx*(wave+i*6),y1+dy*.7-ny*(wave+i*6),x,y);mpCtx.stroke();}
@@ -17823,7 +18043,7 @@ function requestGachaDraw(count) {
         const g=mpCtx.createLinearGradient(tailX,tailY,x,y);g.addColorStop(0,'rgba(255,65,20,0)');g.addColorStop(.45,`rgba(255,96,28,${.55*fade})`);g.addColorStop(1,`rgba(255,230,120,${.9*fade})`);
         mpCtx.strokeStyle=g;mpCtx.lineWidth=12;mpCtx.beginPath();mpCtx.moveTo(tailX,tailY);mpCtx.lineTo(x,y);mpCtx.stroke();
         const orb=mpCtx.createRadialGradient(x-3,y-3,1,x,y,14);orb.addColorStop(0,'#fff7c2');orb.addColorStop(.3,'#ffcc4a');orb.addColorStop(.7,'#ff5a1f');orb.addColorStop(1,'rgba(180,25,5,0)');mpCtx.fillStyle=orb;mpCtx.beginPath();mpCtx.arc(x,y,14,0,Math.PI*2);mpCtx.fill();
-        if(progress>.66){const p=(progress-.66)/.34;mpCtx.strokeStyle=`rgba(255,137,48,${1-p})`;mpCtx.lineWidth=5;mpCtx.beginPath();mpCtx.arc(fx.x2,y2,12+p*34,0,Math.PI*2);mpCtx.stroke();}
+        if(progress>.66){const p=(progress-.66)/.34,blastRadius=Number(fx.radius||34);mpCtx.strokeStyle=`rgba(255,137,48,${1-p})`;mpCtx.lineWidth=5;mpCtx.beginPath();mpCtx.arc(fx.x2,y2,12+p*blastRadius,0,Math.PI*2);mpCtx.stroke();}
       } else if (fx.kind === 'dragonLance') {
         const tailX=x-ux*42,tailY=y-uy*42;mpCtx.shadowBlur=16;mpCtx.shadowColor='#ffe36e';mpCtx.strokeStyle=`rgba(255,223,91,${.8*fade})`;mpCtx.lineWidth=9;mpCtx.beginPath();mpCtx.moveTo(tailX,tailY);mpCtx.lineTo(x,y);mpCtx.stroke();
         mpCtx.save();mpCtx.translate(x,y);mpCtx.rotate(angle);const spear=mpCtx.createLinearGradient(-28,0,18,0);spear.addColorStop(0,'#8a4a00');spear.addColorStop(.55,'#ffd84f');spear.addColorStop(1,'#fff7bf');mpCtx.strokeStyle=spear;mpCtx.lineWidth=4;mpCtx.beginPath();mpCtx.moveTo(-28,0);mpCtx.lineTo(16,0);mpCtx.stroke();mpCtx.fillStyle='#fff1a1';mpCtx.beginPath();mpCtx.moveTo(24,0);mpCtx.lineTo(11,-7);mpCtx.lineTo(11,7);mpCtx.closePath();mpCtx.fill();mpCtx.restore();

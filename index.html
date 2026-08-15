@@ -6028,7 +6028,7 @@ body {
   </div>
 
   <script>
-    window.BIDULGY_BUILD_VERSION = '2026-08-15-premium-four-units-v2';
+    window.BIDULGY_BUILD_VERSION = '2026-08-16-phoenix-facing-v1';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -6556,6 +6556,7 @@ function applyStagePreview(stageId = selectedStage) {
         damage: 230,
         range: 300,
         meleeRange: 105,
+        meleeMultiplier: 1.5,
         fireInterval: 0.95,
         tridentWidth: 20,
         waveEvery: 7,
@@ -6564,7 +6565,7 @@ function applyStagePreview(stageId = selectedStage) {
         wetDuration: 3,
         wetSlow: 0.25,
         color: '#35c9ff',
-        skillText: '가까운 적은 삼지창으로 찌르고, 멀리 있는 적에게는 삼지창을 최대 300까지 던집니다. 던진 삼지창은 적을 관통하고 끝까지 날아간 뒤 빠르게 되돌아오며 돌아오는 경로의 적에게도 피해를 줍니다. 7번째 공격마다 기지에서 거대한 파도가 역류해 모든 적을 관통하며 평타의 3배 피해를 주고 밀어냅니다. 파도에 맞은 적은 3초간 젖음 상태가 되어 이동속도가 25% 감소합니다.'
+        skillText: '근접에서는 삼지창 찌르기로 평타의 1.5배 피해를 줍니다. 원거리에서는 삼지창 1개를 최대 300까지 관통 투척하고 끝에 닿는 즉시 같은 삼지창을 빠르게 불러와 귀환 경로의 적에게도 피해를 줍니다. 7번째 공격마다 기지에서 거대한 해수가 길을 따라 밀려와 모든 적을 관통하며 평타의 3배 피해를 주고 밀어냅니다. 맞은 적은 3초간 젖어 이동속도가 25% 감소합니다.'
       },
       moneyTree: {
         id: 'moneyTree',
@@ -9644,7 +9645,7 @@ function requestGachaDraw(count) {
 
       window.addEventListener('load', () => {
         navigator.serviceWorker
-          .register('./service-worker.js?v=20260815-premium-units-2', { updateViaCache: 'none' })
+          .register('./service-worker.js?v=20260816-phoenix-facing-1', { updateViaCache: 'none' })
           .then(registration => registration.update())
           .catch(error => console.error('서비스 워커 등록 실패:', error));
       });
@@ -10670,7 +10671,7 @@ function requestGachaDraw(count) {
         royalGuardian: `120 이내 전방 120° 범위 베기 · 121~${unit.range} 검기 적중지 반경 ${unit.swordWaveRadius || 55} 범위공격`,
         iceQueen: '빙결 5초·이속 -25% · 3회 중첩 시 일반 적 3초 완전 동결 · 불붙으면 해제 · 7타마다 7연사(0.2초 간격)',
         skyDragonKnight: '명중 시 50% 번개(0.5초 후·반경 20) · 7회 공격마다 가로 길 평타×5',
-        poseidon: '근접 찌르기 · 원거리 관통 삼지창 왕복 · 7타마다 전역 파도×3 + 밀침 + 젖음 3초(이속 -25%)',
+        poseidon: '근접 찌르기×1.5 · 원거리 삼지창 1자루 관통 왕복(300) · 7타마다 이동 해수×3 + 밀침 + 젖음 3초(이속 -25%)',
         moneyTree: '공격 없음 · 기본 1초마다 15골드 · 업그레이드 시 최대 0.7초마다 25골드',
         phoenix: '0.01초 불꽃 숨결 범위공격 · 20초마다 6초 둔화+화상 · 젖음에는 화상 불가 · 60초마다 10초간 사거리×2',
         cherrySamurai: `기절 면역 · 근접 120 전방 180° 범위 · 원거리 ${unit.range} 검기 2발(각 적중지 반경 ${unit.swordWaveSplashRadius || 35} 범위) · 벚꽃 영역 ${unit.blossomAuraRange || 170}: 0.1초마다 ${unit.blossomAuraDamage || 10} 피해 · 일반 3타 후 일섬(폭 ${unit.issenWidth || 60}·거리 ${unit.issenRange || 200})×5 · 일섬 4회마다 오의 각 참격×10 · 10번째 공격마다 적 전체 3초 표식 후 ×5`,
@@ -11242,30 +11243,32 @@ function requestGachaDraw(count) {
 
       if (distance <= Number(data.meleeRange || 105)) {
         placed.attackMode = 'poseidonThrust';
-        playUnitAttackSound('poseidon', { skill: 'poseidonPierce', volume: .98 });
+        playUnitAttackSound('poseidon', { skill: 'poseidonPierce', volume: 1.08 });
         battle.shots.push({
           x1: placed.x, y1: placed.y - 4, x2: target.x, y2: target.y,
           life: getAttackEffectDuration('poseidonThrust'), maxLife: getAttackEffectDuration('poseidonThrust'),
           color: data.color, effect: 'poseidonThrust', angle, seed: Math.random() * 1000
         });
-        applyDamageToEnemy(target, placed.damage);
+        applyDamageToEnemy(target, Number(placed.damage || data.damage) * Number(data.meleeMultiplier || 1.5));
       } else {
         placed.attackMode = 'poseidonThrow';
-        playUnitAttackSound('poseidon', { skill: 'poseidonPierce', volume: 1.04 });
+        playUnitAttackSound('poseidon', { skill: 'poseidonPierce', volume: 1.10 });
         const endX = placed.x + Math.cos(angle) * Number(data.range || 300);
         const endY = placed.y + Math.sin(angle) * Number(data.range || 300);
+        const outwardDuration = getAttackEffectDuration('poseidonTrident');
         battle.shots.push({
           x1: placed.x, y1: placed.y - 4, x2: endX, y2: endY,
-          life: getAttackEffectDuration('poseidonTrident'), maxLife: getAttackEffectDuration('poseidonTrident'),
+          life: outwardDuration, maxLife: outwardDuration,
           color: data.color, effect: 'poseidonTrident', angle, seed: Math.random() * 1000
         });
         enemiesAlongLine(placed.x, placed.y, endX, endY, data.tridentWidth || 20)
-          .forEach(enemy => applyDamageToEnemy(enemy, placed.damage));
+          .forEach(enemy => applyDamageToEnemy(enemy, Number(placed.damage || data.damage)));
+        // 나가는 삼지창이 끝에 도달한 직후에만 귀환 연출을 시작해 화면에는 항상 한 자루만 보인다.
         scheduleDelayedAttack({
           kind: 'poseidonReturn',
-          timer: .24,
+          timer: Math.max(.01, outwardDuration - .01),
           x1: endX, y1: endY, x2: placed.x, y2: placed.y,
-          damage: placed.damage, width: data.tridentWidth || 20
+          damage: Number(placed.damage || data.damage), width: data.tridentWidth || 20
         });
       }
       if (placed.attackCount % Number(data.waveEvery || 7) === 0) triggerPoseidonWave(placed);
@@ -11581,10 +11584,10 @@ function requestGachaDraw(count) {
         skyLightning: .44,
         iceArrow: .42,
         iceBurst: .50,
-        poseidonThrust: .32,
-        poseidonTrident: .52,
-        poseidonReturn: .42,
-        poseidonWave: .92,
+        poseidonThrust: .30,
+        poseidonTrident: .34,
+        poseidonReturn: .23,
+        poseidonWave: 1.58,
         phoenixBreath: .20,
         phoenixRoar: 1.20,
         edenBolt: .42,
@@ -15858,68 +15861,221 @@ function requestGachaDraw(count) {
     }
 
     function drawPhoenixPremiumBodyArt(g, time, unit, quality = 1) {
-      const t=time*.001, flying=Number(unit.phoenixFlightRemaining||0)>0;
-      const flap=Math.sin(t*(flying?8.5:5.7)+Number(unit.animationOffset||0));
-      const lift=flying?-6:0;
-      g.save(); g.translate(0,lift);
+      const t = time * .001;
+      const flying = Number(unit.phoenixFlightRemaining || 0) > 0;
+      const attack = Math.max(0, Math.min(1, Number(unit.attackAnimation || 0)));
+      const facing = Number.isFinite(Number(unit.angle)) ? Number(unit.angle) : 0;
+      const flap = Math.sin(t * (flying ? 10.2 : 6.3) + Number(unit.animationOffset || 0));
+      const breathe = Math.sin(t * 4.1 + Number(unit.animationOffset || 0)) * 1.2;
+      const neckThrust = attack * 6.5;
 
-      // 열기류 고리
-      g.save();g.globalCompositeOperation='lighter';
-      for(let i=0;i<3;i++){
-        g.strokeStyle=`rgba(255,${110+i*45},${26+i*24},${.16+.05*i})`;
-        g.lineWidth=3-i*.5;g.beginPath();g.ellipse(0,18,24+i*9,8+i*3,t*.7+i*.8,0,Math.PI*2);g.stroke();
+      g.save();
+      // 피닉스 전체가 현재 공격 대상을 바라봅니다. +X가 머리 방향입니다.
+      g.rotate(facing);
+      g.translate(0, flying ? -2 : 0);
+
+      // 열기/불꽃 후광 — 진행 방향 뒤쪽으로 흐르도록 구성
+      g.save();
+      g.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < 3; i++) {
+        const rr = 28 + i * 10;
+        g.strokeStyle = `rgba(255,${94 + i * 48},${20 + i * 25},${.13 + i * .055})`;
+        g.lineWidth = 4 - i * .6;
+        g.beginPath();
+        g.ellipse(-7, 1, rr, 10 + i * 2.2, 0, 0, Math.PI * 2);
+        g.stroke();
       }
       g.restore();
 
-      // 3층 깃털 날개
-      for(const side of [-1,1]){
-        g.save(); g.rotate(side*(.26+flap*.18));
-        for(let layer=0;layer<3;layer++){
-          const len=48-layer*8, y=-12+layer*6;
-          for(let i=0;i<5;i++){
-            const a=(i-2)*.12;
-            g.save();g.translate(side*(8+i*6),y+i*1.7);g.rotate(side*(a-.18));
-            const feather=g.createLinearGradient(0,0,side*len,0);
-            feather.addColorStop(0,layer===0?'#fff2a4':'#ffd34e');
-            feather.addColorStop(.36,layer===0?'#ffb12d':'#ff8d20');
-            feather.addColorStop(.72,'#ef3c18');feather.addColorStop(1,'rgba(157,16,10,.08)');
-            g.fillStyle=feather;g.beginPath();g.moveTo(0,-3);g.quadraticCurveTo(side*len*.55,-8,side*len,0);g.quadraticCurveTo(side*len*.55,7,0,3);g.closePath();g.fill();
-            g.restore();
+      // 불꽃 꼬리: 몸 뒤(-X)에서 여러 갈래로 길게 흐름
+      for (let i = 0; i < 8; i++) {
+        const spread = (i - 3.5) * 4.1;
+        const sway = Math.sin(t * (4.3 + (i % 3) * .35) + i * 1.31) * 5;
+        const len = 43 + (i % 4) * 7 + (flying ? 8 : 0);
+        const grad = g.createLinearGradient(-12, spread * .25, -12 - len, spread + sway);
+        grad.addColorStop(0, i % 2 ? '#fff2a1' : '#ffd34c');
+        grad.addColorStop(.24, '#ff9b26');
+        grad.addColorStop(.58, '#ef421d');
+        grad.addColorStop(1, 'rgba(153,12,8,0)');
+        g.fillStyle = grad;
+        g.beginPath();
+        g.moveTo(-10, spread * .25 - 3.2);
+        g.bezierCurveTo(-25, spread * .25 - 6, -32 - len * .45, spread + sway * .3, -12 - len, spread + sway);
+        g.bezierCurveTo(-34 - len * .35, spread + 7 + sway * .2, -24, spread * .25 + 6, -10, spread * .25 + 3.2);
+        g.closePath();
+        g.fill();
+      }
+
+      // 상/하 날개 — 깃털이 겹쳐지는 큰 불새 실루엣
+      for (const side of [-1, 1]) {
+        g.save();
+        g.translate(-5, side * 2);
+        g.rotate(side * (.38 + flap * .16));
+        for (let layer = 0; layer < 3; layer++) {
+          const count = quality > .7 ? 6 : 4;
+          for (let i = 0; i < count; i++) {
+            const rootX = -4 + i * 4;
+            const rootY = side * (3 + i * 2.0 + layer * 3.3);
+            const tipX = 4 + i * 4 - layer * 2;
+            const tipY = side * (35 + i * 4.8 - layer * 5 + flap * (4 + i * .35));
+            const feather = g.createLinearGradient(rootX, rootY, tipX, tipY);
+            feather.addColorStop(0, layer === 0 ? '#fff8bd' : '#ffd950');
+            feather.addColorStop(.30, '#ff9d2d');
+            feather.addColorStop(.68, '#e8431d');
+            feather.addColorStop(1, 'rgba(111,12,9,.08)');
+            g.fillStyle = feather;
+            g.beginPath();
+            g.moveTo(rootX - 3, rootY);
+            g.quadraticCurveTo(tipX - 10, tipY * .70, tipX, tipY);
+            g.quadraticCurveTo(tipX + 6, tipY * .67, rootX + 3, rootY);
+            g.closePath();
+            g.fill();
           }
         }
         g.restore();
       }
 
-      // 몸통
-      const body=g.createRadialGradient(-5,-11,2,0,-2,25);
-      body.addColorStop(0,'#fffbd2');body.addColorStop(.22,'#ffd75e');body.addColorStop(.55,'#ff7b22');body.addColorStop(1,'#8e1712');
-      g.fillStyle=body; g.beginPath(); g.ellipse(0,-2,15,24,-.08,0,Math.PI*2); g.fill();
-      g.strokeStyle='rgba(255,242,160,.65)';g.lineWidth=1.2;g.beginPath();g.ellipse(0,-2,11,18,-.08,0,Math.PI*2);g.stroke();
+      // 몸통: 둥근 새 몸 대신 날카로운 화염 갑주 실루엣
+      const body = g.createLinearGradient(-18, -12, 22, 12);
+      body.addColorStop(0, '#8e1714');
+      body.addColorStop(.32, '#e9421d');
+      body.addColorStop(.63, '#ff9f27');
+      body.addColorStop(.84, '#ffe16b');
+      body.addColorStop(1, '#fff7bd');
+      g.fillStyle = body;
+      g.beginPath();
+      g.moveTo(-18, -11);
+      g.quadraticCurveTo(-1, -19, 15, -10);
+      g.lineTo(25 + neckThrust * .25, -3);
+      g.lineTo(19 + neckThrust * .18, 8);
+      g.quadraticCurveTo(-1, 18, -19, 10);
+      g.lineTo(-10, 2);
+      g.closePath();
+      g.fill();
 
-      // 목/머리/부리
-      g.fillStyle='#ffbd36';g.beginPath();g.ellipse(9,-23,9,11,-.2,0,Math.PI*2);g.fill();
-      g.fillStyle='#4c180c';g.beginPath();g.moveTo(16,-24);g.lineTo(31,-20);g.lineTo(17,-16);g.closePath();g.fill();
-      g.fillStyle='#fff6bf';g.beginPath();g.arc(12,-27,2.6,0,Math.PI*2);g.fill();
-      g.fillStyle='#60130d';g.beginPath();g.arc(12.6,-27,1.25,0,Math.PI*2);g.fill();
-
-      // 왕관 같은 불꽃 볏
-      for(let i=0;i<4;i++){
-        const x=-3+i*5;
-        const h=12+(i%2)*7;
-        const cg=g.createLinearGradient(x,-28,x,-28-h);cg.addColorStop(0,'#ff8f20');cg.addColorStop(.6,'#ffd65b');cg.addColorStop(1,'rgba(255,245,170,0)');
-        g.fillStyle=cg;g.beginPath();g.moveTo(x-3,-27);g.quadraticCurveTo(x,-30-h,x+3,-27);g.closePath();g.fill();
+      // 몸통 화염 판갑/깃 무늬
+      g.strokeStyle = 'rgba(255,242,156,.72)';
+      g.lineWidth = 1.25;
+      for (let i = 0; i < 4; i++) {
+        g.beginPath();
+        g.moveTo(-9 + i * 6, -8 + i * .4);
+        g.quadraticCurveTo(-2 + i * 6, 0, -10 + i * 6, 8);
+        g.stroke();
       }
 
-      // 길고 갈라진 불꽃 꼬리
-      for(let i=0;i<7;i++){
-        const side=i-3, a=side*.16+Math.sin(t*4+i)*.05;
-        g.save();g.translate(side*2,17);g.rotate(a);
-        const tail=g.createLinearGradient(0,0,0,46+(i%3)*7);tail.addColorStop(0,'#ffd73e');tail.addColorStop(.4,'#ff7420');tail.addColorStop(.76,'#e52c18');tail.addColorStop(1,'rgba(180,20,12,0)');
-        g.fillStyle=tail;g.beginPath();g.moveTo(-4,0);g.quadraticCurveTo(-8,24,0,53+(i%2)*7);g.quadraticCurveTo(8,24,4,0);g.closePath();g.fill();g.restore();
+      // 목: 공격 순간 목표 쪽으로 길게 뻗음
+      const neck = g.createLinearGradient(12, -7, 37 + neckThrust, 2);
+      neck.addColorStop(0, '#ff8d22');
+      neck.addColorStop(.48, '#ffd452');
+      neck.addColorStop(1, '#fff4a7');
+      g.fillStyle = neck;
+      g.beginPath();
+      g.moveTo(11, -8);
+      g.bezierCurveTo(21, -13, 27 + neckThrust, -12, 34 + neckThrust, -7);
+      g.lineTo(35 + neckThrust, 5);
+      g.bezierCurveTo(26 + neckThrust, 7, 20, 6, 12, 7);
+      g.closePath();
+      g.fill();
+
+      // 얼굴을 없앤 화염 투구형 머리: 눈알/얼굴 표현 없이 검은 가면과 불꽃 볏만 표시
+      g.save();
+      g.translate(36 + neckThrust, -1 + breathe * .18);
+      const helm = g.createRadialGradient(-5, -5, 2, 0, 0, 17);
+      helm.addColorStop(0, '#fff8bc');
+      helm.addColorStop(.26, '#ffd74f');
+      helm.addColorStop(.58, '#f0501f');
+      helm.addColorStop(1, '#8c1512');
+      g.fillStyle = helm;
+      g.beginPath();
+      g.moveTo(-10, -9);
+      g.quadraticCurveTo(1, -17, 13, -8);
+      g.lineTo(12, 8);
+      g.quadraticCurveTo(-1, 14, -12, 6);
+      g.closePath();
+      g.fill();
+
+      // 검은 화염 가면 + 날카로운 부리 실루엣
+      const mask = g.createLinearGradient(-2, -7, 25, 6);
+      mask.addColorStop(0, '#31100d');
+      mask.addColorStop(.55, '#120707');
+      mask.addColorStop(1, '#020202');
+      g.fillStyle = mask;
+      g.beginPath();
+      g.moveTo(-3, -7);
+      g.lineTo(12, -6);
+      g.lineTo(27, 0);
+      g.lineTo(12, 6);
+      g.lineTo(-4, 6);
+      g.lineTo(2, 0);
+      g.closePath();
+      g.fill();
+
+      // 눈 대신 가면의 얇은 용광로 틈 하나만 발광
+      g.save();
+      g.globalCompositeOperation = 'lighter';
+      g.shadowBlur = 12 + attack * 10;
+      g.shadowColor = '#fff0a0';
+      g.strokeStyle = '#fff6bf';
+      g.lineWidth = 1.7;
+      g.beginPath();
+      g.moveTo(2, -3.2);
+      g.lineTo(11, -2.1);
+      g.stroke();
+      g.restore();
+
+      // 긴 화염 볏 — 왕관처럼 뒤로 찢어짐
+      for (let i = 0; i < 5; i++) {
+        const h = 14 + (i % 3) * 6 + (flying ? 4 : 0);
+        const x = -7 + i * 4;
+        const crest = g.createLinearGradient(x, -9, x - 6, -9 - h);
+        crest.addColorStop(0, '#ff6c20');
+        crest.addColorStop(.44, '#ffd452');
+        crest.addColorStop(.78, '#fff6b8');
+        crest.addColorStop(1, 'rgba(255,240,130,0)');
+        g.fillStyle = crest;
+        g.beginPath();
+        g.moveTo(x - 2.5, -8);
+        g.quadraticCurveTo(x - 7 - i, -8 - h, x + 1.8, -10 - h * .72);
+        g.quadraticCurveTo(x + 4, -14, x + 2.5, -7);
+        g.closePath();
+        g.fill();
+      }
+      g.restore();
+
+      // 공격 중 부리 앞쪽 화염 압축 — 실제 화염 숨결이 나가는 방향을 강조
+      if (attack > .05) {
+        g.save();
+        g.globalCompositeOperation = 'lighter';
+        const mx = 66 + neckThrust;
+        const flare = g.createRadialGradient(mx - 4, 0, 1, mx, 0, 16 + attack * 8);
+        flare.addColorStop(0, '#ffffff');
+        flare.addColorStop(.20, '#fff29b');
+        flare.addColorStop(.52, '#ff8a23');
+        flare.addColorStop(1, 'rgba(239,54,20,0)');
+        g.fillStyle = flare;
+        g.beginPath();
+        g.ellipse(mx, 0, 19 + attack * 8, 8 + attack * 3, 0, 0, Math.PI * 2);
+        g.fill();
+        g.restore();
       }
 
-      // 불티
-      if(quality>.55){g.save();g.globalCompositeOperation='lighter';for(let i=0;i<10;i++){const a=t*(1.1+i*.03)+i*1.73,r=21+(i%4)*10;const x=Math.cos(a)*r,y=Math.sin(a)*12-8;g.fillStyle=`rgba(255,${128+(i%3)*42},${32+(i%2)*32},${.35+(i%3)*.1})`;g.beginPath();g.arc(x,y,1.4+i%2,0,Math.PI*2);g.fill();}g.restore();}
+      // 주변 불티는 뒤로 흘려 진행 방향이 읽히도록 함
+      if (quality > .5) {
+        g.save();
+        g.globalCompositeOperation = 'lighter';
+        const sparks = quality > .78 ? 14 : 8;
+        for (let i = 0; i < sparks; i++) {
+          const phase = t * (2.1 + (i % 4) * .18) + i * 1.77;
+          const x = 8 - ((phase * 17 + i * 13) % 70);
+          const y = Math.sin(phase * 1.7) * (10 + i % 4 * 3);
+          g.fillStyle = `rgba(255,${126 + (i % 3) * 42},${28 + (i % 2) * 38},${.34 + (i % 4) * .1})`;
+          g.beginPath();
+          g.arc(x, y, 1.3 + (i % 3) * .45, 0, Math.PI * 2);
+          g.fill();
+        }
+        g.restore();
+      }
+
       g.restore();
     }
 
@@ -17320,11 +17476,33 @@ function requestGachaDraw(count) {
           for(let i=0;i<8;i++){const px=x-ux*(12+i*7)+nx*Math.sin(progress*17+i)*7,py=y-uy*(12+i*7)+ny*Math.sin(progress*17+i)*7;ctx.fillStyle=`rgba(153,240,255,${.48*fade})`;ctx.beginPath();ctx.ellipse(px,py,1.6+(i%2),3.8+(i%3),angle,0,Math.PI*2);ctx.fill();}
           ctx.restore();
         } else if (shot.effect === 'poseidonWave') {
-          const pulse=Math.sin(progress*Math.PI),points=Array.isArray(shot.pathPoints)?shot.pathPoints:[{x:shot.x1,y:shot.y1},{x:shot.x2,y:shot.y2}];
+          const points=Array.isArray(shot.pathPoints)&&shot.pathPoints.length>1?shot.pathPoints:[{x:shot.x1,y:shot.y1},{x:shot.x2,y:shot.y2}];
+          const segs=[];let total=0;
+          for(let i=0;i<points.length-1;i++){const a=points[i],b=points[i+1],len=Math.hypot(b.x-a.x,b.y-a.y);if(len>0){segs.push({a,b,start:total,len});total+=len;}}
+          const atDist=(dist)=>{dist=Math.max(0,Math.min(total,dist));let seg=segs[segs.length-1];for(const item of segs){if(dist<=item.start+item.len){seg=item;break;}}const q=seg&&seg.len?(dist-seg.start)/seg.len:0;const a=seg?.a||points[0],b=seg?.b||points[points.length-1];return{x:a.x+(b.x-a.x)*q,y:a.y+(b.y-a.y)*q,angle:Math.atan2(b.y-a.y,b.x-a.x)};};
+          const eased=1-Math.pow(1-Math.min(1,progress),2.1);
+          const headD=total*eased,tailD=Math.max(0,headD-170),head=atDist(headD);
+          const pulse=Math.min(1,progress/.12)*Math.min(1,(1-progress)/.12+0.18);
           ctx.save();ctx.globalCompositeOperation='lighter';ctx.lineCap='round';ctx.lineJoin='round';
-          const layers=4;for(let l=0;l<layers;l++){ctx.strokeStyle=`rgba(${170-l*24},${240-l*10},255,${pulse*(.62-l*.10)})`;ctx.lineWidth=38-l*8;ctx.beginPath();points.forEach((pt,i)=>{if(i===0)ctx.moveTo(pt.x,pt.y);else ctx.lineTo(pt.x,pt.y);});ctx.stroke();}
-          ctx.strokeStyle=`rgba(245,255,255,${.92*pulse})`;ctx.lineWidth=5;ctx.beginPath();points.forEach((pt,i)=>{if(i===0)ctx.moveTo(pt.x,pt.y);else ctx.lineTo(pt.x,pt.y);});ctx.stroke();
-          for(let i=0;i<14;i++){const t=(progress*1.4+i/14)%1,seg=Math.min(points.length-2,Math.floor(t*(points.length-1))),lt=t*(points.length-1)-seg,a=points[seg],b=points[seg+1],px=a.x+(b.x-a.x)*lt,py=a.y+(b.y-a.y)*lt;ctx.fillStyle=`rgba(220,252,255,${.65*pulse})`;ctx.beginPath();ctx.arc(px,py,3+(i%3),0,Math.PI*2);ctx.fill();}ctx.restore();
+          // 파도가 지나간 자리의 짧은 수류 꼬리만 남긴다. 길 전체가 동시에 빛나지 않는다.
+          const samples=[];for(let i=0;i<=18;i++)samples.push(atDist(tailD+(headD-tailD)*(i/18)));
+          for(let l=0;l<4;l++){ctx.strokeStyle=`rgba(${58+l*28},${176+l*18},${225+l*8},${(.20+l*.07)*pulse})`;ctx.lineWidth=54-l*9;ctx.beginPath();samples.forEach((pt,i)=>i?ctx.lineTo(pt.x,pt.y):ctx.moveTo(pt.x,pt.y));ctx.stroke();}
+          ctx.strokeStyle=`rgba(224,252,255,${.62*pulse})`;ctx.lineWidth=5;ctx.beginPath();samples.forEach((pt,i)=>i?ctx.lineTo(pt.x,pt.y):ctx.moveTo(pt.x,pt.y));ctx.stroke();
+          // 이동하는 거대한 해수 머리: 말려 올라가는 파도와 흰 포말을 겹친다.
+          ctx.translate(head.x,head.y);ctx.rotate(head.angle);
+          ctx.shadowBlur=30;ctx.shadowColor='#54dfff';
+          const wg=ctx.createLinearGradient(-72,-48,78,42);wg.addColorStop(0,'rgba(8,92,145,.15)');wg.addColorStop(.25,'rgba(24,155,213,.80)');wg.addColorStop(.62,'rgba(70,220,245,.92)');wg.addColorStop(.86,'rgba(210,250,255,.96)');wg.addColorStop(1,'rgba(255,255,255,.20)');
+          ctx.fillStyle=wg;ctx.beginPath();ctx.moveTo(-74,43);ctx.bezierCurveTo(-38,48,-4,39,14,19);ctx.bezierCurveTo(31,0,25,-25,2,-43);ctx.bezierCurveTo(37,-43,66,-22,76,5);ctx.bezierCurveTo(58,-4,44,1,35,14);ctx.bezierCurveTo(20,36,-18,57,-74,43);ctx.closePath();ctx.fill();
+          // 파도 안쪽의 어두운 수심층
+          ctx.fillStyle=`rgba(3,72,123,${.58*pulse})`;ctx.beginPath();ctx.moveTo(-66,35);ctx.bezierCurveTo(-30,37,2,30,18,12);ctx.bezierCurveTo(29,0,29,-13,20,-26);ctx.bezierCurveTo(42,-17,53,-2,55,9);ctx.bezierCurveTo(36,12,27,25,14,34);ctx.bezierCurveTo(-6,48,-34,48,-66,35);ctx.closePath();ctx.fill();
+          // 말리는 흰 포말
+          ctx.shadowBlur=18;ctx.shadowColor='#fff';ctx.strokeStyle=`rgba(248,255,255,${.98*pulse})`;ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(-54,36);ctx.bezierCurveTo(-6,39,22,12,15,-15);ctx.bezierCurveTo(10,-33,-7,-40,-21,-35);ctx.bezierCurveTo(5,-50,39,-35,48,-12);ctx.stroke();
+          ctx.strokeStyle=`rgba(172,246,255,${.82*pulse})`;ctx.lineWidth=4;for(let i=0;i<4;i++){ctx.beginPath();ctx.arc(9+i*11,-4+i*5,21-i*3,-2.6,-.25);ctx.stroke();}
+          // 포말과 물방울
+          for(let i=0;i<24;i++){const a=shot.seed+i*2.39+progress*7.5,r=18+(i%7)*8,px=30+Math.cos(a)*r*.72,py=Math.sin(a)*r*.62;ctx.fillStyle=i%4===0?`rgba(255,255,255,${.9*pulse})`:`rgba(145,239,255,${.7*pulse})`;ctx.beginPath();ctx.arc(px,py,1.5+(i%4)*.75,0,Math.PI*2);ctx.fill();}
+          // 파도 전면의 세로 포말벽
+          const front=ctx.createLinearGradient(36,-55,68,55);front.addColorStop(0,'rgba(255,255,255,0)');front.addColorStop(.45,`rgba(235,255,255,${.82*pulse})`);front.addColorStop(.7,`rgba(108,232,255,${.56*pulse})`);front.addColorStop(1,'rgba(255,255,255,0)');ctx.strokeStyle=front;ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(47,-48);ctx.quadraticCurveTo(74,0,45,49);ctx.stroke();
+          ctx.restore();
         } else if (shot.effect === 'phoenixBreath') {
           const pulse=Math.sin(progress*Math.PI),radius=Number(shot.radius||205),half=(Number(shot.coneAngle||78)*Math.PI/180)/2;
           ctx.save();ctx.translate(shot.x1,shot.y1);ctx.rotate(shot.angle);ctx.globalCompositeOperation='lighter';
@@ -19511,16 +19689,18 @@ function requestGachaDraw(count) {
     const data=UNIT_DATA.poseidon, angle=Math.atan2(target.y-unit.y,target.x-unit.x), dist=Math.hypot(target.x-unit.x,target.y-unit.y);
     unit.angle=angle;unit.attackMode=dist<=Number(data.meleeRange||105)?'poseidonThrust':'poseidonThrow';
     if(dist<=Number(data.meleeRange||105)){
-      playUnitAttackSound('poseidon',{skill:'poseidonPierce',volume:.98});
+      playUnitAttackSound('poseidon',{skill:'poseidonPierce',volume:1.08});
       mpPushFx(unit.x,unit.y,target.x,target.y,data.color,8,sideKey,'poseidonThrust');
-      mpApplyDamage(targetState,target,mpEffectiveUnitDamage(unit),unit.ownerRole,sideKey);
+      mpApplyDamage(targetState,target,mpEffectiveUnitDamage(unit)*Number(data.meleeMultiplier||1.5),unit.ownerRole,sideKey);
     }else{
-      playUnitAttackSound('poseidon',{skill:'poseidonPierce',volume:1.04});
+      playUnitAttackSound('poseidon',{skill:'poseidonPierce',volume:1.10});
       const endX=unit.x+Math.cos(angle)*Number(data.range||300),endY=unit.y+Math.sin(angle)*Number(data.range||300);
       mpPushFx(unit.x,unit.y,endX,endY,data.color,9,sideKey,'poseidonTrident');
       mpEnemiesAlongLine(targetState,unit.x,unit.y,endX,endY,Number(data.tridentWidth||20)).forEach(enemy=>mpApplyDamage(targetState,enemy,mpEffectiveUnitDamage(unit),unit.ownerRole,sideKey));
       mpState.delayedAttacks ||= [];
-      mpState.delayedAttacks.push({kind:'poseidonReturn',sideKey,unitId:unit.id,ownerRole:unit.ownerRole,x1:endX,y1:endY,x2:unit.x,y2:unit.y,width:Number(data.tridentWidth||20),damage:mpEffectiveUnitDamage(unit),at:Date.now()+240});
+      const outwardMs=Math.max(10,Math.round(mpFxDuration('poseidonTrident')*1000)-10);
+      // 투척 이펙트가 끝난 즉시 같은 한 자루가 되돌아온다. 두 삼지창이 겹쳐 보이지 않는다.
+      mpState.delayedAttacks.push({kind:'poseidonReturn',sideKey,unitId:unit.id,ownerRole:unit.ownerRole,x1:endX,y1:endY,x2:unit.x,y2:unit.y,width:Number(data.tridentWidth||20),damage:mpEffectiveUnitDamage(unit),at:Date.now()+outwardMs});
     }
     if(unit.attackCount%Number(data.waveEvery||7)===0) mpTriggerPoseidonWave(targetState,sideKey,unit);
   }
@@ -19733,10 +19913,10 @@ function requestGachaDraw(count) {
       sakuraUltimateCut: .96,
       sakuraMarkBurst: .90,
       iceArrow: .38,
-      poseidonThrust: .32,
-      poseidonTrident: .46,
-      poseidonReturn: .34,
-      poseidonWave: .92,
+      poseidonThrust: .30,
+      poseidonTrident: .34,
+      poseidonReturn: .23,
+      poseidonWave: 1.58,
       phoenixBreath: .30,
       phoenixRoar: .85,
       edenBolt: .42,
@@ -21821,9 +22001,20 @@ function requestGachaDraw(count) {
         const ret=fx.kind==='poseidonReturn';mpCtx.shadowBlur=20;mpCtx.shadowColor='#58e3ff';mpCtx.strokeStyle=`rgba(80,220,255,${.32*fade})`;mpCtx.lineWidth=13;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.lineTo(x,y);mpCtx.stroke();
         mpCtx.save();mpCtx.translate(x,y);mpCtx.rotate(angle);if(ret)mpCtx.rotate(Math.PI);const tg=mpCtx.createLinearGradient(-34,0,32,0);tg.addColorStop(0,'#0d6381');tg.addColorStop(.55,'#82efff');tg.addColorStop(1,'#fff');mpCtx.strokeStyle=tg;mpCtx.lineWidth=4;mpCtx.beginPath();mpCtx.moveTo(-34,0);mpCtx.lineTo(23,0);mpCtx.stroke();mpCtx.fillStyle='#d9fbff';for(const oy of [-7,0,7]){mpCtx.beginPath();mpCtx.moveTo(39,oy);mpCtx.lineTo(21,oy-4);mpCtx.lineTo(24,oy+4);mpCtx.closePath();mpCtx.fill();}mpCtx.restore();
       } else if (fx.kind === 'poseidonWave') {
-        const pulse=Math.sin(progress*Math.PI),waveX=lerp(fx.x1,fx.x2,travel);mpCtx.save();mpCtx.globalCompositeOperation='lighter';
-        for(let i=0;i<4;i++){const yy=y1+(i-1.5)*12;mpCtx.strokeStyle=`rgba(${95+i*20},${210+i*10},255,${pulse*(.72-i*.1)})`;mpCtx.lineWidth=22-i*4;mpCtx.beginPath();mpCtx.moveTo(fx.x1,yy);mpCtx.quadraticCurveTo((fx.x1+waveX)/2,yy-26-Math.sin(progress*12+i)*9,waveX,yy);mpCtx.stroke();}
-        mpCtx.fillStyle=`rgba(220,250,255,${.9*pulse})`;for(let i=0;i<7;i++){const yy=y1-38+i*13;mpCtx.beginPath();mpCtx.arc(waveX+(i%2)*8,yy,4+(i%3)*2,0,Math.PI*2);mpCtx.fill();}mpCtx.restore();
+        const eased=1-Math.pow(1-Math.min(1,progress),2.0),waveX=lerp(fx.x1,fx.x2,eased),dir=Math.sign(fx.x2-fx.x1)||1;
+        const pulse=Math.min(1,progress/.12)*Math.min(1,(1-progress)/.12+.18);
+        mpCtx.save();mpCtx.globalCompositeOperation='lighter';mpCtx.lineCap='round';
+        // 길 전체가 동시에 반짝이지 않고 파도 바로 뒤쪽만 물길이 남는다.
+        const trailEnd=waveX-dir*165;
+        for(let i=0;i<4;i++){mpCtx.strokeStyle=`rgba(${55+i*28},${178+i*18},${226+i*8},${(.18+i*.07)*pulse})`;mpCtx.lineWidth=52-i*9;mpCtx.beginPath();mpCtx.moveTo(trailEnd,y1);mpCtx.quadraticCurveTo((trailEnd+waveX)/2,y1+Math.sin(progress*12+i)*7,waveX,y1);mpCtx.stroke();}
+        mpCtx.translate(waveX,y1);if(dir<0)mpCtx.scale(-1,1);
+        mpCtx.shadowBlur=28;mpCtx.shadowColor='#55dfff';
+        const wg=mpCtx.createLinearGradient(-72,-48,78,42);wg.addColorStop(0,'rgba(8,92,145,.14)');wg.addColorStop(.25,'rgba(24,155,213,.80)');wg.addColorStop(.62,'rgba(70,220,245,.92)');wg.addColorStop(.86,'rgba(220,252,255,.98)');wg.addColorStop(1,'rgba(255,255,255,.18)');
+        mpCtx.fillStyle=wg;mpCtx.beginPath();mpCtx.moveTo(-74,43);mpCtx.bezierCurveTo(-38,48,-4,39,14,19);mpCtx.bezierCurveTo(31,0,25,-25,2,-43);mpCtx.bezierCurveTo(37,-43,66,-22,76,5);mpCtx.bezierCurveTo(58,-4,44,1,35,14);mpCtx.bezierCurveTo(20,36,-18,57,-74,43);mpCtx.closePath();mpCtx.fill();
+        mpCtx.fillStyle=`rgba(3,72,123,${.58*pulse})`;mpCtx.beginPath();mpCtx.moveTo(-66,35);mpCtx.bezierCurveTo(-30,37,2,30,18,12);mpCtx.bezierCurveTo(29,0,29,-13,20,-26);mpCtx.bezierCurveTo(42,-17,53,-2,55,9);mpCtx.bezierCurveTo(36,12,27,25,14,34);mpCtx.bezierCurveTo(-6,48,-34,48,-66,35);mpCtx.closePath();mpCtx.fill();
+        mpCtx.shadowBlur=17;mpCtx.shadowColor='#fff';mpCtx.strokeStyle=`rgba(248,255,255,${.98*pulse})`;mpCtx.lineWidth=7;mpCtx.beginPath();mpCtx.moveTo(-54,36);mpCtx.bezierCurveTo(-6,39,22,12,15,-15);mpCtx.bezierCurveTo(10,-33,-7,-40,-21,-35);mpCtx.bezierCurveTo(5,-50,39,-35,48,-12);mpCtx.stroke();
+        for(let i=0;i<(mpHighLoadFrame?12:22);i++){const a=fx.seed+i*2.37+progress*7.4,r=18+(i%7)*8,px=30+Math.cos(a)*r*.72,py=Math.sin(a)*r*.62;mpCtx.fillStyle=i%4===0?`rgba(255,255,255,${.9*pulse})`:`rgba(145,239,255,${.7*pulse})`;mpCtx.beginPath();mpCtx.arc(px,py,1.5+(i%4)*.7,0,Math.PI*2);mpCtx.fill();}
+        mpCtx.restore();
       } else if (fx.kind === 'phoenixBreath') {
         const half=((Number(fx.coneAngle||78)*Math.PI/180)/2),radius=Math.min(Number(fx.radius||160),210),pulse=Math.sin(progress*Math.PI);mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.rotate(fx.angle||angle);const fg=mpCtx.createRadialGradient(0,0,8,0,0,radius);fg.addColorStop(0,`rgba(255,248,170,${.7*pulse})`);fg.addColorStop(.38,`rgba(255,150,35,${.56*pulse})`);fg.addColorStop(.78,`rgba(238,55,20,${.30*pulse})`);fg.addColorStop(1,'rgba(150,20,0,0)');mpCtx.fillStyle=fg;mpCtx.beginPath();mpCtx.moveTo(0,0);mpCtx.arc(0,0,radius,-half,half);mpCtx.closePath();mpCtx.fill();
         for(let i=0;i<(mpHighLoadFrame?8:16);i++){const a=-half+(i+.5)/(mpHighLoadFrame?8:16)*half*2,d=35+((i*47)%Math.max(45,radius-35))*progress;mpCtx.fillStyle=i%3?'#ff6b22':'#ffd35a';mpCtx.beginPath();mpCtx.arc(Math.cos(a)*d,Math.sin(a)*d,2+(i%4),0,Math.PI*2);mpCtx.fill();}mpCtx.restore();

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bidulgy-games-v20260816-poseidon-skill-1';
+const CACHE_NAME = 'bidulgy-games-v20260817-mobile-responsive-1';
 
 const APP_SHELL = [
   './',
@@ -21,8 +21,7 @@ self.addEventListener('install', event => {
             await cache.put(url, response.clone());
           }
         } catch (error) {
-          // 일부 파일을 가져오지 못하더라도
-          // 서비스 워커 설치 자체는 계속 진행합니다.
+          // 일부 파일을 가져오지 못해도 서비스 워커 설치는 계속 진행
         }
       }
     })
@@ -99,12 +98,12 @@ self.addEventListener('fetch', event => {
 
   const url = new URL(request.url);
 
-  // 외부 서버 파일은 서비스 워커가 건드리지 않습니다.
+  // 외부 서버 파일은 건드리지 않습니다.
   if (url.origin !== self.location.origin) {
     return;
   }
 
-  // 온라인 상태에서는 항상 GitHub Pages의 최신 파일을 먼저 사용하고,
+  // 온라인 상태에서는 최신 서버 파일을 먼저 사용하고,
   // 실패했을 때만 캐시를 사용합니다.
   event.respondWith(
     networkFirst(request)
@@ -121,7 +120,9 @@ self.addEventListener('message', event => {
       caches.keys().then(keys =>
         Promise.all(
           keys
-            .filter(key => /bidulgy|pigeon|tower|game/i.test(key))
+            .filter(key =>
+              /bidulgy|pigeon|tower|game/i.test(key)
+            )
             .map(key => caches.delete(key))
         )
       )

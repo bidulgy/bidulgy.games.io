@@ -4237,7 +4237,7 @@ body {
 .eden-mouth{position:absolute;width:48px;height:20px;border-radius:50%;background:#000;border:1px solid rgba(255,255,255,.12);overflow:hidden;filter:drop-shadow(0 0 5px rgba(255,255,255,.15))}
 .eden-mouth::before,.eden-mouth::after{content:'▲ ▲ ▲ ▲';position:absolute;left:4px;color:#fff;font-size:8px;letter-spacing:1px;line-height:8px;white-space:nowrap}
 .eden-mouth::before{top:0}.eden-mouth::after{bottom:0;transform:rotate(180deg)}
-.eden-mouth.m1{left:18px;top:38px;transform:rotate(-13deg)}.eden-mouth.m2{right:17px;top:68px;transform:rotate(12deg) scale(.85)}.eden-mouth.m3{left:52px;bottom:24px;transform:rotate(4deg) scale(.72)}
+.eden-mouth.m1{left:18px;top:38px;transform:rotate(-13deg)}.eden-mouth.m2{right:17px;top:68px;transform:rotate(12deg) scale(.85)}.eden-mouth.m3{left:52px;bottom:24px;transform:rotate(4deg) scale(.72)}.eden-mouth.m4{right:48px;top:24px;transform:rotate(-24deg) scale(.62)}
 .eden-drip{position:absolute;top:82%;width:8px;height:0;background:linear-gradient(#000,rgba(0,0,0,0));border-radius:0 0 50% 50%;animation:edenDrip 1.2s ease-in infinite;filter:drop-shadow(0 0 3px #000)}
 .eden-ink-rain{position:absolute;inset:0;z-index:2;overflow:hidden;pointer-events:none}
 .eden-ink-rain i{position:absolute;top:-12%;width:2px;height:90px;background:linear-gradient(rgba(255,255,255,0),rgba(255,255,255,.25),rgba(0,0,0,.75));opacity:0;animation:edenInkFall 1.4s linear infinite}
@@ -5354,6 +5354,1149 @@ body {
 }
 </style>
 
+
+<style id="fullMobileResponsiveV3">
+/* ======================================================
+   전체 화면 소형 모바일 최적화 · 320px ~ 태블릿/PC
+   - 메뉴/로그인/가챠/인벤토리/덱/관리자/온라인/컷신/전투
+   ====================================================== */
+:root {
+  --mobile-page-x: clamp(10px, 3.6vw, 24px);
+  --mobile-page-y: clamp(12px, 3vw, 24px);
+  --touch-target: 44px;
+}
+
+html {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  width: 100%;
+  min-width: 0 !important;
+  max-width: 100%;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+img, svg, video, canvas {
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+
+button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.screen:not(#battleScreen) {
+  width: min(1180px, 100%);
+  max-width: 100%;
+  padding-left: max(var(--mobile-page-x), env(safe-area-inset-left));
+  padding-right: max(var(--mobile-page-x), env(safe-area-inset-right));
+}
+
+.card,
+.admin-card,
+.mp-room-card,
+.mp-deck-panel,
+.mp-info-panel,
+.difficulty-panel,
+.stage-preview-card {
+  max-width: 100%;
+}
+
+/* ---------- 860px 이하: 태블릿/큰 휴대전화 ---------- */
+@media (max-width: 860px) {
+  .screen:not(#battleScreen) {
+    padding-top: max(var(--mobile-page-y), env(safe-area-inset-top));
+    padding-bottom: max(var(--mobile-page-y), env(safe-area-inset-bottom));
+  }
+
+  .card {
+    padding: clamp(14px, 3.4vw, 20px);
+    border-radius: 16px;
+  }
+
+  .between {
+    gap: 10px;
+  }
+
+  h1 { font-size: clamp(25px, 7vw, 36px); }
+  h2 { font-size: clamp(21px, 5.8vw, 30px); }
+  h3 { font-size: clamp(16px, 4.6vw, 21px); }
+
+  .muted,
+  .message,
+  p {
+    overflow-wrap: anywhere;
+  }
+
+  .resource-bar {
+    gap: 6px;
+  }
+
+  .resource {
+    padding: 7px 9px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .unit-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(155px, 100%), 1fr));
+    gap: 10px;
+  }
+
+  .unit-card {
+    min-width: 0;
+    padding: 12px;
+  }
+
+  .deck-slots {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .deck-slot {
+    min-width: 0;
+    min-height: 96px;
+    padding: 8px 5px;
+  }
+
+  /* 메뉴 */
+  .invasion-menu {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .invasion-topbar {
+    gap: 9px;
+  }
+
+  .invasion-resources {
+    gap: 6px;
+  }
+
+  .invasion-content {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .stage-preview-card {
+    width: min(100%, 560px);
+    margin-inline: auto;
+  }
+
+  .difficulty-panel {
+    width: min(100%, 680px);
+  }
+
+  /* 가챠 */
+  .gacha-screen,
+  .inventory-screen {
+    min-height: 100dvh;
+    padding-top: max(16px, env(safe-area-inset-top));
+  }
+
+  .gacha-layout {
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .gacha-chamber {
+    min-height: clamp(400px, 66dvh, 520px);
+    padding: 18px 10px;
+  }
+
+  .probability-panel {
+    width: 100%;
+  }
+
+  /* 온라인 */
+  .mp-lobby-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .mp-room-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mp-room-actions > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  /* 관리자 */
+  .admin-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .admin-layout,
+  .admin-action-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- 600px 이하: 일반 휴대전화 세로 ---------- */
+@media (max-width: 600px) {
+  :root {
+    --mobile-page-x: 11px;
+    --mobile-page-y: 12px;
+  }
+
+  .screen:not(#battleScreen) {
+    padding-top: max(12px, env(safe-area-inset-top));
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
+  }
+
+  button:not(.stage-nav-button):not(.close-battle-info-button) {
+    min-height: var(--touch-target);
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px; /* iOS 자동 확대 방지 */
+  }
+
+  .between {
+    align-items: stretch;
+  }
+
+  .between > div:first-child {
+    min-width: 0;
+    flex: 1 1 180px;
+  }
+
+  .between > button,
+  .backToMenu {
+    flex: 0 0 auto;
+  }
+
+  /* 로그인 */
+  .center-screen {
+    min-height: 100dvh;
+    padding-top: max(14px, env(safe-area-inset-top));
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
+  }
+
+  .auth-card {
+    width: 100%;
+    max-width: 430px;
+    padding: 18px 15px;
+  }
+
+  .form-group {
+    margin: 11px 0;
+  }
+
+  /* 메인 메뉴 */
+  .invasion-menu {
+    padding-left: max(10px, env(safe-area-inset-left)) !important;
+    padding-right: max(10px, env(safe-area-inset-right)) !important;
+  }
+
+  .invasion-topbar {
+    align-items: stretch;
+  }
+
+  .invasion-resources {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .invasion-resources .resource {
+    min-width: 0;
+    text-align: center;
+  }
+
+  .invasion-content {
+    margin-top: 22px !important;
+  }
+
+  .invasion-hero {
+    gap: 12px;
+  }
+
+  .enemy-logo-area {
+    width: min(165px, 48vw) !important;
+  }
+
+  .invasion-title-area h1 {
+    font-size: clamp(34px, 12.5vw, 52px) !important;
+    line-height: .94;
+  }
+
+  .defense-menu-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+  }
+
+  .defense-menu-card {
+    min-width: 0;
+    min-height: 94px !important;
+    padding: 10px 7px !important;
+  }
+
+  .defense-card-icon {
+    margin-bottom: 5px !important;
+    font-size: 22px !important;
+  }
+
+  .defense-menu-card strong {
+    font-size: 12px !important;
+    line-height: 1.25;
+  }
+
+  .defense-menu-card small {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 9px !important;
+    line-height: 1.25;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .stage-preview-card {
+    gap: 6px;
+    padding: 9px 7px;
+  }
+
+  .stage-nav-button {
+    width: 38px;
+    min-width: 38px;
+    height: 42px;
+    padding: 0;
+  }
+
+  .stage-preview-badge {
+    font-size: 10px;
+    white-space: nowrap;
+  }
+
+  .stage-preview-copy {
+    min-width: 0;
+  }
+
+  .stage-preview-copy strong {
+    font-size: 13px;
+  }
+
+  .stage-preview-copy small {
+    font-size: 9px !important;
+    overflow-wrap: anywhere;
+  }
+
+  .difficulty-panel {
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  .difficulty-heading {
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .difficulty-heading strong { font-size: 13px; }
+  .difficulty-heading small { font-size: 9px; text-align: right; }
+
+  .difficulty-buttons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .difficulty-button {
+    min-width: 0;
+    min-height: 50px;
+  }
+
+  .difficulty-summary,
+  .stage-status-note {
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  /* 가챠 */
+  .gacha-screen > .between,
+  .inventory-screen > .between,
+  #deckScreen > .between,
+  .admin-toolbar,
+  .mp-lobby-screen > .between {
+    align-items: center;
+  }
+
+  .gacha-layout {
+    grid-template-columns: 1fr;
+    margin-top: 12px;
+  }
+
+  .gacha-chamber {
+    min-height: clamp(360px, 58dvh, 465px);
+    border-radius: 16px;
+  }
+
+  .gacha-preview-chest {
+    margin-bottom: 14px !important;
+    transform: scale(.78) !important;
+    transform-origin: center;
+  }
+
+  .orbit-one {
+    width: min(330px, 92vw);
+    height: min(330px, 92vw);
+  }
+
+  .orbit-two {
+    width: min(255px, 72vw);
+    height: min(255px, 72vw);
+  }
+
+  .premium-summon-button {
+    min-width: 0;
+    padding: 10px 8px;
+  }
+
+  .premium-summon-button strong { font-size: 13px; }
+  .premium-summon-button small { font-size: 9px; }
+
+  .probability-list {
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .probability-row {
+    padding: 9px;
+    gap: 7px;
+    font-size: 11px;
+  }
+
+  /* 인벤토리 */
+  .inventory-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    gap: 5px;
+    margin-top: 14px;
+    padding: 5px;
+  }
+
+  .inventory-tab {
+    min-width: 0;
+    width: 100%;
+    padding-inline: 7px;
+    font-size: 12px;
+  }
+
+  .unit-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(142px, 100%), 1fr));
+    gap: 8px;
+  }
+
+  .unit-card {
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  .unit-card h3 {
+    font-size: 14px;
+    margin-bottom: 5px;
+  }
+
+  .unit-card p,
+  .unit-card small {
+    font-size: 10px;
+    line-height: 1.35;
+  }
+
+  .unit-icon {
+    width: 46px;
+    height: 46px;
+    margin-bottom: 7px;
+    font-size: 25px;
+  }
+
+  .dice-inventory-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(180px, 100%), 1fr));
+    gap: 9px;
+  }
+
+  .dice-card {
+    min-height: 0;
+    padding: 13px;
+    border-radius: 15px;
+  }
+
+  .dice-card h3 { font-size: 15px; }
+  .dice-count { font-size: 18px; }
+
+  .mini-die {
+    width: 72px;
+    height: 72px;
+    margin: 14px auto;
+    grid-template-columns: repeat(2, 13px);
+    grid-template-rows: repeat(2, 13px);
+    gap: 10px;
+    border-width: 3px;
+  }
+
+  .mini-die span {
+    width: 11px;
+    height: 11px;
+  }
+
+  /* 덱 편성 */
+  .deck-slots {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .deck-slot {
+    min-height: 88px;
+  }
+
+  #deckScreen h3[style] {
+    margin-top: 16px !important;
+  }
+
+  /* 관리자 */
+  .admin-toolbar {
+    align-items: stretch;
+  }
+
+  .admin-toolbar > button {
+    align-self: center;
+  }
+
+  .admin-security-banner,
+  .admin-card,
+  .admin-action-box {
+    padding: 11px;
+  }
+
+  .admin-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .admin-search-row,
+  .admin-action-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-action-row > button,
+  .admin-search-row > button {
+    width: 100%;
+  }
+
+  /* 온라인 로비 */
+  .mp-lobby-screen,
+  .mp-battle-screen {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .mp-lobby-hero {
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .mp-mode-grid {
+    grid-template-columns: 1fr;
+    gap: 7px;
+    margin-top: 10px;
+  }
+
+  .mp-mode-card {
+    min-height: 0;
+    padding: 12px;
+  }
+
+  .mp-mode-card .mp-mode-icon {
+    margin-bottom: 4px;
+    font-size: 26px;
+  }
+
+  .mp-mode-card strong { font-size: 16px; }
+  .mp-mode-card small { margin-top: 5px; font-size: 10px; line-height: 1.4; }
+
+  .mp-room-actions {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .mp-room-actions > * {
+    grid-column: auto !important;
+  }
+
+  .mp-room-card {
+    padding: 12px;
+  }
+
+  .mp-code-input {
+    padding: 11px 8px;
+    font-size: 18px;
+    letter-spacing: .12em;
+  }
+
+  .mp-room-code {
+    font-size: clamp(25px, 9vw, 38px);
+    letter-spacing: .12em;
+  }
+
+  .mp-rule-list {
+    padding-left: 18px;
+    font-size: 10px;
+    line-height: 1.5;
+  }
+
+  /* 컷신/보상 */
+  .cutscene-overlay {
+    width: 100dvw;
+    height: 100dvh;
+    padding:
+      max(4px, env(safe-area-inset-top))
+      max(4px, env(safe-area-inset-right))
+      max(4px, env(safe-area-inset-bottom))
+      max(4px, env(safe-area-inset-left));
+  }
+
+  .cutscene-content {
+    width: 100%;
+    min-height: 100%;
+    max-height: 100dvh;
+    overflow: hidden;
+  }
+
+  .cutscene-title {
+    top: max(10px, env(safe-area-inset-top));
+    max-width: 92vw;
+    overflow: hidden;
+    font-size: clamp(14px, 4.4vw, 21px);
+    text-overflow: ellipsis;
+  }
+
+  .chest-scene {
+    height: min(470px, 72dvh);
+  }
+
+  .cinematic-chest {
+    transform: scale(.72);
+    transform-origin: center;
+  }
+
+  .chest-click-instruction {
+    bottom: max(18px, env(safe-area-inset-bottom));
+    width: min(94%, 420px);
+    padding: 9px 11px;
+    font-size: 11px;
+  }
+
+  .reward-panel {
+    width: min(94vw, 520px) !important;
+    max-height: min(45dvh, 360px);
+    overflow-y: auto;
+    padding: 12px !important;
+  }
+
+  .unit-reveal-card {
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .unit-reveal-icon {
+    transform: scale(.82);
+  }
+
+  .eden-reveal-shell {
+    width: 100dvw;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .eden-vortex {
+    width: min(620px, 175vw) !important;
+    height: min(260px, 60vw) !important;
+  }
+
+  .eden-contract-glyph {
+    width: min(390px, 112vw) !important;
+  }
+
+  .eden-contractor {
+    left: 44% !important;
+    transform-origin: center bottom;
+  }
+
+  .eden-companion {
+    left: 65% !important;
+    transform-origin: center;
+  }
+
+  .eden-reveal-title {
+    bottom: 104px !important;
+    max-width: 94vw;
+    font-size: clamp(36px, 15vw, 70px) !important;
+    letter-spacing: .13em !important;
+  }
+
+  .eden-reveal-sub {
+    bottom: 73px !important;
+    max-width: 92vw;
+    overflow: hidden;
+    font-size: 9px;
+    letter-spacing: .2em !important;
+    text-overflow: ellipsis;
+  }
+
+  .eden-reveal-results {
+    inset: auto 6px max(6px, env(safe-area-inset-bottom)) !important;
+  }
+
+  /* 승리창 */
+  .mp-victory-overlay {
+    padding: 8px;
+  }
+
+  .mp-victory-card {
+    width: min(96%, 430px);
+    max-height: 94%;
+    overflow-y: auto;
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .mp-victory-image {
+    width: min(190px, 58%);
+  }
+
+  .mp-victory-subtitle {
+    margin: 7px 0 10px;
+    font-size: 12px;
+  }
+
+  .mp-victory-reward {
+    margin-bottom: 10px;
+    padding: 7px 10px;
+    font-size: 11px;
+  }
+
+  .mp-victory-exit {
+    min-width: 0;
+    width: min(100%, 230px);
+    padding: 10px;
+    font-size: 14px;
+  }
+}
+
+/* ---------- 380px 이하: 작은 휴대전화 ---------- */
+@media (max-width: 380px) {
+  :root {
+    --mobile-page-x: 8px;
+  }
+
+  .card {
+    padding: 12px 10px;
+    border-radius: 14px;
+  }
+
+  .resource {
+    padding: 6px 7px;
+    font-size: 10px;
+  }
+
+  .defense-menu-card {
+    min-height: 87px !important;
+  }
+
+  .defense-menu-card strong { font-size: 11px !important; }
+  .defense-menu-card small { font-size: 8px !important; }
+
+  .difficulty-button span { font-size: 11px; }
+  .difficulty-button small { font-size: 8px; }
+
+  .unit-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(135px, 100%), 1fr));
+    gap: 7px;
+  }
+
+  .inventory-tab {
+    font-size: 11px;
+  }
+
+  .deck-slot {
+    min-height: 82px;
+  }
+
+  .admin-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .orientation-guard {
+    padding: 18px 12px;
+  }
+
+  .orientation-guard strong {
+    font-size: 20px;
+  }
+
+  .orientation-guard p {
+    font-size: 11px;
+  }
+}
+
+/* ---------- 모바일 가로 전투: 320~650px 높이 ---------- */
+@media (orientation: landscape) and (max-height: 650px) and (pointer: coarse) {
+  /* 싱글 전투 */
+  #battleScreen:not(.hidden) {
+    width: 100dvw;
+    height: 100dvh;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  #battleScreen .battle-topbar {
+    max-width: 42vw;
+  }
+
+  #battleScreen .battle-topbar > div {
+    max-width: 100% !important;
+  }
+
+  #battleScreen .battle-topbar .resource-bar {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    gap: 3px;
+  }
+
+  #battleScreen .battle-topbar .resource {
+    min-width: 0;
+    padding: 3px 5px;
+    font-size: clamp(7px, 1.8vw, 9px);
+  }
+
+  .battle-wave-center {
+    max-width: 54vw;
+  }
+
+  .battle-wave-center .map-wave-hud {
+    min-width: 80px;
+  }
+
+  .wave-skip-controls {
+    max-width: 100%;
+  }
+
+  .wave-skip-button,
+  .auto-skip-button,
+  #battleScreen .battle-exit-button {
+    min-width: 0;
+    min-height: 28px;
+    padding: 3px 6px;
+    font-size: clamp(7px, 1.8vw, 9px);
+  }
+
+  #battleScreen .battle-deploy-section {
+    left: max(4px, env(safe-area-inset-left));
+    right: max(4px, env(safe-area-inset-right));
+    bottom: max(3px, env(safe-area-inset-bottom));
+    width: auto;
+  }
+
+  #battleScreen .battle-deck {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  #battleScreen .battle-unit-button,
+  #battleScreen .battle-empty-slot {
+    min-width: 0;
+    min-height: clamp(40px, 14dvh, 48px);
+    padding: 2px 1px;
+  }
+
+  #battleScreen .battle-unit-button .battle-unit-icon {
+    font-size: clamp(13px, 4dvh, 17px);
+  }
+
+  #battleScreen .battle-unit-button .battle-unit-name {
+    font-size: clamp(6px, 2.3dvh, 8px);
+  }
+
+  #battleScreen .battle-unit-button .battle-unit-cost {
+    font-size: clamp(6px, 2dvh, 7px);
+  }
+
+  #battleScreen .battle-info-section {
+    top: max(40px, calc(env(safe-area-inset-top) + 37px));
+    right: max(4px, env(safe-area-inset-right));
+    bottom: max(52px, calc(env(safe-area-inset-bottom) + 48px));
+    width: min(180px, 31vw);
+    min-width: 0 !important;
+    max-width: 36vw;
+    padding: 7px;
+    font-size: 9px;
+  }
+
+  #battleScreen .battle-info-section h3 {
+    font-size: 11px;
+  }
+
+  #battleScreen .selected-unit-stats > div,
+  #battleScreen .unit-upgrade-box {
+    padding: 5px;
+  }
+
+  #battleScreen .unit-upgrade-button,
+  #battleScreen #sellUnitBtn {
+    min-height: 30px;
+    font-size: 8px;
+  }
+
+  .stage-map-info-button {
+    top: max(37px, calc(env(safe-area-inset-top) + 34px));
+    right: max(5px, env(safe-area-inset-right));
+    width: 30px;
+    height: 30px;
+    min-height: 30px !important;
+    padding: 0;
+  }
+
+  .stage-map-info-panel {
+    top: max(70px, calc(env(safe-area-inset-top) + 66px));
+    right: max(5px, env(safe-area-inset-right));
+    width: min(250px, 44vw);
+    max-height: 55dvh;
+    overflow-y: auto;
+    padding: 9px;
+  }
+
+  /* 온라인 전투를 실제 한 화면 레이아웃으로 변경 */
+  .mp-battle-screen:not(.hidden) {
+    position: fixed;
+    z-index: 500;
+    inset: 0;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    width: 100dvw;
+    max-width: none;
+    height: 100dvh;
+    min-height: 0;
+    padding:
+      max(3px, env(safe-area-inset-top))
+      max(5px, env(safe-area-inset-right))
+      max(3px, env(safe-area-inset-bottom))
+      max(5px, env(safe-area-inset-left));
+    overflow: hidden;
+    background: #0a1019;
+  }
+
+  .mp-battle-topbar {
+    display: grid;
+    grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+    gap: 5px;
+    margin: 0 0 3px;
+  }
+
+  .mp-battle-heading {
+    min-width: 0;
+  }
+
+  .mp-battle-heading h2 {
+    overflow: hidden;
+    font-size: clamp(11px, 3.2dvh, 15px) !important;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mp-battle-heading small {
+    overflow: hidden;
+    margin-top: 1px;
+    font-size: 8px !important;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mp-battle-resources {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .mp-battle-resources .resource {
+    min-width: 0;
+    padding: 3px 5px !important;
+    overflow: hidden;
+    font-size: clamp(7px, 2.4dvh, 9px) !important;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  #mpLeaveBattleBtn {
+    min-width: 0;
+    min-height: 28px;
+    padding: 3px 6px;
+    font-size: 8px;
+  }
+
+  .mp-map-shell {
+    width: 100% !important;
+    height: 100%;
+    min-height: 0;
+    margin: 0 !important;
+    border-radius: 9px;
+  }
+
+  #mpCanvas {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+  }
+
+  .mp-view-toggle {
+    left: 5px;
+    min-width: 38px;
+    min-height: 38px;
+    padding: 4px 5px;
+    border-radius: 9px;
+  }
+
+  .mp-view-toggle strong { font-size: 16px; }
+  .mp-view-toggle small { font-size: 7px; }
+
+  .mp-battle-bottom {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(120px, 22vw);
+    gap: 4px;
+    margin-top: 3px;
+    min-height: 0;
+  }
+
+  .mp-deck-panel,
+  .mp-info-panel {
+    min-width: 0;
+    padding: 4px;
+    border-radius: 9px;
+  }
+
+  .mp-deck-heading {
+    display: none;
+  }
+
+  .mp-deck {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 3px;
+  }
+
+  .mp-unit-button {
+    min-width: 0;
+    min-height: clamp(39px, 13dvh, 47px) !important;
+    padding: 2px 1px !important;
+    border-radius: 7px;
+  }
+
+  .mp-unit-button .icon { font-size: clamp(13px, 4dvh, 17px) !important; }
+  .mp-unit-button strong { margin-top: 0; font-size: clamp(6px, 2.3dvh, 8px) !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mp-unit-button small { margin-top: 0; font-size: clamp(6px, 2dvh, 7px) !important; }
+
+  .mp-message {
+    min-height: 0 !important;
+    max-height: 38px;
+    margin: 0;
+    overflow: hidden;
+    font-size: 8px !important;
+    line-height: 1.25;
+  }
+
+  .mp-boss-cycle {
+    display: none !important;
+  }
+}
+
+/* ---------- 아주 낮은 가로 화면 (예: 480x320) ---------- */
+@media (orientation: landscape) and (max-height: 390px) and (pointer: coarse) {
+  #battleScreen .battle-topbar {
+    top: max(2px, env(safe-area-inset-top));
+    left: max(3px, env(safe-area-inset-left));
+  }
+
+  #battleScreen .battle-topbar .resource {
+    padding: 2px 4px;
+  }
+
+  .battle-wave-center {
+    top: max(1px, env(safe-area-inset-top));
+    gap: 2px;
+  }
+
+  .battle-wave-center .map-wave-hud {
+    min-width: 68px;
+    padding: 3px 5px;
+  }
+
+  .battle-wave-center .map-wave-hud strong {
+    font-size: 15px;
+  }
+
+  .wave-skip-controls {
+    padding: 2px;
+    gap: 2px;
+  }
+
+  #battleScreen .battle-deploy-section {
+    padding: 3px;
+  }
+
+  #battleScreen .battle-unit-button,
+  #battleScreen .battle-empty-slot {
+    min-height: 38px;
+  }
+
+  #battleScreen .battle-info-section {
+    top: 36px;
+    bottom: 46px;
+    width: min(154px, 32vw);
+    padding: 5px;
+  }
+
+  #battleScreen .battle-info-section p,
+  #battleScreen .unit-upgrade-box p {
+    font-size: 7px !important;
+  }
+
+  .mp-battle-bottom {
+    grid-template-columns: minmax(0, 1fr) 112px;
+  }
+
+  .mp-deck-panel,
+  .mp-info-panel {
+    padding: 3px;
+  }
+
+  .mp-unit-button {
+    min-height: 36px !important;
+  }
+}
+
+/* 키보드/노치가 있어도 팝업이 화면 밖으로 나가지 않게 */
+@supports (height: 100dvh) {
+  .center-screen,
+  .orientation-guard,
+  .cutscene-overlay {
+    min-height: 100dvh;
+  }
+}
+</style>
+
 </head>
 
 <body>
@@ -6028,7 +7171,7 @@ body {
   </div>
 
   <script>
-    window.BIDULGY_BUILD_VERSION = '2026-08-16-phoenix-mouth-wavefix-v2';
+    window.BIDULGY_BUILD_VERSION = '2026-08-17-eden-full-rework-v1';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -6660,38 +7803,38 @@ function applyStagePreview(stageId = selectedStage) {
         rarityKey: 'galaxy',
         rarityClass: 'rarity-galaxy',
         cost: 720,
-        damage: 720,
-        range: 285,
-        fireInterval: 0.82,
+        damage: 1350,
+        range: 340,
+        fireInterval: 0.52,
         maxPlaced: 1,
-        footprintRadius: 102,
-        multiplayerFootprintRadius: 84,
-        chargePerHit: 1,
+        footprintRadius: 108,
+        multiplayerFootprintRadius: 90,
+        chargePerHit: 2,
         maxCharge: 100,
         chargeDamagePerStack: 0.005,
-        barrageEvery: 5,
-        barrageCount: 8,
-        barrageMultiplier: 0.62,
-        impaleEvery: 9,
-        impaleRange: 230,
-        impaleWidth: 52,
-        impaleMultiplier: 2.5,
-        cutEvery: 12,
-        cutRadius: 155,
-        cutMultiplier: 3,
-        tauntEvery: 15,
+        styleResetSeconds: 3.5,
+        barrageEvery: 14,
+        barrageCount: 10,
+        barrageMultiplier: 0.9,
+        impaleEvery: 6,
+        impaleRange: 300,
+        impaleWidth: 68,
+        impaleMultiplier: 3.5,
+        cutEvery: 8,
+        cutRadius: 190,
+        cutMultiplier: 4.5,
+        tauntEvery: 11,
         tauntCharge: 15,
-        voidRushEvery: 20,
+        voidRushEvery: 18,
         voidRushChargeCost: 30,
-        voidRushWidth: 78,
-        voidRushMultiplier: 4.5,
-        deadeyeEvery: 30,
-        deadeyeMinCharge: 60,
-        deadeyeWindup: 2.7,
-        deadeyeWidth: 44,
-        deadeyeMultiplier: 9,
+        voidRushWidth: 105,
+        voidRushMultiplier: 8,
+        voidRushSlashCount: 8,
+        deadeyeWindup: 2.4,
+        deadeyeWidth: 58,
+        deadeyeMultiplier: 18,
         color: '#f4f4f5',
-        skillText: 'Charge 최대 100(1당 피해 +0.5%). 5타 암흑물질 난사 · 9타 공허 찌르기 · 12타 원형 공허참 · 15타마다 Charge +15. Charge 30 이상인 20타에는 보이드러시를 사용해 공허 속으로 사라진 뒤 연속 참격과 돌진을 가합니다. Charge 60 이상인 30타에는 2.7초 조준 후 전방을 관통하는 데드아이를 발사하며 Charge를 모두 소모합니다. 한 맵에 1기만 배치할 수 있습니다.'
+        skillText: 'Charge 최대 100(1당 피해 +0.5%, 최대 +50%). 스킬 적중과 도발로 Style이 E→D→C→B→A→V로 상승하며 3.5초 동안 이어지지 않으면 초기화됩니다. Taunt는 Charge +15와 Style을 올립니다. Darkmatter Barrage는 공허체를 분열시켜 다중 난사, Cut Into Nothing은 대형 원형 공허참, Impale은 전방 관통 찌르기입니다. Charge 30 이상이면 Voidrush가 공허 포탈·연속 참격·돌진으로 발동하며 30 Charge를 소모합니다. Style V에 도달하면 Deadeye가 자동 발동해 조준 후 초강력 관통 저격을 사용합니다. 한 맵에 1기만 배치할 수 있습니다.'
       },
       eclipse: {
         id: 'eclipse',
@@ -9158,7 +10301,7 @@ function requestGachaDraw(count) {
             <i class="eden-contract-arm right"></i><i class="eden-contract-arm left"></i>
           </div>
           <div class="eden-companion">
-            <i class="eden-mouth m1"></i><i class="eden-mouth m2"></i><i class="eden-mouth m3"></i>${drips}
+            <i class="eden-mouth m1"></i><i class="eden-mouth m2"></i><i class="eden-mouth m3"></i><i class="eden-mouth m4"></i>${drips}
           </div>
           <div class="eden-contract-quote"><strong>VOID CONTRACT</strong><span>THE VOID ANSWERS.</span></div>
           <div class="eden-flash"></div>
@@ -9645,7 +10788,7 @@ function requestGachaDraw(count) {
 
       window.addEventListener('load', () => {
         navigator.serviceWorker
-          .register('./service-worker.js?v=20260816-phoenix-mouth-wavefix-2', { updateViaCache: 'none' })
+          .register('./service-worker.js?v=20260817-eden-full-rework-1', { updateViaCache: 'none' })
           .then(registration => registration.update())
           .catch(error => console.error('서비스 워커 등록 실패:', error));
       });
@@ -11459,9 +12602,31 @@ function requestGachaDraw(count) {
       }
     }
 
+    const EDEN_STYLE_LABELS = ['E','D','C','B','A','V'];
+
     function edenDamageMultiplier(placed) {
       const data = UNIT_DATA.eden;
       return 1 + Math.min(Number(data.maxCharge || 100), Number(placed.edenCharge || 0)) * Number(data.chargeDamagePerStack || .005);
+    }
+
+    function refreshEdenStyle(placed, now = performance.now()) {
+      if (Number(placed.edenStyleRank || 0) > 0 && Number(placed.edenStyleUntil || 0) > 0 && now > Number(placed.edenStyleUntil || 0)) {
+        placed.edenStyleRank = 0;
+        placed.edenStyleUntil = 0;
+      }
+      return Number(placed.edenStyleRank || 0);
+    }
+
+    function edenStyleLabel(placed) {
+      return EDEN_STYLE_LABELS[Math.max(0, Math.min(5, refreshEdenStyle(placed)))] || 'E';
+    }
+
+    function addEdenStyle(placed, amount = 1) {
+      const data = UNIT_DATA.eden;
+      refreshEdenStyle(placed);
+      placed.edenStyleRank = Math.max(0, Math.min(5, Number(placed.edenStyleRank || 0) + Number(amount || 1)));
+      placed.edenStyleUntil = performance.now() + Number(data.styleResetSeconds || 3.5) * 1000;
+      return placed.edenStyleRank;
     }
 
     function addEdenCharge(placed, amount = 1) {
@@ -11475,151 +12640,105 @@ function requestGachaDraw(count) {
       placed.angle = Math.atan2(target.y - placed.y, target.x - placed.x);
       placed.cooldown = Number(placed.fireInterval || data.fireInterval) * slowMultiplier;
       placed.attackAnimation = 1;
+      refreshEdenStyle(placed);
 
-      // Sol's RNG의 Charge/Taunt 감각을 타워디펜스용 패시브로 재해석:
-      // 15타마다 공허체가 포효하며 Charge를 추가 획득합니다.
-      if (placed.attackCount % Number(data.tauntEvery || 15) === 0) {
+      // Taunt: 원작의 Charge +15 및 Style 연결을 자동 전투에 맞춰 사용.
+      if (placed.attackCount % Number(data.tauntEvery || 11) === 0) {
         addEdenCharge(placed, Number(data.tauntCharge || 15));
-        playUnitAttackSound('eden', { skill: 'edenTaunt', volume: 1.18 });
+        addEdenStyle(placed, 1);
+        playUnitAttackSound('eden', { skill: 'edenTaunt', volume: 1.32 });
         battle.shots.push({
           x1: placed.x, y1: placed.y, x2: placed.x, y2: placed.y,
           life: getAttackEffectDuration('edenTaunt'), maxLife: getAttackEffectDuration('edenTaunt'),
-          color: '#fff', effect: 'edenTaunt', seed: Math.random()*1000, radius: 92
+          color: '#fff', effect: 'edenTaunt', seed: Math.random()*1000, radius: 112
         });
       }
 
       const damage = Number(placed.damage || data.damage) * edenDamageMultiplier(placed);
       const charge = Math.min(Number(data.maxCharge || 100), Number(placed.edenCharge || 0));
+      const style = refreshEdenStyle(placed);
 
-      // Deadeye — 충분한 Charge가 있을 때 30타마다 2.7초 조준 후 전방 관통 저격.
-      if (
-        placed.attackCount % Number(data.deadeyeEvery || 30) === 0 &&
-        charge >= Number(data.deadeyeMinCharge || 60)
-      ) {
-        const windup = Number(data.deadeyeWindup || 2.7);
-        const endX = placed.x + Math.cos(placed.angle) * Math.max(placed.range, 360);
-        const endY = placed.y + Math.sin(placed.angle) * Math.max(placed.range, 360);
+      // Deadeye: Style V에 도달하면 다음 공격에서 즉시 발동. Charge는 소비하지 않고 피해 배율에 그대로 반영.
+      if (style >= 5) {
+        const windup = Number(data.deadeyeWindup || 2.4);
+        const shotRange = Math.max(Number(placed.range || data.range) * 1.55, 520);
+        const endX = placed.x + Math.cos(placed.angle) * shotRange;
+        const endY = placed.y + Math.sin(placed.angle) * shotRange;
         placed.attackMode = 'edenDeadeye';
-        placed.cooldown = Math.max(placed.cooldown, windup + .32);
-        placed.edenDeadeyeCast = {
-          startAt: performance.now(),
-          endAt: performance.now() + windup * 1000,
-          targetX: endX, targetY: endY
-        };
-        playUnitAttackSound('eden', { skill: 'edenDeadeyeCharge', volume: 1.22 });
-        scheduleDelayedAttack({
-          kind: 'edenDeadeye',
-          timer: windup,
-          x1: placed.x, y1: placed.y,
-          x2: endX, y2: endY,
-          width: Number(data.deadeyeWidth || 44),
-          damage: damage * Number(data.deadeyeMultiplier || 9)
-        });
-        placed.edenCharge = 0;
+        placed.cooldown = Math.max(placed.cooldown, windup + .28);
+        placed.edenDeadeyeCast = { startAt: performance.now(), endAt: performance.now() + windup * 1000, targetX: endX, targetY: endY };
+        playUnitAttackSound('eden', { skill: 'edenDeadeyeCharge', volume: 1.42 });
+        scheduleDelayedAttack({ kind: 'edenDeadeye', timer: windup, x1: placed.x, y1: placed.y, x2: endX, y2: endY, width: Number(data.deadeyeWidth || 58), damage: damage * Number(data.deadeyeMultiplier || 18) });
+        placed.edenStyleRank = 0;
+        placed.edenStyleUntil = 0;
         return;
       }
 
-      // Voidrush — Charge 30을 소모해 포탈 속으로 사라지고 연속 참격 후 전방 돌진.
-      if (
-        placed.attackCount % Number(data.voidRushEvery || 20) === 0 &&
-        charge >= Number(data.voidRushChargeCost || 30)
-      ) {
-        playUnitAttackSound('eden', { skill: 'edenRush', volume: 1.24 });
+      // Voidrush: 30 Charge를 소비. 포탈 안으로 사라진 뒤 다단 공허참 + 초대형 관통 돌진.
+      if (placed.attackCount % Number(data.voidRushEvery || 18) === 0 && charge >= Number(data.voidRushChargeCost || 30)) {
+        playUnitAttackSound('eden', { skill: 'edenRush', volume: 1.42 });
         placed.attackMode = 'edenRush';
         placed.edenCharge = Math.max(0, charge - Number(data.voidRushChargeCost || 30));
-        const endX = placed.x + Math.cos(placed.angle) * placed.range;
-        const endY = placed.y + Math.sin(placed.angle) * placed.range;
-        battle.shots.push({
-          x1: placed.x, y1: placed.y, x2: endX, y2: endY,
-          life: getAttackEffectDuration('edenRush'), maxLife: getAttackEffectDuration('edenRush'),
-          color: '#f8fafc', effect: 'edenRush', angle: placed.angle, seed: Math.random() * 1000,
-          width: data.voidRushWidth || 78
-        });
-        // 지면 포탈 위에 빠른 공허 참격이 여러 번 생기는 연출.
-        for (let i=0;i<7;i++) {
-          const q=(i+1)/8, px=placed.x+(endX-placed.x)*q, py=placed.y+(endY-placed.y)*q;
-          battle.shots.push({
-            x1:px,y1:py,x2:px,y2:py,
-            life:getAttackEffectDuration('edenCut')*.72,maxLife:getAttackEffectDuration('edenCut')*.72,
-            color:'#fff',effect:'edenCut',angle:placed.angle+(i%2?1:-1)*.75,
-            seed:Math.random()*1000+i*17,radius:46+(i%3)*9
-          });
+        const endX = placed.x + Math.cos(placed.angle) * Number(placed.range || data.range) * 1.08;
+        const endY = placed.y + Math.sin(placed.angle) * Number(placed.range || data.range) * 1.08;
+        battle.shots.push({ x1: placed.x, y1: placed.y, x2: endX, y2: endY, life: getAttackEffectDuration('edenRush'), maxLife: getAttackEffectDuration('edenRush'), color: '#f8fafc', effect: 'edenRush', angle: placed.angle, seed: Math.random()*1000, width: data.voidRushWidth || 105 });
+        const slashCount = Number(data.voidRushSlashCount || 8);
+        for (let i=0;i<slashCount;i++) {
+          const q=(i+1)/(slashCount+1), px=placed.x+(endX-placed.x)*q, py=placed.y+(endY-placed.y)*q;
+          battle.shots.push({ x1:px,y1:py,x2:px,y2:py, life:getAttackEffectDuration('edenCut')*.72,maxLife:getAttackEffectDuration('edenCut')*.72, color:'#fff',effect:'edenCut',angle:placed.angle+(i%2?1:-1)*(.72+i*.025), seed:Math.random()*1000+i*17,radius:58+(i%3)*8 });
+          for (const enemy of battle.enemies) if (!enemy.dead && !enemy.soilPileState && Math.hypot(enemy.x-px,enemy.y-py) <= 58) applyDamageToEnemy(enemy, damage * 1.25);
         }
-        enemiesAlongLine(placed.x, placed.y, endX, endY, Number(data.voidRushWidth || 78) / 2)
-          .forEach(enemy => applyDamageToEnemy(enemy, damage * Number(data.voidRushMultiplier || 4.5)));
+        enemiesAlongLine(placed.x, placed.y, endX, endY, Number(data.voidRushWidth || 105) / 2).forEach(enemy => applyDamageToEnemy(enemy, damage * Number(data.voidRushMultiplier || 8)));
+        addEdenStyle(placed, 2);
         return;
       }
 
-      // Cut Into Nothing — 넓은 원형 공허 참격.
-      if (placed.attackCount % Number(data.cutEvery || 12) === 0) {
-        playUnitAttackSound('eden', { skill: 'edenCut', volume: 1.20 });
+      // Cut Into Nothing: 에덴이 거대한 검으로 변형되어 주변을 완전히 도려내는 원형 범위 베기.
+      if (placed.attackCount % Number(data.cutEvery || 8) === 0) {
+        playUnitAttackSound('eden', { skill: 'edenCut', volume: 1.36 });
         placed.attackMode = 'edenCut';
-        battle.shots.push({
-          x1: target.x, y1: target.y, x2: target.x, y2: target.y,
-          life: getAttackEffectDuration('edenCut'), maxLife: getAttackEffectDuration('edenCut'),
-          color: '#ffffff', effect: 'edenCut', angle: placed.angle, seed: Math.random() * 1000, radius: data.cutRadius || 155
-        });
-        for (const enemy of battle.enemies) {
-          if (!enemy.dead && Math.hypot(enemy.x - target.x, enemy.y - target.y) <= Number(data.cutRadius || 155)) {
-            applyDamageToEnemy(enemy, damage * Number(data.cutMultiplier || 3));
-          }
-        }
-        addEdenCharge(placed, 1);
+        battle.shots.push({ x1: target.x, y1: target.y, x2: target.x, y2: target.y, life: getAttackEffectDuration('edenCut'), maxLife: getAttackEffectDuration('edenCut'), color: '#ffffff', effect: 'edenCut', angle: placed.angle, seed: Math.random()*1000, radius: data.cutRadius || 190 });
+        for (const enemy of battle.enemies) if (!enemy.dead && !enemy.soilPileState && Math.hypot(enemy.x-target.x,enemy.y-target.y) <= Number(data.cutRadius || 190)) applyDamageToEnemy(enemy, damage * Number(data.cutMultiplier || 4.5));
+        addEdenCharge(placed, Number(data.chargePerHit || 2));
+        addEdenStyle(placed, 1);
         return;
       }
 
-      // Impale — 공허체가 단검/창으로 변해 짧고 빠르게 전방을 찌릅니다.
-      if (placed.attackCount % Number(data.impaleEvery || 9) === 0) {
-        playUnitAttackSound('eden', { skill: 'edenImpale', volume: 1.17 });
+      // Impale: 공허체가 단검/창으로 변형되어 전방을 아주 빠르게 관통.
+      if (placed.attackCount % Number(data.impaleEvery || 6) === 0) {
+        playUnitAttackSound('eden', { skill: 'edenImpale', volume: 1.34 });
         placed.attackMode = 'edenImpale';
-        const reach = Number(data.impaleRange || 230);
+        const reach = Number(data.impaleRange || 300);
         const ex = placed.x + Math.cos(placed.angle) * reach;
         const ey = placed.y + Math.sin(placed.angle) * reach;
-        battle.shots.push({
-          x1: placed.x, y1: placed.y, x2: ex, y2: ey,
-          life: getAttackEffectDuration('edenImpale'), maxLife: getAttackEffectDuration('edenImpale'),
-          color:'#fff', effect:'edenImpale', angle:placed.angle, seed:Math.random()*1000,
-          width:Number(data.impaleWidth||52)
-        });
-        enemiesAlongLine(placed.x, placed.y, ex, ey, Number(data.impaleWidth || 52)/2)
-          .forEach(enemy => applyDamageToEnemy(enemy, damage * Number(data.impaleMultiplier || 2.5)));
-        addEdenCharge(placed, 1);
+        battle.shots.push({ x1: placed.x, y1: placed.y, x2: ex, y2: ey, life: getAttackEffectDuration('edenImpale'), maxLife: getAttackEffectDuration('edenImpale'), color:'#fff', effect:'edenImpale', angle:placed.angle, seed:Math.random()*1000, width:Number(data.impaleWidth||68) });
+        enemiesAlongLine(placed.x, placed.y, ex, ey, Number(data.impaleWidth || 68)/2).forEach(enemy => applyDamageToEnemy(enemy, damage * Number(data.impaleMultiplier || 3.5)));
+        addEdenCharge(placed, Number(data.chargePerHit || 2));
+        addEdenStyle(placed, 1);
         return;
       }
 
-      // Darkmatter Barrage — 공허체가 다연장 형태로 변형되어 여러 적을 난사.
-      if (placed.attackCount % Number(data.barrageEvery || 5) === 0) {
-        playUnitAttackSound('eden', { skill: 'edenBarrage', volume: 1.18 });
+      // Darkmatter Barrage: 에덴 본체가 여러 개의 불규칙 공허체로 분열되어 여러 적을 물어뜯듯 돌진.
+      if (placed.attackCount % Number(data.barrageEvery || 14) === 0) {
+        playUnitAttackSound('eden', { skill: 'edenBarrage', volume: 1.40 });
         placed.attackMode = 'edenBarrage';
-        const candidates = battle.enemies
-          .filter(enemy => !enemy.dead && !enemy.soilPileState && Math.hypot(enemy.x - placed.x, enemy.y - placed.y) <= placed.range)
-          .sort((a,b) => Number(b.targetIndex||0) - Number(a.targetIndex||0))
-          .slice(0, Number(data.barrageCount || 8));
+        const candidates = battle.enemies.filter(enemy => !enemy.dead && !enemy.soilPileState && Math.hypot(enemy.x-placed.x,enemy.y-placed.y) <= placed.range).sort((a,b)=>Number(b.targetIndex||0)-Number(a.targetIndex||0));
         const targets = candidates.length ? candidates : [target];
-        for (let i = 0; i < Number(data.barrageCount || 8); i += 1) {
+        for (let i=0;i<Number(data.barrageCount || 10);i++) {
           const enemy = targets[i % targets.length];
-          battle.shots.push({
-            x1: placed.x + (i%2 ? 23 : -19), y1: placed.y - 21 + (i%4)*7,
-            x2: enemy.x, y2: enemy.y,
-            life: getAttackEffectDuration('edenBarrage'), maxLife: getAttackEffectDuration('edenBarrage'),
-            color: '#f8fafc', effect: 'edenBarrage',
-            angle: Math.atan2(enemy.y-placed.y,enemy.x-placed.x), seed: Math.random()*1000+i*13
-          });
-          applyDamageToEnemy(enemy, damage * Number(data.barrageMultiplier || .62));
+          battle.shots.push({ x1: placed.x + (i%2 ? 30 : -26), y1: placed.y - 24 + (i%5)*9, x2: enemy.x, y2: enemy.y, life: getAttackEffectDuration('edenBarrage'), maxLife: getAttackEffectDuration('edenBarrage'), color:'#f8fafc', effect:'edenBarrage', angle:Math.atan2(enemy.y-placed.y,enemy.x-placed.x), seed:Math.random()*1000+i*13 });
+          applyDamageToEnemy(enemy, damage * Number(data.barrageMultiplier || .9));
         }
-        addEdenCharge(placed, 1);
+        addEdenCharge(placed, Number(data.chargePerHit || 2) * 2);
+        addEdenStyle(placed, 2);
         return;
       }
 
-      playUnitAttackSound('eden');
+      playUnitAttackSound('eden', { volume: 1.18 });
       placed.attackMode = 'edenBolt';
-      battle.shots.push({
-        x1: placed.x + 22, y1: placed.y - 8, x2: target.x, y2: target.y,
-        life: getAttackEffectDuration('edenBolt'), maxLife: getAttackEffectDuration('edenBolt'),
-        color: '#f8fafc', effect: 'edenBolt', angle: placed.angle, seed: Math.random() * 1000
-      });
+      battle.shots.push({ x1: placed.x + 24, y1: placed.y - 10, x2: target.x, y2: target.y, life: getAttackEffectDuration('edenBolt'), maxLife: getAttackEffectDuration('edenBolt'), color:'#f8fafc', effect:'edenBolt', angle:placed.angle, seed:Math.random()*1000 });
       applyDamageToEnemy(target, damage);
-      addEdenCharge(placed, 1);
+      addEdenCharge(placed, Number(data.chargePerHit || 2));
     }
 
     function getAttackEffectType(unitId) {
@@ -16211,52 +17330,48 @@ function requestGachaDraw(count) {
     }
 
     function drawEdenPremiumBodyArt(g, time, unit, quality = 1) {
-      const t=time*.001, charge=Math.min(100,Number(unit.edenCharge||0));
-      const hover=Math.sin(t*2.15+Number(unit.animationOffset||0))*2.1;
-      const deadeyeClock = Number(unit.edenDeadeyeCast?.startAt || 0) > 1e12 ? Date.now() : time;
-      const deadeye=unit.edenDeadeyeCast && deadeyeClock>=Number(unit.edenDeadeyeCast.startAt||0) && deadeyeClock<=Number(unit.edenDeadeyeCast.endAt||0);
+      const t=time*.001, charge=Math.min(100,Number(unit.edenCharge||0)), style=Math.max(0,Math.min(5,Number(unit.edenStyleRank||0)));
+      const hover=Math.sin(t*2.05+Number(unit.animationOffset||0))*2.4;
+      const deadeyeClock=Number(unit.edenDeadeyeCast?.startAt||0)>1e12?Date.now():time;
+      const deadeye=unit.edenDeadeyeCast&&deadeyeClock>=Number(unit.edenDeadeyeCast.startAt||0)&&deadeyeClock<=Number(unit.edenDeadeyeCast.endAt||0);
       g.save();g.translate(0,hover);
 
-      // 계약자: 흑백 비대칭 긴 코트, 오른팔을 위로 든 자세
-      const coat=g.createLinearGradient(-18,-18,20,24);coat.addColorStop(0,'#f8fafc');coat.addColorStop(.34,'#a5a8ae');coat.addColorStop(.5,'#1b1c20');coat.addColorStop(1,'#020204');
-      g.fillStyle=coat;g.beginPath();g.moveTo(-19,22);g.lineTo(-13,-14);g.lineTo(12,-14);g.lineTo(20,22);g.lineTo(6,15);g.lineTo(0,28);g.lineTo(-6,15);g.closePath();g.fill();
-      g.strokeStyle='rgba(255,255,255,.45)';g.lineWidth=1;g.stroke();
-
-      // 다리
-      g.fillStyle='#08090c';g.beginPath();g.roundRect(-12,12,9,17,3);g.roundRect(3,12,9,17,3);g.fill();
-
-      // 머리 — 얼굴을 세부 묘사하지 않고 공허에 잠긴 실루엣
-      g.fillStyle='#050507';g.beginPath();g.arc(0,-22,10,0,Math.PI*2);g.fill();
-      g.strokeStyle='#fff';g.lineWidth=1.5;g.beginPath();g.moveTo(-6,-23);g.lineTo(6,-23);g.stroke();
-
-      // 오른팔을 들어 올린 계약 포즈
-      g.strokeStyle='#dedfe2';g.lineWidth=7;g.lineCap='round';
-      g.beginPath();g.moveTo(8,-9);g.lineTo(15,-25);g.lineTo(12,-39);g.stroke();
-      g.fillStyle='#fff';g.beginPath();g.arc(12,-41,4,0,Math.PI*2);g.fill();
-      // 왼팔
-      g.strokeStyle='#121318';g.lineWidth=7;g.beginPath();g.moveTo(-9,-8);g.lineTo(-17,7);g.stroke();
-
-      // 옆에 떠 있는 '공허체': 불규칙한 검은 덩어리 + 액체 + 여러 입
-      const ox=31+Math.sin(t*1.5)*4, oy=-10+Math.cos(t*1.9)*5;
-      g.save();g.translate(ox,oy);g.rotate(Math.sin(t*.8)*.12);
-      g.shadowBlur=18+charge*.08;g.shadowColor='rgba(255,255,255,.38)';
-      const vg=g.createRadialGradient(-5,-7,2,0,0,22+charge*.04);vg.addColorStop(0,'#34353b');vg.addColorStop(.28,'#101014');vg.addColorStop(.7,'#020204');vg.addColorStop(1,'rgba(0,0,0,0)');
-      g.fillStyle=vg;
-      g.beginPath();g.moveTo(-20,-5);g.quadraticCurveTo(-16,-22,1,-20);g.quadraticCurveTo(17,-25,22,-8);g.quadraticCurveTo(28,5,15,17);g.quadraticCurveTo(-3,24,-19,13);g.quadraticCurveTo(-28,4,-20,-5);g.fill();
-      // 입/치아
-      const mouths=quality>.65?3:2;
-      for(let i=0;i<mouths;i++){
-        const mx=-7+(i%2)*13,my=-8+i*8;
-        g.fillStyle='#000';g.beginPath();g.ellipse(mx,my,7,3.2,(i-1)*.25,0,Math.PI*2);g.fill();
-        g.fillStyle='#f7f7f8';
-        for(let j=0;j<4;j++){const tx=mx-4.5+j*3;g.beginPath();g.moveTo(tx,my-2.4);g.lineTo(tx+1.4,my);g.lineTo(tx+2.6,my-2.4);g.closePath();g.fill();}
-      }
-      // 검은 액체 방울
-      for(let i=0;i<4;i++){const dx=-11+i*7,drop=6+((t*22+i*9)%13);g.fillStyle='rgba(0,0,0,.92)';g.beginPath();g.ellipse(dx,15+drop*.28,2.1,4.5+drop*.12,0,0,Math.PI*2);g.fill();}
+      // 계약자: 오른팔을 든 흑백 비대칭 실루엣. 얼굴 대신 공허 그림자만 남긴다.
+      g.save();
+      const coat=g.createLinearGradient(-22,-20,22,25);coat.addColorStop(0,'#ffffff');coat.addColorStop(.22,'#d8d9dd');coat.addColorStop(.46,'#5d5f66');coat.addColorStop(.58,'#111217');coat.addColorStop(1,'#010103');
+      g.shadowBlur=10+style*2;g.shadowColor='rgba(255,255,255,.25)';g.fillStyle=coat;
+      g.beginPath();g.moveTo(-21,24);g.lineTo(-15,-14);g.lineTo(13,-14);g.lineTo(22,24);g.lineTo(10,18);g.lineTo(2,31);g.lineTo(-4,18);g.closePath();g.fill();
+      g.strokeStyle='rgba(255,255,255,.55)';g.lineWidth=1.2;g.stroke();
+      // 검은 다리와 긴 코트 꼬리
+      g.fillStyle='#050507';g.beginPath();g.roundRect(-13,14,9,18,3);g.roundRect(4,14,9,18,3);g.fill();
+      g.fillStyle='rgba(0,0,0,.9)';g.beginPath();g.moveTo(-10,15);g.lineTo(-24,31);g.lineTo(-6,25);g.closePath();g.fill();
+      // 공허에 잠긴 머리
+      g.fillStyle='#020203';g.beginPath();g.arc(0,-23,10.5,0,Math.PI*2);g.fill();g.strokeStyle='rgba(255,255,255,.18)';g.lineWidth=1;g.stroke();
+      // 오른팔을 위로 든 계약 자세
+      g.lineCap='round';g.strokeStyle='#eceef1';g.lineWidth=7.5;g.beginPath();g.moveTo(9,-9);g.lineTo(17,-26);g.lineTo(14,-43);g.stroke();
+      g.fillStyle='#fff';g.beginPath();g.arc(14,-45,4.2,0,Math.PI*2);g.fill();
+      // 왼팔은 어둠에 잠김
+      g.strokeStyle='#090a0e';g.lineWidth=7.5;g.beginPath();g.moveTo(-10,-8);g.lineTo(-19,8);g.stroke();
       g.restore();
 
-      // Deadeye 조준 중에는 흰 십자선이 잠깐 떠오름
-      if(deadeye){const p=(deadeyeClock-unit.edenDeadeyeCast.startAt)/Math.max(1,unit.edenDeadeyeCast.endAt-unit.edenDeadeyeCast.startAt);g.save();g.globalCompositeOperation='lighter';g.strokeStyle=`rgba(255,255,255,${.45+.45*p})`;g.lineWidth=1.4;g.beginPath();g.arc(0,-4,32+8*p,0,Math.PI*2);g.stroke();g.beginPath();g.moveTo(-42,-4);g.lineTo(42,-4);g.moveTo(0,-46);g.lineTo(0,38);g.stroke();g.restore();}
+      // 에덴 본체: 비대칭 검은 공허 덩어리, 네 개의 입과 계속 떨어지는 검은 액체.
+      const ox=35+Math.sin(t*1.32)*4.5,oy=-11+Math.cos(t*1.72)*5.3;
+      g.save();g.translate(ox,oy);g.rotate(Math.sin(t*.72)*.13);g.shadowBlur=20+charge*.13+style*2.5;g.shadowColor='rgba(255,255,255,.42)';
+      const vg=g.createRadialGradient(-7,-9,1,0,0,30);vg.addColorStop(0,'#34353a');vg.addColorStop(.18,'#111216');vg.addColorStop(.55,'#020203');vg.addColorStop(.82,'#000');vg.addColorStop(1,'rgba(0,0,0,0)');
+      g.fillStyle=vg;g.beginPath();g.moveTo(-27,-7);g.bezierCurveTo(-23,-27,-5,-30,7,-22);g.bezierCurveTo(25,-31,34,-11,27,2);g.bezierCurveTo(35,15,16,27,2,22);g.bezierCurveTo(-12,31,-32,17,-28,4);g.bezierCurveTo(-36,-2,-31,-10,-27,-7);g.fill();
+      // 네 개의 입/치아
+      const mouthData=[[-11,-12,8.5,3.6,-.18],[10,-6,7.2,3.1,.22],[-7,6,7.8,3.4,.14],[11,11,6.5,2.8,-.28]];
+      for(let i=0;i<mouthData.length;i++){const [mx,my,rx,ry,rot]=mouthData[i];g.save();g.translate(mx,my);g.rotate(rot);g.fillStyle='#000';g.beginPath();g.ellipse(0,0,rx,ry,0,0,Math.PI*2);g.fill();g.strokeStyle='rgba(255,255,255,.12)';g.lineWidth=.6;g.stroke();g.fillStyle='#fff';for(let j=0;j<5;j++){const tx=-rx+2+j*(rx*2-4)/4;g.beginPath();g.moveTo(tx,-ry*.78);g.lineTo(tx+1.2,0);g.lineTo(tx+2.3,-ry*.78);g.closePath();g.fill();g.beginPath();g.moveTo(tx,ry*.78);g.lineTo(tx+1.2,0);g.lineTo(tx+2.3,ry*.78);g.closePath();g.fill();}g.restore();}
+      // 검은 액체가 계속 떨어짐
+      const drops=quality>.65?6:4;for(let i=0;i<drops;i++){const dx=-18+i*7.3,phase=(t*1.65+i*.21)%1,yy=17+phase*30;g.fillStyle=`rgba(0,0,0,${.95*(1-phase*.45)})`;g.beginPath();g.ellipse(dx,yy,2.1+(i%2)*.5,4.8+phase*5,0,0,Math.PI*2);g.fill();}
+      // Charge가 높으면 공허체 바깥의 흰 균열
+      if(charge>25){g.globalCompositeOperation='lighter';g.strokeStyle=`rgba(255,255,255,${.16+.42*charge/100})`;g.lineWidth=1.2;for(let i=0;i<4;i++){const a=t*.45+i*1.6,r=25+charge*.045;g.beginPath();g.arc(0,0,r+i*2,a,a+.42);g.stroke();}}
+      g.restore();
+
+      // Style가 높을수록 계약자와 Eden 사이에 흑백 링크가 선명해짐.
+      if(style>0){g.save();g.globalCompositeOperation='lighter';g.strokeStyle=`rgba(255,255,255,${.14+style*.09})`;g.lineWidth=1.1+style*.2;g.setLineDash([3,5]);g.beginPath();g.moveTo(12,-20);g.quadraticCurveTo(24,-35,35,-18);g.stroke();g.setLineDash([]);g.restore();}
+
+      if(deadeye){const pr=(deadeyeClock-unit.edenDeadeyeCast.startAt)/Math.max(1,unit.edenDeadeyeCast.endAt-unit.edenDeadeyeCast.startAt);g.save();g.globalCompositeOperation='lighter';g.strokeStyle=`rgba(255,255,255,${.50+.46*pr})`;g.lineWidth=1.5;g.beginPath();g.arc(0,-4,34+12*pr,0,Math.PI*2);g.stroke();g.beginPath();g.moveTo(-52,-4);g.lineTo(52,-4);g.moveTo(0,-54);g.lineTo(0,44);g.stroke();g.restore();}
       g.restore();
     }
 
@@ -16661,66 +17776,22 @@ function requestGachaDraw(count) {
 
 
     function drawEdenAuraArt(g, time, unit, quality = 1) {
-      const t=time*.001, charge=Math.min(100,Number(unit.edenCharge||0));
-      const pulse=.80+Math.sin(t*2.6)*.16, r=78+charge*.18;
+      const t=time*.001,charge=Math.min(100,Number(unit.edenCharge||0)),style=Math.max(0,Math.min(5,Number(unit.edenStyleRank||0)));
+      const pulse=.84+Math.sin(t*2.55)*.12,r=86+charge*.2+style*2.5;
       g.save();
-
-      // 검정/흰색이 서로 삼키는 바닥 소용돌이
-      g.save();g.translate(0,10);g.scale(1,.38);g.rotate(t*.22);
-      const floor=g.createRadialGradient(0,0,2,0,0,r);
-      floor.addColorStop(0,'rgba(255,255,255,.22)');
-      floor.addColorStop(.18,'rgba(8,8,10,.92)');
-      floor.addColorStop(.47,'rgba(245,245,246,.18)');
-      floor.addColorStop(.72,'rgba(0,0,0,.82)');
-      floor.addColorStop(1,'rgba(0,0,0,0)');
-      g.fillStyle=floor;g.beginPath();g.arc(0,0,r,0,Math.PI*2);g.fill();
-      for(let i=0;i<8;i++){
-        g.rotate(Math.PI/4);
-        g.strokeStyle=i%2?`rgba(255,255,255,${(.18+.06*(i%3))*pulse})`:`rgba(4,4,6,${.72*pulse})`;
-        g.lineWidth=10-(i%3)*2;
-        g.beginPath();g.arc(0,0,27+(i%4)*11,-.18,.92);g.stroke();
-      }
+      // Sol's RNG Eden의 핵심 인상: 검정/흰색 바닥 소용돌이.
+      g.save();g.translate(0,11);g.scale(1,.36);g.rotate(t*.26);
+      const floor=g.createRadialGradient(0,0,3,0,0,r);floor.addColorStop(0,'rgba(255,255,255,.34)');floor.addColorStop(.14,'rgba(0,0,0,.98)');floor.addColorStop(.34,'rgba(255,255,255,.28)');floor.addColorStop(.53,'rgba(0,0,0,.94)');floor.addColorStop(.72,'rgba(255,255,255,.14)');floor.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=floor;g.beginPath();g.arc(0,0,r,0,Math.PI*2);g.fill();
+      for(let i=0;i<12;i++){g.rotate(Math.PI/6);g.strokeStyle=i%2?`rgba(255,255,255,${(.22+.035*(i%4))*pulse})`:`rgba(0,0,0,${.82*pulse})`;g.lineWidth=13-(i%4)*2;g.beginPath();g.arc(0,0,24+(i%6)*10,-.28,.88);g.stroke();}
       g.restore();
-
-      // 바닥 가장자리의 부서진 흰 고리
-      g.save();g.translate(0,9);g.scale(1,.42);g.rotate(-t*.31);
-      g.strokeStyle=`rgba(255,255,255,${.52*pulse})`;g.lineWidth=2.1;g.setLineDash([12,8,4,10]);
-      g.beginPath();g.arc(0,0,58+charge*.08,0,Math.PI*2);g.stroke();g.setLineDash([]);
-      g.restore();
-
-      // 위로 솟는 검은 안개
-      const fogCount=quality>.7?14:8;
-      g.save();
-      for(let i=0;i<fogCount;i++){
-        const a=t*(.24+(i%4)*.025)+i*2.13;
-        const rr=22+(i%5)*9, x=Math.cos(a)*rr;
-        const y=8-((t*18+i*13)%52);
-        const alpha=.055+(i%4)*.018;
-        const fog=g.createRadialGradient(x,y,1,x,y,9+(i%3)*4);
-        fog.addColorStop(0,`rgba(${i%3===0?255:12},${i%3===0?255:12},${i%3===0?255:15},${alpha*1.8})`);
-        fog.addColorStop(1,'rgba(0,0,0,0)');
-        g.fillStyle=fog;g.beginPath();g.arc(x,y,10+(i%3)*4,0,Math.PI*2);g.fill();
-      }
-      g.restore();
-
-      // 공허 액체가 바닥으로 떨어져 생기는 검은 방울/웅덩이
-      if(quality>.55){
-        for(let i=0;i<6;i++){
-          const a=t*.45+i*Math.PI/3, x=Math.cos(a)*(34+(i%2)*12), y=11+Math.sin(a)*7;
-          g.fillStyle='rgba(0,0,0,.72)';g.beginPath();g.ellipse(x,y,5+(i%3)*2,2.4+(i%2),a,0,Math.PI*2);g.fill();
-          g.strokeStyle='rgba(255,255,255,.12)';g.lineWidth=.8;g.stroke();
-        }
-      }
-
-      // Charge가 높을수록 떠다니는 흰 파편 증가
-      const shards=quality>.65?8:4;
-      for(let i=0;i<shards;i++){
-        const a=t*(.55+(i%3)*.07)+i*Math.PI*2/shards,r2=34+(i%4)*10+charge*.05;
-        const x=Math.cos(a)*r2,y=-8+Math.sin(a)*17;
-        g.save();g.translate(x,y);g.rotate(a+t);
-        g.fillStyle=`rgba(255,255,255,${.22+.18*(charge/100)})`;
-        g.beginPath();g.moveTo(0,-4);g.lineTo(2,0);g.lineTo(0,5);g.lineTo(-2,0);g.closePath();g.fill();g.restore();
-      }
+      // 깨진 계약 고리
+      g.save();g.translate(0,10);g.scale(1,.41);g.rotate(-t*.34);g.strokeStyle=`rgba(255,255,255,${.50+.04*style})`;g.lineWidth=2.1;g.setLineDash([14,8,4,12]);g.beginPath();g.arc(0,0,64+charge*.09,0,Math.PI*2);g.stroke();g.setLineDash([]);g.restore();
+      // 검은 안개가 위로 솟음. 일부 흰 안개가 섞이며 서로 지워지는 느낌.
+      const fogCount=quality>.7?20:11;for(let i=0;i<fogCount;i++){const a=t*(.18+(i%5)*.018)+i*2.01,rr=18+(i%6)*10,x=Math.cos(a)*rr,y=12-((t*20+i*9)%64),rad=8+(i%4)*4;const fg=g.createRadialGradient(x,y,1,x,y,rad);const white=i%7===0;fg.addColorStop(0,white?`rgba(255,255,255,${.08+.025*style})`:`rgba(0,0,0,${.42+.035*style})`);fg.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=fg;g.beginPath();g.arc(x,y,rad,0,Math.PI*2);g.fill();}
+      // 바닥의 검은 액체 웅덩이
+      for(let i=0;i<(quality>.55?8:4);i++){const a=t*.38+i*Math.PI/4,x=Math.cos(a)*(36+(i%3)*11),y=11+Math.sin(a)*6;g.fillStyle='rgba(0,0,0,.82)';g.beginPath();g.ellipse(x,y,6+(i%3)*2.5,2.6+(i%2),a,0,Math.PI*2);g.fill();g.strokeStyle='rgba(255,255,255,.10)';g.lineWidth=.7;g.stroke();}
+      // Style V에서는 흰 균열이 공중에서 끊임없이 나타남.
+      const shards=quality>.65?10+style:5;for(let i=0;i<shards;i++){const a=t*(.5+(i%3)*.06)+i*Math.PI*2/shards,r2=38+(i%4)*11+charge*.05,x=Math.cos(a)*r2,y=-10+Math.sin(a)*20;g.save();g.translate(x,y);g.rotate(a+t);g.fillStyle=`rgba(255,255,255,${.20+.04*style+.16*charge/100})`;g.beginPath();g.moveTo(0,-5);g.lineTo(2.2,0);g.lineTo(0,6);g.lineTo(-2.2,0);g.closePath();g.fill();g.restore();}
       g.restore();
     }
 
@@ -16860,6 +17931,8 @@ function requestGachaDraw(count) {
         phoenixFlightRemaining: 0,
         phoenixBreathAccumulator: 0,
         edenCharge: 0,
+        edenStyleRank: 0,
+        edenStyleUntil: 0,
         eclipseGrowthStacks: 0,
         eclipseAttackCount: 0,
         samuraiNormalCount: 0,
@@ -16982,8 +18055,8 @@ function requestGachaDraw(count) {
       }
 
       if (unit.unitId === 'eden') {
-        const charge=Math.min(100,Number(unit.edenCharge||0));
-        ctx.save();ctx.strokeStyle='rgba(255,255,255,.82)';ctx.lineWidth=2.2;ctx.beginPath();ctx.arc(0,0,39,-Math.PI/2,-Math.PI/2+Math.PI*2*(charge/100));ctx.stroke();ctx.font='bold 10px Arial';ctx.textAlign='center';ctx.fillStyle='#fff';ctx.fillText(`VOID ${charge}`,0,43);ctx.restore();
+        const charge=Math.min(100,Number(unit.edenCharge||0)),style=edenStyleLabel(unit);
+        ctx.save();ctx.strokeStyle='rgba(255,255,255,.88)';ctx.lineWidth=2.4;ctx.beginPath();ctx.arc(0,0,41,-Math.PI/2,-Math.PI/2+Math.PI*2*(charge/100));ctx.stroke();ctx.font='800 10px Georgia,serif';ctx.textAlign='center';ctx.fillStyle='#fff';ctx.fillText(`CHARGE ${Math.round(charge)} · ${style}`,0,45);ctx.restore();
       }
 
       if (unit.unitId === 'eclipse') {
@@ -17616,10 +18689,12 @@ function requestGachaDraw(count) {
         } else if (shot.effect === 'phoenixRoar') {
           const p=Math.sin(progress*Math.PI);ctx.save();ctx.globalCompositeOperation='lighter';ctx.translate(shot.x1,shot.y1);for(let i=0;i<4;i++){ctx.strokeStyle=`rgba(255,${165+i*18},${55+i*28},${p*(.7-i*.12)})`;ctx.lineWidth=10-i*2;ctx.beginPath();ctx.arc(0,0,30+progress*(190+i*34),0,Math.PI*2);ctx.stroke();}ctx.restore();
         } else if (shot.effect === 'edenBolt' || shot.effect === 'edenBarrage') {
-          const barrage=shot.effect==='edenBarrage',wave=Math.sin(progress*Math.PI*8+shot.seed)*(barrage?16:10);
-          ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle=`rgba(255,255,255,${.86*fade})`;ctx.lineWidth=barrage?5:4;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.bezierCurveTo(shot.x1+dx*.3+nx*wave,shot.y1+dy*.3+ny*wave,shot.x1+dx*.7-nx*wave,shot.y1+dy*.7-ny*wave,x,y);ctx.stroke();
-          ctx.strokeStyle=`rgba(15,15,18,${.95*fade})`;ctx.lineWidth=barrage?11:8;ctx.globalCompositeOperation='source-over';ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.quadraticCurveTo(shot.x1+dx*.5+nx*wave*.6,shot.y1+dy*.5+ny*wave*.6,x,y);ctx.stroke();ctx.globalCompositeOperation='lighter';
-          ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(x,y,barrage?5:6,0,Math.PI*2);ctx.fill();ctx.restore();
+          const barrage=shot.effect==='edenBarrage',wave=Math.sin(progress*Math.PI*(barrage?11:8)+shot.seed)*(barrage?20:11);
+          ctx.save();ctx.globalCompositeOperation='source-over';ctx.strokeStyle=`rgba(5,5,8,${.96*fade})`;ctx.lineWidth=barrage?14:9;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.bezierCurveTo(shot.x1+dx*.3+nx*wave,shot.y1+dy*.3+ny*wave,shot.x1+dx*.7-nx*wave,shot.y1+dy*.7-ny*wave,x,y);ctx.stroke();
+          ctx.globalCompositeOperation='lighter';ctx.strokeStyle=`rgba(255,255,255,${.82*fade})`;ctx.lineWidth=barrage?3.5:3;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.bezierCurveTo(shot.x1+dx*.3+nx*wave,shot.y1+dy*.3+ny*wave,shot.x1+dx*.7-nx*wave,shot.y1+dy*.7-ny*wave,x,y);ctx.stroke();
+          ctx.translate(x,y);ctx.rotate(shot.angle+Math.sin(progress*12+shot.seed)*.25);ctx.globalCompositeOperation='source-over';ctx.fillStyle='#030304';ctx.shadowBlur=18;ctx.shadowColor='rgba(255,255,255,.45)';ctx.beginPath();ctx.ellipse(0,0,barrage?12:8,barrage?8:6,0,0,Math.PI*2);ctx.fill();
+          if(barrage){ctx.fillStyle='#000';ctx.beginPath();ctx.ellipse(2,0,7,3,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';for(let i=0;i<4;i++){const tx=-3+i*2;ctx.beginPath();ctx.moveTo(tx,-2.5);ctx.lineTo(tx+1,0);ctx.lineTo(tx+2,-2.5);ctx.closePath();ctx.fill();}}
+          ctx.restore();
         } else if (shot.effect === 'edenTaunt') {
           const p=Math.sin(progress*Math.PI),r=Number(shot.radius||92);
           ctx.save();ctx.translate(shot.x1,shot.y1);ctx.globalCompositeOperation='lighter';
@@ -17644,12 +18719,15 @@ function requestGachaDraw(count) {
           ctx.translate(shot.x2,shot.y2);for(let i=0;i<4;i++){ctx.strokeStyle=`rgba(255,255,255,${p*(.7-i*.12)})`;ctx.lineWidth=4-i*.6;ctx.beginPath();ctx.arc(0,0,16+progress*(44+i*16),0,Math.PI*2);ctx.stroke();}
           ctx.restore();
         } else if (shot.effect === 'edenCut') {
-          const pulse=Math.sin(progress*Math.PI),r=Number(shot.radius||150);ctx.save();ctx.translate(shot.x1,shot.y1);ctx.globalCompositeOperation='lighter';
-          ctx.fillStyle=`rgba(0,0,0,${.26*pulse})`;ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();
-          for(let i=0;i<4;i++){ctx.strokeStyle=`rgba(255,255,255,${pulse*(.9-i*.16)})`;ctx.lineWidth=10-i*2;ctx.beginPath();ctx.arc(0,0,r*(.55+i*.11),-1.25+progress*2.5,.25+progress*2.5);ctx.stroke();}
-          ctx.strokeStyle=`rgba(20,20,22,${.9*pulse})`;ctx.lineWidth=18;ctx.beginPath();ctx.arc(0,0,r*.72,-1.1+progress*2.5,.4+progress*2.5);ctx.stroke();ctx.restore();
+          const pulse=Math.sin(progress*Math.PI),r=Number(shot.radius||190);ctx.save();ctx.translate(shot.x1,shot.y1);ctx.globalCompositeOperation='source-over';
+          ctx.fillStyle=`rgba(0,0,0,${.42*pulse})`;ctx.beginPath();ctx.arc(0,0,r*.82,0,Math.PI*2);ctx.fill();
+          ctx.globalCompositeOperation='lighter';for(let i=0;i<6;i++){const rot=progress*Math.PI*2.5+i*Math.PI/3;ctx.save();ctx.rotate(rot);const cg=ctx.createLinearGradient(-r,0,r,0);cg.addColorStop(0,'rgba(255,255,255,0)');cg.addColorStop(.42,`rgba(255,255,255,${.62*pulse})`);cg.addColorStop(.5,'#fff');cg.addColorStop(.59,`rgba(255,255,255,${.25*pulse})`);cg.addColorStop(1,'rgba(255,255,255,0)');ctx.strokeStyle=cg;ctx.lineWidth=7+(i%2)*3;ctx.beginPath();ctx.arc(0,0,r*(.55+(i%3)*.11),-.88,.88);ctx.stroke();ctx.restore();}
+          ctx.strokeStyle=`rgba(255,255,255,${.74*pulse})`;ctx.lineWidth=2.2;ctx.beginPath();ctx.arc(0,0,r*.9,0,Math.PI*2);ctx.stroke();ctx.restore();
         } else if (shot.effect === 'edenRush') {
-          const pulse=Math.sin(progress*Math.PI);ctx.save();ctx.globalCompositeOperation='lighter';for(let i=0;i<5;i++){ctx.strokeStyle=i%2?`rgba(255,255,255,${pulse*(.8-i*.08)})`:`rgba(10,10,12,${pulse*(.95-i*.08)})`;ctx.lineWidth=Number(shot.width||70)-i*11;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.lineTo(shot.x2,shot.y2);ctx.stroke();}ctx.restore();
+          const pulse=Math.sin(progress*Math.PI),w=Number(shot.width||105);ctx.save();ctx.globalCompositeOperation='source-over';
+          // 시작점 포탈
+          ctx.translate(shot.x1,shot.y1);ctx.scale(1,.42);ctx.fillStyle=`rgba(0,0,0,${.92*pulse})`;ctx.beginPath();ctx.arc(0,0,54+progress*18,0,Math.PI*2);ctx.fill();ctx.strokeStyle=`rgba(255,255,255,${.74*pulse})`;ctx.lineWidth=4;ctx.beginPath();ctx.arc(0,0,48+progress*22,0,Math.PI*2);ctx.stroke();ctx.setTransform(1,0,0,1,0,0);
+          ctx.globalCompositeOperation='lighter';for(let i=0;i<5;i++){ctx.strokeStyle=i%2?`rgba(255,255,255,${pulse*(.9-i*.08)})`:`rgba(12,12,15,${pulse*(.9-i*.07)})`;ctx.lineWidth=Math.max(4,w-i*17);ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.lineTo(shot.x2,shot.y2);ctx.stroke();}ctx.restore();
         } else if (shot.effect === 'timeRift' || shot.effect === 'timeRiftGolden') {
           const golden = shot.effect === 'timeRiftGolden' || shot.golden;
           const primary = golden ? '255,216,79' : '216,180,254';
@@ -17926,6 +19004,9 @@ function requestGachaDraw(count) {
         chronoAttackCount: 0,
         chronoOrbitingShots: [],
         chronoFieldRemaining: 0,
+        edenCharge: 0,
+        edenStyleRank: 0,
+        edenStyleUntil: 0,
         eclipseGrowthStacks: 0,
         eclipseAttackCount: 0,
         samuraiNormalCount: 0,
@@ -19258,6 +20339,8 @@ function requestGachaDraw(count) {
       phoenixBreathAccumulator: 0,
       phoenixFxTimer: 0,
       edenCharge: 0,
+      edenStyleRank: 0,
+      edenStyleUntil: 0,
       eclipseGrowthStacks: 0,
       samuraiNormalCount: 0,
       samuraiIssenCount: 0,
@@ -19867,83 +20950,28 @@ function requestGachaDraw(count) {
   }
 
   function mpEdenDamageMultiplier(unit){const d=UNIT_DATA.eden;return 1+Math.min(Number(d.maxCharge||100),Number(unit.edenCharge||0))*Number(d.chargeDamagePerStack||.005);}
+  function mpRefreshEdenStyle(unit,now=Date.now()){if(Number(unit.edenStyleRank||0)>0&&Number(unit.edenStyleUntil||0)>0&&now>Number(unit.edenStyleUntil||0)){unit.edenStyleRank=0;unit.edenStyleUntil=0;}return Number(unit.edenStyleRank||0);}
+  function mpEdenStyleLabel(unit){return EDEN_STYLE_LABELS[Math.max(0,Math.min(5,mpRefreshEdenStyle(unit)))]||'E';}
+  function mpAddEdenStyle(unit,a=1){const d=UNIT_DATA.eden;mpRefreshEdenStyle(unit);unit.edenStyleRank=Math.max(0,Math.min(5,Number(unit.edenStyleRank||0)+Number(a||1)));unit.edenStyleUntil=Date.now()+Number(d.styleResetSeconds||3.5)*1000;return unit.edenStyleRank;}
   function mpAddEdenCharge(unit,a=1){unit.edenCharge=Math.min(Number(UNIT_DATA.eden.maxCharge||100),Number(unit.edenCharge||0)+Number(a||1));}
   function mpPerformEdenAttack(targetState,sideKey,unit,target){
-    const d=UNIT_DATA.eden;
-    unit.angle=Math.atan2(target.y-unit.y,target.x-unit.x);
+    const d=UNIT_DATA.eden;unit.angle=Math.atan2(target.y-unit.y,target.x-unit.x);mpRefreshEdenStyle(unit);
 
-    if(unit.attackCount%Number(d.tauntEvery||15)===0){
-      mpAddEdenCharge(unit,Number(d.tauntCharge||15));
-      playUnitAttackSound('eden',{skill:'edenTaunt',volume:1.16});
-      mpPushFx(unit.x,unit.y,unit.x,unit.y,'#fff',16,sideKey,'edenTaunt',{radius:92});
-    }
+    if(unit.attackCount%Number(d.tauntEvery||11)===0){mpAddEdenCharge(unit,Number(d.tauntCharge||15));mpAddEdenStyle(unit,1);playUnitAttackSound('eden',{skill:'edenTaunt',volume:1.30});mpPushFx(unit.x,unit.y,unit.x,unit.y,'#fff',18,sideKey,'edenTaunt',{radius:112});}
 
-    const damage=mpEffectiveUnitDamage(unit)*mpEdenDamageMultiplier(unit);
-    const charge=Math.min(Number(d.maxCharge||100),Number(unit.edenCharge||0));
+    const damage=mpEffectiveUnitDamage(unit)*mpEdenDamageMultiplier(unit),charge=Math.min(Number(d.maxCharge||100),Number(unit.edenCharge||0)),style=mpRefreshEdenStyle(unit);
 
-    if(unit.attackCount%Number(d.deadeyeEvery||30)===0 && charge>=Number(d.deadeyeMinCharge||60)){
-      const windup=Number(d.deadeyeWindup||2.7), ex=unit.x+Math.cos(unit.angle)*Math.max(unit.range,360), ey=unit.y+Math.sin(unit.angle)*Math.max(unit.range,360);
-      unit.attackMode='edenDeadeye';
-      unit.edenDeadeyeCast={startAt:Date.now(),endAt:Date.now()+windup*1000,targetX:ex,targetY:ey};
-      unit._attackCooldownOverride=windup+.32;
-      unit.edenCharge=0;
-      playUnitAttackSound('eden',{skill:'edenDeadeyeCharge',volume:1.20});
-      mpState.delayedAttacks ||= [];
-      mpState.delayedAttacks.push({
-        kind:'edenDeadeye',sideKey,unitId:unit.id,ownerRole:unit.ownerRole,
-        x1:unit.x,y1:unit.y,x2:ex,y2:ey,width:Number(d.deadeyeWidth||44),
-        damage:damage*Number(d.deadeyeMultiplier||9),at:Date.now()+windup*1000
-      });
-      return;
-    }
+    if(style>=5){const windup=Number(d.deadeyeWindup||2.4),shotRange=Math.max(Number(unit.range||d.range)*1.55,520),ex=unit.x+Math.cos(unit.angle)*shotRange,ey=unit.y+Math.sin(unit.angle)*shotRange;unit.attackMode='edenDeadeye';unit.edenDeadeyeCast={startAt:Date.now(),endAt:Date.now()+windup*1000,targetX:ex,targetY:ey};unit._attackCooldownOverride=windup+.28;playUnitAttackSound('eden',{skill:'edenDeadeyeCharge',volume:1.42});mpState.delayedAttacks ||= [];mpState.delayedAttacks.push({kind:'edenDeadeye',sideKey,unitId:unit.id,ownerRole:unit.ownerRole,x1:unit.x,y1:unit.y,x2:ex,y2:ey,width:Number(d.deadeyeWidth||58),damage:damage*Number(d.deadeyeMultiplier||18),at:Date.now()+windup*1000});unit.edenStyleRank=0;unit.edenStyleUntil=0;return;}
 
-    if(unit.attackCount%Number(d.voidRushEvery||20)===0 && charge>=Number(d.voidRushChargeCost||30)){
-      playUnitAttackSound('eden',{skill:'edenRush',volume:1.22});
-      unit.attackMode='edenRush';
-      unit.edenCharge=Math.max(0,charge-Number(d.voidRushChargeCost||30));
-      const ex=unit.x+Math.cos(unit.angle)*unit.range,ey=unit.y+Math.sin(unit.angle)*unit.range;
-      mpPushFx(unit.x,unit.y,ex,ey,'#fff',18,sideKey,'edenRush',{width:d.voidRushWidth||78});
-      for(let i=0;i<7;i++){
-        const q=(i+1)/8,px=unit.x+(ex-unit.x)*q,py=unit.y+(ey-unit.y)*q;
-        mpPushFx(px,py,px,py,'#fff',14,sideKey,'edenCut',{radius:46+(i%3)*9,angle:unit.angle+(i%2?1:-1)*.75});
-      }
-      mpEnemiesAlongLine(targetState,unit.x,unit.y,ex,ey,Number(d.voidRushWidth||78)/2)
-        .forEach(e=>mpApplyDamage(targetState,e,damage*Number(d.voidRushMultiplier||4.5),unit.ownerRole,sideKey));
-      return;
-    }
+    if(unit.attackCount%Number(d.voidRushEvery||18)===0&&charge>=Number(d.voidRushChargeCost||30)){playUnitAttackSound('eden',{skill:'edenRush',volume:1.40});unit.attackMode='edenRush';unit.edenCharge=Math.max(0,charge-Number(d.voidRushChargeCost||30));const ex=unit.x+Math.cos(unit.angle)*Number(unit.range||d.range)*1.08,ey=unit.y+Math.sin(unit.angle)*Number(unit.range||d.range)*1.08;mpPushFx(unit.x,unit.y,ex,ey,'#fff',22,sideKey,'edenRush',{width:d.voidRushWidth||105});const slashCount=Number(d.voidRushSlashCount||8);for(let i=0;i<slashCount;i++){const q=(i+1)/(slashCount+1),px=unit.x+(ex-unit.x)*q,py=unit.y+(ey-unit.y)*q;mpPushFx(px,py,px,py,'#fff',16,sideKey,'edenCut',{radius:58+(i%3)*8,angle:unit.angle+(i%2?1:-1)*(.72+i*.025)});for(const e of targetState.enemies||[])if(!e.dead&&Math.hypot(e.x-px,e.y-py)<=58)mpApplyDamage(targetState,e,damage*1.25,unit.ownerRole,sideKey);}mpEnemiesAlongLine(targetState,unit.x,unit.y,ex,ey,Number(d.voidRushWidth||105)/2).forEach(e=>mpApplyDamage(targetState,e,damage*Number(d.voidRushMultiplier||8),unit.ownerRole,sideKey));mpAddEdenStyle(unit,2);return;}
 
-    if(unit.attackCount%Number(d.cutEvery||12)===0){
-      playUnitAttackSound('eden',{skill:'edenCut',volume:1.18});unit.attackMode='edenCut';
-      mpPushFx(target.x,target.y,target.x,target.y,'#fff',20,sideKey,'edenCut',{radius:d.cutRadius||155});
-      for(const e of targetState.enemies||[]) if(!e.dead&&Math.hypot(e.x-target.x,e.y-target.y)<=Number(d.cutRadius||155))
-        mpApplyDamage(targetState,e,damage*Number(d.cutMultiplier||3),unit.ownerRole,sideKey);
-      mpAddEdenCharge(unit);return;
-    }
+    if(unit.attackCount%Number(d.cutEvery||8)===0){playUnitAttackSound('eden',{skill:'edenCut',volume:1.34});unit.attackMode='edenCut';mpPushFx(target.x,target.y,target.x,target.y,'#fff',23,sideKey,'edenCut',{radius:d.cutRadius||190});for(const e of targetState.enemies||[])if(!e.dead&&Math.hypot(e.x-target.x,e.y-target.y)<=Number(d.cutRadius||190))mpApplyDamage(targetState,e,damage*Number(d.cutMultiplier||4.5),unit.ownerRole,sideKey);mpAddEdenCharge(unit,Number(d.chargePerHit||2));mpAddEdenStyle(unit,1);return;}
 
-    if(unit.attackCount%Number(d.impaleEvery||9)===0){
-      playUnitAttackSound('eden',{skill:'edenImpale',volume:1.15});unit.attackMode='edenImpale';
-      const reach=Number(d.impaleRange||230),ex=unit.x+Math.cos(unit.angle)*reach,ey=unit.y+Math.sin(unit.angle)*reach;
-      mpPushFx(unit.x,unit.y,ex,ey,'#fff',14,sideKey,'edenImpale',{width:Number(d.impaleWidth||52)});
-      mpEnemiesAlongLine(targetState,unit.x,unit.y,ex,ey,Number(d.impaleWidth||52)/2)
-        .forEach(e=>mpApplyDamage(targetState,e,damage*Number(d.impaleMultiplier||2.5),unit.ownerRole,sideKey));
-      mpAddEdenCharge(unit);return;
-    }
+    if(unit.attackCount%Number(d.impaleEvery||6)===0){playUnitAttackSound('eden',{skill:'edenImpale',volume:1.32});unit.attackMode='edenImpale';const reach=Number(d.impaleRange||300),ex=unit.x+Math.cos(unit.angle)*reach,ey=unit.y+Math.sin(unit.angle)*reach;mpPushFx(unit.x,unit.y,ex,ey,'#fff',18,sideKey,'edenImpale',{width:Number(d.impaleWidth||68)});mpEnemiesAlongLine(targetState,unit.x,unit.y,ex,ey,Number(d.impaleWidth||68)/2).forEach(e=>mpApplyDamage(targetState,e,damage*Number(d.impaleMultiplier||3.5),unit.ownerRole,sideKey));mpAddEdenCharge(unit,Number(d.chargePerHit||2));mpAddEdenStyle(unit,1);return;}
 
-    if(unit.attackCount%Number(d.barrageEvery||5)===0){
-      playUnitAttackSound('eden',{skill:'edenBarrage',volume:1.17});unit.attackMode='edenBarrage';
-      const targets=[...(targetState.enemies||[])].filter(e=>!e.dead&&Math.hypot(e.x-unit.x,e.y-unit.y)<=unit.range).sort((a,b)=>b.x-a.x);
-      for(let i=0;i<Number(d.barrageCount||8);i++){
-        const e=targets[i%Math.max(1,targets.length)]||target;
-        mpPushFx(unit.x+(i%2?23:-19),unit.y-21+(i%4)*7,e.x,e.y,'#fff',7,sideKey,'edenBarrage');
-        mpApplyDamage(targetState,e,damage*Number(d.barrageMultiplier||.62),unit.ownerRole,sideKey);
-      }
-      mpAddEdenCharge(unit);return;
-    }
+    if(unit.attackCount%Number(d.barrageEvery||14)===0){playUnitAttackSound('eden',{skill:'edenBarrage',volume:1.38});unit.attackMode='edenBarrage';const targets=[...(targetState.enemies||[])].filter(e=>!e.dead&&Math.hypot(e.x-unit.x,e.y-unit.y)<=unit.range).sort((a,b)=>b.x-a.x);for(let i=0;i<Number(d.barrageCount||10);i++){const e=targets[i%Math.max(1,targets.length)]||target;mpPushFx(unit.x+(i%2?30:-26),unit.y-24+(i%5)*9,e.x,e.y,'#fff',9,sideKey,'edenBarrage');mpApplyDamage(targetState,e,damage*Number(d.barrageMultiplier||.9),unit.ownerRole,sideKey);}mpAddEdenCharge(unit,Number(d.chargePerHit||2)*2);mpAddEdenStyle(unit,2);return;}
 
-    unit.attackMode='edenBolt';
-    playUnitAttackSound('eden');
-    mpPushFx(unit.x+22,unit.y-8,target.x,target.y,'#fff',7,sideKey,'edenBolt');
-    mpApplyDamage(targetState,target,damage,unit.ownerRole,sideKey);mpAddEdenCharge(unit);
+    unit.attackMode='edenBolt';playUnitAttackSound('eden',{volume:1.18});mpPushFx(unit.x+24,unit.y-10,target.x,target.y,'#fff',8,sideKey,'edenBolt');mpApplyDamage(targetState,target,damage,unit.ownerRole,sideKey);mpAddEdenCharge(unit,Number(d.chargePerHit||2));
   }
 
   function mpUpdateEnemies(target, dt, sideKey = null) {
@@ -21710,7 +22738,7 @@ function requestGachaDraw(count) {
     if (unit.unitId === 'eclipse') {
       drawEclipseOrbitArt(mpCtx, time, unit, mpHighLoadFrame ? .72 : 1);
     }
-    if (unit.unitId === 'eden') { mpCtx.save();mpCtx.fillStyle='#fff';mpCtx.font='700 10px Arial';mpCtx.textAlign='center';mpCtx.fillText(`VOID ${Math.round(Number(unit.edenCharge||0))}`,0,42);mpCtx.restore(); }
+    if (unit.unitId === 'eden') { mpCtx.save();mpCtx.fillStyle='#fff';mpCtx.font='800 9px Georgia,serif';mpCtx.textAlign='center';mpCtx.fillText(`CHG ${Math.round(Number(unit.edenCharge||0))} · ${mpEdenStyleLabel(unit)}`,0,43);mpCtx.restore(); }
 
     if (unit.unitId === 'moneyTree' && Date.now() < Number(unit.moneyPulseUntil || 0)) {
       const remain = Math.max(0, Number(unit.moneyPulseUntil || 0) - Date.now()) / 650;
@@ -22147,8 +23175,7 @@ function requestGachaDraw(count) {
       } else if (fx.kind === 'phoenixRoar') {
         const pulse=Math.sin(progress*Math.PI);mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.shadowBlur=22;mpCtx.shadowColor='#ff7a2f';for(let i=0;i<4;i++){mpCtx.strokeStyle=`rgba(255,${170+i*18},${70+i*20},${pulse*(.72-i*.12)})`;mpCtx.lineWidth=8-i*1.5;mpCtx.beginPath();mpCtx.arc(0,0,35+progress*(180+i*55),0,Math.PI*2);mpCtx.stroke();}mpCtx.restore();
       } else if (fx.kind === 'edenBolt' || fx.kind === 'edenBarrage') {
-        const barrage=fx.kind==='edenBarrage',wave=Math.sin(progress*Math.PI*(barrage?11:7)+fx.seed)*(barrage?18:12);mpCtx.shadowBlur=22;mpCtx.shadowColor='#fff';for(let i=0;i<3;i++){mpCtx.strokeStyle=i===0?`rgba(255,255,255,${.86*fade})`:`rgba(${i===1?18:190},${i===1?18:190},${i===1?22:195},${(.62-i*.12)*fade})`;mpCtx.lineWidth=7-i*2;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.bezierCurveTo(fx.x1+dx*.3+nx*(wave+i*6),y1+dy*.3+ny*(wave+i*6),fx.x1+dx*.7-nx*(wave+i*5),y1+dy*.7-ny*(wave+i*5),x,y);mpCtx.stroke();}
-        mpCtx.fillStyle='#fff';mpCtx.beginPath();mpCtx.arc(x,y,barrage?6:8,0,Math.PI*2);mpCtx.fill();
+        const barrage=fx.kind==='edenBarrage',wave=Math.sin(progress*Math.PI*(barrage?11:8)+fx.seed)*(barrage?20:11);mpCtx.save();mpCtx.globalCompositeOperation='source-over';mpCtx.strokeStyle=`rgba(4,4,7,${.96*fade})`;mpCtx.lineWidth=barrage?14:9;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.bezierCurveTo(fx.x1+dx*.3+nx*wave,y1+dy*.3+ny*wave,fx.x1+dx*.7-nx*wave,y1+dy*.7-ny*wave,x,y);mpCtx.stroke();mpCtx.globalCompositeOperation='lighter';mpCtx.strokeStyle=`rgba(255,255,255,${.82*fade})`;mpCtx.lineWidth=3;mpCtx.stroke();mpCtx.translate(x,y);mpCtx.rotate(angle);mpCtx.globalCompositeOperation='source-over';mpCtx.fillStyle='#020203';mpCtx.shadowBlur=16;mpCtx.shadowColor='rgba(255,255,255,.45)';mpCtx.beginPath();mpCtx.ellipse(0,0,barrage?11:8,barrage?7:5.5,0,0,Math.PI*2);mpCtx.fill();if(barrage){mpCtx.fillStyle='#fff';for(let i=0;i<4;i++){const tx=-4+i*2.3;mpCtx.beginPath();mpCtx.moveTo(tx,-2.2);mpCtx.lineTo(tx+1,0);mpCtx.lineTo(tx+2,-2.2);mpCtx.closePath();mpCtx.fill();}}mpCtx.restore();
       } else if (fx.kind === 'edenTaunt') {
         const p=Math.sin(progress*Math.PI),rr=Number(fx.radius||92);mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.globalCompositeOperation='lighter';
         mpCtx.fillStyle=`rgba(0,0,0,${.52*p})`;mpCtx.beginPath();mpCtx.arc(0,0,24+progress*rr*.45,0,Math.PI*2);mpCtx.fill();

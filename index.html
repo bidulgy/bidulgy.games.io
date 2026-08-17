@@ -7361,7 +7361,7 @@ button {
   </div>
 
   <script>
-    window.BIDULGY_BUILD_VERSION = '2026-08-17-error-rarity-v1';
+    window.BIDULGY_BUILD_VERSION = '2026-08-17-error-visual-v2';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -11255,7 +11255,7 @@ function requestGachaDraw(count) {
         attackSfxWindowCount = 0;
       }
       const rarityKey = String(data.rarityKey || 'common');
-      const highTier = ['mythic', 'secret', 'galaxy', 'admin'].includes(rarityKey);
+      const highTier = ['mythic', 'secret', 'galaxy', 'error', 'admin'].includes(rarityKey);
       const throttleKey = `${unitId}:${skill}`;
       const lastAt = Number(attackSfxLastByUnit.get(throttleKey) || 0);
       const minGap = isSkill ? 18 : (highTier ? 34 : 48);
@@ -13176,6 +13176,7 @@ function requestGachaDraw(count) {
         phoenix: 'phoenixBreath',
         astralChronomancer: 'timeRift',
         eden: 'edenBolt',
+        errorEntity: 'errorPacket',
         eclipse: 'eclipseSlash',
         cherrySamurai: 'sakuraWave'
       };
@@ -13213,6 +13214,7 @@ function requestGachaDraw(count) {
         edenRush: .82,
         edenTaunt: .78,
         edenDeadeye: .92,
+        errorPacket: .44,
         timeRift: .48,
         timeRiftGolden: .52,
         eclipseSlash: .34,
@@ -17866,6 +17868,163 @@ function requestGachaDraw(count) {
       g.restore();
     }
 
+    function drawErrorEntityAuraArt(g, time, unit, quality = 1) {
+      const t = time * .001;
+      const seed = Number(unit.animationOffset || 0) * 7.73 + 1.17;
+      const pulse = .82 + Math.sin(t * 6.3 + seed) * .13;
+      const attack = Number(unit.attackAnimation || 0);
+      g.save();
+
+      // 바닥: 정상적인 마법진이 아니라 좌표가 끊어진 '손상된 UI'처럼 보이는 링.
+      g.save();
+      g.translate(0, 12);
+      g.scale(1, .38);
+      g.globalCompositeOperation = 'lighter';
+      for (let ring = 0; ring < 3; ring += 1) {
+        const r = 48 + ring * 13 + Math.sin(t * (2.1 + ring * .3) + seed) * 3;
+        g.strokeStyle = ring === 1
+          ? `rgba(0,255,112,${(.28 + attack*.12) * pulse})`
+          : `rgba(75,255,140,${(.18 - ring*.03) * pulse})`;
+        g.lineWidth = 2.4 - ring * .45;
+        g.setLineDash(ring === 0 ? [18, 5, 3, 11] : [8 + ring*4, 9, 2, 7]);
+        g.lineDashOffset = (ring % 2 ? 1 : -1) * t * (22 + ring * 8);
+        g.beginPath();
+        g.arc(0, 0, r, 0, Math.PI * 2);
+        g.stroke();
+      }
+      g.setLineDash([]);
+      // 검은 데이터 결손 조각.
+      const blocks = quality > .7 ? 13 : 7;
+      for (let i = 0; i < blocks; i += 1) {
+        const a = seed + i * 2.399 + t * (.35 + (i%4)*.04);
+        const r = 27 + (i % 5) * 10;
+        const x = Math.cos(a) * r;
+        const y = Math.sin(a) * r * .72;
+        g.save();
+        g.translate(x, y);
+        g.rotate(a + (i%2 ? t : -t) * .8);
+        g.fillStyle = i % 3 === 0 ? 'rgba(0,0,0,.92)' : `rgba(0,255,102,${.17 + .08*(i%3)})`;
+        g.fillRect(-4-(i%2)*2, -2, 8+(i%3)*3, 4+(i%2)*2);
+        g.restore();
+      }
+      g.restore();
+
+      // 공중의 깨진 코드 조각과 수직 스캔 노이즈.
+      const motes = quality > .7 ? 17 : 9;
+      for (let i = 0; i < motes; i += 1) {
+        const phase = seed + i * 1.73;
+        const x = Math.sin(phase * 2.2) * (27 + (i%4)*10) + Math.sin(t*5+i)*3;
+        const y = 22 - ((t * (19 + i%5*3) + i*11) % 73);
+        const alpha = .24 + .28 * (.5 + .5*Math.sin(t*8 + i));
+        g.fillStyle = i%4===0 ? `rgba(255,255,255,${alpha*.45})` : `rgba(0,255,102,${alpha})`;
+        if (i%3===0) {
+          g.fillRect(x, y, 1.5, 9 + (i%4)*3);
+        } else {
+          g.fillRect(x, y, 3 + (i%3)*2, 2 + (i%2));
+        }
+      }
+      g.restore();
+    }
+
+    function drawErrorEntityBodyArt(g, time, unit, quality = 1) {
+      const t = time * .001;
+      const seed = Number(unit.animationOffset || 0) * 5.37 + 2.4;
+      const attack = Number(unit.attackAnimation || 0);
+      const hover = Math.sin(t * 3.1 + seed) * 1.8;
+      const glitch = Math.sin(t * 21 + seed) > .82 ? 3.5 : 0;
+      g.save();
+      g.translate(glitch * (Math.sin(t*47)>0 ? 1 : -1), hover);
+
+      // 낮고 넓은 그림자. 몸이 떠 있어도 지면과 연결된 느낌을 유지.
+      g.fillStyle = 'rgba(0,0,0,.48)';
+      g.beginPath(); g.ellipse(0, 25-hover, 28, 8, 0, 0, Math.PI*2); g.fill();
+      g.strokeStyle = `rgba(0,255,102,${.20 + attack*.18})`;
+      g.lineWidth = 1.5;
+      g.beginPath(); g.ellipse(0, 24-hover, 22, 5.5, 0, 0, Math.PI*2); g.stroke();
+
+      // 뒤쪽에 완전한 원이 아닌 부서진 ERROR 헤일로.
+      g.save(); g.translate(0,-15); g.rotate(t*.42);
+      g.strokeStyle = 'rgba(0,255,102,.58)'; g.lineWidth = 3;
+      for (let i=0;i<6;i++) {
+        const a=i*Math.PI/3 + (i%2)*.18;
+        g.beginPath();g.arc(0,0,28+(i%2)*3,a,a+.46);g.stroke();
+      }
+      g.fillStyle='rgba(0,0,0,.9)';
+      for(let i=0;i<5;i++) { const a=i*1.83+t*.3; g.save();g.rotate(a);g.fillRect(25,-3,9+(i%3)*3,6);g.restore(); }
+      g.restore();
+
+      // 몸통: 사람 갑옷이 아니라 서로 맞지 않는 데이터 판들이 떠 있는 구조.
+      const torso = g.createLinearGradient(-18,-12,18,18);
+      torso.addColorStop(0,'#020403'); torso.addColorStop(.35,'#0b1510'); torso.addColorStop(.66,'#000'); torso.addColorStop(1,'#101713');
+      g.fillStyle=torso;g.strokeStyle='rgba(0,255,102,.72)';g.lineWidth=1.4;
+      g.beginPath();
+      g.moveTo(-20,-7);g.lineTo(-11,-17);g.lineTo(10,-15);g.lineTo(20,-5);g.lineTo(13,18);g.lineTo(2,22);g.lineTo(-15,15);g.closePath();
+      g.fill();g.stroke();
+      // 일부 판은 일부러 좌표가 어긋나 있음.
+      g.fillStyle='#020202';g.strokeStyle='rgba(105,255,158,.55)';
+      g.save();g.translate(-5+Math.sin(t*17)*1.3,0);g.rotate(-.08);g.beginPath();g.moveTo(-11,-8);g.lineTo(1,-12);g.lineTo(3,6);g.lineTo(-13,10);g.closePath();g.fill();g.stroke();g.restore();
+      g.save();g.translate(8+Math.cos(t*19)*1.2,2);g.rotate(.10);g.beginPath();g.moveTo(-2,-11);g.lineTo(11,-7);g.lineTo(8,12);g.lineTo(-4,9);g.closePath();g.fill();g.stroke();g.restore();
+
+      // 중앙 오류 코어: 세로로 찢긴 초록 균열.
+      g.save();g.globalCompositeOperation='lighter';g.shadowBlur=18;g.shadowColor='#00ff66';
+      const core=g.createLinearGradient(0,-12,0,16);core.addColorStop(0,'rgba(240,255,245,.95)');core.addColorStop(.32,'#54ff91');core.addColorStop(.68,'#00ff66');core.addColorStop(1,'rgba(0,255,102,0)');
+      g.fillStyle=core;g.beginPath();g.moveTo(-2,-12);g.lineTo(4,-5);g.lineTo(-1,2);g.lineTo(3,9);g.lineTo(-2,17);g.lineTo(-5,7);g.lineTo(-1,0);g.lineTo(-5,-7);g.closePath();g.fill();g.restore();
+
+      // 머리: 얼굴이 없는 깨진 직육면체 마스크. ERR 글자는 짧게 깜박임.
+      g.save();g.translate(0,-25);g.rotate(Math.sin(t*4.2)*.025);
+      g.fillStyle='#010202';g.strokeStyle='rgba(0,255,102,.75)';g.lineWidth=1.5;
+      g.beginPath();g.moveTo(-14,-9);g.lineTo(12,-11);g.lineTo(17,-3);g.lineTo(11,9);g.lineTo(-13,8);g.lineTo(-17,0);g.closePath();g.fill();g.stroke();
+      // 화면 노이즈 슬릿
+      g.fillStyle='rgba(0,255,102,.92)';g.shadowBlur=11;g.shadowColor='#00ff66';
+      g.fillRect(-10,-2,20,2.3);
+      g.fillStyle='rgba(0,0,0,.9)';g.fillRect(-3,-5,4,9);
+      if (Math.sin(t*16+seed)>.45) { g.shadowBlur=0;g.font='900 6px monospace';g.textAlign='center';g.fillStyle='rgba(138,255,178,.9)';g.fillText('ERR',0,6); }
+      // 머리 한 조각이 옆으로 분리되어 글리치처럼 떠 있음.
+      g.shadowBlur=0;g.fillStyle='#000';g.strokeStyle='rgba(0,255,102,.55)';g.fillRect(15+Math.sin(t*23)*2,-6,7,8);g.strokeRect(15+Math.sin(t*23)*2,-6,7,8);
+      g.restore();
+
+      // 어깨/팔: 관절 대신 분리된 블록이 초록 데이터선으로 연결.
+      for(const side of [-1,1]){
+        const sx=side*18, sy=-7;
+        g.fillStyle='#050807';g.strokeStyle='rgba(0,255,102,.56)';g.lineWidth=1.2;
+        g.beginPath();g.moveTo(sx-side*2,sy-7);g.lineTo(sx+side*10,sy-4);g.lineTo(sx+side*8,sy+7);g.lineTo(sx-side*3,sy+5);g.closePath();g.fill();g.stroke();
+        const elbowX=side*(26+attack*2), elbowY=5+side*Math.sin(t*5+side)*1.5;
+        g.strokeStyle='rgba(0,255,102,.42)';g.lineWidth=2;g.setLineDash([3,3]);g.beginPath();g.moveTo(sx+side*5,sy+3);g.lineTo(elbowX,elbowY);g.stroke();g.setLineDash([]);
+        g.fillStyle='#000';g.strokeStyle='rgba(122,255,168,.62)';g.beginPath();g.roundRect(elbowX-5,elbowY-6,10,12,2);g.fill();g.stroke();
+        const handX=side*(31+attack*3), handY=14;
+        g.strokeStyle='rgba(0,255,102,.38)';g.beginPath();g.moveTo(elbowX,elbowY+4);g.lineTo(handX,handY);g.stroke();
+        g.fillStyle='#050705';g.fillRect(handX-4,handY-4,8,8);
+      }
+
+      // 하체는 긴 다리가 아니라 작은 분리 블록 2개만 남겨 비인간적인 실루엣.
+      for(const side of [-1,1]){
+        const x=side*8 + Math.sin(t*5+side)*1.2;
+        g.fillStyle='#030504';g.strokeStyle='rgba(0,255,102,.46)';g.beginPath();g.roundRect(x-6,16,12,11,2);g.fill();g.stroke();
+        g.fillStyle='rgba(0,255,102,.24)';g.fillRect(x-4,27,8,2);
+      }
+      g.restore();
+    }
+
+    function drawErrorEntityWeaponArt(g, unit, time, attack = 0) {
+      const t=time*.001;
+      const pulse=.78+Math.sin(t*12)*.18;
+      g.save();
+      // 손에 든 총 대신 앞쪽 공간이 찢어져 '데이터 포트'가 열림.
+      g.globalCompositeOperation='lighter';
+      for(let i=0;i<3;i++){
+        g.save();g.rotate(t*(i%2?1:-1)*(1.6+i*.25)+i*2.1);
+        g.strokeStyle=i===0?'rgba(190,255,211,.9)':`rgba(0,255,102,${.55-i*.10})`;
+        g.lineWidth=2.3-i*.4;g.setLineDash([8+i*2,4,2,5]);
+        g.beginPath();g.arc(28,0,10+i*4,0,Math.PI*2);g.stroke();g.setLineDash([]);g.restore();
+      }
+      g.shadowBlur=20+attack*12;g.shadowColor='#00ff66';
+      g.fillStyle=`rgba(0,255,102,${.42+.3*attack})`;g.beginPath();g.arc(28,0,5+attack*3,0,Math.PI*2);g.fill();
+      g.shadowBlur=0;
+      // 포트 주변에 불규칙한 검은 데이터 파편.
+      for(let i=0;i<5;i++){const a=t*2+i*1.257,rr=14+(i%2)*5;g.save();g.translate(28+Math.cos(a)*rr,Math.sin(a)*rr);g.rotate(a);g.fillStyle='#020202';g.strokeStyle='rgba(0,255,102,.7)';g.lineWidth=.8;g.fillRect(-4,-2,8+(i%2)*3,4);g.strokeRect(-4,-2,8+(i%2)*3,4);g.restore();}
+      g.restore();
+    }
+
     function drawStandingUnitBody(unit, time) {
       const id = unit.unitId;
       const attackPulse = (unit.attackAnimation || 0) * .8;
@@ -17888,6 +18047,7 @@ function requestGachaDraw(count) {
       if (id === 'phoenix') { drawPhoenixPremiumBodyArt(ctx, time, unit, 1); return; }
       if (id === 'iceQueen') { drawIceQueenPremiumBodyArt(ctx, time, unit, 1); return; }
       if (id === 'eden') { drawEdenPremiumBodyArt(ctx, time, unit, 1); return; }
+      if (id === 'errorEntity') { drawErrorEntityBodyArt(ctx, time, unit, 1); return; }
 
       if (id === 'starterArcher') {
         drawBoots('#493326', 7);
@@ -18146,6 +18306,8 @@ function requestGachaDraw(count) {
         }
       } else if (unit.unitId === 'eden') {
         drawEdenPremiumWeaponArt(ctx, unit, time, attack);
+      } else if (unit.unitId === 'errorEntity') {
+        drawErrorEntityWeaponArt(ctx, unit, time, attack);
       } else if (unit.unitId === 'eclipse') {
         drawEclipseTwinBladesArt(ctx, time, unit, attack, 1);
       } else if (unit.unitId === 'skyDragonKnight') {
@@ -18221,11 +18383,12 @@ function requestGachaDraw(count) {
       const data = UNIT_DATA[unit.unitId];
       if (unit.unitId === 'eclipse') drawEclipseGalaxyAuraArt(ctx, time, unit, 1);
       if (unit.unitId === 'eden') drawEdenAuraArt(ctx, time, unit, 1);
+      if (unit.unitId === 'errorEntity') drawErrorEntityAuraArt(ctx, time, unit, 1);
       const auraPulse = .36 + Math.sin(time * .005 + unit.animationOffset) * .10;
       ctx.beginPath();
       ctx.arc(0, 2, 31, 0, Math.PI * 2);
       ctx.strokeStyle = `${data.color}${Math.round(auraPulse * 255).toString(16).padStart(2, '0')}`;
-      ctx.lineWidth = unit.unitId === 'eclipse' ? 3.6 : (unit.unitId === 'eden' ? 3.2 : (unit.unitId === 'skyDragonKnight' || unit.unitId === 'astralChronomancer' || unit.unitId === 'poseidon' || unit.unitId === 'phoenix' ? 3 : 1.5));
+      ctx.lineWidth = unit.unitId === 'eclipse' ? 3.6 : (unit.unitId === 'errorEntity' ? 3.4 : (unit.unitId === 'eden' ? 3.2 : (unit.unitId === 'skyDragonKnight' || unit.unitId === 'astralChronomancer' || unit.unitId === 'poseidon' || unit.unitId === 'phoenix' ? 3 : 1.5)));
       ctx.stroke();
 
       drawStandingUnitBody(unit, time);
@@ -18531,7 +18694,46 @@ function requestGachaDraw(count) {
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
 
-        if (shot.effect === 'crystalRay') {
+        if (shot.effect === 'errorPacket') {
+          const p = progress;
+          const flicker = .72 + .28 * Math.abs(Math.sin(p*31 + Number(shot.seed||0)));
+          const bladeLen = 52 + Math.sin(p*Math.PI)*16;
+          const tailLen = 82;
+          ctx.save();
+          ctx.globalCompositeOperation='lighter';
+          // 궤적은 하나의 직선이 아니라 짧게 끊긴 데이터 패킷들로 보이게 한다.
+          for(let i=0;i<7;i++){
+            const back=18+i*10;
+            const side=Math.sin(Number(shot.seed||0)+i*2.4+p*26)*(3+i*.55);
+            const px=x-ux*back+nx*side, py=y-uy*back+ny*side;
+            ctx.save();ctx.translate(px,py);ctx.rotate(angle+(i%2?.08:-.08));
+            ctx.fillStyle=i%3===0?'rgba(0,0,0,.94)':`rgba(0,255,102,${Math.max(0,.64-i*.065)*fade})`;
+            ctx.shadowBlur=i%3===0?0:9;ctx.shadowColor='#00ff66';
+            ctx.fillRect(-6-(i%2)*3,-2,12+(i%3)*4,4+(i%2));ctx.restore();
+          }
+          // 메인 탄환: 총알이 아니라 찢어진 데이터 칼날/포인터.
+          ctx.translate(x,y);ctx.rotate(angle);
+          ctx.shadowBlur=28;ctx.shadowColor='#00ff66';
+          const core=ctx.createLinearGradient(-bladeLen,0,28,0);
+          core.addColorStop(0,'rgba(0,255,102,0)');core.addColorStop(.34,`rgba(0,255,102,${.24*fade})`);core.addColorStop(.66,'rgba(0,0,0,.98)');core.addColorStop(.87,`rgba(60,255,132,${.92*fade})`);core.addColorStop(1,'rgba(238,255,244,.98)');
+          ctx.fillStyle=core;ctx.strokeStyle=`rgba(0,255,102,${.9*flicker*fade})`;ctx.lineWidth=1.8;
+          ctx.beginPath();ctx.moveTo(-bladeLen,-4);ctx.lineTo(-20,-10);ctx.lineTo(18,-6);ctx.lineTo(34,0);ctx.lineTo(18,6);ctx.lineTo(-8,4);ctx.lineTo(-22,11);ctx.closePath();ctx.fill();ctx.stroke();
+          // 내부가 찢어진 검정 홈.
+          ctx.fillStyle='rgba(0,0,0,.98)';ctx.beginPath();ctx.moveTo(-28,-2);ctx.lineTo(13,-3);ctx.lineTo(24,0);ctx.lineTo(10,2);ctx.lineTo(-18,1);ctx.closePath();ctx.fill();
+          // RGB 대신 ERROR 고유의 초록/흰색 좌표 어긋남 잔상.
+          ctx.globalAlpha=.42*fade;ctx.translate(-4+Math.sin(p*40)*3,3);ctx.strokeStyle='#baffcf';ctx.lineWidth=1;ctx.stroke();
+          ctx.globalAlpha=1;
+          if (p>.62) {
+            const impact=(p-.62)/.38;
+            ctx.rotate(-angle);ctx.translate(-x,-y);ctx.translate(shot.x2,shot.y2);
+            ctx.globalAlpha=(1-impact)*.85;
+            ctx.strokeStyle='#00ff66';ctx.lineWidth=2.4;ctx.setLineDash([6,4,2,5]);
+            ctx.beginPath();ctx.arc(0,0,16+impact*28,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+            ctx.fillStyle='rgba(0,0,0,.78)';
+            for(let i=0;i<5;i++){const a=Number(shot.seed||0)+i*1.257+impact*2;ctx.save();ctx.rotate(a);ctx.fillRect(12+impact*18,-2,8+i%3*3,4);ctx.restore();}
+          }
+          ctx.restore();
+        } else if (shot.effect === 'crystalRay') {
           const pulse=Math.sin(progress*Math.PI);
           ctx.save();ctx.globalCompositeOperation='lighter';
           const endProgress=Math.min(1,progress*2.4);
@@ -21540,6 +21742,7 @@ function requestGachaDraw(count) {
       edenRush: .82,
       edenTaunt: .78,
       edenDeadeye: .92,
+      errorPacket: .44,
       crystalRay: .72,
       line: .24
     };
@@ -21566,6 +21769,7 @@ function requestGachaDraw(count) {
       poseidon: 'poseidonTrident',
       phoenix: 'phoenixBreath',
       eden: 'edenBolt',
+      errorEntity: 'errorPacket',
       starterMage: 'arcane',
       flameWizard: 'fireball',
       skyDragonKnight: 'dragonLance',
@@ -22927,6 +23131,7 @@ function requestGachaDraw(count) {
         if (id === 'phoenix') { drawPhoenixPremiumBodyArt(mpCtx, time, unit, mpHighLoadFrame ? .60 : .90); return; }
         if (id === 'iceQueen') { drawIceQueenPremiumBodyArt(mpCtx, time, unit, mpHighLoadFrame ? .60 : .90); return; }
         if (id === 'eden') { drawEdenPremiumBodyArt(mpCtx, time, unit, mpHighLoadFrame ? .62 : .92); return; }
+        if (id === 'errorEntity') { drawErrorEntityBodyArt(mpCtx, time, unit, mpHighLoadFrame ? .60 : .90); return; }
 
         if (id === 'starterArcher') {
           drawBoots('#493326', 7);
@@ -23111,6 +23316,8 @@ function requestGachaDraw(count) {
           drawPoseidonPremiumWeaponArt(mpCtx, unit, time, attack);
         } else if (unit.unitId === 'eden') {
           drawEdenPremiumWeaponArt(mpCtx, unit, time, attack);
+        } else if (unit.unitId === 'errorEntity') {
+          drawErrorEntityWeaponArt(mpCtx, unit, time, attack);
         } else if (unit.unitId === 'cherrySamurai') {
           const wallNow=Date.now(),bloom=unit.samuraiBloomCast,bloomActive=bloom&&wallNow>=Number(bloom.startAt||0)&&wallNow<=Number(bloom.endAt||0),bp=bloomActive?Math.max(0,Math.min(1,(wallNow-bloom.startAt)/Math.max(1,bloom.endAt-bloom.startAt))):0;
           for(const offset of [-7,7]){mpCtx.save();mpCtx.translate(0,offset);mpCtx.shadowBlur=bloomActive?(mpHighLoadFrame?18:30):(mpHighLoadFrame?8:13);mpCtx.shadowColor=bloomActive?'#ff4fa5':'#ff9bca';const steel=mpCtx.createLinearGradient(-6,0,63,0);steel.addColorStop(0,bloomActive?'#5b123a':'#23151e');steel.addColorStop(.18,bloomActive?'#ff5eaf':'#987286');steel.addColorStop(.48,'#fffdfd');steel.addColorStop(.72,bloomActive?'#ffaad4':'#dff7ff');steel.addColorStop(1,bloomActive?'#ff3f9d':'#ffb8d8');mpCtx.fillStyle=steel;mpCtx.strokeStyle=bloomActive?'#fff4fb':'#fff2fa';mpCtx.lineWidth=bloomActive?2.2:1.2;mpCtx.beginPath();mpCtx.moveTo(-2,-2.7);mpCtx.lineTo(48,-2.2);mpCtx.quadraticCurveTo(58,-1,66,0);mpCtx.quadraticCurveTo(57,2,48,2.6);mpCtx.lineTo(-2,3);mpCtx.closePath();mpCtx.fill();mpCtx.stroke();mpCtx.shadowBlur=0;mpCtx.fillStyle='#3a2030';mpCtx.fillRect(-11,-4,11,8);mpCtx.fillStyle='#ff8fc8';mpCtx.fillRect(-14,-7,3,14);if(bloomActive&&!mpHighLoadFrame){for(let i=0;i<10;i++){const a=wallNow*.010+i*Math.PI*2/10,px=34+Math.cos(a)*(15+bp*7),py=Math.sin(a)*(8+bp*4);mpCtx.save();mpCtx.translate(px,py);mpCtx.rotate(a+wallNow*.004);mpCtx.fillStyle=`rgba(255,${118+(i%3)*26},${187+(i%2)*28},${.62+bp*.28})`;mpCtx.beginPath();mpCtx.ellipse(0,0,2.4,5.4,.2,0,Math.PI*2);mpCtx.fill();mpCtx.restore();}}mpCtx.restore();}
@@ -23167,6 +23374,7 @@ function requestGachaDraw(count) {
       drawEclipseGalaxyAuraArt(mpCtx, time, unit, mpHighLoadFrame ? .72 : 1);
     }
     if (unit.unitId === 'eden') drawEdenAuraArt(mpCtx,time,unit,mpHighLoadFrame?.62:.9);
+    if (unit.unitId === 'errorEntity') drawErrorEntityAuraArt(mpCtx,time,unit,mpHighLoadFrame?.55:.86);
 
     // 소유 플레이어를 알아보기 쉬운 외곽 링
     mpCtx.beginPath();
@@ -23545,7 +23753,13 @@ function requestGachaDraw(count) {
       mpCtx.lineCap = 'round';
       mpCtx.lineJoin = 'round';
 
-      if (fx.kind === 'crystalRay') {
+      if (fx.kind === 'errorPacket') {
+        const p=progress,flicker=.72+.28*Math.abs(Math.sin(p*31+Number(fx.seed||0))),bladeLen=50+Math.sin(p*Math.PI)*15;
+        mpCtx.save();mpCtx.globalCompositeOperation='lighter';
+        for(let i=0;i<(mpHighLoadFrame?4:7);i++){const back=17+i*10,side=Math.sin(Number(fx.seed||0)+i*2.4+p*26)*(3+i*.5),px=x-ux*back+nx*side,py=y-uy*back+ny*side;mpCtx.save();mpCtx.translate(px,py);mpCtx.rotate(angle+(i%2?.08:-.08));mpCtx.fillStyle=i%3===0?'rgba(0,0,0,.94)':`rgba(0,255,102,${Math.max(0,.64-i*.065)*fade})`;mpCtx.shadowBlur=i%3===0?0:7;mpCtx.shadowColor='#00ff66';mpCtx.fillRect(-6-(i%2)*2,-2,12+(i%3)*4,4+(i%2));mpCtx.restore();}
+        mpCtx.translate(x,y);mpCtx.rotate(angle);mpCtx.shadowBlur=mpHighLoadFrame?16:26;mpCtx.shadowColor='#00ff66';const core=mpCtx.createLinearGradient(-bladeLen,0,28,0);core.addColorStop(0,'rgba(0,255,102,0)');core.addColorStop(.34,`rgba(0,255,102,${.24*fade})`);core.addColorStop(.66,'rgba(0,0,0,.98)');core.addColorStop(.87,`rgba(60,255,132,${.92*fade})`);core.addColorStop(1,'rgba(238,255,244,.98)');mpCtx.fillStyle=core;mpCtx.strokeStyle=`rgba(0,255,102,${.9*flicker*fade})`;mpCtx.lineWidth=1.7;mpCtx.beginPath();mpCtx.moveTo(-bladeLen,-4);mpCtx.lineTo(-20,-10);mpCtx.lineTo(18,-6);mpCtx.lineTo(34,0);mpCtx.lineTo(18,6);mpCtx.lineTo(-8,4);mpCtx.lineTo(-22,11);mpCtx.closePath();mpCtx.fill();mpCtx.stroke();mpCtx.fillStyle='rgba(0,0,0,.98)';mpCtx.beginPath();mpCtx.moveTo(-28,-2);mpCtx.lineTo(13,-3);mpCtx.lineTo(24,0);mpCtx.lineTo(10,2);mpCtx.lineTo(-18,1);mpCtx.closePath();mpCtx.fill();
+        if(p>.62){const impact=(p-.62)/.38;mpCtx.rotate(-angle);mpCtx.translate(-x,-y);mpCtx.translate(fx.x2,y2);mpCtx.globalAlpha=(1-impact)*.8;mpCtx.strokeStyle='#00ff66';mpCtx.lineWidth=2.2;mpCtx.setLineDash([6,4,2,5]);mpCtx.beginPath();mpCtx.arc(0,0,15+impact*26,0,Math.PI*2);mpCtx.stroke();mpCtx.setLineDash([]);}mpCtx.restore();
+      } else if (fx.kind === 'crystalRay') {
         const p=1-Math.max(0,fx.ttl)/Math.max(.001,fx.maxTtl||.72),pulse=Math.sin(Math.min(1,p)*Math.PI);
         mpCtx.save();mpCtx.globalCompositeOperation='lighter';mpCtx.strokeStyle=`rgba(107,238,255,${.3+.55*(1-p)})`;mpCtx.lineWidth=5+10*pulse;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.lineTo(fx.x2,y2);mpCtx.stroke();mpCtx.strokeStyle=`rgba(240,254,255,${.9*(1-p)})`;mpCtx.lineWidth=2.8;mpCtx.stroke();mpCtx.restore();
       } else if (fx.kind === 'arrow') {

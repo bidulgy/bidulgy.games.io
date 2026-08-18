@@ -7487,7 +7487,7 @@ button {
   </div>
 
   <script>
-    window.BIDULGY_BUILD_VERSION = '2026-08-18-error-probability-live-v2';
+    window.BIDULGY_BUILD_VERSION = '2026-08-18-error-probability-fast-v3';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -9890,7 +9890,7 @@ async function logout() {
                   <span>//</span>
                   <span class="error-live-code">${makeErrorLiveCode()}</span>
                 </span>
-                <span class="error-probability-copy">404 · 등급이 존재하지 않습니다</span>
+                
               </div>
             `;
           }
@@ -12267,7 +12267,7 @@ function requestGachaDraw(count) {
       });
     }
 
-    setInterval(refreshErrorLiveCodes, 110);
+    setInterval(refreshErrorLiveCodes, 45);
 
     function getUnitStatusSummary(unit, placed) {
       const summaries = {

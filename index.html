@@ -6686,6 +6686,90 @@ button {
   }
 }
 </style>
+
+<style id="mobileNativeScrollFixV1">
+/* ======================================================
+   모바일 네이티브 스크롤 복구
+   - 메뉴/인벤토리/가챠/덱/온라인/관리자 화면: 손가락 세로 스크롤 허용
+   - 싱글/온라인 전투 캔버스의 터치 조작은 기존대로 유지
+   ====================================================== */
+@media (pointer: coarse), (max-width: 860px) {
+  html,
+  body {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100% !important;
+    max-height: none !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-x: none !important;
+    overscroll-behavior-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y pinch-zoom;
+  }
+
+  /* 현재 열려 있는 일반 화면이 스크롤을 가로막지 않게 한다. */
+  body > .screen:not(.hidden):not(#battleScreen):not(#multiplayerBattleScreen),
+  .invasion-menu,
+  .inventory-screen,
+  .admin-screen,
+  .mp-lobby-screen {
+    position: relative;
+    height: auto !important;
+    min-height: 100dvh;
+    max-height: none !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+    overscroll-behavior-y: auto !important;
+    touch-action: pan-y pinch-zoom !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 메인 메뉴의 기존 overflow:hidden 때문에 아래 내용이 잘리던 문제 해결 */
+  .invasion-menu {
+    overflow-x: clip !important;
+    overflow-y: visible !important;
+  }
+
+  /* 실제 내부 스크롤이 필요한 창은 자체적으로 부드럽게 스크롤 */
+  .reward-panel,
+  .mp-victory-card,
+  .stage-map-info-panel,
+  .admin-card,
+  .admin-action-box,
+  .probability-list,
+  .inventory-content,
+  .dice-inventory-grid,
+  .unit-grid {
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y pinch-zoom;
+  }
+
+  /* 전체화면 컷신 안에서 결과/보상 패널은 세로 스크롤 허용 */
+  .cutscene-overlay .reward-panel,
+  .eden-reveal-results,
+  .mp-victory-card {
+    overflow-y: auto !important;
+    overscroll-behavior-y: contain;
+    touch-action: pan-y !important;
+  }
+
+  /* 전투는 화면 자체가 움직이면 안 된다. */
+  #battleScreen:not(.hidden),
+  #multiplayerBattleScreen:not(.hidden),
+  .mp-battle-screen:not(.hidden) {
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    touch-action: none !important;
+  }
+
+  #battleScreen #gameCanvas,
+  #mpCanvas {
+    touch-action: none !important;
+  }
+}
+</style>
+
 </head>
 
 <body>
@@ -7361,7 +7445,7 @@ button {
   </div>
 
   <script>
-    window.BIDULGY_BUILD_VERSION = '2026-08-17-error-visual-v2';
+    window.BIDULGY_BUILD_VERSION = '2026-08-18-mobile-scroll-fix-v1';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -8055,8 +8139,26 @@ function applyStagePreview(stageId = selectedStage) {
         maxPlaced: 1,
         footprintRadius: 112,
         multiplayerFootprintRadius: 94,
+        errorStackMax: 5,
+        corruptDuration: 4,
+        corruptDamageTakenMultiplier: 1.35,
+        corruptSlow: 0.30,
+        error404Every: 5,
+        error404Targets: 4,
+        error404Delay: 1.2,
+        error404Radius: 75,
+        error404Multiplier: 2.5,
+        rollbackEvery: 10,
+        rollbackDistance: 120,
+        rollbackBossMultiplier: 4,
+        systemFailureEvery: 25,
+        systemFailureMultiplier: 6,
+        systemFailureStunDuration: 2,
+        deleteEvery: 50,
+        deleteNormalCount: 3,
+        deleteBossMultiplier: 15,
         color: '#00ff66',
-        skillText: 'ERROR:404 · 능력 데이터가 손상되었습니다. 전장에는 한 번에 1기만 배치할 수 있습니다.'
+        skillText: 'DATA CUT: 평타 적중 시 오류 스택 +1. 5스택이면 CORRUPTED(4초간 이동속도 -30%, 받는 피해 +35%). 5타마다 404 표식을 최대 4명에게 남겨 1.2초 뒤 반경 75에 평타×2.5 폭발. 10타마다 ROLLBACK으로 일반 적을 120만큼 뒤로 되돌리고 보스에게 평타×4. 25타마다 SYSTEM FAILURE로 전 적에게 평타×6, 일반 적 2초 정지. 50타마다 DELETE로 가장 앞 일반 적 3명을 즉시 삭제하고 보스에게 평타×15. 한 맵에 1기만 배치할 수 있습니다.'
       },
       eclipse: {
         id: 'eclipse',
@@ -12378,6 +12480,7 @@ function requestGachaDraw(count) {
       enemy.phoenixSlowRemaining = Math.max(0, Number(enemy.phoenixSlowRemaining || 0) - dt);
       enemy.chillRemaining = Math.max(0, Number(enemy.chillRemaining || 0) - dt);
       enemy.hardFreezeRemaining = Math.max(0, Number(enemy.hardFreezeRemaining || 0) - dt);
+      enemy.errorCorruptedRemaining = Math.max(0, Number(enemy.errorCorruptedRemaining || 0) - dt);
       if (enemy.chillRemaining <= 0) enemy.chillStacks = 0;
 
       if (Number(enemy.burnRemaining || 0) > 0) {
@@ -12422,6 +12525,21 @@ function requestGachaDraw(count) {
           setBattleMessage(`크리스탈 골렘이 최대체력의 30% 보호막 ${Math.round(amount)}을 생성했습니다!`);
           enemy.crystalShieldTimer += Number(enemy.crystalShieldInterval || 10);
         }
+      }
+
+      if (Array.isArray(enemy.error404Marks) && enemy.error404Marks.length) {
+        const keepErrorMarks = [];
+        for (const mark of enemy.error404Marks) {
+          mark.remaining = Number(mark.remaining || 0) - dt;
+          if (mark.remaining > 0) { keepErrorMarks.push(mark); continue; }
+          const radius = Number(mark.radius || UNIT_DATA.errorEntity.error404Radius || 75);
+          battle.shots.push({x1:enemy.x,y1:enemy.y,x2:enemy.x,y2:enemy.y,life:.72,maxLife:.72,color:'#00ff66',effect:'error404',seed:Number(mark.seed||Math.random()*1000),radius});
+          const victims = battle.enemies.filter(v => !v.dead && !v.soilPileState && Number(v.reviveInvulnerableRemaining||0)<=0 && Math.hypot(v.x-enemy.x,v.y-enemy.y)<=radius+Number(v.radius||0)*.25);
+          victims.forEach(v => applyDamageToEnemy(v, Number(mark.damage || 0)));
+          if (enemy.dead) break;
+        }
+        enemy.error404Marks = enemy.dead ? [] : keepErrorMarks;
+        if (enemy.dead) return;
       }
 
       if (Array.isArray(enemy.sakuraMarks) && enemy.sakuraMarks.length) {
@@ -12588,6 +12706,7 @@ function requestGachaDraw(count) {
       if (Number(enemy.wetRemaining || 0) > 0) multiplier *= Math.max(.05, 1 - Number(enemy.wetSlow || .25));
       if (Number(enemy.phoenixSlowRemaining || 0) > 0) multiplier *= Math.max(.05, 1 - Number(enemy.phoenixSlow || .25));
       if (Number(enemy.chillRemaining || 0) > 0) multiplier *= Math.max(.05, 1 - Number(enemy.chillSlow || .25));
+      if (Number(enemy.errorCorruptedRemaining || 0) > 0) multiplier *= Math.max(.05, 1 - Number(UNIT_DATA.errorEntity?.corruptSlow || .30));
       return multiplier;
     }
 
@@ -13215,6 +13334,11 @@ function requestGachaDraw(count) {
         edenTaunt: .78,
         edenDeadeye: .92,
         errorPacket: .44,
+        error404: .72,
+        errorCorrupt: .72,
+        errorRollback: .62,
+        errorSystem: .95,
+        errorDelete: .82,
         timeRift: .48,
         timeRiftGolden: .52,
         eclipseSlash: .34,
@@ -13232,6 +13356,9 @@ function requestGachaDraw(count) {
       if (!enemy || enemy.dead || enemy.soilPileState || Number(enemy.reviveInvulnerableRemaining || 0) > 0) return false;
 
       let remainingDamage = Math.max(0, Number(damage || 0));
+      if (Number(enemy.errorCorruptedRemaining || 0) > 0 && remainingDamage > 0) {
+        remainingDamage *= Number(UNIT_DATA.errorEntity?.corruptDamageTakenMultiplier || 1.35);
+      }
       if (Number(enemy.shield || 0) > 0 && remainingDamage > 0) {
         const before = Number(enemy.shield || 0);
         const absorbed = Math.min(before, remainingDamage);
@@ -14238,6 +14365,149 @@ function requestGachaDraw(count) {
       waveVictims.forEach(enemy => applyDamageToEnemy(enemy, placed.damage));
     }
 
+
+    function applyErrorCorruptionStack(enemy) {
+      const data = UNIT_DATA.errorEntity;
+      if (!enemy || enemy.dead || enemy.soilPileState || Number(enemy.reviveInvulnerableRemaining || 0) > 0) return;
+      enemy.errorStacks = Number(enemy.errorStacks || 0) + 1;
+      if (enemy.errorStacks < Number(data.errorStackMax || 5)) return;
+      enemy.errorStacks = 0;
+      enemy.errorCorruptedRemaining = Math.max(Number(enemy.errorCorruptedRemaining || 0), Number(data.corruptDuration || 4));
+      battle.shots.push({
+        x1: enemy.x, y1: enemy.y, x2: enemy.x, y2: enemy.y,
+        life: .72, maxLife: .72, color: '#00ff66', effect: 'errorCorrupt', seed: Math.random()*1000,
+        radius: Math.max(42, Number(enemy.radius || 18) + 28)
+      });
+    }
+
+    function rewindEnemyAlongPath(enemy, amount = 120) {
+      if (!enemy || enemy.dead || enemy.type !== 'normal') return false;
+      let remaining = Math.max(0, Number(amount || 0));
+      let moved = false;
+      while (remaining > .5 && enemy.targetIndex > 0) {
+        const previousIndex = Math.max(0, Number(enemy.targetIndex || 1) - 1);
+        const previous = path[previousIndex];
+        if (!previous) break;
+        const dx = previous.x - enemy.x;
+        const dy = previous.y - enemy.y;
+        const distance = Math.hypot(dx, dy);
+        if (distance <= 1) {
+          if (enemy.targetIndex <= 1) break;
+          enemy.targetIndex -= 1;
+          continue;
+        }
+        const step = Math.min(remaining, distance);
+        enemy.x += dx / distance * step;
+        enemy.y += dy / distance * step;
+        remaining -= step;
+        moved = true;
+        if (step >= distance - .5 && enemy.targetIndex > 1) enemy.targetIndex -= 1;
+        else break;
+      }
+      return moved;
+    }
+
+    function triggerError404(placed) {
+      const data = UNIT_DATA.errorEntity;
+      const targets = [...battle.enemies]
+        .filter(enemy => !enemy.dead && !enemy.soilPileState && Number(enemy.reviveInvulnerableRemaining || 0) <= 0)
+        .sort((a,b) => (Number(b.targetIndex||0)-Number(a.targetIndex||0)) || (b.x-a.x))
+        .slice(0, Number(data.error404Targets || 4));
+      const delay = Number(data.error404Delay || 1.2);
+      const damage = Number(placed.damage || data.damage) * Number(data.error404Multiplier || 2.5);
+      targets.forEach((enemy, index) => {
+        enemy.error404Marks ||= [];
+        enemy.error404Marks.push({ remaining: delay, max: delay, damage, radius: Number(data.error404Radius || 75), seed: Math.random()*1000 + index*37 });
+      });
+      if (targets.length) {
+        playUnitAttackSound('errorEntity', { skill: 'error404', volume: 1.22 });
+        setBattleMessage(`ERROR://404 · ${targets.length}개 대상 데이터 손상 예약`);
+      }
+    }
+
+    function triggerErrorRollback(placed) {
+      const data = UNIT_DATA.errorEntity;
+      let rewound = 0;
+      let bosses = 0;
+      for (const enemy of battle.enemies) {
+        if (enemy.dead || enemy.soilPileState || Number(enemy.reviveInvulnerableRemaining || 0) > 0) continue;
+        if (enemy.type === 'normal') {
+          if (rewindEnemyAlongPath(enemy, Number(data.rollbackDistance || 120))) rewound += 1;
+          battle.shots.push({x1:enemy.x,y1:enemy.y,x2:enemy.x,y2:enemy.y,life:.62,maxLife:.62,color:'#00ff66',effect:'errorRollback',seed:Math.random()*1000,radius:Number(enemy.radius||18)+22});
+        } else {
+          applyDamageToEnemy(enemy, Number(placed.damage || data.damage) * Number(data.rollbackBossMultiplier || 4));
+          bosses += 1;
+        }
+      }
+      playUnitAttackSound('errorEntity', { skill: 'errorRollback', volume: 1.28 });
+      setBattleMessage(`ERROR://ROLLBACK · 일반 적 ${rewound}명 되감기${bosses ? ` · 보스 ${bosses}명 ×4 피해` : ''}`);
+    }
+
+    function triggerErrorSystemFailure(placed) {
+      const data = UNIT_DATA.errorEntity;
+      const damage = Number(placed.damage || data.damage) * Number(data.systemFailureMultiplier || 6);
+      const stun = Number(data.systemFailureStunDuration || 2);
+      let hits = 0;
+      for (const enemy of [...battle.enemies]) {
+        if (enemy.dead || enemy.soilPileState || Number(enemy.reviveInvulnerableRemaining || 0) > 0) continue;
+        applyDamageToEnemy(enemy, damage);
+        hits += 1;
+        if (!enemy.dead && enemy.type === 'normal') {
+          enemy.timeStunDuration = stun;
+          enemy.timeStunRemaining = Math.max(Number(enemy.timeStunRemaining || 0), stun);
+          enemy.timeStunSource = 'error';
+        }
+      }
+      battle.shots.push({x1:canvas.width/2,y1:canvas.height/2,x2:canvas.width/2,y2:canvas.height/2,life:.95,maxLife:.95,color:'#00ff66',effect:'errorSystem',seed:Math.random()*1000,radius:Math.max(canvas.width,canvas.height)*.58});
+      playUnitAttackSound('errorEntity', { skill: 'errorSystem', volume: 1.42 });
+      setBattleMessage(`ERROR://SYSTEM_FAILURE · ${hits}개 개체에 평타×6 · 일반 적 2초 정지`);
+    }
+
+    function triggerErrorDelete(placed) {
+      const data = UNIT_DATA.errorEntity;
+      const normals = [...battle.enemies]
+        .filter(enemy => !enemy.dead && enemy.type === 'normal' && !enemy.soilPileState && Number(enemy.reviveInvulnerableRemaining || 0) <= 0)
+        .sort((a,b) => (Number(b.targetIndex||0)-Number(a.targetIndex||0)) || (b.x-a.x))
+        .slice(0, Number(data.deleteNormalCount || 3));
+      normals.forEach(enemy => {
+        enemy.noRevive = true;
+        battle.shots.push({x1:enemy.x,y1:enemy.y,x2:enemy.x,y2:enemy.y,life:.82,maxLife:.82,color:'#00ff66',effect:'errorDelete',seed:Math.random()*1000,radius:Number(enemy.radius||18)+34});
+        applyDamageToEnemy(enemy, Number(enemy.health||0) + Number(enemy.shield||0) + 1e9);
+      });
+      const bosses = battle.enemies.filter(enemy => !enemy.dead && enemy.type !== 'normal' && !enemy.soilPileState && Number(enemy.reviveInvulnerableRemaining || 0) <= 0);
+      bosses.forEach(enemy => {
+        battle.shots.push({x1:enemy.x,y1:enemy.y,x2:enemy.x,y2:enemy.y,life:.82,maxLife:.82,color:'#00ff66',effect:'errorDelete',seed:Math.random()*1000,radius:Number(enemy.radius||18)+34});
+        applyDamageToEnemy(enemy, Number(placed.damage || data.damage) * Number(data.deleteBossMultiplier || 15));
+      });
+      playUnitAttackSound('errorEntity', { skill: 'errorDelete', volume: 1.55 });
+      setBattleMessage(`ENTITY DELETED · 일반 적 ${normals.length}명${bosses.length ? ` · 보스 ${bosses.length}명 ×15 피해` : ''}`);
+    }
+
+    function performErrorAttack(placed, target, slowMultiplier = 1) {
+      const data = UNIT_DATA.errorEntity;
+      const angle = Math.atan2(target.y - placed.y, target.x - placed.x);
+      placed.angle = angle;
+      placed.cooldown = placed.fireInterval * slowMultiplier;
+      placed.attackAnimation = 1;
+      placed.attackMode = 'errorCut';
+      placed.attackCount = Number(placed.attackCount || 0) + 1;
+      playUnitAttackSound('errorEntity', { volume: 1.08 });
+      battle.shots.push({
+        x1: placed.x + Math.cos(angle)*30, y1: placed.y - 6 + Math.sin(angle)*30,
+        x2: target.x, y2: target.y,
+        life: getAttackEffectDuration('errorPacket'), maxLife: getAttackEffectDuration('errorPacket'),
+        color: '#00ff66', effect: 'errorPacket', angle, seed: Math.random()*1000
+      });
+      const killed = applyDamageToEnemy(target, Number(placed.damage || data.damage));
+      if (!killed && !target.dead) applyErrorCorruptionStack(target);
+
+      const count = placed.attackCount;
+      if (count % Number(data.error404Every || 5) === 0) triggerError404(placed);
+      if (count % Number(data.rollbackEvery || 10) === 0) triggerErrorRollback(placed);
+      if (count % Number(data.systemFailureEvery || 25) === 0) triggerErrorSystemFailure(placed);
+      if (count % Number(data.deleteEvery || 50) === 0) triggerErrorDelete(placed);
+    }
+
     function updatePlacedUnit(placed, dt) {
       if (UNIT_DATA[placed.unitId]?.stunImmune) placed.stunRemaining = 0;
       else placed.stunRemaining = Math.max(0, (placed.stunRemaining || 0) - dt);
@@ -14310,6 +14580,13 @@ function requestGachaDraw(count) {
         const target = getFrontmostEnemyInRange(placed, placed.range);
         if (!target) return;
         performEdenAttack(placed, target, slowMultiplier);
+        return;
+      }
+
+      if (placed.unitId === 'errorEntity') {
+        const target = getFrontmostEnemyInRange(placed, placed.range);
+        if (!target) return;
+        performErrorAttack(placed, target, slowMultiplier);
         return;
       }
 
@@ -16395,6 +16672,17 @@ function requestGachaDraw(count) {
         const ringStart = -Math.PI / 2;
         ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2.8;
         ctx.beginPath(); ctx.arc(0, 0, 19, ringStart, ringStart + Math.PI * 2 * progress); ctx.stroke();
+        ctx.restore();
+      }
+
+      if (Array.isArray(enemy.error404Marks) && enemy.error404Marks.length) {
+        const mark=enemy.error404Marks[enemy.error404Marks.length-1], max=Math.max(.001,Number(mark.max||1.2)), remain=Math.max(0,Number(mark.remaining||0)), p=1-remain/max;
+        ctx.save();ctx.translate(drawX,drawY-enemy.radius-10);ctx.shadowBlur=16;ctx.shadowColor='#00ff66';ctx.font='900 15px monospace';ctx.textAlign='center';ctx.fillStyle=`rgba(170,255,194,${.72+.28*Math.sin(time*.02)})`;ctx.fillText('404',0,0);
+        ctx.strokeStyle='rgba(0,255,102,.72)';ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.beginPath();ctx.arc(0,8,10+p*8,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+      }
+      if (Number(enemy.errorCorruptedRemaining || 0) > 0) {
+        ctx.save();ctx.translate(drawX,drawY);ctx.globalCompositeOperation='lighter';ctx.strokeStyle='rgba(0,255,102,.62)';ctx.lineWidth=2;ctx.setLineDash([6,3,2,4]);ctx.beginPath();ctx.arc(0,0,enemy.radius+10+Math.sin(time*.018)*3,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+        for(let i=0;i<5;i++){const a=time*.006+i*1.257,d=enemy.radius+12+(i%2)*6;ctx.fillStyle=i%2?'rgba(0,255,102,.72)':'rgba(0,0,0,.88)';ctx.fillRect(Math.cos(a)*d-3,Math.sin(a)*d-2,7+(i%3)*3,4);}
         ctx.restore();
       }
 
@@ -18733,6 +19021,31 @@ function requestGachaDraw(count) {
             for(let i=0;i<5;i++){const a=Number(shot.seed||0)+i*1.257+impact*2;ctx.save();ctx.rotate(a);ctx.fillRect(12+impact*18,-2,8+i%3*3,4);ctx.restore();}
           }
           ctx.restore();
+        } else if (shot.effect === 'error404' || shot.effect === 'errorCorrupt' || shot.effect === 'errorRollback' || shot.effect === 'errorSystem' || shot.effect === 'errorDelete') {
+          const p = progress, alpha = Math.max(0, 1-p), r = Number(shot.radius || 58);
+          ctx.save(); ctx.translate(shot.x1, shot.y1); ctx.globalCompositeOperation='lighter';
+          if (shot.effect === 'errorSystem') {
+            ctx.strokeStyle=`rgba(0,255,102,${.50*alpha})`; ctx.lineWidth=8*(1-p)+2; ctx.setLineDash([18,8,4,9]);
+            ctx.beginPath(); ctx.arc(0,0,Math.max(24,r*p),0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+            ctx.fillStyle=`rgba(0,0,0,${.22*alpha})`; ctx.fillRect(-canvas.width*.6,-canvas.height*.6,canvas.width*1.2,canvas.height*1.2);
+            ctx.font='900 28px monospace'; ctx.textAlign='center'; ctx.fillStyle=`rgba(90,255,145,${.9*alpha})`; ctx.fillText('SYSTEM FAILURE',0,-12);
+            ctx.font='700 15px monospace'; ctx.fillText('0x00000000 // FATAL',0,14);
+          } else if (shot.effect === 'errorDelete') {
+            ctx.strokeStyle=`rgba(0,255,102,${.92*alpha})`;ctx.lineWidth=3;ctx.setLineDash([4,3]);ctx.strokeRect(-r*.75,-r*.75,r*1.5,r*1.5);ctx.setLineDash([]);
+            ctx.fillStyle=`rgba(0,0,0,${.78*alpha})`;ctx.fillRect(-r*.68,-11,r*1.36,22);
+            ctx.font='900 12px monospace';ctx.textAlign='center';ctx.fillStyle=`rgba(185,255,205,${alpha})`;ctx.fillText('ENTITY DELETED',0,1);
+            for(let i=0;i<10;i++){const a=Number(shot.seed||0)+i*.91;ctx.fillStyle=i%2?'#00ff66':'#050505';ctx.fillRect(Math.cos(a)*(18+p*r*.8)-3,Math.sin(a)*(18+p*r*.8)-2,6+(i%3)*3,4);}
+          } else if (shot.effect === 'errorRollback') {
+            ctx.strokeStyle=`rgba(0,255,102,${.76*alpha})`;ctx.lineWidth=2.2;
+            for(let i=0;i<4;i++){const y=(i-1.5)*7;ctx.beginPath();ctx.moveTo(r*.65,y);ctx.lineTo(-r*.55,y);ctx.lineTo(-r*.34,y-5);ctx.moveTo(-r*.55,y);ctx.lineTo(-r*.34,y+5);ctx.stroke();}
+            ctx.font='800 11px monospace';ctx.textAlign='center';ctx.fillStyle=`rgba(175,255,200,${alpha})`;ctx.fillText('ROLLBACK',0,-r*.62);
+          } else {
+            const is404=shot.effect==='error404';
+            ctx.strokeStyle=`rgba(0,255,102,${.88*alpha})`;ctx.lineWidth=is404?4:3;ctx.setLineDash([7,4,2,5]);ctx.beginPath();ctx.arc(0,0,10+p*r,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+            ctx.font=`900 ${is404?22:13}px monospace`;ctx.textAlign='center';ctx.fillStyle=`rgba(185,255,205,${alpha})`;ctx.fillText(is404?'404':'CORRUPTED',0,5);
+            for(let i=0;i<8;i++){const a=Number(shot.seed||0)+i*.785+p*5,d=12+p*r*.85;ctx.fillStyle=i%3===0?'#020202':'#00ff66';ctx.fillRect(Math.cos(a)*d-3,Math.sin(a)*d-2,6+(i%2)*4,4);}
+          }
+          ctx.restore();
         } else if (shot.effect === 'crystalRay') {
           const pulse=Math.sin(progress*Math.PI);
           ctx.save();ctx.globalCompositeOperation='lighter';
@@ -19550,6 +19863,10 @@ function requestGachaDraw(count) {
         return { valid: false, reason: '에덴은 한 맵에 한 유닛만 배치할 수 있습니다.' };
       }
 
+      if (unitData.id === 'errorEntity' && battle.placedUnits.some(unit => unit.unitId === 'errorEntity')) {
+        return { valid: false, reason: 'ERROR는 한 맵에 한 유닛만 배치할 수 있습니다.' };
+      }
+
       const nearby = battle.placedUnits.some(unit => {
         const otherData = UNIT_DATA[unit.unitId] || {};
         const requiredDistance = Math.max(
@@ -19568,7 +19885,9 @@ function requestGachaDraw(count) {
               ? '벚꽃 사무라이의 넓은 배치 영역과 다른 유닛이 겹칩니다.'
               : unitData.id === 'eden'
                 ? '에덴의 공허 영역과 다른 유닛이 겹칩니다.'
-                : '다른 유닛과 너무 가깝습니다.'
+                : unitData.id === 'errorEntity'
+                  ? 'ERROR의 데이터 손상 영역과 다른 유닛이 겹칩니다.'
+                  : '다른 유닛과 너무 가깝습니다.'
         };
       }
 
@@ -20921,6 +21240,10 @@ function requestGachaDraw(count) {
       }
     }
 
+    if (unitId === 'errorEntity' && units.some(item => item.unitId === 'errorEntity')) {
+      return { ok: false, reason: 'ERROR는 한 맵에 한 유닛만 배치할 수 있습니다.' };
+    }
+
     if (units.some(item => {
       const otherData = UNIT_DATA[item.unitId] || {};
       const required = Math.max(
@@ -20936,7 +21259,9 @@ function requestGachaDraw(count) {
           ? '벚꽃 사무라이의 넓은 배치 영역과 다른 유닛이 겹칩니다.'
           : unitId === 'eden'
             ? '에덴의 공허 영역과 다른 유닛이 겹칩니다.'
-            : '다른 유닛과 조금 더 떨어뜨려 배치하세요.'
+            : unitId === 'errorEntity'
+              ? 'ERROR의 데이터 손상 영역과 다른 유닛이 겹칩니다.'
+              : '다른 유닛과 조금 더 떨어뜨려 배치하세요.'
     };
     return { ok: true };
   }
@@ -21390,6 +21715,7 @@ function requestGachaDraw(count) {
   function mpApplyDamage(target, enemy, damage, ownerRole, sideKey = null) {
     if (!enemy || enemy.dead || Number(enemy.soilPileUntil||0)>Date.now() || Number(enemy.reviveInvulnerableUntil||0)>Date.now()) return false;
     let remaining=Math.max(0,Number(damage||0));
+    if(Date.now()<Number(enemy.errorCorruptedUntil||0) && remaining>0) remaining*=Number(UNIT_DATA.errorEntity?.corruptDamageTakenMultiplier||1.35);
     if(Number(enemy.shield||0)>0){const before=enemy.shield,absorb=Math.min(before,remaining);enemy.shield=Math.max(0,before-absorb);remaining-=absorb;if(before>0&&enemy.shield<=0&&enemy.type==='crystalGolemBoss')mpFireCrystalEightWay(enemy,target,'shieldBreak');}
     if(remaining<=0)return false;
     enemy.hp-=remaining;if(enemy.hp>0)return false;
@@ -21458,6 +21784,7 @@ function requestGachaDraw(count) {
     if (now < Number(enemy.wetUntil || 0)) multiplier *= Math.max(.05, 1 - Number(enemy.wetSlow || .25));
     if (now < Number(enemy.phoenixSlowUntil || 0)) multiplier *= Math.max(.05, 1 - Number(enemy.phoenixSlow || .25));
     if (now < Number(enemy.chillUntil || 0)) multiplier *= Math.max(.05, 1 - Number(enemy.chillSlow || .25));
+    if (now < Number(enemy.errorCorruptedUntil || 0)) multiplier *= Math.max(.05, 1 - Number(UNIT_DATA.errorEntity?.corruptSlow || .30));
     return multiplier;
   }
 
@@ -21658,6 +21985,22 @@ function requestGachaDraw(count) {
         if (now < enemy.soilPileUntil) continue;
         enemy.soilPileUntil = 0; enemy.soilRevived = true; enemy.hp = Math.max(1,Math.round(enemy.maxHp*Number(enemy.reviveHpRatio||2/3))); enemy.reviveInvulnerableUntil=Math.max(Number(enemy.reviveInvulnerableUntil||0),now+900); enemy.timeStunUntil=0; enemy.timeStunSource=''; mpSetGolemAction(enemy,'revive',900);
       }
+      if (Array.isArray(enemy.error404Marks) && enemy.error404Marks.length) {
+        const keepErrorMarks=[];
+        for(const mark of enemy.error404Marks){
+          if(Number(mark.explodeAt||0)>now){keepErrorMarks.push(mark);continue;}
+          const radius=Number(mark.radius||UNIT_DATA.errorEntity.error404Radius||75);
+          mpPushFx(enemy.x,enemy.y,enemy.x,enemy.y,'#00ff66',16,sideKey,'error404',{radius});
+          [...(target.enemies||[])].forEach(v=>{
+            if(!v.dead&&Number(v.soilPileUntil||0)<=now&&Number(v.reviveInvulnerableUntil||0)<=now&&Math.hypot(v.x-enemy.x,v.y-enemy.y)<=radius+Number(v.radius||0)*.25){
+              mpApplyDamage(target,v,Number(mark.damage||0),mark.ownerRole||'host',sideKey);
+            }
+          });
+          if(enemy.dead)break;
+        }
+        enemy.error404Marks=enemy.dead?[]:keepErrorMarks;
+        if(enemy.dead)continue;
+      }
       if (Array.isArray(enemy.sakuraMarks) && enemy.sakuraMarks.length) {
         const keepMarks=[];
         for(const mark of enemy.sakuraMarks){
@@ -21743,6 +22086,11 @@ function requestGachaDraw(count) {
       edenTaunt: .78,
       edenDeadeye: .92,
       errorPacket: .44,
+      error404: .72,
+      errorCorrupt: .72,
+      errorRollback: .62,
+      errorSystem: .95,
+      errorDelete: .82,
       crystalRay: .72,
       line: .24
     };
@@ -22072,6 +22420,67 @@ function requestGachaDraw(count) {
     unit.attackMode='sakuraWave';const waveTargets=mpCherrySamuraiWaveTargets(targetState,unit,target),visual=waveTargets.length>=2?waveTargets:[target,target];visual.slice(0,2).forEach((t,i)=>{const wa=Math.atan2(t.y-unit.y,t.x-unit.x),ux=Math.cos(wa),uy=Math.sin(wa),nx=-uy,ny=ux,o=i===0?-9:9;mpPushFx(unit.x+ux*28+nx*o,unit.y+uy*28+ny*o,t.x,t.y,'#dffaff',8,sideKey,'sakuraWave',{seed:Math.random()*1000+i*17,waveIndex:i});});const splashRadius=data.swordWaveSplashRadius||35,waveVictims=new Map();waveTargets.forEach(t=>{[...targetState.enemies].forEach(e=>{if(!e.dead&&Math.hypot(e.x-t.x,e.y-t.y)<=splashRadius)waveVictims.set(e.id,e);});});waveVictims.forEach(e=>mpApplyDamage(targetState,e,mpEffectiveUnitDamage(unit),unit.ownerRole,sideKey));
   }
 
+
+  function mpApplyErrorCorruptionStack(enemy, sideKey) {
+    const d=UNIT_DATA.errorEntity, now=Date.now();
+    if(!enemy||enemy.dead||Number(enemy.soilPileUntil||0)>now||Number(enemy.reviveInvulnerableUntil||0)>now)return;
+    enemy.errorStacks=Number(enemy.errorStacks||0)+1;
+    if(enemy.errorStacks<Number(d.errorStackMax||5))return;
+    enemy.errorStacks=0;
+    enemy.errorCorruptedUntil=Math.max(Number(enemy.errorCorruptedUntil||0),now+Number(d.corruptDuration||4)*1000);
+    mpPushFx(enemy.x,enemy.y,enemy.x,enemy.y,'#00ff66',14,sideKey,'errorCorrupt',{radius:Number(enemy.radius||18)+28});
+  }
+
+  function mpTriggerError404(targetState,sideKey,unit){
+    const d=UNIT_DATA.errorEntity, now=Date.now(), delay=Math.max(200,Number(d.error404Delay||1.2)*1000), damage=mpEffectiveUnitDamage(unit)*Number(d.error404Multiplier||2.5);
+    const targets=[...(targetState.enemies||[])].filter(e=>!e.dead&&Number(e.soilPileUntil||0)<=now&&Number(e.reviveInvulnerableUntil||0)<=now).sort((a,b)=>b.x-a.x).slice(0,Number(d.error404Targets||4));
+    targets.forEach((e,i)=>{e.error404Marks ||= [];e.error404Marks.push({explodeAt:now+delay,maxMs:delay,damage,radius:Number(d.error404Radius||75),ownerRole:unit.ownerRole,seed:Math.random()*1000+i*37});});
+    if(targets.length){playUnitAttackSound('errorEntity',{skill:'error404',volume:1.22});mpState.announcement=`ERROR://404 · ${targets.length}개 대상 데이터 손상 예약`;mpState.announcementUntil=now+1500;}
+  }
+
+  function mpTriggerErrorRollback(targetState,sideKey,unit){
+    const d=UNIT_DATA.errorEntity;let rewound=0,bosses=0;
+    for(const enemy of targetState.enemies||[]){
+      if(enemy.dead||Number(enemy.soilPileUntil||0)>Date.now()||Number(enemy.reviveInvulnerableUntil||0)>Date.now())continue;
+      if(enemy.type==='normal'){if(mpPushEnemyBackward(enemy,Number(d.rollbackDistance||120)))rewound++;mpPushFx(enemy.x,enemy.y,enemy.x,enemy.y,'#00ff66',12,sideKey,'errorRollback',{radius:Number(enemy.radius||18)+22});}
+      else{mpApplyDamage(targetState,enemy,mpEffectiveUnitDamage(unit)*Number(d.rollbackBossMultiplier||4),unit.ownerRole,sideKey);bosses++;}
+    }
+    playUnitAttackSound('errorEntity',{skill:'errorRollback',volume:1.28});mpState.announcement=`ERROR://ROLLBACK · 일반 적 ${rewound}명 되감기${bosses?` · 보스 ${bosses}명 ×4 피해`:''}`;mpState.announcementUntil=Date.now()+1700;
+  }
+
+  function mpTriggerErrorSystemFailure(targetState,sideKey,unit){
+    const d=UNIT_DATA.errorEntity, now=Date.now(), damage=mpEffectiveUnitDamage(unit)*Number(d.systemFailureMultiplier||6), stunMs=Number(d.systemFailureStunDuration||2)*1000;let hits=0;
+    for(const enemy of [...(targetState.enemies||[])]){
+      if(enemy.dead||Number(enemy.soilPileUntil||0)>now||Number(enemy.reviveInvulnerableUntil||0)>now)continue;
+      mpApplyDamage(targetState,enemy,damage,unit.ownerRole,sideKey);hits++;
+      if(!enemy.dead&&enemy.type==='normal'){enemy.timeStunUntil=Math.max(Number(enemy.timeStunUntil||0),now+stunMs);enemy.timeStunDurationMs=stunMs;enemy.timeStunSource='error';}
+    }
+    mpPushFx(MP_WIDTH/2,MP_PATH_Y,MP_WIDTH/2,MP_PATH_Y,'#00ff66',24,sideKey,'errorSystem',{radius:Math.max(MP_WIDTH,MP_HEIGHT)*.52});
+    playUnitAttackSound('errorEntity',{skill:'errorSystem',volume:1.42});mpState.announcement=`ERROR://SYSTEM_FAILURE · ${hits}개 개체 ×6 · 일반 적 2초 정지`;mpState.announcementUntil=now+1900;
+  }
+
+  function mpTriggerErrorDelete(targetState,sideKey,unit){
+    const d=UNIT_DATA.errorEntity, now=Date.now();
+    const normals=[...(targetState.enemies||[])].filter(e=>!e.dead&&e.type==='normal'&&Number(e.soilPileUntil||0)<=now&&Number(e.reviveInvulnerableUntil||0)<=now).sort((a,b)=>b.x-a.x).slice(0,Number(d.deleteNormalCount||3));
+    normals.forEach(e=>{e.noRevive=true;mpPushFx(e.x,e.y,e.x,e.y,'#00ff66',18,sideKey,'errorDelete',{radius:Number(e.radius||18)+34});mpApplyDamage(targetState,e,Number(e.hp||0)+Number(e.shield||0)+1e9,unit.ownerRole,sideKey);});
+    const bosses=(targetState.enemies||[]).filter(e=>!e.dead&&e.type!=='normal'&&Number(e.soilPileUntil||0)<=now&&Number(e.reviveInvulnerableUntil||0)<=now);
+    bosses.forEach(e=>{mpPushFx(e.x,e.y,e.x,e.y,'#00ff66',18,sideKey,'errorDelete',{radius:Number(e.radius||18)+34});mpApplyDamage(targetState,e,mpEffectiveUnitDamage(unit)*Number(d.deleteBossMultiplier||15),unit.ownerRole,sideKey);});
+    playUnitAttackSound('errorEntity',{skill:'errorDelete',volume:1.55});mpState.announcement=`ENTITY DELETED · 일반 적 ${normals.length}명${bosses.length?` · 보스 ${bosses.length}명 ×15 피해`:''}`;mpState.announcementUntil=now+2200;
+  }
+
+  function mpPerformErrorAttack(targetState,sideKey,unit,target){
+    const d=UNIT_DATA.errorEntity, damage=mpEffectiveUnitDamage(unit);
+    unit.attackMode='errorCut';
+    mpPushFx(unit.x,unit.y,target.x,target.y,'#00ff66',8,sideKey,'errorPacket');
+    const killed=mpApplyDamage(targetState,target,damage,unit.ownerRole,sideKey);
+    if(!killed&&!target.dead)mpApplyErrorCorruptionStack(target,sideKey);
+    const count=Number(unit.attackCount||0);
+    if(count%Number(d.error404Every||5)===0)mpTriggerError404(targetState,sideKey,unit);
+    if(count%Number(d.rollbackEvery||10)===0)mpTriggerErrorRollback(targetState,sideKey,unit);
+    if(count%Number(d.systemFailureEvery||25)===0)mpTriggerErrorSystemFailure(targetState,sideKey,unit);
+    if(count%Number(d.deleteEvery||50)===0)mpTriggerErrorDelete(targetState,sideKey,unit);
+  }
+
   function mpPerformUnitAttack(targetState, sideKey, unit, target) {
     const data = UNIT_DATA[unit.unitId];
     if (!data || !target || target.dead) return;
@@ -22085,6 +22494,7 @@ function requestGachaDraw(count) {
     if (unit.unitId === 'poseidon') { mpPerformPoseidonAttack(targetState, sideKey, unit, target); return; }
     if (unit.unitId === 'iceQueen') { mpPerformIceQueenAttack(targetState, sideKey, unit, target); return; }
     if (unit.unitId === 'eden') { mpPerformEdenAttack(targetState, sideKey, unit, target); return; }
+    if (unit.unitId === 'errorEntity') { mpPerformErrorAttack(targetState, sideKey, unit, target); return; }
 
     if (unit.unitId === 'astralChronomancer') {
       mpPerformChronoAttack(targetState, sideKey, unit);
@@ -23759,6 +24169,13 @@ function requestGachaDraw(count) {
         for(let i=0;i<(mpHighLoadFrame?4:7);i++){const back=17+i*10,side=Math.sin(Number(fx.seed||0)+i*2.4+p*26)*(3+i*.5),px=x-ux*back+nx*side,py=y-uy*back+ny*side;mpCtx.save();mpCtx.translate(px,py);mpCtx.rotate(angle+(i%2?.08:-.08));mpCtx.fillStyle=i%3===0?'rgba(0,0,0,.94)':`rgba(0,255,102,${Math.max(0,.64-i*.065)*fade})`;mpCtx.shadowBlur=i%3===0?0:7;mpCtx.shadowColor='#00ff66';mpCtx.fillRect(-6-(i%2)*2,-2,12+(i%3)*4,4+(i%2));mpCtx.restore();}
         mpCtx.translate(x,y);mpCtx.rotate(angle);mpCtx.shadowBlur=mpHighLoadFrame?16:26;mpCtx.shadowColor='#00ff66';const core=mpCtx.createLinearGradient(-bladeLen,0,28,0);core.addColorStop(0,'rgba(0,255,102,0)');core.addColorStop(.34,`rgba(0,255,102,${.24*fade})`);core.addColorStop(.66,'rgba(0,0,0,.98)');core.addColorStop(.87,`rgba(60,255,132,${.92*fade})`);core.addColorStop(1,'rgba(238,255,244,.98)');mpCtx.fillStyle=core;mpCtx.strokeStyle=`rgba(0,255,102,${.9*flicker*fade})`;mpCtx.lineWidth=1.7;mpCtx.beginPath();mpCtx.moveTo(-bladeLen,-4);mpCtx.lineTo(-20,-10);mpCtx.lineTo(18,-6);mpCtx.lineTo(34,0);mpCtx.lineTo(18,6);mpCtx.lineTo(-8,4);mpCtx.lineTo(-22,11);mpCtx.closePath();mpCtx.fill();mpCtx.stroke();mpCtx.fillStyle='rgba(0,0,0,.98)';mpCtx.beginPath();mpCtx.moveTo(-28,-2);mpCtx.lineTo(13,-3);mpCtx.lineTo(24,0);mpCtx.lineTo(10,2);mpCtx.lineTo(-18,1);mpCtx.closePath();mpCtx.fill();
         if(p>.62){const impact=(p-.62)/.38;mpCtx.rotate(-angle);mpCtx.translate(-x,-y);mpCtx.translate(fx.x2,y2);mpCtx.globalAlpha=(1-impact)*.8;mpCtx.strokeStyle='#00ff66';mpCtx.lineWidth=2.2;mpCtx.setLineDash([6,4,2,5]);mpCtx.beginPath();mpCtx.arc(0,0,15+impact*26,0,Math.PI*2);mpCtx.stroke();mpCtx.setLineDash([]);}mpCtx.restore();
+      } else if (fx.kind === 'error404' || fx.kind === 'errorCorrupt' || fx.kind === 'errorRollback' || fx.kind === 'errorSystem' || fx.kind === 'errorDelete') {
+        const p=progress,alpha=Math.max(0,1-p),r=Number(fx.radius||58);mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.globalCompositeOperation='lighter';
+        if(fx.kind==='errorSystem'){mpCtx.strokeStyle=`rgba(0,255,102,${.5*alpha})`;mpCtx.lineWidth=8*(1-p)+2;mpCtx.setLineDash([18,8,4,9]);mpCtx.beginPath();mpCtx.arc(0,0,Math.max(24,r*p),0,Math.PI*2);mpCtx.stroke();mpCtx.setLineDash([]);mpCtx.font='900 24px monospace';mpCtx.textAlign='center';mpCtx.fillStyle=`rgba(90,255,145,${.9*alpha})`;mpCtx.fillText('SYSTEM FAILURE',0,-10);}
+        else if(fx.kind==='errorDelete'){mpCtx.strokeStyle=`rgba(0,255,102,${.92*alpha})`;mpCtx.lineWidth=3;mpCtx.setLineDash([4,3]);mpCtx.strokeRect(-r*.72,-r*.72,r*1.44,r*1.44);mpCtx.setLineDash([]);mpCtx.fillStyle=`rgba(0,0,0,${.8*alpha})`;mpCtx.fillRect(-r*.65,-10,r*1.3,20);mpCtx.font='900 10px monospace';mpCtx.textAlign='center';mpCtx.fillStyle=`rgba(185,255,205,${alpha})`;mpCtx.fillText('DELETED',0,1);}
+        else if(fx.kind==='errorRollback'){mpCtx.strokeStyle=`rgba(0,255,102,${.76*alpha})`;mpCtx.lineWidth=2;for(let i=0;i<4;i++){const yy=(i-1.5)*7;mpCtx.beginPath();mpCtx.moveTo(r*.6,yy);mpCtx.lineTo(-r*.5,yy);mpCtx.lineTo(-r*.3,yy-5);mpCtx.moveTo(-r*.5,yy);mpCtx.lineTo(-r*.3,yy+5);mpCtx.stroke();}}
+        else{const is404=fx.kind==='error404';mpCtx.strokeStyle=`rgba(0,255,102,${.88*alpha})`;mpCtx.lineWidth=is404?4:3;mpCtx.setLineDash([7,4,2,5]);mpCtx.beginPath();mpCtx.arc(0,0,10+p*r,0,Math.PI*2);mpCtx.stroke();mpCtx.setLineDash([]);mpCtx.font=`900 ${is404?20:12}px monospace`;mpCtx.textAlign='center';mpCtx.fillStyle=`rgba(185,255,205,${alpha})`;mpCtx.fillText(is404?'404':'CORRUPTED',0,4);}
+        mpCtx.restore();
       } else if (fx.kind === 'crystalRay') {
         const p=1-Math.max(0,fx.ttl)/Math.max(.001,fx.maxTtl||.72),pulse=Math.sin(Math.min(1,p)*Math.PI);
         mpCtx.save();mpCtx.globalCompositeOperation='lighter';mpCtx.strokeStyle=`rgba(107,238,255,${.3+.55*(1-p)})`;mpCtx.lineWidth=5+10*pulse;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.lineTo(fx.x2,y2);mpCtx.stroke();mpCtx.strokeStyle=`rgba(240,254,255,${.9*(1-p)})`;mpCtx.lineWidth=2.8;mpCtx.stroke();mpCtx.restore();

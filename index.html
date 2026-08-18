@@ -6848,6 +6848,17 @@ button {
 .trade-cancel-button{width:100%;margin-top:12px}.trade-empty{padding:18px;text-align:center;color:#8f9aac;border:1px dashed rgba(255,255,255,.1);border-radius:12px}.trade-complete{color:#83f5af}.trade-confirmed{color:#8ef1b5}.trade-unconfirmed{color:#ffcf71}
 @media(max-width:900px){.trade-layout{grid-template-columns:1fr}.trade-workspace{position:static}.trade-offer-columns{grid-template-columns:1fr}.trade-session-list{max-height:none}.trade-unit-grid{max-height:none}}
 @media(max-width:520px){.trade-screen{padding:12px}.trade-card{padding:13px;border-radius:14px}.trade-toolbar{display:grid;grid-template-columns:1fr auto}.trade-toolbar p{font-size:12px}.trade-request-row{grid-template-columns:1fr}.trade-request-row button{width:100%}.trade-session-item{grid-template-columns:1fr}.trade-session-actions{justify-content:flex-start}.trade-unit-grid{grid-template-columns:1fr}.trade-column-heading{display:block}.trade-column-heading small{display:block;text-align:left;margin-top:4px}}
+
+.trade-my-offer-preview{display:grid;gap:8px;min-height:76px;margin-bottom:10px}.trade-add-unit-button{width:100%;min-height:44px;font-size:15px;font-weight:900;border:1px dashed rgba(118,224,255,.42);background:rgba(65,179,225,.10)}
+.trade-unit-picker{margin-top:10px;padding:11px;border:1px solid rgba(118,224,255,.26);border-radius:14px;background:rgba(4,14,24,.94);box-shadow:0 18px 50px rgba(0,0,0,.35)}
+.trade-unit-picker-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:9px}.trade-unit-picker-head strong{font-size:13px}.trade-picker-close{width:34px;height:34px;padding:0;border-radius:10px;font-size:19px;line-height:1}
+.trade-unit-item .trade-quick-add{grid-column:1/-1;width:100%;min-height:32px;padding:5px 8px;font-weight:900}.trade-offer-remove{flex:0 0 auto;width:27px;height:27px;padding:0;border-radius:8px;font-size:14px;background:rgba(255,77,103,.18);border-color:rgba(255,77,103,.36)}
+.trade-remote-cancel{padding:18px;text-align:center;border:1px solid rgba(255,86,107,.32);background:rgba(63,12,23,.55);border-radius:14px;color:#ffd4da}.trade-remote-cancel strong{display:block;font-size:16px;margin-bottom:5px}
+.admin-owned-unit-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 11px;margin:7px 0;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(255,255,255,.035)}
+.admin-owned-unit-main{min-width:0}.admin-owned-unit-main strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.admin-owned-unit-main small{display:block;margin-top:3px;color:#9aa8ba}.admin-remove-controls{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.admin-remove-controls input{width:76px;min-width:64px;padding:7px 8px}.admin-remove-controls button{padding:7px 9px;font-size:12px}.admin-remove-all{background:rgba(255,70,90,.18);border-color:rgba(255,70,90,.42)}
+@media(max-width:620px){.admin-owned-unit-row{grid-template-columns:1fr}.admin-remove-controls{justify-content:flex-start}.admin-remove-controls input{flex:1 1 86px}.admin-remove-controls button{flex:1 1 auto}}
+
+#adminOwnedUnits,#adminDiceInventory{display:block}
 </style>
 </head>
 
@@ -7143,11 +7154,12 @@ button {
           </div>
 
           <div style="margin-top:14px;">
-            <strong>보유 유닛</strong>
+            <strong>보유 유닛 · 관리자 삭제</strong>
+            <p class="muted" style="margin:5px 0 8px;font-size:12px;">수량 일부 또는 전부를 서버 인벤토리에서 삭제할 수 있습니다.</p>
             <div id="adminOwnedUnits" class="admin-unit-list"></div>
           </div>
           <div style="margin-top:12px;">
-            <strong>서버 주사위</strong>
+            <strong>서버 주사위 · 관리자 삭제</strong>
             <div id="adminDiceInventory" class="admin-dice-list"></div>
           </div>
         </div>
@@ -7357,10 +7369,18 @@ button {
           <div class="trade-offer-columns">
             <div class="trade-offer-column">
               <div class="trade-column-heading">
-                <strong>내가 줄 유닛</strong>
-                <small>ADMIN 및 기본 지급 유닛은 거래 불가</small>
+                <strong>내 제안</strong>
+                <small>＋로 추가 · X로 선택창 닫기</small>
               </div>
-              <div id="tradeMyUnitGrid" class="trade-unit-grid"></div>
+              <div id="tradeMyOfferPreview" class="trade-my-offer-preview"></div>
+              <button id="tradeOpenUnitPickerBtn" class="trade-add-unit-button" type="button">＋ 유닛 추가</button>
+              <div id="tradeUnitPicker" class="trade-unit-picker hidden">
+                <div class="trade-unit-picker-head">
+                  <strong>거래할 유닛 선택</strong>
+                  <button id="tradeCloseUnitPickerBtn" class="secondary trade-picker-close" type="button" aria-label="선택창 닫기">×</button>
+                </div>
+                <div id="tradeMyUnitGrid" class="trade-unit-grid"></div>
+              </div>
               <button id="tradeSaveOfferBtn" class="trade-save-offer" type="button">내 제안 저장</button>
             </div>
 
@@ -7615,7 +7635,7 @@ button {
   </div>
 
   <script>
-    window.BIDULGY_BUILD_VERSION = '2026-08-18-trading-v1';
+    window.BIDULGY_BUILD_VERSION = '2026-08-18-trade-picker-admin-remove-v2';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -9334,20 +9354,73 @@ function renderAdminPlayer(data) {
       const copies = Math.max(1, Math.floor(Number(owned?.copies || 1)));
       const level = Math.max(1, Math.floor(Number(owned?.level || 1)));
       const fragments = Math.max(0, Math.floor(Number(owned?.fragments || 0)));
-      return `<span class="admin-chip">${unit.icon} ${adminEscapeHtml(unit.name)} X${copies} · Lv.${level} · 조각 ${fragments}</span>`;
+      return `<div class="admin-owned-unit-row">
+        <div class="admin-owned-unit-main">
+          <strong>${unit.icon} ${adminEscapeHtml(unit.name)} <span class="${unit.rarityClass || ''}">${adminEscapeHtml(unit.rarity || '')}</span></strong>
+          <small>보유 ×${copies} · Lv.${level} · 조각 ${fragments}</small>
+        </div>
+        <div class="admin-remove-controls">
+          <input type="number" inputmode="numeric" min="1" max="${copies}" value="1" data-admin-remove-count="${adminEscapeHtml(unitId)}" aria-label="삭제 수량" />
+          <button class="danger" type="button" data-admin-remove-unit="${adminEscapeHtml(unitId)}">삭제</button>
+          <button class="danger admin-remove-all" type="button" data-admin-remove-all="${adminEscapeHtml(unitId)}" data-admin-remove-max="${copies}">전부 삭제</button>
+        </div>
+      </div>`;
     });
 
   unitsElement.innerHTML = unitChips.length
     ? unitChips.join('')
     : '<span class="muted">표시할 유닛이 없습니다.</span>';
 
+  unitsElement.querySelectorAll('[data-admin-remove-unit]').forEach(button => {
+    button.addEventListener('click', () => {
+      const unitId = button.dataset.adminRemoveUnit;
+      const input = unitsElement.querySelector(`[data-admin-remove-count="${unitId}"]`);
+      const count = Math.max(1, Math.floor(Number(input?.value || 1)));
+      void removeAdminUnit(unitId, count, false);
+    });
+  });
+  unitsElement.querySelectorAll('[data-admin-remove-all]').forEach(button => {
+    button.addEventListener('click', () => {
+      const unitId = button.dataset.adminRemoveAll;
+      const count = Math.max(1, Math.floor(Number(button.dataset.adminRemoveMax || 1)));
+      void removeAdminUnit(unitId, count, true);
+    });
+  });
+
   const dice = data.diceInventory && typeof data.diceInventory === 'object'
     ? data.diceInventory
     : {};
 
-  diceElement.innerHTML = Object.values(DICE_DATA).map(item =>
-    `<span class="admin-chip">${adminEscapeHtml(item.rarity)} ${Math.max(0, Number(dice[item.key] || 0))}개</span>`
-  ).join('');
+  diceElement.innerHTML = Object.values(DICE_DATA).map(item => {
+    const amount = Math.max(0, Math.floor(Number(dice[item.key] || 0)));
+    return `<div class="admin-owned-unit-row">
+      <div class="admin-owned-unit-main">
+        <strong>🎲 ${adminEscapeHtml(item.rarity)} 주사위</strong>
+        <small>서버 보유 ${amount.toLocaleString()}개</small>
+      </div>
+      <div class="admin-remove-controls">
+        <input type="number" inputmode="numeric" min="1" max="${Math.max(1, amount)}" value="1" data-admin-remove-dice-count="${adminEscapeHtml(item.key)}" aria-label="주사위 삭제 수량" ${amount<=0?'disabled':''} />
+        <button class="danger" type="button" data-admin-remove-dice="${adminEscapeHtml(item.key)}" ${amount<=0?'disabled':''}>삭제</button>
+        <button class="danger admin-remove-all" type="button" data-admin-remove-dice-all="${adminEscapeHtml(item.key)}" data-admin-remove-dice-max="${amount}" ${amount<=0?'disabled':''}>전부 삭제</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  diceElement.querySelectorAll('[data-admin-remove-dice]').forEach(button => {
+    button.addEventListener('click', () => {
+      const rarityKey = button.dataset.adminRemoveDice;
+      const input = diceElement.querySelector(`[data-admin-remove-dice-count="${rarityKey}"]`);
+      const count = Math.max(1, Math.floor(Number(input?.value || 1)));
+      void removeAdminDice(rarityKey, count, false);
+    });
+  });
+  diceElement.querySelectorAll('[data-admin-remove-dice-all]').forEach(button => {
+    button.addEventListener('click', () => {
+      const rarityKey = button.dataset.adminRemoveDiceAll;
+      const count = Math.max(1, Math.floor(Number(button.dataset.adminRemoveDiceMax || 1)));
+      void removeAdminDice(rarityKey, count, true);
+    });
+  });
 }
 
 async function loadAdminPlayer(userId = adminSelectedUserId) {
@@ -9461,6 +9534,99 @@ async function grantAdminUnit() {
     setAdminStatus(`유닛 지급 실패: ${error.message}`, 'error');
   } finally {
     button.disabled = false;
+  }
+}
+
+async function removeAdminUnit(unitId, count, removeAll = false) {
+  if (!adminSelectedUserId) {
+    setAdminStatus('먼저 관리할 유저를 선택하세요.', 'error');
+    return;
+  }
+
+  const unit = UNIT_DATA[unitId];
+  const amount = Math.max(1, Math.floor(Number(count || 1)));
+  if (!unit || !Number.isFinite(amount)) {
+    setAdminStatus('삭제할 유닛과 수량을 확인하세요.', 'error');
+    return;
+  }
+
+  const allowed = await refreshAdminAccess(true);
+  if (!allowed) {
+    setAdminStatus('관리자 권한 확인에 실패했습니다.', 'error');
+    return;
+  }
+
+  const actionText = removeAll ? '전부 삭제' : `${amount}개 삭제`;
+  if (!confirm(`${adminSelectedUsernameValue}의 ${unit.name}을(를) ${actionText}하시겠습니까?\n이 작업은 서버 인벤토리에 즉시 반영됩니다.`)) return;
+
+  setAdminStatus(`${unit.name} 삭제 처리 중...`);
+  try {
+    const { data, error } = await supabaseClient.rpc('admin_remove_unit', {
+      p_user_id: adminSelectedUserId,
+      p_unit_id: unitId,
+      p_count: amount,
+      p_reason: removeAll ? '관리자 인벤토리 전부 삭제' : '관리자 인벤토리 수량 삭제'
+    });
+    if (error) throw error;
+
+    const remaining = Math.max(0, Number(data?.copies || 0));
+    setAdminStatus(`${unit.name} 삭제 완료 · 남은 수량 X${remaining}`, 'good');
+    await loadAdminPlayer();
+    await loadAdminLogs();
+
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (user?.id === adminSelectedUserId) await loadPlayer(user);
+  } catch (error) {
+    console.error('관리자 인벤토리 유닛 삭제 실패:', error);
+    const message = String(error?.message || '알 수 없는 오류');
+    const hint = /admin_remove_unit|schema cache|function/i.test(message)
+      ? ' · Supabase에서 admin_inventory_remove_update.sql을 실행하세요.'
+      : '';
+    setAdminStatus(`유닛 삭제 실패: ${message}${hint}`, 'error');
+  }
+}
+
+async function removeAdminDice(rarityKey, count, removeAll = false) {
+  if (!adminSelectedUserId) {
+    setAdminStatus('먼저 관리할 유저를 선택하세요.', 'error');
+    return;
+  }
+  const dice = DICE_DATA[rarityKey];
+  const amount = Math.max(1, Math.floor(Number(count || 1)));
+  if (!dice || !Number.isFinite(amount)) {
+    setAdminStatus('삭제할 주사위와 수량을 확인하세요.', 'error');
+    return;
+  }
+  const allowed = await refreshAdminAccess(true);
+  if (!allowed) {
+    setAdminStatus('관리자 권한 확인에 실패했습니다.', 'error');
+    return;
+  }
+  const actionText = removeAll ? '전부 삭제' : `${amount}개 삭제`;
+  if (!confirm(`${adminSelectedUsernameValue}의 ${dice.rarity} 주사위를 ${actionText}하시겠습니까?`)) return;
+  try {
+    const { data, error } = await supabaseClient.rpc('admin_remove_dice', {
+      p_user_id: adminSelectedUserId,
+      p_rarity: rarityKey,
+      p_count: amount,
+      p_reason: removeAll ? '관리자 주사위 전부 삭제' : '관리자 주사위 수량 삭제'
+    });
+    if (error) throw error;
+    setAdminStatus(`${dice.rarity} 주사위 삭제 완료 · 남은 수량 ${Math.max(0, Number(data?.amount || 0))}개`, 'good');
+    await loadAdminPlayer();
+    await loadAdminLogs();
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (user?.id === adminSelectedUserId) {
+      await syncServerDiceInventory();
+      await savePlayer();
+    }
+  } catch (error) {
+    console.error('관리자 주사위 삭제 실패:', error);
+    const message = String(error?.message || '알 수 없는 오류');
+    const hint = /admin_remove_dice|schema cache|function/i.test(message)
+      ? ' · Supabase에서 admin_inventory_remove_update.sql을 다시 실행하세요.'
+      : '';
+    setAdminStatus(`주사위 삭제 실패: ${message}${hint}`, 'error');
   }
 }
 
@@ -24672,6 +24838,8 @@ function requestGachaDraw(count) {
   const waitingPanel = document.querySelector('#tradeWaitingPanel');
   const activePanel = document.querySelector('#tradeActivePanel');
   const myUnitGrid = document.querySelector('#tradeMyUnitGrid');
+  const myOfferPreview = document.querySelector('#tradeMyOfferPreview');
+  const unitPicker = document.querySelector('#tradeUnitPicker');
   const partnerOfferEl = document.querySelector('#tradePartnerOffer');
   const badge = document.querySelector('#tradeMenuBadge');
   const forbiddenUnitIds = new Set(['starterArcher','starterKnight','starterMage','eclipse']);
@@ -24755,6 +24923,42 @@ function requestGachaDraw(count) {
     }).join('');
   }
 
+  function renderDraftOfferPreview() {
+    if (!myOfferPreview) return;
+    const entries = Object.entries(offerDraft || {}).filter(([, count]) => Number(count) > 0);
+    if (!entries.length) {
+      myOfferPreview.innerHTML = '<div class="trade-empty">＋ 버튼을 눌러 거래할 유닛을 추가하세요.</div>';
+      return;
+    }
+    myOfferPreview.innerHTML = entries.map(([unitId, count]) => {
+      const unit = UNIT_DATA[unitId];
+      const icon = unit?.icon || '❔';
+      const name = unit?.name || unitId;
+      return `<div class="trade-offer-chip"><span>${icon} ${esc(name)} <small class="${unit?.rarityClass || ''}">${esc(unit?.rarity || '')}</small></span><strong>×${Math.max(1,Math.floor(Number(count||1)))}</strong><button class="trade-offer-remove" type="button" data-trade-remove-offer="${esc(unitId)}" aria-label="제안에서 제거">×</button></div>`;
+    }).join('');
+    myOfferPreview.querySelectorAll('[data-trade-remove-offer]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        delete offerDraft[btn.dataset.tradeRemoveOffer];
+        renderDraftOfferPreview();
+        const row = tradeRows.find(item => item.id === activeTradeId);
+        if (row && !unitPicker?.classList.contains('hidden')) renderMyTradeUnits(row);
+      });
+    });
+  }
+
+  function openUnitPicker() {
+    if (!activeTradeId) return;
+    const row = tradeRows.find(item => item.id === activeTradeId);
+    if (!row || row.status !== 'active') return;
+    unitPicker?.classList.remove('hidden');
+    renderMyTradeUnits(row);
+  }
+
+  function closeUnitPicker() {
+    unitPicker?.classList.add('hidden');
+    renderDraftOfferPreview();
+  }
+
   function partnerName(row) {
     return row.initiatorId === myUserId ? row.recipientUsername : row.initiatorUsername;
   }
@@ -24822,11 +25026,12 @@ function requestGachaDraw(count) {
       const unit = UNIT_DATA[unitId];
       const max = Math.max(0, Math.floor(Number(player.ownedUnits?.[unitId]?.copies || 0)));
       const value = Math.min(max, Math.max(0, Math.floor(Number(offerDraft[unitId] || 0))));
-      return `<div class="trade-unit-item" data-trade-unit="${unitId}"><span class="trade-unit-icon">${unit.icon}</span><div class="trade-unit-info"><strong>${esc(unit.name)}</strong><small class="${unit.rarityClass}">${esc(unit.rarity)} · 보유 ×${max}</small></div><div class="trade-stepper"><button type="button" data-trade-minus="${unitId}" ${value<=0?'disabled':''}>−</button><output data-trade-count="${unitId}">${value}</output><button type="button" data-trade-plus="${unitId}" ${value>=max?'disabled':''}>＋</button></div></div>`;
+      return `<div class="trade-unit-item" data-trade-unit="${unitId}"><span class="trade-unit-icon">${unit.icon}</span><div class="trade-unit-info"><strong>${esc(unit.name)}</strong><small class="${unit.rarityClass}">${esc(unit.rarity)} · 보유 ×${max}</small></div><div class="trade-stepper"><button type="button" data-trade-minus="${unitId}" ${value<=0?'disabled':''}>−</button><output data-trade-count="${unitId}">${value}</output><button type="button" data-trade-plus="${unitId}" ${value>=max?'disabled':''}>＋</button></div><button class="secondary trade-quick-add" type="button" data-trade-quick-add="${unitId}" ${value>=max?'disabled':''}>＋ 1개 추가</button></div>`;
     }).join('');
 
     myUnitGrid.querySelectorAll('[data-trade-minus]').forEach(btn => btn.addEventListener('click', () => changeDraft(btn.dataset.tradeMinus, -1, row)));
     myUnitGrid.querySelectorAll('[data-trade-plus]').forEach(btn => btn.addEventListener('click', () => changeDraft(btn.dataset.tradePlus, 1, row)));
+    myUnitGrid.querySelectorAll('[data-trade-quick-add]').forEach(btn => btn.addEventListener('click', () => changeDraft(btn.dataset.tradeQuickAdd, 1, row)));
   }
 
   function changeDraft(unitId, delta, row) {
@@ -24834,6 +25039,7 @@ function requestGachaDraw(count) {
     const next = Math.min(max, Math.max(0, Math.floor(Number(offerDraft[unitId] || 0)) + delta));
     if (next > 0) offerDraft[unitId] = next; else delete offerDraft[unitId];
     renderMyTradeUnits(row);
+    renderDraftOfferPreview();
   }
 
   function openTradeWorkspace(tradeId) {
@@ -24841,7 +25047,9 @@ function requestGachaDraw(count) {
     const row = tradeRows.find(item => item.id === tradeId);
     if (!row) return;
     offerDraft = { ...myOffer(row) };
+    unitPicker?.classList.add('hidden');
     renderTradeWorkspace(row);
+    renderDraftOfferPreview();
     workspace?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -24872,7 +25080,8 @@ function requestGachaDraw(count) {
     }
     if (pending) return;
 
-    renderMyTradeUnits(row);
+    renderDraftOfferPreview();
+    if (!unitPicker?.classList.contains('hidden')) renderMyTradeUnits(row);
     partnerOfferEl.innerHTML = offerHtml(theirOffer(row));
     partnerConfirmText.textContent = theirConfirmed(row) ? '✅ 상대 최종 동의 완료' : '상대 최종 동의 전';
     partnerConfirmText.className = theirConfirmed(row) ? 'trade-confirmed' : 'trade-unconfirmed';
@@ -24903,19 +25112,28 @@ function requestGachaDraw(count) {
       renderTradeBadge();
       if (!tradeScreen?.classList.contains('hidden')) renderTradeRows();
       if (activeTradeId) {
-        const row = tradeRows.find(item => item.id === activeTradeId);
+        const watchedTradeId = activeTradeId;
+        const row = tradeRows.find(item => item.id === watchedTradeId);
         if (row) {
           const previousDraft = { ...offerDraft };
           renderTradeWorkspace(row);
           if (row.status === 'active') {
-            // 폴링 때문에 아직 저장하지 않은 로컬 수량이 사라지지 않게 유지합니다.
+            // 폴링 때문에 아직 저장하지 않은 로컬 제안이 사라지지 않게 유지합니다.
             offerDraft = previousDraft;
-            renderMyTradeUnits(row);
+            renderDraftOfferPreview();
+            if (!unitPicker?.classList.contains('hidden')) renderMyTradeUnits(row);
           }
           if (row.status === 'completed') {
             await refreshPlayerAfterTrade(row.id);
             setTradeStatus('거래가 완료되어 인벤토리를 새로 불러왔습니다.', 'success');
           }
+        } else if (activeTradeId === watchedTradeId) {
+          // 취소된 거래는 서버 목록에서 즉시 빠집니다. 상대가 취소한 경우 내 화면도 자동 종료합니다.
+          activeTradeId = null;
+          offerDraft = {};
+          unitPicker?.classList.add('hidden');
+          workspace?.classList.add('hidden');
+          setTradeStatus('상대방이 거래를 취소했습니다. 거래가 양쪽에서 자동 종료되었습니다.', 'error');
         }
       }
     } catch (error) {
@@ -24982,7 +25200,11 @@ function requestGachaDraw(count) {
       setTradeStatus('내 거래 제안을 저장했습니다. 양쪽 최종 동의가 초기화되었습니다.', 'success');
       await refreshTradeRows(true);
       const updated = tradeRows.find(item => item.id === activeTradeId);
-      if (updated) offerDraft = { ...myOffer(updated) };
+      if (updated) {
+        offerDraft = { ...myOffer(updated) };
+        renderDraftOfferPreview();
+        unitPicker?.classList.add('hidden');
+      }
     } catch (error) { setTradeStatus(error.message || String(error), 'error'); }
     finally { btn.disabled = false; }
   }
@@ -25009,7 +25231,7 @@ function requestGachaDraw(count) {
 
   function startTradePolling() {
     stopTradePolling();
-    pollTimer = setInterval(() => void refreshTradeRows(true), 2200);
+    pollTimer = setInterval(() => void refreshTradeRows(true), 700);
   }
   function stopTradePolling() {
     if (pollTimer) clearInterval(pollTimer);
@@ -25027,6 +25249,8 @@ function requestGachaDraw(count) {
   document.querySelector('#tradeRequestBtn')?.addEventListener('click', createTradeRequest);
   document.querySelector('#tradeUsernameInput')?.addEventListener('keydown', event => { if (event.key === 'Enter') void createTradeRequest(); });
   document.querySelector('#tradeRefreshBtn')?.addEventListener('click', () => void refreshTradeRows(false));
+  document.querySelector('#tradeOpenUnitPickerBtn')?.addEventListener('click', openUnitPicker);
+  document.querySelector('#tradeCloseUnitPickerBtn')?.addEventListener('click', closeUnitPicker);
   document.querySelector('#tradeSaveOfferBtn')?.addEventListener('click', saveTradeOffer);
   document.querySelector('#tradeConfirmBtn')?.addEventListener('click', confirmTrade);
   document.querySelector('#tradeCancelBtn')?.addEventListener('click', () => void cancelTrade());

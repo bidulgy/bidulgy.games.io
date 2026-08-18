@@ -890,10 +890,15 @@
   flex: 0 1 auto;
 }
 .error-probability-identity .error-live-code {
-  min-width: 5.8ch;
-  max-width: 10ch;
+  width: 8.5ch;
+  min-width: 8.5ch;
+  max-width: 8.5ch;
+  flex: 0 0 8.5ch;
   overflow: hidden;
   text-overflow: clip;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  contain: inline-size;
 }
 .error-probability-copy {
   color: #75ff9b;
@@ -925,9 +930,15 @@
 }
 .error-live-code {
   display: inline-block;
-  min-width: 7.4ch;
+  width: 8.5ch;
+  min-width: 8.5ch;
+  max-width: 8.5ch;
+  overflow: hidden;
+  text-overflow: clip;
   color: #d7ffe1;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  vertical-align: bottom;
   text-shadow: -2px 0 rgba(0,255,102,.75), 2px 0 rgba(0,0,0,.95), 0 0 10px rgba(0,255,102,.85);
 }
 @keyframes errorLiveIdentityJitter {
@@ -6812,6 +6823,32 @@ button {
 }
 </style>
 
+
+<style id="tradeSystemStyles">
+.trade-menu-card{position:relative}
+.trade-menu-badge{position:absolute;top:8px;right:9px;min-width:23px;height:23px;padding:0 7px;border-radius:999px;display:grid;place-items:center;background:#ff4d67;color:#fff;font-size:12px;font-weight:900;box-shadow:0 0 18px rgba(255,77,103,.52)}
+.trade-screen{min-height:100dvh;padding:clamp(16px,3vw,34px);overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+.trade-toolbar{gap:18px;align-items:flex-start}.trade-toolbar h2{margin:.2rem 0 .35rem}
+.trade-security-note{margin:16px 0;padding:13px 15px;border:1px solid rgba(74,222,128,.3);border-radius:14px;background:rgba(10,35,28,.74);color:#c9ffe0;font-size:13px;line-height:1.55}
+.trade-layout{display:grid;grid-template-columns:minmax(300px,.72fr) minmax(440px,1.28fr);gap:16px;align-items:start}
+.trade-side-stack{display:grid;gap:16px}.trade-card{border:1px solid rgba(255,255,255,.11);border-radius:18px;background:linear-gradient(155deg,rgba(25,34,50,.96),rgba(9,14,24,.96));padding:18px;box-shadow:0 18px 50px rgba(0,0,0,.22)}
+.trade-card h3{margin:0 0 8px}.trade-request-row{display:grid;grid-template-columns:1fr auto;gap:9px}.trade-request-row input{min-width:0}
+.trade-list-heading{gap:10px;align-items:center}.trade-session-list{display:grid;gap:9px;margin-top:12px;max-height:55vh;overflow-y:auto;padding-right:3px}
+.trade-session-item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px;border:1px solid rgba(255,255,255,.09);border-radius:13px;background:rgba(255,255,255,.035)}
+.trade-session-item.incoming{border-color:rgba(255,210,90,.34);background:rgba(255,199,63,.055)}.trade-session-main{min-width:0}.trade-session-main strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.trade-session-main small{display:block;margin-top:4px}.trade-session-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.trade-session-actions button{padding:7px 9px;font-size:12px}
+.trade-workspace{position:sticky;top:12px}.trade-workspace-heading{gap:10px}.trade-state-pill{padding:6px 10px;border-radius:999px;background:rgba(116,199,255,.12);border:1px solid rgba(116,199,255,.28);font-size:12px;font-weight:850;color:#c9ecff}
+.trade-waiting-panel{margin:18px 0;padding:22px;text-align:center;border-radius:14px;border:1px dashed rgba(255,255,255,.18);background:rgba(255,255,255,.035)}.trade-waiting-panel strong,.trade-waiting-panel small{display:block}.trade-waiting-panel small{margin-top:6px;color:#aeb8c8}
+.trade-offer-columns{display:grid;grid-template-columns:1.25fr .75fr;gap:12px;margin-top:16px}.trade-offer-column{min-width:0;padding:13px;border-radius:14px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.08)}
+.trade-column-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}.trade-column-heading small{color:#8e9aae;text-align:right;font-size:11px}
+.trade-unit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:48vh;overflow-y:auto;padding-right:3px}
+.trade-unit-item{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center;padding:9px;border-radius:12px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.075)}.trade-unit-icon{font-size:24px}.trade-unit-info{min-width:0}.trade-unit-info strong{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.trade-unit-info small{display:block;font-size:10px;margin-top:2px}
+.trade-stepper{grid-column:1/-1;display:grid;grid-template-columns:32px 1fr 32px;gap:5px;align-items:center}.trade-stepper button{padding:5px 0;min-height:30px}.trade-stepper output{text-align:center;font-weight:900;font-variant-numeric:tabular-nums}
+.trade-save-offer{width:100%;margin-top:10px}.trade-partner-offer{display:grid;gap:7px;min-height:90px}.trade-offer-chip{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 9px;border-radius:10px;background:rgba(255,255,255,.055)}.trade-offer-chip span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trade-confirm-box{margin-top:13px;padding:14px;border:1px solid rgba(74,222,128,.22);border-radius:14px;background:rgba(12,44,31,.44);text-align:center}.trade-confirm-summary{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:10px;font-size:12px}.trade-confirm-button{width:100%;background:linear-gradient(135deg,#1faa64,#40d889)}.trade-confirm-button:disabled{filter:grayscale(.7);opacity:.62}.trade-confirm-box>small{display:block;margin-top:7px;color:#9db7a8}
+.trade-cancel-button{width:100%;margin-top:12px}.trade-empty{padding:18px;text-align:center;color:#8f9aac;border:1px dashed rgba(255,255,255,.1);border-radius:12px}.trade-complete{color:#83f5af}.trade-confirmed{color:#8ef1b5}.trade-unconfirmed{color:#ffcf71}
+@media(max-width:900px){.trade-layout{grid-template-columns:1fr}.trade-workspace{position:static}.trade-offer-columns{grid-template-columns:1fr}.trade-session-list{max-height:none}.trade-unit-grid{max-height:none}}
+@media(max-width:520px){.trade-screen{padding:12px}.trade-card{padding:13px;border-radius:14px}.trade-toolbar{display:grid;grid-template-columns:1fr auto}.trade-toolbar p{font-size:12px}.trade-request-row{grid-template-columns:1fr}.trade-request-row button{width:100%}.trade-session-item{grid-template-columns:1fr}.trade-session-actions{justify-content:flex-start}.trade-unit-grid{grid-template-columns:1fr}.trade-column-heading{display:block}.trade-column-heading small{display:block;text-align:left;margin-top:4px}}
+</style>
 </head>
 
 <body>
@@ -7004,6 +7041,13 @@ button {
         <span class="defense-card-icon">🌐</span>
         <strong>온라인 2인</strong>
         <small>친구와 협동하거나 1:1로 대결하세요</small>
+      </button>
+
+      <button id="openTradeBtn" class="defense-menu-card trade-menu-card" type="button">
+        <span class="defense-card-icon">🔄</span>
+        <strong>유닛 거래</strong>
+        <small>다른 플레이어와 유닛을 안전하게 교환하세요</small>
+        <span id="tradeMenuBadge" class="trade-menu-badge hidden">0</span>
       </button>
 
       <button id="adminPanelBtn" class="defense-menu-card admin-panel-button hidden" type="button">
@@ -7257,6 +7301,90 @@ button {
     <div id="deckMessage" class="message"></div>
   </section>
 
+  <section id="tradeScreen" class="screen hidden trade-screen">
+    <div class="trade-toolbar between">
+      <div>
+        <span class="section-kicker">SECURE UNIT EXCHANGE</span>
+        <h2>🔄 유닛 거래</h2>
+        <p class="muted">상대 아이디를 정확히 입력해 거래를 요청하세요. 양쪽이 모두 최종 동의해야 교환됩니다.</p>
+      </div>
+      <button id="tradeBackBtn" class="secondary" type="button">메뉴로</button>
+    </div>
+
+    <div class="trade-security-note">
+      🔒 최종 거래는 서버가 양쪽 보유 수량을 다시 검사한 뒤 동시에 처리합니다. 제안을 수정하면 양쪽의 최종 동의가 자동으로 초기화됩니다.
+    </div>
+
+    <div class="trade-layout">
+      <div class="trade-side-stack">
+        <section class="trade-card">
+          <h3>거래 요청 보내기</h3>
+          <p class="muted">상대방의 게임 아이디를 입력하세요.</p>
+          <div class="trade-request-row">
+            <input id="tradeUsernameInput" type="text" maxlength="20" autocomplete="off" placeholder="게임 아이디" />
+            <button id="tradeRequestBtn" type="button">거래 요청</button>
+          </div>
+          <p id="tradeStatus" class="message"></p>
+        </section>
+
+        <section class="trade-card">
+          <div class="between trade-list-heading">
+            <div>
+              <h3>거래 목록</h3>
+              <small class="muted">거래 화면을 열어두면 자동으로 갱신됩니다.</small>
+            </div>
+            <button id="tradeRefreshBtn" class="secondary" type="button">새로고침</button>
+          </div>
+          <div id="tradeSessionList" class="trade-session-list"></div>
+        </section>
+      </div>
+
+      <section id="tradeWorkspace" class="trade-card trade-workspace hidden">
+        <div class="between trade-workspace-heading">
+          <div>
+            <span class="section-kicker">ACTIVE TRADE</span>
+            <h3 id="tradePartnerName">상대 플레이어</h3>
+          </div>
+          <span id="tradeStatePill" class="trade-state-pill">대기</span>
+        </div>
+
+        <div id="tradeWaitingPanel" class="trade-waiting-panel hidden">
+          <strong>상대방의 수락을 기다리는 중입니다.</strong>
+          <small>요청이 수락되면 유닛을 선택할 수 있습니다.</small>
+        </div>
+
+        <div id="tradeActivePanel" class="hidden">
+          <div class="trade-offer-columns">
+            <div class="trade-offer-column">
+              <div class="trade-column-heading">
+                <strong>내가 줄 유닛</strong>
+                <small>ADMIN 및 기본 지급 유닛은 거래 불가</small>
+              </div>
+              <div id="tradeMyUnitGrid" class="trade-unit-grid"></div>
+              <button id="tradeSaveOfferBtn" class="trade-save-offer" type="button">내 제안 저장</button>
+            </div>
+
+            <div class="trade-offer-column trade-partner-offer-column">
+              <div class="trade-column-heading">
+                <strong>상대가 줄 유닛</strong>
+                <small id="tradePartnerConfirmText">상대 제안 확인 중</small>
+              </div>
+              <div id="tradePartnerOffer" class="trade-partner-offer"></div>
+            </div>
+          </div>
+
+          <div class="trade-confirm-box">
+            <div id="tradeConfirmSummary" class="trade-confirm-summary"></div>
+            <button id="tradeConfirmBtn" class="trade-confirm-button" type="button">✅ 최종 거래 동의</button>
+            <small>두 플레이어가 모두 동의한 순간 서버에서 교환이 완료됩니다.</small>
+          </div>
+        </div>
+
+        <button id="tradeCancelBtn" class="danger trade-cancel-button" type="button">거래 취소</button>
+      </section>
+    </div>
+  </section>
+
   <section id="battleScreen" class="screen hidden">
     <div class="between battle-topbar">
       <div>
@@ -7487,7 +7615,7 @@ button {
   </div>
 
   <script>
-    window.BIDULGY_BUILD_VERSION = '2026-08-18-error-probability-fast-v3';
+    window.BIDULGY_BUILD_VERSION = '2026-08-18-trading-v1';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -8362,6 +8490,7 @@ function applyStagePreview(stageId = selectedStage) {
       gacha: document.querySelector('#gachaScreen'),
       collection: document.querySelector('#collectionScreen'),
       deck: document.querySelector('#deckScreen'),
+      trade: document.querySelector('#tradeScreen'),
       battle: document.querySelector('#battleScreen'),
       multiplayerLobby: document.querySelector('#multiplayerLobbyScreen'),
       multiplayerBattle: document.querySelector('#multiplayerBattleScreen')
@@ -12250,7 +12379,8 @@ function requestGachaDraw(count) {
     function makeErrorLiveCode() {
       const anomalies = ['404', '000000', 'NaN', '13-37', 'NULL', '0xDEAD', '??????', '65535', '∞404∞'];
       if (Math.random() < 0.18) return anomalies[Math.floor(Math.random() * anomalies.length)];
-      const lengths = [6, 7, 8, 9, 10, 12];
+      // ERROR 코드가 길어져 UI 열을 밀지 않도록 6~8자리 안에서만 변화시킵니다.
+      const lengths = [6, 7, 8];
       const len = lengths[Math.floor(Math.random() * lengths.length)];
       let out = '';
       for (let i = 0; i < len; i += 1) out += Math.floor(Math.random() * 10);
@@ -24532,6 +24662,388 @@ function requestGachaDraw(count) {
 })();
 </script>
 
+
+<script id="secureTradeSystemScript">
+(() => {
+  const tradeScreen = document.querySelector('#tradeScreen');
+  const tradeStatus = document.querySelector('#tradeStatus');
+  const sessionList = document.querySelector('#tradeSessionList');
+  const workspace = document.querySelector('#tradeWorkspace');
+  const waitingPanel = document.querySelector('#tradeWaitingPanel');
+  const activePanel = document.querySelector('#tradeActivePanel');
+  const myUnitGrid = document.querySelector('#tradeMyUnitGrid');
+  const partnerOfferEl = document.querySelector('#tradePartnerOffer');
+  const badge = document.querySelector('#tradeMenuBadge');
+  const forbiddenUnitIds = new Set(['starterArcher','starterKnight','starterMage','eclipse']);
+  let myUserId = null;
+  let tradeRows = [];
+  let activeTradeId = null;
+  let offerDraft = {};
+  let pollTimer = null;
+  let menuPollTimer = null;
+  let refreshBusy = false;
+  let lastSyncedCompletedTrade = null;
+
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const normalizeTradeUsername = value => String(value || '').trim().toLowerCase();
+
+  function setTradeStatus(text, type = '') {
+    if (!tradeStatus) return;
+    tradeStatus.textContent = text || '';
+    tradeStatus.className = `message ${type}`;
+  }
+
+  function showTradeScreen() {
+    document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
+    tradeScreen?.classList.remove('hidden');
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    startTradePolling();
+    void refreshTradeRows(true);
+  }
+
+  function closeTradeScreen() {
+    stopTradePolling();
+    tradeScreen?.classList.add('hidden');
+    activeTradeId = null;
+    offerDraft = {};
+    openMenu();
+  }
+
+  async function getTradeUserId() {
+    if (myUserId) return myUserId;
+    const { data: { user }, error } = await supabaseClient.auth.getUser();
+    if (error || !user) throw new Error('로그인이 필요합니다.');
+    myUserId = user.id;
+    return myUserId;
+  }
+
+  async function tradeRpc(name, args = {}) {
+    const { data, error } = await supabaseClient.rpc(name, args);
+    if (error) {
+      const message = String(error.message || error.details || '거래 서버 오류');
+      if (/function|schema cache|does not exist/i.test(message)) {
+        throw new Error('거래 서버 SQL이 아직 적용되지 않았습니다. trade_system_update.sql을 Supabase에서 실행해주세요.');
+      }
+      throw new Error(message);
+    }
+    return data;
+  }
+
+  function tradeableOwnedIds() {
+    ensurePlayerData();
+    return Object.keys(player?.ownedUnits || {}).filter(id => {
+      const unit = UNIT_DATA[id];
+      const copies = Math.max(0, Math.floor(Number(player.ownedUnits?.[id]?.copies || 0)));
+      return unit && copies > 0 && unit.rarityKey !== 'admin' && !forbiddenUnitIds.has(id);
+    });
+  }
+
+  function offerCount(offer) {
+    return Object.values(offer || {}).reduce((sum, value) => sum + Math.max(0, Number(value || 0)), 0);
+  }
+
+  function offerHtml(offer) {
+    const entries = Object.entries(offer || {}).filter(([, count]) => Number(count) > 0);
+    if (!entries.length) return '<div class="trade-empty">아직 제안한 유닛이 없습니다.</div>';
+    return entries.map(([unitId, count]) => {
+      const unit = UNIT_DATA[unitId];
+      const name = unit?.name || unitId;
+      const icon = unit?.icon || '❔';
+      const rarityClass = unit?.rarityClass || '';
+      return `<div class="trade-offer-chip"><span>${icon} ${esc(name)} <small class="${rarityClass}">${esc(unit?.rarity || '')}</small></span><strong>×${Math.max(1,Math.floor(Number(count||1)))}</strong></div>`;
+    }).join('');
+  }
+
+  function partnerName(row) {
+    return row.initiatorId === myUserId ? row.recipientUsername : row.initiatorUsername;
+  }
+
+  function myRole(row) {
+    return row.initiatorId === myUserId ? 'initiator' : 'recipient';
+  }
+
+  function myOffer(row) {
+    return myRole(row) === 'initiator' ? (row.initiatorOffer || {}) : (row.recipientOffer || {});
+  }
+
+  function theirOffer(row) {
+    return myRole(row) === 'initiator' ? (row.recipientOffer || {}) : (row.initiatorOffer || {});
+  }
+
+  function myConfirmed(row) {
+    return myRole(row) === 'initiator' ? Boolean(row.initiatorConfirmed) : Boolean(row.recipientConfirmed);
+  }
+
+  function theirConfirmed(row) {
+    return myRole(row) === 'initiator' ? Boolean(row.recipientConfirmed) : Boolean(row.initiatorConfirmed);
+  }
+
+  function renderTradeBadge() {
+    if (!badge) return;
+    const incoming = tradeRows.filter(row => row.status === 'pending' && row.recipientId === myUserId).length;
+    badge.textContent = String(incoming);
+    badge.classList.toggle('hidden', incoming <= 0);
+  }
+
+  function renderTradeRows() {
+    if (!sessionList) return;
+    const activeRows = tradeRows.filter(row => ['pending','active','completed'].includes(row.status)).slice(0, 12);
+    if (!activeRows.length) {
+      sessionList.innerHTML = '<div class="trade-empty">진행 중인 거래가 없습니다.</div>';
+      return;
+    }
+    sessionList.innerHTML = activeRows.map(row => {
+      const partner = esc(partnerName(row) || '플레이어');
+      const incoming = row.status === 'pending' && row.recipientId === myUserId;
+      const outgoing = row.status === 'pending' && row.initiatorId === myUserId;
+      const statusText = row.status === 'active' ? '거래 중' : row.status === 'completed' ? '거래 완료' : incoming ? '거래 요청 도착' : '수락 대기 중';
+      const action = incoming
+        ? `<button type="button" data-trade-accept="${row.id}">수락</button><button class="danger" type="button" data-trade-cancel="${row.id}">거절</button>`
+        : row.status === 'completed'
+          ? `<button class="secondary" type="button" data-trade-open="${row.id}">결과 보기</button>`
+          : `<button type="button" data-trade-open="${row.id}">${outgoing ? '보기' : '거래 열기'}</button>`;
+      return `<div class="trade-session-item ${incoming ? 'incoming' : ''}"><div class="trade-session-main"><strong>${partner}</strong><small>${statusText}</small></div><div class="trade-session-actions">${action}</div></div>`;
+    }).join('');
+
+    sessionList.querySelectorAll('[data-trade-accept]').forEach(btn => btn.addEventListener('click', () => void acceptTrade(btn.dataset.tradeAccept)));
+    sessionList.querySelectorAll('[data-trade-cancel]').forEach(btn => btn.addEventListener('click', () => void cancelTrade(btn.dataset.tradeCancel)));
+    sessionList.querySelectorAll('[data-trade-open]').forEach(btn => btn.addEventListener('click', () => openTradeWorkspace(btn.dataset.tradeOpen)));
+  }
+
+  function renderMyTradeUnits(row) {
+    if (!myUnitGrid) return;
+    const ids = tradeableOwnedIds();
+    if (!ids.length) {
+      myUnitGrid.innerHTML = '<div class="trade-empty">거래 가능한 유닛이 없습니다.</div>';
+      return;
+    }
+    myUnitGrid.innerHTML = ids.map(unitId => {
+      const unit = UNIT_DATA[unitId];
+      const max = Math.max(0, Math.floor(Number(player.ownedUnits?.[unitId]?.copies || 0)));
+      const value = Math.min(max, Math.max(0, Math.floor(Number(offerDraft[unitId] || 0))));
+      return `<div class="trade-unit-item" data-trade-unit="${unitId}"><span class="trade-unit-icon">${unit.icon}</span><div class="trade-unit-info"><strong>${esc(unit.name)}</strong><small class="${unit.rarityClass}">${esc(unit.rarity)} · 보유 ×${max}</small></div><div class="trade-stepper"><button type="button" data-trade-minus="${unitId}" ${value<=0?'disabled':''}>−</button><output data-trade-count="${unitId}">${value}</output><button type="button" data-trade-plus="${unitId}" ${value>=max?'disabled':''}>＋</button></div></div>`;
+    }).join('');
+
+    myUnitGrid.querySelectorAll('[data-trade-minus]').forEach(btn => btn.addEventListener('click', () => changeDraft(btn.dataset.tradeMinus, -1, row)));
+    myUnitGrid.querySelectorAll('[data-trade-plus]').forEach(btn => btn.addEventListener('click', () => changeDraft(btn.dataset.tradePlus, 1, row)));
+  }
+
+  function changeDraft(unitId, delta, row) {
+    const max = Math.max(0, Math.floor(Number(player.ownedUnits?.[unitId]?.copies || 0)));
+    const next = Math.min(max, Math.max(0, Math.floor(Number(offerDraft[unitId] || 0)) + delta));
+    if (next > 0) offerDraft[unitId] = next; else delete offerDraft[unitId];
+    renderMyTradeUnits(row);
+  }
+
+  function openTradeWorkspace(tradeId) {
+    activeTradeId = tradeId;
+    const row = tradeRows.find(item => item.id === tradeId);
+    if (!row) return;
+    offerDraft = { ...myOffer(row) };
+    renderTradeWorkspace(row);
+    workspace?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderTradeWorkspace(row) {
+    if (!workspace || !row) return;
+    workspace.classList.remove('hidden');
+    document.querySelector('#tradePartnerName').textContent = `${partnerName(row) || '플레이어'}님과 거래`;
+    const statePill = document.querySelector('#tradeStatePill');
+    const cancelBtn = document.querySelector('#tradeCancelBtn');
+    const confirmBtn = document.querySelector('#tradeConfirmBtn');
+    const saveBtn = document.querySelector('#tradeSaveOfferBtn');
+    const summary = document.querySelector('#tradeConfirmSummary');
+    const partnerConfirmText = document.querySelector('#tradePartnerConfirmText');
+
+    const pending = row.status === 'pending';
+    const completed = row.status === 'completed';
+    waitingPanel?.classList.toggle('hidden', !pending);
+    activePanel?.classList.toggle('hidden', pending || completed);
+    cancelBtn?.classList.toggle('hidden', completed);
+    statePill.textContent = completed ? '완료' : pending ? '수락 대기' : '거래 중';
+
+    if (completed) {
+      waitingPanel?.classList.remove('hidden');
+      waitingPanel.innerHTML = '<strong class="trade-complete">✅ 거래가 완료되었습니다.</strong><small>양쪽 인벤토리에 서버에서 동시에 반영되었습니다.</small>';
+      return;
+    } else if (waitingPanel) {
+      waitingPanel.innerHTML = '<strong>상대방의 수락을 기다리는 중입니다.</strong><small>요청이 수락되면 유닛을 선택할 수 있습니다.</small>';
+    }
+    if (pending) return;
+
+    renderMyTradeUnits(row);
+    partnerOfferEl.innerHTML = offerHtml(theirOffer(row));
+    partnerConfirmText.textContent = theirConfirmed(row) ? '✅ 상대 최종 동의 완료' : '상대 최종 동의 전';
+    partnerConfirmText.className = theirConfirmed(row) ? 'trade-confirmed' : 'trade-unconfirmed';
+    summary.innerHTML = `<span>내 제안 <strong>${offerCount(myOffer(row))}</strong>개</span><span>상대 제안 <strong>${offerCount(theirOffer(row))}</strong>개</span><span class="${myConfirmed(row)?'trade-confirmed':'trade-unconfirmed'}">${myConfirmed(row)?'내 동의 완료':'내 동의 전'}</span>`;
+    confirmBtn.disabled = myConfirmed(row);
+    confirmBtn.textContent = myConfirmed(row) ? '✅ 최종 동의 완료 · 상대 대기 중' : '✅ 최종 거래 동의';
+    saveBtn.disabled = false;
+  }
+
+  async function refreshPlayerAfterTrade(tradeId) {
+    if (lastSyncedCompletedTrade === tradeId) return;
+    lastSyncedCompletedTrade = tradeId;
+    try {
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      if (user) await loadPlayer(user);
+    } catch (error) {
+      console.warn('거래 후 인벤토리 새로고침 실패:', error?.message || error);
+    }
+  }
+
+  async function refreshTradeRows(silent = false) {
+    if (refreshBusy) return;
+    refreshBusy = true;
+    try {
+      await getTradeUserId();
+      const data = await tradeRpc('trade_list_my');
+      tradeRows = Array.isArray(data) ? data : [];
+      renderTradeBadge();
+      if (!tradeScreen?.classList.contains('hidden')) renderTradeRows();
+      if (activeTradeId) {
+        const row = tradeRows.find(item => item.id === activeTradeId);
+        if (row) {
+          const previousDraft = { ...offerDraft };
+          renderTradeWorkspace(row);
+          if (row.status === 'active') {
+            // 폴링 때문에 아직 저장하지 않은 로컬 수량이 사라지지 않게 유지합니다.
+            offerDraft = previousDraft;
+            renderMyTradeUnits(row);
+          }
+          if (row.status === 'completed') {
+            await refreshPlayerAfterTrade(row.id);
+            setTradeStatus('거래가 완료되어 인벤토리를 새로 불러왔습니다.', 'success');
+          }
+        }
+      }
+    } catch (error) {
+      if (!silent) setTradeStatus(error.message || String(error), 'error');
+    } finally {
+      refreshBusy = false;
+    }
+  }
+
+  async function createTradeRequest() {
+    const input = document.querySelector('#tradeUsernameInput');
+    const username = normalizeTradeUsername(input?.value);
+    if (!/^[a-z0-9_]{3,20}$/.test(username)) {
+      setTradeStatus('상대 아이디를 정확히 입력해주세요.', 'error');
+      return;
+    }
+    const button = document.querySelector('#tradeRequestBtn');
+    button.disabled = true;
+    try {
+      const data = await tradeRpc('trade_create_request', { p_username: username });
+      setTradeStatus(`${data?.recipientUsername || username}님에게 거래 요청을 보냈습니다.`, 'success');
+      input.value = '';
+      await refreshTradeRows(true);
+      if (data?.tradeId) openTradeWorkspace(data.tradeId);
+    } catch (error) {
+      setTradeStatus(error.message || String(error), 'error');
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  async function acceptTrade(id) {
+    try {
+      await tradeRpc('trade_accept', { p_trade_id: id });
+      setTradeStatus('거래 요청을 수락했습니다.', 'success');
+      await refreshTradeRows(true);
+      openTradeWorkspace(id);
+    } catch (error) { setTradeStatus(error.message || String(error), 'error'); }
+  }
+
+  async function cancelTrade(id = activeTradeId) {
+    if (!id) return;
+    const row = tradeRows.find(item => item.id === id);
+    if (row?.status === 'active' && !confirm('진행 중인 거래를 취소하시겠습니까?')) return;
+    try {
+      await tradeRpc('trade_cancel', { p_trade_id: id });
+      if (activeTradeId === id) {
+        activeTradeId = null;
+        workspace?.classList.add('hidden');
+      }
+      setTradeStatus('거래를 취소했습니다.', 'success');
+      await refreshTradeRows(true);
+    } catch (error) { setTradeStatus(error.message || String(error), 'error'); }
+  }
+
+  async function saveTradeOffer() {
+    if (!activeTradeId) return;
+    const row = tradeRows.find(item => item.id === activeTradeId);
+    if (!row || row.status !== 'active') return;
+    const btn = document.querySelector('#tradeSaveOfferBtn');
+    btn.disabled = true;
+    try {
+      await tradeRpc('trade_set_offer', { p_trade_id: activeTradeId, p_offer: offerDraft });
+      setTradeStatus('내 거래 제안을 저장했습니다. 양쪽 최종 동의가 초기화되었습니다.', 'success');
+      await refreshTradeRows(true);
+      const updated = tradeRows.find(item => item.id === activeTradeId);
+      if (updated) offerDraft = { ...myOffer(updated) };
+    } catch (error) { setTradeStatus(error.message || String(error), 'error'); }
+    finally { btn.disabled = false; }
+  }
+
+  async function confirmTrade() {
+    if (!activeTradeId) return;
+    const btn = document.querySelector('#tradeConfirmBtn');
+    if (!confirm('현재 화면의 양쪽 제안을 확인했습니다. 최종 거래에 동의하시겠습니까?')) return;
+    btn.disabled = true;
+    try {
+      const result = await tradeRpc('trade_confirm', { p_trade_id: activeTradeId });
+      if (result?.status === 'completed') {
+        setTradeStatus('✅ 거래가 완료되었습니다.', 'success');
+        await refreshPlayerAfterTrade(activeTradeId);
+      } else {
+        setTradeStatus('최종 동의했습니다. 상대방의 동의를 기다립니다.', 'success');
+      }
+      await refreshTradeRows(true);
+    } catch (error) {
+      setTradeStatus(error.message || String(error), 'error');
+      btn.disabled = false;
+    }
+  }
+
+  function startTradePolling() {
+    stopTradePolling();
+    pollTimer = setInterval(() => void refreshTradeRows(true), 2200);
+  }
+  function stopTradePolling() {
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = null;
+  }
+
+  // 메뉴에서는 새 거래 요청 배지만 가볍게 확인합니다.
+  menuPollTimer = setInterval(() => {
+    const menuVisible = document.querySelector('#menuScreen') && !document.querySelector('#menuScreen').classList.contains('hidden');
+    if (menuVisible) void refreshTradeRows(true);
+  }, 8000);
+
+  document.querySelector('#openTradeBtn')?.addEventListener('click', showTradeScreen);
+  document.querySelector('#tradeBackBtn')?.addEventListener('click', closeTradeScreen);
+  document.querySelector('#tradeRequestBtn')?.addEventListener('click', createTradeRequest);
+  document.querySelector('#tradeUsernameInput')?.addEventListener('keydown', event => { if (event.key === 'Enter') void createTradeRequest(); });
+  document.querySelector('#tradeRefreshBtn')?.addEventListener('click', () => void refreshTradeRows(false));
+  document.querySelector('#tradeSaveOfferBtn')?.addEventListener('click', saveTradeOffer);
+  document.querySelector('#tradeConfirmBtn')?.addEventListener('click', confirmTrade);
+  document.querySelector('#tradeCancelBtn')?.addEventListener('click', () => void cancelTrade());
+
+  supabaseClient.auth.onAuthStateChange((_event, session) => {
+    myUserId = session?.user?.id || null;
+    if (!session) {
+      tradeRows = [];
+      renderTradeBadge();
+      stopTradePolling();
+    }
+  });
+
+  // 로그인 복구 직후 메뉴에 들어오면 요청 배지를 한 번 확인합니다.
+  setTimeout(() => void refreshTradeRows(true), 1800);
+})();
+</script>
 
 <script id="desktopAnywhereScrollScript">
 (() => {

@@ -882,6 +882,19 @@
   white-space: nowrap;
   pointer-events: none;
 }
+.error-probability-identity {
+  margin: 0;
+  padding: .12rem .32rem;
+  gap: .28em;
+  min-width: 0;
+  flex: 0 1 auto;
+}
+.error-probability-identity .error-live-code {
+  min-width: 5.8ch;
+  max-width: 10ch;
+  overflow: hidden;
+  text-overflow: clip;
+}
 .error-probability-copy {
   color: #75ff9b;
   font: 900 clamp(9px,2.6vw,12px)/1.15 ui-monospace, SFMono-Regular, Consolas, monospace;
@@ -893,6 +906,35 @@
   68% { opacity: .35; transform: translateX(2px); }
   73% { opacity: .9; transform: translateX(-2px); }
   79% { opacity: .55; }
+}
+.error-live-identity {
+  display: inline-flex;
+  align-items: baseline;
+  gap: .45em;
+  max-width: 100%;
+  margin: 0 0 .38rem;
+  padding: .18rem .42rem;
+  border: 1px solid rgba(0,255,102,.28);
+  background: repeating-linear-gradient(0deg, rgba(0,255,102,.045) 0 1px, rgba(0,0,0,.88) 1px 4px);
+  box-shadow: inset 0 0 14px rgba(0,255,102,.08), 0 0 12px rgba(0,255,102,.09);
+  color: #9affb3;
+  font: 1000 clamp(10px,2.8vw,13px)/1.15 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .08em;
+  text-shadow: -1px 0 rgba(0,255,102,.95), 1px 0 rgba(0,20,8,.95), 0 0 8px rgba(0,255,102,.7);
+  animation: errorLiveIdentityJitter .52s steps(2,end) infinite;
+}
+.error-live-code {
+  display: inline-block;
+  min-width: 7.4ch;
+  color: #d7ffe1;
+  white-space: nowrap;
+  text-shadow: -2px 0 rgba(0,255,102,.75), 2px 0 rgba(0,0,0,.95), 0 0 10px rgba(0,255,102,.85);
+}
+@keyframes errorLiveIdentityJitter {
+  0%,72%,100% { transform: translate(0,0); filter: none; }
+  76% { transform: translate(-1px,0) skewX(-5deg); filter: contrast(1.55); }
+  82% { transform: translate(2px,1px) skewX(4deg); }
+  88% { transform: translate(-1px,-1px); }
 }
 .error-chest-scene {
   position: relative;
@@ -7445,7 +7487,7 @@ button {
   </div>
 
   <script>
-    window.BIDULGY_BUILD_VERSION = '2026-08-18-mobile-scroll-fix-v1';
+    window.BIDULGY_BUILD_VERSION = '2026-08-18-error-probability-live-v2';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -9612,6 +9654,7 @@ async function logout() {
           <div class="unit-icon">${unit.icon}</div>
           <h3>${unit.name}</h3>
           <p class="${unit.rarityClass}">${unit.rarity}</p>
+          ${unit.id === 'errorEntity' ? `<div class="error-live-identity"><span class="rarity-error">ERROR</span><span>//</span><span class="error-live-code">${makeErrorLiveCode()}</span></div>` : ''}
           <p class="muted">
             ${unit.id === 'moneyTree'
               ? `생산 ${unit.incomeAmount}골드 / ${unit.incomeInterval}초<br>배치 비용 ${unit.cost}`
@@ -9842,7 +9885,11 @@ async function logout() {
                 style="--rarity-color:${dice.color};--rarity-glow:${dice.glow};"
               >
                 <span class="probability-color"></span>
-                <strong class="rarity-error">ERROR</strong>
+                <span class="error-live-identity error-probability-identity">
+                  <span class="rarity-error">ERROR</span>
+                  <span>//</span>
+                  <span class="error-live-code">${makeErrorLiveCode()}</span>
+                </span>
                 <span class="error-probability-copy">404 · 등급이 존재하지 않습니다</span>
               </div>
             `;
@@ -12200,6 +12247,28 @@ function requestGachaDraw(count) {
       if (el) el.textContent = text;
     }
 
+    function makeErrorLiveCode() {
+      const anomalies = ['404', '000000', 'NaN', '13-37', 'NULL', '0xDEAD', '??????', '65535', '∞404∞'];
+      if (Math.random() < 0.18) return anomalies[Math.floor(Math.random() * anomalies.length)];
+      const lengths = [6, 7, 8, 9, 10, 12];
+      const len = lengths[Math.floor(Math.random() * lengths.length)];
+      let out = '';
+      for (let i = 0; i < len; i += 1) out += Math.floor(Math.random() * 10);
+      if (Math.random() < 0.22 && out.length > 5) {
+        const at = 2 + Math.floor(Math.random() * (out.length - 4));
+        out = `${out.slice(0, at)}-${out.slice(at)}`;
+      }
+      return out;
+    }
+
+    function refreshErrorLiveCodes() {
+      document.querySelectorAll('.error-live-code').forEach(el => {
+        el.textContent = makeErrorLiveCode();
+      });
+    }
+
+    setInterval(refreshErrorLiveCodes, 110);
+
     function getUnitStatusSummary(unit, placed) {
       const summaries = {
         starterArcher: '5타마다 서로 다른 적 최대 3명 동시 사격',
@@ -12215,6 +12284,7 @@ function requestGachaDraw(count) {
         phoenix: '0.01초 불꽃 숨결 범위공격 · 20초마다 6초 둔화+화상 · 젖음에는 화상 불가 · 60초마다 10초간 사거리×2',
         cherrySamurai: `기절 면역 · 근접 120 전방 180° 범위 · 원거리 ${unit.range} 검기 2발(각 적중지 반경 ${unit.swordWaveSplashRadius || 35} 범위) · 벚꽃 영역 ${unit.blossomAuraRange || 170}: 0.1초마다 ${unit.blossomAuraDamage || 10} 피해 · 일반 3타 후 일섬(폭 ${unit.issenWidth || 60}·거리 ${unit.issenRange || 200})×5 · 일섬 4회마다 오의 각 참격×10 · 10번째 공격마다 적 전체 3초 표식 후 ×5`,
         eden: 'Charge 최대100(1당 피해 +0.5%) · 14타마다 크기가 다른 공허 분신 6체를 9초 소환(각자 자동 공격) · 6타 Impale · 8타 Cut Into Nothing · 11타 Taunt(+15 Charge) · Charge30↑ Voidrush · Style V Deadeye · 맵당 1기',
+        errorEntity: `<span class="error-live-identity"><span class="rarity-error">ERROR</span><span>//</span><span class="error-live-code">${makeErrorLiveCode()}</span></span><br>DATA CUT: 적중 시 오류 스택 +1 · 5스택 CORRUPTED(4초 이속 -30%, 받는 피해 +35%) · 5타 404(최대 4명, 1.2초 후 반경75 ×2.5) · 10타 ROLLBACK(일반 적 120 되감기/보스 ×4) · 25타 SYSTEM FAILURE(전 적 ×6, 일반 적 2초 정지) · 50타 DELETE(일반 적 3명 삭제/보스 ×15) · 맵당 1기`,
         eclipse: `평타 적중지 반경 ${unit.normalSlashRadius || 55} 범위 베기 · 처치 시 5% 성장(공격력·공속 +2%, 회전참 범위 +5%) · 타격 시 5% 블랙홀 · 4타마다 회전참×3 + 1초 기절 · 기절 면역`,
         astralChronomancer: '다중발사(2/3/4발) · 공전탄 최대 10발 · 각 탄환 20% 황금 시간기절 · 60회 공격마다 사거리 300 시간정지 5초'
       };
@@ -12287,7 +12357,7 @@ function requestGachaDraw(count) {
       }
 
       panel.innerHTML = `
-        <div class="selected-panel-header"><h3>${unit.icon} ${unit.name}</h3><button id="closeBattleInfoBtn" class="close-battle-info-button" type="button" aria-label="유닛 정보 닫기">×</button></div>
+        <div class="selected-panel-header"><h3>${unit.icon} ${unit.name}${unit.id === 'errorEntity' ? ` <span class="error-live-code">${makeErrorLiveCode()}</span>` : ''}</h3><button id="closeBattleInfoBtn" class="close-battle-info-button" type="button" aria-label="유닛 정보 닫기">×</button></div>
         ${statsHtml}
         ${skillHtml}
         ${upgradeHtml}

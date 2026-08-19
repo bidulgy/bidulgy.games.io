@@ -6871,7 +6871,7 @@ button {
   background:linear-gradient(90deg,#ffb900,#ffd400 42%,#fff27b 72%,#ffbf00)!important;
   background-size:180% 100%!important;
   box-shadow:0 0 12px rgba(255,211,31,.95),0 0 22px rgba(255,191,0,.48)!important;
-  transition:width .72s cubic-bezier(.15,.85,.2,1)!important;
+  transition:width 1.15s cubic-bezier(.12,.82,.18,1)!important;
   animation:profileExpGoldFlow .9s linear infinite;
 }
 .menu-exp-track i::after,.profile-exp-track i::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 0 38%,rgba(255,255,255,.85) 48%,transparent 59%);transform:translateX(-120%);animation:profileExpShine 1.25s ease-in-out infinite}
@@ -7149,7 +7149,7 @@ button {
         <small id="profileNextLevelText">다음 레벨까지 100 EXP</small>
       </div>
       <label class="social-label" for="nicknameInput">닉네임</label>
-      <div class="nickname-row"><input id="nicknameInput" maxlength="14" placeholder="한글/영문/숫자 2~14자"><button id="saveNicknameBtn" type="button">닉네임 저장</button></div>
+      <div class="nickname-row"><input id="nicknameInput" maxlength="14" inputmode="text" lang="ko" autocomplete="nickname" autocapitalize="off" spellcheck="false" placeholder="한글/영문/숫자 2~14자"><button id="saveNicknameBtn" type="button">닉네임 저장</button></div>
       <p id="nicknameStatus" class="social-status"></p>
     </section>
     <section id="socialFriendsPanel" class="social-panel hidden">
@@ -7722,8 +7722,8 @@ button {
   </div>
 
   <script>
-console.log("[LLAMA VISUAL BUILD] 2026-08-19-infinite-social-exp-v5");
-    window.BIDULGY_BUILD_VERSION = '2026-08-19-infinite-social-exp-v5';
+console.log("[LLAMA VISUAL BUILD] 2026-08-19-korean-nickname-save-v7");
+    window.BIDULGY_BUILD_VERSION = '2026-08-19-korean-nickname-save-v7';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -26194,10 +26194,19 @@ function requestGachaDraw(count) {
 </script>
 \n<script id="profileFriendsLevelScript">
 (() => {
-  const LEVEL_THRESHOLDS = [
-    {level:1, exp:0},{level:2, exp:100},{level:3, exp:250},{level:4, exp:400},{level:5, exp:600},
-    {level:6, exp:800},{level:7, exp:1200},{level:8, exp:1500},{level:9, exp:1800},{level:10, exp:2000}
-  ];
+  // 각 값은 '그 레벨로 올라가기 위해 추가로 필요한 EXP'입니다.
+  // Lv2 +100, Lv3 +250, Lv4 +400, Lv5 +600, Lv6 +800,
+  // Lv7 +1200, Lv8 +1500, Lv9 +1800, Lv10 +2000.
+  const LEVEL_REQUIREMENTS = {2:100,3:250,4:400,5:600,6:800,7:1200,8:1500,9:1800,10:2000};
+  const LEVEL_THRESHOLDS = (() => {
+    const out=[{level:1,exp:0}];
+    let total=0;
+    for(let level=2; level<=10; level++){
+      total += Number(LEVEL_REQUIREMENTS[level]||0);
+      out.push({level,exp:total,required:Number(LEVEL_REQUIREMENTS[level]||0)});
+    }
+    return out;
+  })();
   const DIFF_XP = { easy:.5, normal:1, hard:1.5, veryHard:2 };
   const STAGE_WAVE_XP = { 1:2, 2:3, 3:4 };
   let socialProfile = null;
@@ -26217,8 +26226,11 @@ function requestGachaDraw(count) {
     const level = getPlayerLevelFromExp(exp);
     const current = LEVEL_THRESHOLDS.find(x => x.level === level) || LEVEL_THRESHOLDS[0];
     const next = LEVEL_THRESHOLDS.find(x => x.level === level + 1) || null;
-    const pct = next ? Math.max(0,Math.min(100,(exp-current.exp)/(next.exp-current.exp)*100)) : 100;
-    return {exp,level,current,next,pct};
+    const needed = next ? Math.max(1, Number(next.exp-current.exp)) : 0;
+    const earned = next ? Math.max(0, Math.min(needed, exp-current.exp)) : 0;
+    const remaining = next ? Math.max(0, needed-earned) : 0;
+    const pct = next ? Math.max(0,Math.min(100,earned/needed*100)) : 100;
+    return {exp,level,current,next,needed,earned,remaining,pct};
   }
   function fmtExp(value) {
     const n=Number(value||0); return Number.isInteger(n)?String(n):n.toFixed(1).replace(/\.0$/,'');
@@ -26245,16 +26257,20 @@ function requestGachaDraw(count) {
     fills.forEach(el=>el.classList.add('exp-gain-pop'));
     if(before.level===after.level){
       setExpBarPct(before.pct,true);
-      requestAnimationFrame(()=>requestAnimationFrame(()=>setExpBarPct(after.pct,false)));
-      expBarAnimationTimer=setTimeout(()=>{expBarAnimating=false;fills.forEach(el=>el.classList.remove('exp-gain-pop'));setExpBarPct(after.pct,true);},820);
+      expBarAnimationTimer=setTimeout(()=>{
+        setExpBarPct(after.pct,false);
+        expBarAnimationTimer=setTimeout(()=>{expBarAnimating=false;fills.forEach(el=>el.classList.remove('exp-gain-pop'));setExpBarPct(after.pct,true);},1250);
+      },180);
     }else{
       setExpBarPct(before.pct,true);
-      requestAnimationFrame(()=>requestAnimationFrame(()=>setExpBarPct(100,false)));
       expBarAnimationTimer=setTimeout(()=>{
-        setExpBarPct(0,true);
-        requestAnimationFrame(()=>requestAnimationFrame(()=>setExpBarPct(after.pct,false)));
-        expBarAnimationTimer=setTimeout(()=>{expBarAnimating=false;fills.forEach(el=>el.classList.remove('exp-gain-pop'));setExpBarPct(after.pct,true);},760);
-      },760);
+        setExpBarPct(100,false);
+        expBarAnimationTimer=setTimeout(()=>{
+          setExpBarPct(0,true);
+          setTimeout(()=>setExpBarPct(after.pct,false),120);
+          expBarAnimationTimer=setTimeout(()=>{expBarAnimating=false;fills.forEach(el=>el.classList.remove('exp-gain-pop'));setExpBarPct(after.pct,true);},1420);
+        },1180);
+      },180);
     }
   }
 
@@ -26266,17 +26282,16 @@ function requestGachaDraw(count) {
     const nickname=String(player.nickname || socialProfile?.nickname || currentUsername || '플레이어');
     const avatar=(nickname.trim()[0]||'P').toUpperCase();
     const next=info.next;
-    const target=next?next.exp:info.exp;
     const set=(id,v)=>{const el=document.querySelector(id);if(el)el.textContent=v;};
     set('#menuNickname',nickname); set('#menuLevel',`Lv.${info.level}`);
-    set('#menuExpText',next?`${fmtExp(info.exp)} / ${fmtExp(target)} EXP`:`${fmtExp(info.exp)} EXP · MAX`);
+    set('#menuExpText',next?`${fmtExp(info.earned)} / ${fmtExp(info.needed)} EXP`:`${fmtExp(info.exp)} EXP · MAX`);
     set('#menuProfileAvatar',avatar); set('#profileAvatarLarge',avatar); set('#profileNicknameTitle',nickname);
     set('#profileGameId',`ID · ${currentUsername || '-'}`); set('#profileLevelText',`LEVEL ${info.level}`);
-    set('#profileExpText',next?`${fmtExp(info.exp)} / ${fmtExp(target)} EXP`:`${fmtExp(info.exp)} EXP · MAX`);
-    set('#profileNextLevelText',next?`다음 레벨까지 ${fmtExp(Math.max(0,next.exp-info.exp))} EXP`:'최고 레벨에 도달했습니다.');
+    set('#profileExpText',next?`${fmtExp(info.earned)} / ${fmtExp(info.needed)} EXP`:`${fmtExp(info.exp)} EXP · MAX`);
+    set('#profileNextLevelText',next?`Lv.${info.level+1}까지 ${fmtExp(info.remaining)} EXP 남음 · 누적 ${fmtExp(info.exp)} EXP`:'최고 레벨에 도달했습니다.');
     if(!expBarAnimating && !pendingExpAnimation) setExpBarPct(info.pct,true);
     const input=document.querySelector('#nicknameInput'); if(input && document.activeElement!==input) input.value=nickname===currentUsername && !player.nickname?'':nickname;
-    setTimeout(animatePendingExpGain,40);
+    setTimeout(animatePendingExpGain,220);
   };
 
   async function rpc(name,args={}) {
@@ -26294,7 +26309,7 @@ function requestGachaDraw(count) {
   async function syncProgress() {
     if(!player) return;
     try {
-      const rows=await rpcFallback('sync_game_profile_progress_v4','sync_game_profile_progress',{p_exp:Number(player.exp||0)});
+      const rows=await rpcFallback('sync_game_profile_progress_v5','sync_game_profile_progress_v4',{p_exp:Number(player.exp||0)});
       const row=Array.isArray(rows)?rows[0]:rows;
       if(row){player.exp=Math.max(Number(player.exp||0),Number(row.exp||0));player.level=getPlayerLevelFromExp(player.exp);}
       refreshSocialMenu();
@@ -26328,7 +26343,7 @@ function requestGachaDraw(count) {
   async function initializeSocialProfile(forcePrompt=false) {
     if(!player||!currentUsername)return;
     try {
-      const rows=await rpc('ensure_game_profile_v4',{});
+      const rows=await rpcFallback('ensure_game_profile_v5','ensure_game_profile_v4',{});
       socialProfile=Array.isArray(rows)?rows[0]:rows;
       if(socialProfile){
         const serverExp=Number(socialProfile.exp||0), localExp=Number(player.exp||0);
@@ -26359,19 +26374,47 @@ function requestGachaDraw(count) {
     document.querySelector('#socialFriendsTab')?.classList.toggle('active',!isProfile);
     if(!isProfile)void refreshFriendData(false);
   }
+  let nicknameImeComposing=false;
   async function saveNickname(){
     const input=document.querySelector('#nicknameInput'), status=document.querySelector('#nicknameStatus'); const btn=document.querySelector('#saveNicknameBtn');
-    const value=(input?.value||'').trim().normalize('NFC'); btn.disabled=true;
+    if(!input||!btn)return;
+    btn.disabled=true;
     try {
-      const rows=await rpcFallback('set_game_nickname_v4','set_game_nickname',{p_nickname:value}); socialProfile=Array.isArray(rows)?rows[0]:rows;
-      player.nickname=socialProfile?.nickname||value; socialNicknameRequired=false; document.querySelector('#socialCloseBtn')?.classList.remove('hidden');
-      if(status){status.textContent='닉네임을 저장했습니다.';status.className='social-status good';} refreshSocialMenu(); void savePlayer();
-    } catch(e){if(status){status.textContent=e.message||String(e);status.className='social-status error';}} finally{btn.disabled=false;}
+      // 한글 IME 조합이 끝난 값을 읽습니다. 클릭으로 포커스가 이동한 뒤 compositionend가 들어올 시간을 확보합니다.
+      if(nicknameImeComposing) await new Promise(r=>setTimeout(r,160));
+      else await new Promise(r=>setTimeout(r,50));
+      const value=String(input.value||'').trim().normalize('NFC');
+      input.blur();
+      const charCount=Array.from(value).length;
+      if(charCount<2||charCount>14) throw new Error('닉네임은 한글 포함 2~14자로 입력하세요.');
+      if(/[\u0000-\u001F\u007F]/u.test(value)) throw new Error('닉네임에 사용할 수 없는 문자가 포함되어 있습니다.');
+      const rows=await rpcFallback('set_game_nickname_v6','set_game_nickname_v5',{p_nickname:value});
+      let savedProfile=Array.isArray(rows)?rows[0]:rows;
+      if(typeof savedProfile==='string'){try{savedProfile=JSON.parse(savedProfile);}catch(_){}}
+      socialProfile=(savedProfile && typeof savedProfile==='object')?{...(socialProfile||{}),...savedProfile}:socialProfile;
+      let serverNickname=String(savedProfile?.nickname||socialProfile?.nickname||'').trim().normalize('NFC');
+      if(!serverNickname) throw new Error('서버가 저장된 닉네임을 반환하지 않았습니다. V6 SQL 실행 여부를 확인하세요.');
+      // 저장 직후 DB를 다시 읽어 실제 저장값까지 검증합니다.
+      try {
+        let verified=await rpc('get_my_game_profile_v6',{});
+        if(typeof verified==='string'){try{verified=JSON.parse(verified);}catch(_){}}
+        const verifiedNickname=String(verified?.nickname||'').trim().normalize('NFC');
+        if(!verifiedNickname) throw new Error('서버 재조회 결과 닉네임이 비어 있습니다.');
+        if(verifiedNickname!==value) throw new Error(`서버 저장값 불일치: ${verifiedNickname}`);
+        serverNickname=verifiedNickname;
+        socialProfile={...(socialProfile||{}),...(verified||{})};
+      } catch(verifyError) {
+        throw new Error(`닉네임 서버 검증 실패: ${verifyError?.message||verifyError}`);
+      }
+      player.nickname=serverNickname; socialNicknameRequired=false; document.querySelector('#socialCloseBtn')?.classList.remove('hidden');
+      input.value=player.nickname;
+      if(status){status.textContent=`닉네임 서버 저장 완료: ${player.nickname}`;status.className='social-status good';} refreshSocialMenu(); await savePlayer();
+    } catch(e){if(status){status.textContent=e?.message||String(e);status.className='social-status error';}} finally{btn.disabled=false;}
   }
   async function searchFriends(){
     const q=(document.querySelector('#friendSearchInput')?.value||'').trim().normalize('NFC'); const box=document.querySelector('#friendSearchResults'); if(!q){box.innerHTML='<div class="social-empty">닉네임 또는 게임 아이디를 입력하세요.</div>';return;}
     box.innerHTML='<div class="social-empty">검색 중...</div>';
-    try {const rows=await rpcFallback('search_game_profiles_v4','search_game_profiles',{p_query:q}); renderSearch(Array.isArray(rows)?rows:[]);} catch(e){box.innerHTML=`<div class="social-empty">${safeText(e.message)}</div>`;}
+    try {const rows=await rpcFallback('search_game_profiles_v5','search_game_profiles_v4',{p_query:q}); renderSearch(Array.isArray(rows)?rows:[]);} catch(e){box.innerHTML=`<div class="social-empty">${safeText(e.message)}</div>`;}
   }
   function personName(row){return row.nickname||'닉네임 미설정';}
   function renderSearch(rows){
@@ -26379,7 +26422,7 @@ function requestGachaDraw(count) {
     box.innerHTML=rows.map(r=>`<div class="social-person"><div class="social-person-copy"><strong>${safeText(personName(r))}</strong><small>Lv.${Number(r.level||1)}</small></div><div class="social-person-actions">${r.relation==='friend'?'<button disabled>친구</button>':r.relation==='pending'?'<button disabled>요청 중</button>':`<button class="accept" data-friend-add="${safeText(r.user_id)}">친구 추가</button>`}</div></div>`).join('');
     box.querySelectorAll('[data-friend-add]').forEach(btn=>btn.addEventListener('click',()=>void sendFriend(btn.dataset.friendAdd,btn)));
   }
-  async function sendFriend(id,btn){btn.disabled=true;try{const result=await rpcFallback('send_game_friend_request_v4','send_game_friend_request',{p_target_user_id:id});document.querySelector('#friendStatus').textContent=result==='sent'?'친구 요청을 보냈습니다.':'이미 처리 중인 요청입니다.';await searchFriends();}catch(e){document.querySelector('#friendStatus').textContent=e.message;}finally{btn.disabled=false;}}
+  async function sendFriend(id,btn){btn.disabled=true;try{const result=await rpcFallback('send_game_friend_request_v5','send_game_friend_request_v4',{p_target_user_id:id});document.querySelector('#friendStatus').textContent=result==='sent'?'친구 요청을 보냈습니다.':'이미 처리 중인 요청입니다.';await searchFriends();}catch(e){document.querySelector('#friendStatus').textContent=e.message;}finally{btn.disabled=false;}}
   async function refreshFriendData(silent=false){
     if(!player)return; try{const [reqs,friends]=await Promise.all([rpc('list_game_friend_requests'),rpc('list_game_friends')]);renderRequests(reqs||[]);renderFriends(friends||[]);const badge=document.querySelector('#friendRequestBadge');const n=(reqs||[]).length;if(badge){badge.textContent=n;badge.classList.toggle('hidden',n<=0);}}catch(e){if(!silent){const s=document.querySelector('#friendStatus');if(s)s.textContent=`친구 정보를 불러오지 못했습니다: ${e.message}`;}}
   }
@@ -26394,7 +26437,9 @@ function requestGachaDraw(count) {
   document.querySelector('#socialProfileTab')?.addEventListener('click',()=>switchTab('profile'));
   document.querySelector('#socialFriendsTab')?.addEventListener('click',()=>switchTab('friends'));
   document.querySelector('#saveNicknameBtn')?.addEventListener('click',()=>void saveNickname());
-  document.querySelector('#nicknameInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')void saveNickname();});
+  document.querySelector('#nicknameInput')?.addEventListener('compositionstart',()=>{nicknameImeComposing=true;});
+  document.querySelector('#nicknameInput')?.addEventListener('compositionend',()=>{nicknameImeComposing=false;});
+  document.querySelector('#nicknameInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing)void saveNickname();});
   document.querySelector('#friendSearchBtn')?.addEventListener('click',()=>void searchFriends());
   document.querySelector('#friendSearchInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')void searchFriends();});
   document.querySelector('#friendRefreshBtn')?.addEventListener('click',()=>void refreshFriendData(false));

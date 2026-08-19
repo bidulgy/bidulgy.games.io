@@ -7722,8 +7722,8 @@ button {
   </div>
 
   <script>
-console.log("[LLAMA VISUAL BUILD] 2026-08-19-infinite-checkpoint-double-v1");
-    window.BIDULGY_BUILD_VERSION = '2026-08-19-infinite-skip5-autoskip-v2';
+console.log("[INFINITE GROWTH BUILD] 2026-08-19-infinite-wave-gems100-v4");
+    window.BIDULGY_BUILD_VERSION = '2026-08-19-infinite-wave-gems100-v4';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -12219,9 +12219,28 @@ function requestGachaDraw(count) {
     }
 
 
-    function infiniteBaseHp(wave) {
+    function infiniteGrowthMultiplier(wave) {
       const w = Math.max(1, Math.floor(Number(wave) || 1));
-      return Math.max(1, Math.round(100 * Math.pow(1.1, Math.floor((w - 1) / 10))));
+      const tenWaveSteps = Math.floor((w - 1) / 10);
+      const fiftyWaveSteps = Math.floor((w - 1) / 50);
+      return Math.pow(1.1, tenWaveSteps) * Math.pow(1.5, fiftyWaveSteps);
+    }
+
+    function infiniteBaseHp(wave) {
+      return Math.max(1, Math.round(100 * infiniteGrowthMultiplier(wave)));
+    }
+
+    function infiniteWaveExp(wave) {
+      const w = Math.max(1, Math.floor(Number(wave) || 1));
+      // 1~50: 2 EXP, 51~100: 3 EXP, 101~150: 4 EXP ... 계속 +1
+      return 2 + Math.floor((w - 1) / 50);
+    }
+
+
+    function infiniteWaveGemReward(wave) {
+      const w = Math.max(1, Math.floor(Number(wave) || 1));
+      // 무한모드 기본 웨이브 보상은 100 소환석에서 시작하고 적 HP와 같은 성장률을 사용합니다.
+      return Math.max(1, Math.round(100 * infiniteGrowthMultiplier(w)));
     }
 
     function infiniteThemeStageForWave(wave) {
@@ -12243,7 +12262,36 @@ function requestGachaDraw(count) {
       if (w % 50 !== 0) return 0;
       const themeStage = infiniteThemeStageForWave(w);
       const stage = STAGE_CONFIG[themeStage] || STAGE_CONFIG[1];
-      return Math.max(0, Math.round(Number(stage.stageBonus || 0) * 2));
+      const baseReward = Math.max(0, Number(stage.stageBonus || 0) * 2);
+      // 적 HP와 동일한 성장률: 10웨이브마다 x1.1 복리 + 50웨이브마다 추가 x1.5 복리
+      return Math.max(0, Math.round(baseReward * infiniteGrowthMultiplier(w)));
+    }
+
+    async function claimInfiniteWaveServerReward(wave) {
+      const w = Math.max(1, Math.floor(Number(wave) || 1));
+      const expectedAmount = infiniteWaveGemReward(w);
+      try {
+        const claimKey = `infinite:${battle?.runId || 'run'}:wave:${w}`;
+        const { data, error } = await supabaseClient.rpc('claim_infinite_wave_reward_v3', {
+          p_claim_key: claimKey,
+          p_wave: w
+        });
+        if (error) throw error;
+        const serverGems = Number(data?.gems);
+        const serverAmount = Number(data?.amount);
+        if (Number.isFinite(serverGems)) player.gems = serverGems;
+        if (Number.isFinite(serverAmount) && serverAmount !== expectedAmount) {
+          console.warn('무한모드 웨이브 보상 계산 차이:', { expectedAmount, serverAmount, wave:w });
+        }
+        document.querySelector('#menuGems') && (document.querySelector('#menuGems').textContent = player.gems);
+        document.querySelector('#gachaGems') && (document.querySelector('#gachaGems').textContent = player.gems);
+        await savePlayer();
+        return data || null;
+      } catch (error) {
+        console.error('무한모드 웨이브 소환석 서버 반영 실패:', error?.message || error);
+        setBattleMessage(`무한모드 ${w}웨이브 소환석 서버 반영 실패 · SQL V3 적용 여부를 확인해주세요.`);
+        return null;
+      }
     }
 
     async function claimInfiniteCheckpointServerReward(wave) {
@@ -12252,13 +12300,26 @@ function requestGachaDraw(count) {
       if (!expectedAmount) return null;
       try {
         const claimKey = `infinite:${battle?.runId || 'run'}:checkpoint:${w}`;
-        const { data, error } = await supabaseClient.rpc('claim_infinite_checkpoint_reward_v1', {
+        let response = await supabaseClient.rpc('claim_infinite_checkpoint_reward_v2', {
           p_claim_key: claimKey,
           p_wave: w
         });
+        if (response.error && /function|schema cache|PGRST202|does not exist|Could not find/i.test(String(response.error?.message || ''))) {
+          response = await supabaseClient.rpc('claim_infinite_checkpoint_reward_v1', {
+            p_claim_key: claimKey,
+            p_wave: w
+          });
+        }
+        const { data, error } = response;
         if (error) throw error;
         const serverGems = Number(data?.gems);
+        const serverAmount = Number(data?.amount);
         if (Number.isFinite(serverGems)) player.gems = serverGems;
+        if (Number.isFinite(serverAmount) && serverAmount !== expectedAmount) {
+          console.warn('무한모드 체크포인트 보상 계산 차이:', { expectedAmount, serverAmount, wave:w });
+        }
+        document.querySelector('#menuGems') && (document.querySelector('#menuGems').textContent = player.gems);
+        document.querySelector('#gachaGems') && (document.querySelector('#gachaGems').textContent = player.gems);
         await savePlayer();
         return data || null;
       } catch (error) {
@@ -12791,7 +12852,7 @@ function requestGachaDraw(count) {
         const themeStage = Number(battle.infiniteThemeStage || infiniteThemeStageForWave(battle.wave || 1));
         const theme = STAGE_CONFIG[themeStage] || STAGE_CONFIG[1];
         title.textContent = `♾️ 개인 무한모드 · ${theme.name}`;
-        body.innerHTML = `<p>현재 지역: ${theme.name} · 50웨이브마다 초원 → 수정 동굴 → 황야 순환</p><p>일반 적 HP 100 시작 · 10웨이브마다 ×1.1 복리</p><p>10웨이브마다 지역 보스 · HP는 일반 적 HP의 고정 배수</p><p>50웨이브 체크포인트마다 해당 지역 완주 보상의 2배 소환석 지급</p><p>스킵 버튼 1회 = 1웨이브 추가 · 연속 최대 20회</p>`;
+        body.innerHTML = `<p>현재 지역: ${theme.name} · 50웨이브마다 초원 → 수정 동굴 → 황야 순환</p><p>일반 적 HP 100 시작 · 10웨이브마다 ×1.1 복리 + 50웨이브마다 추가 ×1.5 복리</p><p>10웨이브마다 지역 보스 · HP는 일반 적 HP의 고정 배수</p><p>EXP: 1~50은 2, 51~100은 3, 이후 50웨이브마다 +1 EXP</p><p>웨이브당 소환석 100부터 시작 · 적 HP와 같은 성장률 적용 · 50웨이브 체크포인트 보상은 추가 지급</p><p>스킵 버튼 1회 = 1웨이브 추가 · 연속 최대 5회 · 맵 전환 웨이브는 스킵 불가</p>`;
       } else if (battle.stage === 2) {
         title.textContent = '💎 수정 동굴 · 맵 정보';
         body.innerHTML = [
@@ -15791,15 +15852,32 @@ function requestGachaDraw(count) {
       if (battle?.isInfinite) {
         waveState.rewardGranted = true;
         battle.skipUses = 0;
-        const checkpointReward = infiniteCheckpointReward(waveState.wave);
-        if (checkpointReward > 0) {
-          battle.earnedWaveGems += checkpointReward;
-          player.gems += checkpointReward;
-          setBattleMessage(`무한모드 ${waveState.wave}웨이브 체크포인트 클리어! 소환석 ${checkpointReward.toLocaleString()}개(2배 보상)를 획득했습니다!`);
-          void claimInfiniteCheckpointServerReward(waveState.wave);
-        } else {
-          setBattleMessage(`무한모드 웨이브 ${waveState.wave} 클리어 · 다음 웨이브 준비`);
+
+        if (!waveState.profileExpGranted) {
+          waveState.profileExpGranted = true;
+          const expGain = infiniteWaveExp(waveState.wave);
+          if (typeof awardPlayerExp === 'function') awardPlayerExp(expGain, `무한모드 웨이브 ${waveState.wave}`);
         }
+
+        const waveGemReward = infiniteWaveGemReward(waveState.wave);
+        const checkpointReward = infiniteCheckpointReward(waveState.wave);
+        const totalGemReward = waveGemReward + checkpointReward;
+        battle.earnedWaveGems += totalGemReward;
+        player.gems += totalGemReward;
+
+        if (checkpointReward > 0) {
+          setBattleMessage(`무한모드 ${waveState.wave}웨이브 클리어! 웨이브 소환석 ${waveGemReward.toLocaleString()}개 + 체크포인트 ${checkpointReward.toLocaleString()}개 · EXP +${infiniteWaveExp(waveState.wave)}`);
+        } else {
+          setBattleMessage(`무한모드 웨이브 ${waveState.wave} 클리어 · 소환석 +${waveGemReward.toLocaleString()} · EXP +${infiniteWaveExp(waveState.wave)}`);
+        }
+
+        // 서버 지갑은 웨이브 보상을 먼저 확정한 뒤 체크포인트 보상을 순서대로 반영해 응답 순서 역전을 막습니다.
+        void (async () => {
+          await claimInfiniteWaveServerReward(waveState.wave);
+          if (checkpointReward > 0) {
+            await claimInfiniteCheckpointServerReward(waveState.wave);
+          }
+        })();
         updateWaveSkipUi();
         return;
       }

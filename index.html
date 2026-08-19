@@ -7915,7 +7915,8 @@ const STAGE_CONFIG = Object.freeze({
     maxWave: 50,
     startingGold: 340,
     baseHp: 2000,
-    stageBonus: 3200,
+    stageBonus: 4000,
+    rewardMultiplier: 4,
     available: true,
     unlockRule: 'stage2Hard',
     battlePalette: {
@@ -8089,7 +8090,7 @@ function applyStagePreview(stageId = selectedStage) {
   if (startButton) startButton.disabled = !unlocked;
   if (status) {
     status.textContent = unlocked
-      ? `스테이지 ${stage.id} 플레이 가능${stage.id === 2 ? ' · 소환석 보상 ×2.5' : ''}`
+      ? `스테이지 ${stage.id} 플레이 가능${stage.id === 2 ? ' · 소환석 보상 ×2.5' : stage.id === 3 ? ' · 웨이브 400 / 완주 4,000' : ''}`
       : `🔒 스테이지 ${stage.id} 잠금 · ${stageUnlockText(stage)}`;
   }
 
@@ -8789,6 +8790,17 @@ function applyStagePreview(stageId = selectedStage) {
       return data || null;
     }
 
+    async function claimStageThreeServerBonus(claimKey, rewardKind, difficultyKey = 'normal', wave = null) {
+      const { data, error } = await supabaseClient.rpc('claim_stage3_bonus', {
+        p_claim_key: claimKey,
+        p_reward_kind: rewardKind,
+        p_difficulty: difficultyKey || 'normal',
+        p_wave: wave == null ? null : Number(wave)
+      });
+      if (error) throw error;
+      return data || null;
+    }
+
     async function flushPendingBattleRewards() {
       ensurePlayerData();
 
@@ -8837,6 +8849,22 @@ function applyStagePreview(stageId = selectedStage) {
               if (Number.isFinite(bonusGems)) lastServerGems = bonusGems;
             } catch (bonusError) {
               console.error('2스테이지 2.5배 추가 보상 서버 반영 실패:', bonusError?.message || bonusError);
+              return false;
+            }
+          }
+
+          if (Number(reward.stage) === 3) {
+            try {
+              const bonus = await claimStageThreeServerBonus(
+                `${reward.claimKey}:stage3x4`,
+                reward.kind === 'wave' ? 'wave' : 'stage',
+                reward.difficulty || 'normal',
+                reward.wave
+              );
+              const bonusGems = Number(bonus?.gems);
+              if (Number.isFinite(bonusGems)) lastServerGems = bonusGems;
+            } catch (bonusError) {
+              console.error('3스테이지 4배 추가 보상 서버 반영 실패:', bonusError?.message || bonusError);
               return false;
             }
           }

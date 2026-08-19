@@ -4481,6 +4481,26 @@ body {
 @keyframes edenInkFall{0%{transform:translateY(-20vh);opacity:0}15%{opacity:.55}100%{transform:translateY(120vh);opacity:0}}
 @keyframes edenQuoteIn{0%{opacity:0;transform:translateX(-24px);filter:blur(8px)}100%{opacity:1;transform:none;filter:blur(0)}}
 
+
+
+/* === UNIT TRAIT SYSTEM === */
+.trait-screen{overflow:auto;overscroll-behavior:contain}
+.trait-layout{display:grid;grid-template-columns:minmax(240px,.8fr) minmax(320px,1.2fr);gap:16px;margin-top:14px}
+.trait-unit-list{display:grid;gap:8px;max-height:min(68vh,720px);overflow:auto;padding-right:4px}
+.trait-unit-button{display:grid;grid-template-columns:42px 1fr auto;align-items:center;gap:10px;text-align:left;padding:11px 12px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(7,12,26,.78)}
+.trait-unit-button.active{border-color:#ffd84f;box-shadow:0 0 0 1px rgba(255,216,79,.28),0 0 22px rgba(255,216,79,.12)}
+.trait-unit-button .trait-unit-icon{font-size:28px}.trait-unit-button small{display:block;color:#aab3c7;margin-top:2px}
+.trait-detail-card{min-width:0}.trait-selected-head{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.1)}
+.trait-selected-head .big-icon{font-size:46px}.trait-selected-head h3{margin:0}.trait-cost{margin-left:auto;text-align:right;font-size:12px;color:#b9c3d9}.trait-cost strong{display:block;color:#ffe27a;font-size:15px}
+.trait-slots{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.trait-slot{border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px;background:rgba(255,255,255,.035)}
+.trait-slot.special{border-color:rgba(255,210,82,.55);box-shadow:inset 0 0 24px rgba(255,190,60,.05)}.trait-slot-name{font-weight:900;font-size:15px}.trait-slot-desc{font-size:12px;color:#bdc6d8;min-height:38px;margin:6px 0 10px;line-height:1.45}
+.trait-roll-btn{width:100%}.trait-probability{margin-top:14px;padding:12px;border-radius:14px;background:rgba(0,0,0,.22);font-size:12px;line-height:1.6}.trait-probability b{color:#ffe27a}
+.trait-result{min-height:22px;margin-top:10px;font-weight:800;color:#ffe27a}.trait-special-note{color:#8ee7ff;font-weight:800}
+.fragment-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:10px}.fragment-card{position:relative;padding:14px;border:1px solid rgba(255,255,255,.12);border-radius:15px;background:linear-gradient(145deg,rgba(255,255,255,.06),rgba(3,7,16,.86));overflow:hidden}.fragment-card:before{content:'';position:absolute;inset:-30% auto auto -20%;width:120px;height:120px;background:radial-gradient(circle,rgba(121,192,255,.18),transparent 70%)}.fragment-card .fragment-icon{font-size:30px}.fragment-card h4{margin:8px 0 2px}.fragment-count{font-size:20px;font-weight:900;color:#9edcff}.fragment-card small{color:#aeb8cd}
+.trait-shield-fx{pointer-events:none}
+@media(max-width:720px){.trait-layout{grid-template-columns:1fr}.trait-unit-list{max-height:34vh}.trait-slots{grid-template-columns:1fr}.trait-selected-head{align-items:flex-start}.trait-cost{font-size:11px}.fragment-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:360px){.fragment-grid{grid-template-columns:1fr}}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style id="multiplayerStyles">
@@ -7088,7 +7108,13 @@ button {
       <button id="openCollectionBtn" class="defense-menu-card">
         <span class="defense-card-icon">🎒</span>
         <strong>인벤토리</strong>
-        <small>유닛과 주사위를 관리하세요</small>
+        <small>유닛 · 주사위 · 조각을 관리하세요</small>
+      </button>
+
+      <button id="openTraitsBtn" class="defense-menu-card" type="button">
+        <span class="defense-card-icon">🧬</span>
+        <strong>특성</strong>
+        <small>유닛 조각으로 특성을 뽑고 최대 2개 장착</small>
       </button>
 
       <button id="openMultiplayerBtn" class="defense-menu-card">
@@ -7349,7 +7375,7 @@ button {
       <div>
         <span class="section-kicker">COMMAND STORAGE</span>
         <h2>인벤토리</h2>
-        <p class="muted">보유 유닛을 확인하거나 주사위를 굴려 새 유닛을 획득하세요.</p>
+        <p class="muted">보유 유닛·주사위·유닛 조각을 확인하고 관리하세요.</p>
       </div>
       <button class="secondary backToMenu">메뉴로</button>
     </div>
@@ -7360,6 +7386,9 @@ button {
       </button>
       <button id="inventoryDiceTab" class="inventory-tab" data-inventory-tab="dice">
         🎲 주사위
+      </button>
+      <button id="inventoryItemsTab" class="inventory-tab" data-inventory-tab="items">
+        💠 아이템
       </button>
     </div>
 
@@ -7378,6 +7407,22 @@ button {
 
     <div id="inventoryDicePanel" class="inventory-panel hidden">
       <div id="diceInventoryGrid" class="dice-inventory-grid"></div>
+    </div>
+
+    <div id="inventoryItemsPanel" class="inventory-panel hidden">
+      <div class="card" style="margin-bottom:12px;"><strong>💠 유닛 조각</strong><p class="muted" style="margin:5px 0 0;">중복 유닛을 변환해 얻은 조각입니다. 특성 뽑기에 사용합니다.</p></div>
+      <div id="fragmentInventoryGrid" class="fragment-grid"></div>
+    </div>
+  </section>
+
+  <section id="traitScreen" class="screen hidden trait-screen">
+    <div class="between">
+      <div><span class="section-kicker">UNIT AWAKENING</span><h2>🧬 특성</h2><p class="muted">유닛을 고르고 슬롯별 특성을 뽑으세요. 최대 2개가 동시에 적용됩니다.</p></div>
+      <button class="secondary backToMenu" type="button">메뉴로</button>
+    </div>
+    <div class="trait-layout">
+      <div class="card"><h3 style="margin-top:0;">보유 유닛</h3><div id="traitUnitList" class="trait-unit-list"></div></div>
+      <div id="traitDetailCard" class="card trait-detail-card"><p class="muted">왼쪽에서 유닛을 선택하세요.</p></div>
     </div>
   </section>
 
@@ -7722,8 +7767,8 @@ button {
   </div>
 
   <script>
-console.log("[INFINITE GROWTH BUILD] 2026-08-19-friend-search-v7");
-    window.BIDULGY_BUILD_VERSION = '2026-08-19-infinite-wave-gems100-v4';
+console.log("[INFINITE GROWTH BUILD] 2026-08-19-trait-system-v1");
+    window.BIDULGY_BUILD_VERSION = '2026-08-19-trait-system-v1';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -8456,6 +8501,8 @@ function applyStagePreview(stageId = selectedStage) {
         footprintRadius: 112,
         multiplayerFootprintRadius: 94,
         errorStackMax: 5,
+        errorVolleyCount: 5,
+        errorPacketSplashRadius: 58,
         corruptDuration: 4,
         corruptDamageTakenMultiplier: 1.35,
         corruptSlow: 0.30,
@@ -8474,7 +8521,7 @@ function applyStagePreview(stageId = selectedStage) {
         deleteNormalCount: 3,
         deleteBossMultiplier: 15,
         color: '#00ff66',
-        skillText: 'DATA CUT: 평타 적중 시 오류 스택 +1. 5스택이면 CORRUPTED(4초간 이동속도 -30%, 받는 피해 +35%). 5타마다 404 표식을 최대 4명에게 남겨 1.2초 뒤 반경 75에 평타×2.5 폭발. 10타마다 ROLLBACK으로 일반 적을 120만큼 뒤로 되돌리고 보스에게 평타×4. 25타마다 SYSTEM FAILURE로 전 적에게 평타×6, 일반 적 2초 정지. 50타마다 DELETE로 가장 앞 일반 적 3명을 즉시 삭제하고 보스에게 평타×15. 기절에 완전히 면역입니다.'
+        skillText: 'DATA CUT: 평타마다 ERROR 탄환 5발을 발사합니다. 적이 적으면 남는 탄환을 다시 분배하며, 적이 1명뿐이면 5발 전부 같은 적에게 발사됩니다. 각 탄환은 적중 지점 반경 58 범위에 평타 피해를 주고 오류 스택 +1. 5스택이면 CORRUPTED(4초간 이동속도 -30%, 받는 피해 +35%). 5타마다 404 표식을 최대 4명에게 남겨 1.2초 뒤 반경 75에 평타×2.5 폭발. 10타마다 ROLLBACK, 25타마다 SYSTEM FAILURE, 50타마다 DELETE. 기절에 완전히 면역입니다.'
       },
       eclipse: {
         id: 'eclipse',
@@ -8629,12 +8676,72 @@ function applyStagePreview(stageId = selectedStage) {
       error: 4040
     };
 
+
+    const TRAIT_RARITY_COST = {
+      common: 50, rare: 100, epic: 200, legendary: 500,
+      mythic: 1000, secret: 2000, galaxy: 3000, error: 5000
+    };
+
+    const TRAIT_DATA = {
+      swift: { id:'swift', name:'신속', chance:30, desc:'공격/생산 쿨타임 ×0.8', intervalMultiplier:.8 },
+      aggressive: { id:'aggressive', name:'공격적', moneyTreeName:'비싼', chance:30, desc:'데미지 ×1.2', moneyTreeDesc:'버는 돈 ×1.2', damageMultiplier:1.2, incomeMultiplier:1.2 },
+      cheap: { id:'cheap', name:'싼 설치비용', chance:20, desc:'설치비용 ×0.5', costMultiplier:.5 },
+      sale: { id:'sale', name:'특가세일', chance:15, desc:'설치비용 ×1/3', costMultiplier:1/3 },
+      light: { id:'light', name:'빛', chance:2, desc:'공격/생산 쿨타임 ×0.5', intervalMultiplier:.5 },
+      dark: { id:'dark', name:'어둠', chance:2, desc:'방어력 무시 · 맞은 적 이동속도 감소', moneyTreeDesc:'수입 ×1.2 · 돈 버는 속도 ×1.2 · 수입 때 무작위 적 둔화', armorIgnore:true, hitSlow:.20, hitSlowDuration:2, incomeMultiplier:1.2, incomeSpeedMultiplier:1.2 },
+      shadowClone: { id:'shadowClone', name:'그림자분신술', chance:1, desc:'탄환 개수 ×2', moneyTreeDesc:'버는 돈 ×2', projectileMultiplier:2, incomeMultiplier:2 },
+      royalShield: { id:'royalShield', name:'방패소환', special:true, chanceText:'1%', desc:'공격 20회마다 가장 가까운 길에 방패가 하늘에서 떨어져 3초 동안 적의 진행을 막음' },
+      iceVortex: { id:'iceVortex', name:'얼음의 소용돌이', special:true, chanceText:'0.8%', desc:'공격할 때마다 회전 얼음 1개 생성 · 8개가 모이면 0.12초 간격으로 모두 발사' }
+    };
+
+    function normalizeTraitSlots(value) {
+      const arr = Array.isArray(value) ? value.slice(0,2) : [];
+      while (arr.length < 2) arr.push(null);
+      return arr.map(id => TRAIT_DATA[id] ? id : null);
+    }
+    function getUnitTraits(unitId) {
+      return normalizeTraitSlots(player?.ownedUnits?.[unitId]?.traits);
+    }
+    function unitHasTrait(unitId, traitId) { return getUnitTraits(unitId).includes(traitId); }
+    function placedHasTrait(placed, traitId) { return Array.isArray(placed?.traits) && placed.traits.includes(traitId); }
+    function getTraitDisplayName(traitId, unitId) {
+      const t=TRAIT_DATA[traitId]; if(!t) return '없음';
+      return unitId==='moneyTree' && t.moneyTreeName ? t.moneyTreeName : t.name;
+    }
+    function getTraitDescription(traitId, unitId) {
+      const t=TRAIT_DATA[traitId]; if(!t) return '비어 있음';
+      return unitId==='moneyTree' && t.moneyTreeDesc ? t.moneyTreeDesc : t.desc;
+    }
+    function getTraitModifiersForIds(unitId, traits) {
+      traits=normalizeTraitSlots(traits);
+      let damage=1, interval=1, cost=1, projectiles=1, income=1, incomeInterval=1;
+      for(const id of traits){ const t=TRAIT_DATA[id]; if(!t) continue;
+        if(unitId==='moneyTree'){
+          income*=Number(t.incomeMultiplier||1);
+          if(t.intervalMultiplier) incomeInterval*=Number(t.intervalMultiplier);
+          if(t.incomeSpeedMultiplier) incomeInterval/=Number(t.incomeSpeedMultiplier);
+        }else{
+          damage*=Number(t.damageMultiplier||1); interval*=Number(t.intervalMultiplier||1); projectiles*=Number(t.projectileMultiplier||1);
+        }
+        cost*=Number(t.costMultiplier||1);
+      }
+      return {damage,interval,cost,projectiles:Math.max(1,Math.round(projectiles)),income,incomeInterval};
+    }
+    function getTraitStatModifiers(unitId) { return getTraitModifiersForIds(unitId,getUnitTraits(unitId)); }
+    function getTraitedUnitCost(unitData, traitIds=null){ const m=traitIds?getTraitModifiersForIds(unitData?.id,traitIds):getTraitStatModifiers(unitData?.id); return Math.max(1,Math.round(Number(unitData?.cost||0)*m.cost)); }
+    function getTraitedUnitDamage(unitData, traitIds=null){ const m=traitIds?getTraitModifiersForIds(unitData?.id,traitIds):getTraitStatModifiers(unitData?.id); return Number(unitData?.damage||0)*m.damage; }
+    function getTraitedUnitInterval(unitData, traitIds=null){ const m=traitIds?getTraitModifiersForIds(unitData?.id,traitIds):getTraitStatModifiers(unitData?.id); return Math.max(.005,Number(unitData?.fireInterval||1)*m.interval); }
+    function getTraitedProjectileCount(placed){ const n=Number(placed?.traitProjectileMultiplier||1); return Math.max(1,Math.round(n)); }
+
+    let activeTraitUnitId = null;
+
     const screens = {
       auth: document.querySelector('#authScreen'),
       menu: document.querySelector('#menuScreen'),
       admin: document.querySelector('#adminScreen'),
       gacha: document.querySelector('#gachaScreen'),
       collection: document.querySelector('#collectionScreen'),
+      traits: document.querySelector('#traitScreen'),
       deck: document.querySelector('#deckScreen'),
       trade: document.querySelector('#tradeScreen'),
       battle: document.querySelector('#battleScreen'),
@@ -8744,6 +8851,7 @@ function applyStagePreview(stageId = selectedStage) {
         } else {
           ownedInfo.copies = Math.max(1, Math.floor(Number(ownedInfo.copies)));
         }
+        ownedInfo.traits = normalizeTraitSlots(ownedInfo.traits);
       });
 
       if (!Array.isArray(player.deck)) {
@@ -10201,9 +10309,50 @@ async function logout() {
           </p>
           <strong>Lv.${ownedInfo.level}</strong>
           <span class="muted"> · 조각 ${fragments}</span>
+          ${normalizeTraitSlots(ownedInfo.traits).filter(Boolean).length ? `<div class="muted" style="margin-top:6px;font-size:11px;">🧬 ${normalizeTraitSlots(ownedInfo.traits).filter(Boolean).map(id=>getTraitDisplayName(id,unit.id)).join(' + ')}</div>` : ''}
           ${conversionMarkup}
         </div>
       `;
+    }
+
+
+    function traitRarityCost(unit){ return Number(TRAIT_RARITY_COST[unit?.rarityKey] || 0); }
+    function traitSpecialChanceText(unitId){ return unitId==='royalGuardian' ? '전용 특수 1%' : unitId==='iceQueen' ? '전용 특수 0.8%' : ''; }
+    function openTraitsScreen(){
+      ensurePlayerData();
+      const owned=getOwnedUnitIds().filter(id=>UNIT_DATA[id] && TRAIT_RARITY_COST[UNIT_DATA[id].rarityKey]);
+      if(!activeTraitUnitId || !owned.includes(activeTraitUnitId)) activeTraitUnitId=owned[0]||null;
+      renderTraitScreen(); showScreen('traits');
+    }
+    function renderTraitScreen(){
+      ensurePlayerData();
+      const list=document.querySelector('#traitUnitList'), detail=document.querySelector('#traitDetailCard');
+      if(!list||!detail) return;
+      const ids=getOwnedUnitIds().filter(id=>UNIT_DATA[id] && TRAIT_RARITY_COST[UNIT_DATA[id].rarityKey]);
+      list.innerHTML=ids.map(id=>{const u=UNIT_DATA[id], fr=Math.floor(Number(player.ownedUnits?.[id]?.fragments||0)); return `<button type="button" class="trait-unit-button ${activeTraitUnitId===id?'active':''}" data-trait-unit="${id}"><span class="trait-unit-icon">${u.icon}</span><span><strong>${u.name}</strong><small class="${u.rarityClass}">${u.rarity}</small></span><b>💠${fr}</b></button>`}).join('') || '<p class="muted">보유 유닛이 없습니다.</p>';
+      list.querySelectorAll('[data-trait-unit]').forEach(btn=>btn.addEventListener('click',()=>{activeTraitUnitId=btn.dataset.traitUnit;renderTraitScreen();}));
+      if(!activeTraitUnitId || !UNIT_DATA[activeTraitUnitId]){detail.innerHTML='<p class="muted">유닛을 선택하세요.</p>';return;}
+      const u=UNIT_DATA[activeTraitUnitId], owned=player.ownedUnits[activeTraitUnitId], slots=normalizeTraitSlots(owned?.traits), cost=traitRarityCost(u), fr=Math.floor(Number(owned?.fragments||0));
+      const slotHtml=slots.map((id,i)=>{const t=TRAIT_DATA[id]; return `<div class="trait-slot ${t?.special?'special':''}"><small>SLOT ${i+1}</small><div class="trait-slot-name">${t?getTraitDisplayName(id,u.id):'비어 있음'}</div><div class="trait-slot-desc">${t?getTraitDescription(id,u.id):'새 특성을 뽑으면 이 슬롯에 장착됩니다.'}</div><button class="trait-roll-btn" data-trait-roll-slot="${i}" ${fr<1||player.gems<cost?'disabled':''}>🎲 ${id?'다시 뽑기':'특성 뽑기'} · 💠1 + 💎${cost.toLocaleString()}</button></div>`}).join('');
+      detail.innerHTML=`<div class="trait-selected-head"><div class="big-icon">${u.icon}</div><div><small class="${u.rarityClass}">${u.rarity}</small><h3>${u.name}</h3><small>조각 ${fr}개 · 최대 2특성</small></div><div class="trait-cost"><span>1회 비용</span><strong>💠1 + 💎${cost.toLocaleString()}</strong></div></div><div class="trait-slots">${slotHtml}</div><div class="trait-probability"><b>일반 특성 확률</b><br>신속 30% · 공격적 30% · 싼 설치비용 20% · 특가세일 15% · 빛 2% · 어둠 2% · 그림자분신술 1%${traitSpecialChanceText(u.id)?`<br><span class="trait-special-note">${traitSpecialChanceText(u.id)} · 일반 특성보다 먼저 별도 판정</span>`:''}<br><span class="muted">돈나무에서는 공격적→비싼으로 표시되고 일부 효과가 수입 능력으로 변환됩니다.</span></div><div id="traitResult" class="trait-result"></div>`;
+      detail.querySelectorAll('[data-trait-roll-slot]').forEach(btn=>btn.addEventListener('click',()=>rollUnitTrait(activeTraitUnitId,Number(btn.dataset.traitRollSlot),btn)));
+    }
+    async function rollUnitTrait(unitId,slot,button){
+      const unit=UNIT_DATA[unitId]; if(!unit||!player?.ownedUnits?.[unitId]) return;
+      button.disabled=true; const resultEl=document.querySelector('#traitResult'); if(resultEl) resultEl.textContent='특성 데이터를 분석하는 중...';
+      try{
+        const {data,error}=await supabaseClient.rpc('roll_unit_trait_v1',{p_unit_id:unitId,p_slot:slot+1});
+        if(error) throw error;
+        const r=typeof data==='string'?JSON.parse(data):data;
+        const traitId=String(r?.trait_id||''); if(!TRAIT_DATA[traitId]) throw new Error('서버가 알 수 없는 특성을 반환했습니다.');
+        player.ownedUnits[unitId].fragments=Math.max(0,Number(r.fragments??player.ownedUnits[unitId].fragments));
+        player.ownedUnits[unitId].traits=normalizeTraitSlots(r.traits);
+        if(Number.isFinite(Number(r.gems))) player.gems=Number(r.gems);
+        await savePlayer();
+        document.querySelector('#menuGems') && (document.querySelector('#menuGems').textContent=player.gems.toLocaleString());
+        if(resultEl) resultEl.textContent=`✨ SLOT ${slot+1} · ${getTraitDisplayName(traitId,unitId)} 획득!`;
+        renderTraitScreen();
+      }catch(err){console.error('특성 뽑기 실패',err); if(resultEl) resultEl.textContent=`특성 뽑기 실패: ${err?.message||err}`; button.disabled=false;}
     }
 
     function openCollection(tab = 'units') {
@@ -10224,14 +10373,20 @@ async function logout() {
 
       const unitsTab = document.querySelector('#inventoryUnitsTab');
       const diceTab = document.querySelector('#inventoryDiceTab');
+      const itemsTab = document.querySelector('#inventoryItemsTab');
       const unitsPanel = document.querySelector('#inventoryUnitsPanel');
       const dicePanel = document.querySelector('#inventoryDicePanel');
+      const itemsPanel = document.querySelector('#inventoryItemsPanel');
 
       const showingUnits = activeInventoryTab === 'units';
+      const showingDice = activeInventoryTab === 'dice';
+      const showingItems = activeInventoryTab === 'items';
       unitsTab.classList.toggle('active', showingUnits);
-      diceTab.classList.toggle('active', !showingUnits);
+      diceTab.classList.toggle('active', showingDice);
+      itemsTab?.classList.toggle('active', showingItems);
       unitsPanel.classList.toggle('hidden', !showingUnits);
-      dicePanel.classList.toggle('hidden', showingUnits);
+      dicePanel.classList.toggle('hidden', !showingDice);
+      itemsPanel?.classList.toggle('hidden', !showingItems);
 
       if (showingUnits) {
         const grid = document.querySelector('#collectionGrid');
@@ -10300,6 +10455,13 @@ async function logout() {
             await convertDuplicateUnitsToFragments(unitId, count);
           });
         });
+        return;
+      }
+
+      if (showingItems) {
+        const fragmentGrid = document.querySelector('#fragmentInventoryGrid');
+        const entries = Object.keys(UNIT_DATA).map(id => ({id, unit:UNIT_DATA[id], fragments:Math.max(0,Math.floor(Number(player.ownedUnits?.[id]?.fragments||0)))})).filter(x=>x.fragments>0);
+        fragmentGrid.innerHTML = entries.length ? entries.map(({unit,fragments}) => `<div class="fragment-card"><div class="fragment-icon">${unit.icon}💠</div><h4>${unit.name} 조각</h4><div class="fragment-count">${fragments.toLocaleString()}개</div><small class="${unit.rarityClass}">${unit.rarity}</small></div>`).join('') : '<div class="card"><p class="muted">보유한 유닛 조각이 없습니다. 인벤토리 유닛 탭에서 중복 유닛을 조각으로 변환할 수 있습니다.</p></div>';
         return;
       }
 
@@ -13119,7 +13281,7 @@ function requestGachaDraw(count) {
                   data-battle-unit="${unitId}">
             <span class="battle-unit-icon">${unit.icon}</span>
             <span class="battle-unit-name">${unit.name}</span>
-            <span class="battle-unit-cost">${unit.cost} 골드</span>
+            <span class="battle-unit-cost">${getTraitedUnitCost(unit)} 골드</span>
           </button>
         `;
       }).join('');
@@ -13196,7 +13358,7 @@ function requestGachaDraw(count) {
         phoenix: '0.01초 불꽃 숨결 범위공격 · 20초마다 6초 둔화+화상 · 젖음에는 화상 불가 · 60초마다 10초간 사거리×2',
         cherrySamurai: `기절 면역 · 근접 120 전방 180° 범위 · 원거리 ${unit.range} 검기 2발(각 적중지 반경 ${unit.swordWaveSplashRadius || 35} 범위) · 벚꽃 영역 ${unit.blossomAuraRange || 170}: 0.1초마다 ${unit.blossomAuraDamage || 10} 피해 · 일반 3타 후 일섬(폭 ${unit.issenWidth || 60}·거리 ${unit.issenRange || 200})×5 · 일섬 4회마다 오의 각 참격×10 · 10번째 공격마다 적 전체 3초 표식 후 ×5`,
         eden: 'Charge 최대100(1당 피해 +0.5%) · 14타마다 크기가 다른 공허 분신 6체를 9초 소환(각자 자동 공격) · 6타 Impale · 8타 Cut Into Nothing · 11타 Taunt(+15 Charge) · Charge30↑ Voidrush · Style V Deadeye · 맵당 1기',
-        errorEntity: `<span class="error-live-identity"><span class="rarity-error">ERROR</span><span>//</span><span class="error-live-code">${makeErrorLiveCode()}</span></span><br>DATA CUT: 적중 시 오류 스택 +1 · 5스택 CORRUPTED(4초 이속 -30%, 받는 피해 +35%) · 5타 404(최대 4명, 1.2초 후 반경75 ×2.5) · 10타 ROLLBACK(일반 적 120 되감기/보스 ×4) · 25타 SYSTEM FAILURE(전 적 ×6, 일반 적 2초 정지) · 50타 DELETE(일반 적 3명 삭제/보스 ×15) · 맵당 1기`,
+        errorEntity: `<span class="error-live-identity"><span class="rarity-error">ERROR</span><span>//</span><span class="error-live-code">${makeErrorLiveCode()}</span></span><br>DATA CUT: 평타 5발 · 적 1명이면 5발 집중 · 각 탄환 적중지 반경58 범위피해/오류스택 · 5스택 CORRUPTED · 5타 404 · 10타 ROLLBACK · 25타 SYSTEM FAILURE · 50타 DELETE · 기절 면역`,
         eclipse: `평타 적중지 반경 ${unit.normalSlashRadius || 55} 범위 베기 · 처치 시 5% 성장(공격력·공속 +2%, 회전참 범위 +5%) · 타격 시 5% 블랙홀 · 4타마다 회전참×3 + 1초 기절 · 기절 면역`,
         astralChronomancer: '다중발사(2/3/4발) · 공전탄 최대 10발 · 각 탄환 20% 황금 시간기절 · 60회 공격마다 사거리 300 시간정지 5초'
       };
@@ -13224,7 +13386,8 @@ function requestGachaDraw(count) {
       const isMoneyTree = placed.unitId === 'moneyTree';
       const refund = Math.floor(placed.totalInvestment * 0.7);
       const abilitySummary = getUnitStatusSummary(unit, placed);
-      const skillHtml = `<div class="unit-skill-note"><strong>능력 요약</strong><p>${abilitySummary}</p></div>`;
+      const traitNames=(placed.traits||[]).filter(Boolean).map(id=>getTraitDisplayName(id,placed.unitId));
+      const skillHtml = `<div class="unit-skill-note"><strong>능력 요약</strong><p>${abilitySummary}</p>${traitNames.length?`<p><b>특성</b> · ${traitNames.join(' + ')}</p>`:''}</div>`;
       const upgradeLevel = placed.upgradeLevel;
       const isMaxUpgrade = upgradeLevel >= 2;
       const nextUpgradeLevel = upgradeLevel + 1;
@@ -13294,10 +13457,10 @@ function requestGachaDraw(count) {
 
           if (isMoneyTree) {
             if (nextUpgradeLevel === 1) {
-              placed.incomeAmount = unit.upgrade1Income;
+              placed.incomeAmount = unit.upgrade1Income * getTraitStatModifiers(unit.id).income;
             } else {
-              placed.incomeAmount = unit.upgrade1Income;
-              placed.incomeInterval = unit.upgrade2Interval;
+              placed.incomeAmount = unit.upgrade1Income * getTraitStatModifiers(unit.id).income;
+              placed.incomeInterval = unit.upgrade2Interval * getTraitStatModifiers(unit.id).incomeInterval;
               placed.incomeCooldown = Math.min(placed.incomeCooldown || placed.incomeInterval, placed.incomeInterval);
             }
             setBattleMessage(`${unit.name} ${nextUpgradeLevel}단계 업그레이드 완료! ${placed.incomeInterval}초마다 ${placed.incomeAmount}골드 생산`);
@@ -13468,6 +13631,7 @@ function requestGachaDraw(count) {
       enemy.chillRemaining = Math.max(0, Number(enemy.chillRemaining || 0) - dt);
       enemy.hardFreezeRemaining = Math.max(0, Number(enemy.hardFreezeRemaining || 0) - dt);
       enemy.errorCorruptedRemaining = Math.max(0, Number(enemy.errorCorruptedRemaining || 0) - dt);
+      updateTraitStatus(enemy, dt);
       enemy.evadeTextRemaining = Math.max(0, Number(enemy.evadeTextRemaining || 0) - dt);
       enemy.llamaDodgeAnim = Math.max(0, Number(enemy.llamaDodgeAnim || 0) - dt);
       enemy.llamaSpitAnim = Math.max(0, Number(enemy.llamaSpitAnim || 0) - dt);
@@ -13587,6 +13751,7 @@ function requestGachaDraw(count) {
       }
 
       if (timeStunned || timeFieldFrozen || iceFrozen) return;
+      if (enemyBlockedByTraitShield(enemy)) return;
 
       const target = path[enemy.targetIndex];
 
@@ -13715,6 +13880,7 @@ function requestGachaDraw(count) {
       if (Number(enemy.phoenixSlowRemaining || 0) > 0) multiplier *= Math.max(.05, 1 - Number(enemy.phoenixSlow || .25));
       if (Number(enemy.chillRemaining || 0) > 0) multiplier *= Math.max(.05, 1 - Number(enemy.chillSlow || .25));
       if (Number(enemy.errorCorruptedRemaining || 0) > 0) multiplier *= Math.max(.05, 1 - Number(UNIT_DATA.errorEntity?.corruptSlow || .30));
+      if (Number(enemy.traitDarkSlowRemaining || 0) > 0) multiplier *= Math.max(.05, 1 - Number(enemy.traitDarkSlow || .20));
       return multiplier;
     }
 
@@ -13909,7 +14075,7 @@ function requestGachaDraw(count) {
         life: getAttackEffectDuration('iceArrow'), maxLife: getAttackEffectDuration('iceArrow'),
         color: data.color, effect: 'iceArrow', angle, seed: Math.random() * 1000
       });
-      applyDamageToEnemy(enemy, damage);
+      if (sourceUnit) applyTraitDamage(sourceUnit, enemy, damage); else applyDamageToEnemy(enemy, damage);
       if (!enemy.dead) applyIceStatus(enemy, data);
       if (sourceUnit) sourceUnit.angle = angle;
       return true;
@@ -13923,19 +14089,16 @@ function requestGachaDraw(count) {
       placed.attackAnimation = 1;
       placed.attackMode = 'iceShot';
       playUnitAttackSound('iceQueen');
+      updateIceVortexTrait(placed);
 
       if (placed.attackCount % Number(data.volleyEvery || 7) === 0) {
         playUnitAttackSound('iceQueen', { skill: 'iceVolley', volume: 1.08 });
         for (let i = 0; i < Number(data.volleyCount || 7); i += 1) {
-          scheduleDelayedAttack({
-            kind: 'iceQueenArrow',
-            timer: i * Number(data.volleyInterval || .2),
-            x: placed.x, y: placed.y, damage: placed.damage, range: placed.range
-          });
+          for(let clone=0;clone<getTraitedProjectileCount(placed);clone++) scheduleDelayedAttack({kind:'iceQueenArrow',timer:i*Number(data.volleyInterval||.2)+clone*.025,x:placed.x,y:placed.y,damage:placed.damage,range:placed.range});
         }
         return;
       }
-      fireIceQueenArrowAt(placed.x, placed.y, placed.damage, placed.range, target, placed);
+      for(let clone=0;clone<getTraitedProjectileCount(placed);clone++) fireIceQueenArrowAt(placed.x, placed.y, placed.damage, placed.range, target, placed);
     }
 
     function getPhoenixMouthPosition(unit, flightYOffset = 18) {
@@ -14360,6 +14523,17 @@ function requestGachaDraw(count) {
       return durations[effect] || .34;
     }
 
+
+    function applyTraitHitEffects(placed, enemy){
+      if(!placed||!enemy||enemy.dead) return;
+      if(placedHasTrait(placed,'dark')){
+        enemy.traitDarkSlowRemaining=Math.max(Number(enemy.traitDarkSlowRemaining||0),2);
+        enemy.traitDarkSlow= Math.max(Number(enemy.traitDarkSlow||0),.20);
+      }
+    }
+    function applyTraitDamage(placed, enemy, damage){ const killed=applyDamageToEnemy(enemy,damage); if(!enemy?.dead) applyTraitHitEffects(placed,enemy); return killed; }
+    function updateTraitStatus(enemy,dt){ enemy.traitDarkSlowRemaining=Math.max(0,Number(enemy.traitDarkSlowRemaining||0)-dt); }
+
     function applyDamageToEnemy(enemy, damage) {
       if (!enemy || enemy.dead || enemy.soilPileState || Number(enemy.reviveInvulnerableRemaining || 0) > 0) return false;
 
@@ -14561,6 +14735,13 @@ function requestGachaDraw(count) {
         return;
       }
 
+      if (attack.kind === 'iceTraitOrb') {
+        const source=battle.placedUnits.find(u=>u.id===attack.sourceId);
+        const target=getFrontmostEnemyFromPoint(attack.x,attack.y,attack.range);
+        if(target){battle.shots.push({x1:attack.x,y1:attack.y,x2:target.x,y2:target.y,life:.34,maxLife:.34,color:'#9fefff',effect:'iceArrow',angle:Math.atan2(target.y-attack.y,target.x-attack.x),seed:Math.random()*1000});if(source)applyTraitDamage(source,target,attack.damage);else applyDamageToEnemy(target,attack.damage);if(!target.dead)applyIceStatus(target,UNIT_DATA.iceQueen);}
+        return;
+      }
+
       if (attack.kind === 'iceQueenArrow') {
         playUnitAttackSound('iceQueen', { volume: .72 });
         fireIceQueenArrowAt(attack.x, attack.y, attack.damage, attack.range);
@@ -14654,6 +14835,27 @@ function requestGachaDraw(count) {
       }
     }
 
+
+    function nearestPathPointToUnit(placed){
+      let best=null;
+      for(let i=0;i<path.length-1;i++){const a=path[i],b=path[i+1],dx=b.x-a.x,dy=b.y-a.y,len2=dx*dx+dy*dy||1;let t=((placed.x-a.x)*dx+(placed.y-a.y)*dy)/len2;t=Math.max(0,Math.min(1,t));const x=a.x+dx*t,y=a.y+dy*t,d=Math.hypot(placed.x-x,placed.y-y);if(!best||d<best.d)best={x,y,d,index:i,t};}
+      return best;
+    }
+    function summonRoyalTraitShield(placed){
+      if(!battle) return; const point=nearestPathPointToUnit(placed); if(!point) return;
+      battle.traitShields ??=[]; battle.traitShields.push({x:point.x,y:point.y,remaining:3.48,fall:.48,maxFall:.48,ownerId:placed.id});
+      setBattleMessage('🛡️ 특성 · 방패소환! 하늘에서 방패가 떨어져 3초간 길을 봉쇄합니다.');
+    }
+    function updateTraitShields(dt){ if(!battle?.traitShields)return; battle.traitShields.forEach(sh=>{sh.remaining-=dt;sh.fall=Math.max(0,sh.fall-dt)});battle.traitShields=battle.traitShields.filter(sh=>sh.remaining>0); }
+    function enemyBlockedByTraitShield(enemy){ return Boolean(battle?.traitShields?.some(sh=>sh.fall<=0&&Math.hypot(enemy.x-sh.x,enemy.y-sh.y)<38)); }
+    function drawTraitShields(){ if(!battle?.traitShields)return; for(const sh of battle.traitShields){const p=1-Math.max(0,sh.fall)/sh.maxFall;const y=sh.y-(1-p)*190;ctx.save();ctx.translate(sh.x,y);ctx.shadowBlur=22;ctx.shadowColor='#ffe36a';ctx.fillStyle='#29384d';ctx.strokeStyle='#ffe681';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(0,-30);ctx.lineTo(24,-20);ctx.lineTo(20,18);ctx.lineTo(0,34);ctx.lineTo(-20,18);ctx.lineTo(-24,-20);ctx.closePath();ctx.fill();ctx.stroke();ctx.strokeStyle='#fff2a6';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,-22);ctx.lineTo(0,24);ctx.moveTo(-15,-12);ctx.lineTo(15,-12);ctx.stroke();ctx.restore();} }
+    function updateIceVortexTrait(placed){
+      if(!placedHasTrait(placed,'iceVortex'))return; placed.iceTraitOrbs=Array.isArray(placed.iceTraitOrbs)?placed.iceTraitOrbs:[];
+      if(placed.iceTraitOrbs.length<8) placed.iceTraitOrbs.push({phase:Math.random()*Math.PI*2});
+      if(placed.iceTraitOrbs.length>=8){const count=placed.iceTraitOrbs.length;placed.iceTraitOrbs=[];for(let i=0;i<count;i++)scheduleDelayedAttack({kind:'iceTraitOrb',timer:i*.12,x:placed.x,y:placed.y,damage:placed.damage,range:placed.range,sourceId:placed.id});}
+    }
+    function drawIceTraitOrbs(unit,time){ if(!Array.isArray(unit.iceTraitOrbs)||!unit.iceTraitOrbs.length)return;unit.iceTraitOrbs.forEach((orb,i)=>{const a=time*.0035+orb.phase+i*.7,r=42+(i%2)*8;ctx.save();ctx.translate(Math.cos(a)*r,Math.sin(a)*r-8);ctx.rotate(a*1.8);ctx.shadowBlur=14;ctx.shadowColor='#9af3ff';ctx.fillStyle='#dffcff';ctx.strokeStyle='#65d8ff';ctx.beginPath();ctx.moveTo(0,-9);ctx.lineTo(6,0);ctx.lineTo(0,9);ctx.lineTo(-6,0);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();}); }
+
     function performRoyalGuardianAttack(placed, targetInfo, slowMultiplier) {
       const data = UNIT_DATA.royalGuardian;
       const target = targetInfo.enemy;
@@ -14665,6 +14867,8 @@ function requestGachaDraw(count) {
       placed.angle = targetAngle;
       placed.cooldown = placed.fireInterval * slowMultiplier;
       placed.attackAnimation = 1;
+      placed.attackCount = Number(placed.attackCount || 0) + 1;
+      if (placedHasTrait(placed,'royalShield') && placed.attackCount % 20 === 0) summonRoyalTraitShield(placed);
 
       if (targetInfo.distance <= meleeRange) {
         placed.attackMode = 'coneSlash';
@@ -14688,7 +14892,7 @@ function requestGachaDraw(count) {
           coneAngle: data.coneAngle || 120
         });
 
-        victims.forEach(enemy => applyDamageToEnemy(enemy, placed.damage));
+        victims.forEach(enemy => applyTraitDamage(placed, enemy, placed.damage));
         return;
       }
 
@@ -14709,7 +14913,7 @@ function requestGachaDraw(count) {
       const waveRadius = data.swordWaveRadius || 55;
       battle.enemies.forEach(enemy => {
         if (!enemy.dead && Math.hypot(enemy.x - target.x, enemy.y - target.y) <= waveRadius) {
-          applyDamageToEnemy(enemy, placed.damage);
+          applyTraitDamage(placed, enemy, placed.damage);
         }
       });
     }
@@ -14798,7 +15002,7 @@ function requestGachaDraw(count) {
         const sideDistance = Math.abs(dx * nx + dy * ny);
         if (sideDistance > corridorHalfWidth + enemy.radius * .45) return;
 
-        applyDamageToEnemy(enemy, placed.damage);
+        applyTraitDamage(placed, enemy, placed.damage);
         hitCount += 1;
       });
 
@@ -14851,7 +15055,7 @@ function requestGachaDraw(count) {
         golden
       });
 
-      applyDamageToEnemy(enemy, placed.damage);
+      applyTraitDamage(placed, enemy, placed.damage);
       if (golden && !enemy.dead) {
         const isBoss = enemy.type !== 'normal';
         const stunSeconds = isBoss
@@ -15350,7 +15554,7 @@ function requestGachaDraw(count) {
           color: data.color, effect: 'sakuraMelee', angle, seed: Math.random() * 1000,
           radius: meleeRange, coneAngle: data.meleeConeAngle || 180
         });
-        victims.forEach(enemy => applyDamageToEnemy(enemy, placed.damage));
+        victims.forEach(enemy => applyTraitDamage(placed, enemy, placed.damage));
         return;
       }
 
@@ -15501,23 +15705,68 @@ function requestGachaDraw(count) {
       setBattleMessage(`ENTITY DELETED · 일반 적 ${normals.length}명${bosses.length ? ` · 보스 ${bosses.length}명 ×15 피해` : ''}`);
     }
 
+    function getErrorVolleyTargets(placed, primaryTarget, count = 5) {
+      const valid = battle.enemies
+        .filter(enemy => !enemy.dead && !enemy.soilPileState && Number(enemy.reviveInvulnerableRemaining || 0) <= 0)
+        .filter(enemy => Math.hypot(enemy.x - placed.x, enemy.y - placed.y) <= Number(placed.range || UNIT_DATA.errorEntity.range || 360));
+      valid.sort((a, b) => {
+        if (a === primaryTarget) return -1;
+        if (b === primaryTarget) return 1;
+        const pa = Number(a.targetIndex || 0), pb = Number(b.targetIndex || 0);
+        if (pb !== pa) return pb - pa;
+        return Math.hypot(a.x - placed.x, a.y - placed.y) - Math.hypot(b.x - placed.x, b.y - placed.y);
+      });
+      const unique = valid.slice(0, Math.max(1, Math.min(Number(count || 5), valid.length)));
+      if (!unique.length && primaryTarget && !primaryTarget.dead) unique.push(primaryTarget);
+      return unique;
+    }
+
+    function applyErrorPacketSplash(placed, impactX, impactY, damage) {
+      const data = UNIT_DATA.errorEntity;
+      const radius = Number(data.errorPacketSplashRadius || 58);
+      let hitCount = 0;
+      for (const enemy of [...battle.enemies]) {
+        if (enemy.dead || enemy.soilPileState || Number(enemy.reviveInvulnerableRemaining || 0) > 0) continue;
+        if (Math.hypot(enemy.x - impactX, enemy.y - impactY) > radius) continue;
+        const killed = applyDamageToEnemy(enemy, damage);
+        hitCount += 1;
+        if (!killed && !enemy.dead) applyErrorCorruptionStack(enemy);
+      }
+      return hitCount;
+    }
+
     function performErrorAttack(placed, target, slowMultiplier = 1) {
       const data = UNIT_DATA.errorEntity;
+      const volleyCount = Math.max(1, Number(data.errorVolleyCount || 5)) * getTraitedProjectileCount(placed);
+      const volleyTargets = getErrorVolleyTargets(placed, target, volleyCount);
       const angle = Math.atan2(target.y - placed.y, target.x - placed.x);
       placed.angle = angle;
       placed.cooldown = placed.fireInterval * slowMultiplier;
       placed.attackAnimation = 1;
       placed.attackMode = 'errorCut';
       placed.attackCount = Number(placed.attackCount || 0) + 1;
-      playUnitAttackSound('errorEntity', { volume: 1.08 });
-      battle.shots.push({
-        x1: placed.x + Math.cos(angle)*30, y1: placed.y - 6 + Math.sin(angle)*30,
-        x2: target.x, y2: target.y,
-        life: getAttackEffectDuration('errorPacket'), maxLife: getAttackEffectDuration('errorPacket'),
-        color: '#00ff66', effect: 'errorPacket', angle, seed: Math.random()*1000
-      });
-      const killed = applyDamageToEnemy(target, Number(placed.damage || data.damage));
-      if (!killed && !target.dead) applyErrorCorruptionStack(target);
+      playUnitAttackSound('errorEntity', { volume: 1.18 });
+
+      for (let i = 0; i < volleyCount; i++) {
+        const shotTarget = volleyTargets[i % volleyTargets.length];
+        if (!shotTarget) continue;
+        const shotAngle = Math.atan2(shotTarget.y - placed.y, shotTarget.x - placed.x);
+        const laneOffset = (i - (volleyCount - 1) / 2) * 5.5;
+        const nx = -Math.sin(shotAngle), ny = Math.cos(shotAngle);
+        const muzzleX = placed.x + Math.cos(shotAngle) * 30 + nx * laneOffset;
+        const muzzleY = placed.y - 6 + Math.sin(shotAngle) * 30 + ny * laneOffset;
+        const impactX = shotTarget.x;
+        const impactY = shotTarget.y;
+        battle.shots.push({
+          x1: muzzleX, y1: muzzleY,
+          x2: impactX, y2: impactY,
+          life: getAttackEffectDuration('errorPacket'), maxLife: getAttackEffectDuration('errorPacket'),
+          color: '#00ff66', effect: 'errorPacket', angle: shotAngle,
+          seed: Math.random() * 1000 + i * 137,
+          radius: Number(data.errorPacketSplashRadius || 58), volleyIndex: i
+        });
+        applyErrorPacketSplash(placed, impactX, impactY, Number(placed.damage || data.damage));
+      }
 
       const count = placed.attackCount;
       if (count % Number(data.error404Every || 5) === 0) triggerError404(placed);
@@ -15557,6 +15806,10 @@ function requestGachaDraw(count) {
           battle.gold += placed.incomeAmount;
           placed.incomeCooldown += placed.incomeInterval;
           placed.moneyPulse = 1;
+          if (placedHasTrait(placed,'dark')) {
+            const candidates=battle.enemies.filter(e=>!e.dead&&!e.soilPileState);
+            if(candidates.length){ const e=candidates[Math.floor(Math.random()*candidates.length)]; e.traitDarkSlowRemaining=Math.max(Number(e.traitDarkSlowRemaining||0),2); e.traitDarkSlow=Math.max(Number(e.traitDarkSlow||0),.20); }
+          }
         }
         placed.moneyPulse = Math.max(0, (placed.moneyPulse || 0) - dt * 2.4);
         return;
@@ -15677,7 +15930,7 @@ function requestGachaDraw(count) {
           const stunSeconds = eclipseData.spinSlashStunDuration || 1;
           let spinHits = 0;
           spinVictims.forEach(enemy => {
-            const killed = applyDamageToEnemy(enemy, spinDamage);
+            const killed = applyTraitDamage(placed, enemy, spinDamage);
             spinHits += 1;
             if (!enemy.dead) {
               enemy.timeStunDuration = stunSeconds;
@@ -15710,7 +15963,7 @@ function requestGachaDraw(count) {
           !enemy.dead && Math.hypot(enemy.x - target.x, enemy.y - target.y) <= slashRadius
         );
         slashVictims.forEach(enemy => {
-          const killed = applyDamageToEnemy(enemy, placed.damage);
+          const killed = applyTraitDamage(placed, enemy, placed.damage);
           if (killed) triggerEclipseGrowth(placed, enemy);
         });
         if (Math.random() < (eclipseData.hitBlackHoleChance || .05)) {
@@ -15749,13 +16002,10 @@ function requestGachaDraw(count) {
           .slice(0, data.volleyShots || 3);
         volleyTargets.forEach((enemy, index) => {
           const angle = Math.atan2(enemy.y - placed.y, enemy.x - placed.x);
-          battle.shots.push({
-            x1: placed.x + Math.cos(angle) * 28, y1: placed.y - 7 + Math.sin(angle) * 28,
-            x2: enemy.x, y2: enemy.y, life: getAttackEffectDuration('arrow'),
-            maxLife: getAttackEffectDuration('arrow'), color: data.color, effect: 'arrow',
-            angle, seed: Math.random() * 1000 + index * 13
-          });
-          applyDamageToEnemy(enemy, placed.damage);
+          for(let clone=0;clone<getTraitedProjectileCount(placed);clone++){
+            battle.shots.push({x1:placed.x+Math.cos(angle)*28,y1:placed.y-7+Math.sin(angle)*28,x2:enemy.x,y2:enemy.y,life:getAttackEffectDuration('arrow'),maxLife:getAttackEffectDuration('arrow'),color:data.color,effect:'arrow',angle,seed:Math.random()*1000+index*13+clone*71});
+            applyTraitDamage(placed,enemy,placed.damage);
+          }
         });
         return;
       }
@@ -15828,7 +16078,12 @@ function requestGachaDraw(count) {
           splashRadius: placed.unitId === 'flameWizard' ? 88 : 0
         });
 
-        applyDamageToEnemy(target, placed.damage);
+        applyTraitDamage(placed, target, placed.damage);
+        const extraProjectiles = getTraitedProjectileCount(placed) - 1;
+        for (let cloneIndex=0; cloneIndex<extraProjectiles; cloneIndex++) {
+          battle.shots.push({x1:placed.x+Math.cos(targetAngle)*muzzleDistance,y1:placed.y-7+Math.sin(targetAngle)*muzzleDistance,x2:target.x,y2:target.y,life:duration,maxLife:duration,color:UNIT_DATA[placed.unitId].color,effect,angle:targetAngle,seed:Math.random()*1000+cloneIndex*91});
+          applyTraitDamage(placed,target,placed.damage);
+        }
       }
 
       if (placed.unitId === 'flameWizard') {
@@ -15931,6 +16186,7 @@ function requestGachaDraw(count) {
         0,
         (battle.baseDamageTextTimer || 0) - dt
       );
+      updateTraitShields(dt);
 
       if (battle.dirtConverge) {
         battle.dirtConverge.remaining = Math.max(0, battle.dirtConverge.remaining - dt);
@@ -20157,6 +20413,7 @@ function requestGachaDraw(count) {
       // 벚꽃 사무라이의 오의 체공 중에는 몸 전체가 공중제비를 돕니다.
       if (unit.unitId === 'cherrySamurai') ctx.rotate(getSamuraiRenderRotation(unit, time));
       drawDetailedUnitSprite(unit, time);
+      if (unit.unitId === 'iceQueen') drawIceTraitOrbs(unit, time);
 
       if (unit.unitId === 'astralChronomancer' && Array.isArray(unit.chronoOrbitingShots)) {
         const count = unit.chronoOrbitingShots.length;
@@ -20276,9 +20533,9 @@ function requestGachaDraw(count) {
             ctx.rotate(-angle);ctx.translate(-x,-y);ctx.translate(shot.x2,shot.y2);
             ctx.globalAlpha=(1-impact)*.85;
             ctx.strokeStyle='#00ff66';ctx.lineWidth=2.4;ctx.setLineDash([6,4,2,5]);
-            ctx.beginPath();ctx.arc(0,0,16+impact*28,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+            const splashR=Number(shot.radius||58);ctx.beginPath();ctx.arc(0,0,16+impact*splashR,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
             ctx.fillStyle='rgba(0,0,0,.78)';
-            for(let i=0;i<5;i++){const a=Number(shot.seed||0)+i*1.257+impact*2;ctx.save();ctx.rotate(a);ctx.fillRect(12+impact*18,-2,8+i%3*3,4);ctx.restore();}
+            for(let i=0;i<9;i++){const a=Number(shot.seed||0)+i*.698+impact*3;ctx.save();ctx.rotate(a);ctx.fillStyle=i%3===0?'#050505':'#00ff66';ctx.fillRect(12+impact*splashR*.72,-2,8+i%3*3,4);ctx.restore();}
           }
           ctx.restore();
         } else if (shot.effect === 'error404' || shot.effect === 'errorCorrupt' || shot.effect === 'errorRollback' || shot.effect === 'errorSystem' || shot.effect === 'errorDelete') {
@@ -21007,6 +21264,7 @@ function requestGachaDraw(count) {
       drawSelectedPlacedUnitRange();
       drawPlacementPreview(time);
       battle.placedUnits.forEach(unit => drawPlacedUnit(unit, time));
+      drawTraitShields();
       drawEdenMinions(time);
       battle.enemies.forEach(enemy => drawEnemy(enemy, time));
       drawShots();
@@ -21114,8 +21372,9 @@ function requestGachaDraw(count) {
         return { valid: false, reason: '배치할 유닛을 선택하세요.' };
       }
 
-      if (battle.gold < unitData.cost) {
-        return { valid: false, reason: '전투 골드가 부족합니다.' };
+      const traitCost = getTraitedUnitCost(unitData);
+      if (battle.gold < traitCost) {
+        return { valid: false, reason: `전투 골드가 부족합니다. 필요 골드: ${traitCost}` };
       }
 
       if (isOnPath(point)) {
@@ -21170,7 +21429,7 @@ function requestGachaDraw(count) {
     }
 
     function getStageAdjustedUnitDamage(unitData) {
-      const base = Number(unitData?.damage || 0);
+      const base = getTraitedUnitDamage(unitData);
       if (isStageTwoBattle() && unitData?.id === 'flameWizard') return base * .5;
       return base;
     }
@@ -21196,9 +21455,11 @@ function requestGachaDraw(count) {
         damage: getStageAdjustedUnitDamage(unitData),
         upgradeLevel: 0,
         range: unitData.range,
-        fireInterval: unitData.fireInterval,
+        fireInterval: getTraitedUnitInterval(unitData),
+        traits: getUnitTraits(unitData.id),
+        traitProjectileMultiplier: getTraitStatModifiers(unitData.id).projectiles,
         cooldown: 0,
-        totalInvestment: unitData.cost,
+        totalInvestment: getTraitedUnitCost(unitData),
         animationOffset: Math.random() * Math.PI * 2,
         attackAnimation: 0,
         attackMode: 'idle',
@@ -21220,15 +21481,15 @@ function requestGachaDraw(count) {
         samuraiUltimateSequence: null,
         samuraiBloomCast: null,
         samuraiAuraAccumulator: 0,
-        incomeAmount: unitData.id === 'moneyTree' ? unitData.incomeAmount : 0,
-        incomeInterval: unitData.id === 'moneyTree' ? unitData.incomeInterval : 0,
-        incomeCooldown: unitData.id === 'moneyTree' ? unitData.incomeInterval : 0,
+        incomeAmount: unitData.id === 'moneyTree' ? unitData.incomeAmount * getTraitStatModifiers(unitData.id).income : 0,
+        incomeInterval: unitData.id === 'moneyTree' ? unitData.incomeInterval * getTraitStatModifiers(unitData.id).incomeInterval : 0,
+        incomeCooldown: unitData.id === 'moneyTree' ? unitData.incomeInterval * getTraitStatModifiers(unitData.id).incomeInterval : 0,
         angle: 0,
         stunRemaining: 0,
         attackSlowRemaining: 0
       });
 
-      battle.gold -= unitData.cost;
+      battle.gold -= getTraitedUnitCost(unitData);
       clearPlacementPreview();
       updateBattleUi();
       setBattleMessage(`${unitData.name}을 배치했습니다.`);
@@ -21390,6 +21651,8 @@ function requestGachaDraw(count) {
         if (synced && activeInventoryTab === 'dice') renderInventory();
       });
     });
+    document.querySelector('#inventoryItemsTab')?.addEventListener('click', () => { activeInventoryTab='items'; renderInventory(); });
+    document.querySelector('#openTraitsBtn')?.addEventListener('click', openTraitsScreen);
     document.querySelector('#startBattleBtn').addEventListener('click', createBattle);
     document.querySelector('#openInfiniteBtn')?.addEventListener('click', createInfiniteBattle);
     document.querySelectorAll('[data-difficulty]').forEach(button => {
@@ -22406,7 +22669,7 @@ function requestGachaDraw(count) {
       return `<button class="mp-unit-button ${id === mpSelectedUnitId ? 'active' : ''}" type="button" data-mp-unit="${id}">
         <span class="icon">${unit.icon}</span>
         <strong>${unit.name}</strong>
-        <small>${unit.cost} 골드</small>
+        <small>${getTraitedUnitCost(unit)} 골드</small>
       </button>`;
     }).join('');
 
@@ -22426,7 +22689,7 @@ function requestGachaDraw(count) {
     document.querySelectorAll('[data-mp-unit]').forEach(button => {
       const unit = UNIT_DATA[button.dataset.mpUnit];
       const blockedByView = mpRoom?.mode === 'pvp' && mpViewingOpponent;
-      button.disabled = !unit || gold < unit.cost || blockedByView || Boolean(mpState?.matchFinished);
+      button.disabled = !unit || gold < getTraitedUnitCost(unit) || blockedByView || Boolean(mpState?.matchFinished);
       button.classList.toggle('active', button.dataset.mpUnit === mpSelectedUnitId);
     });
   }
@@ -22455,7 +22718,7 @@ function requestGachaDraw(count) {
       : y;
   }
 
-  function mpValidatePlacement(role, unitId, x, y) {
+  function mpValidatePlacement(role, unitId, x, y, traitIds = null) {
     const unit = UNIT_DATA[unitId];
     if (!unit) return { ok: false, reason: '알 수 없는 유닛입니다.' };
     if (!Number.isFinite(x) || !Number.isFinite(y)) return { ok: false, reason: '잘못된 위치입니다.' };
@@ -22474,7 +22737,8 @@ function requestGachaDraw(count) {
       gold = Number(mpState.sides[role].gold || 0);
     }
 
-    if (gold < unit.cost) return { ok: false, reason: `골드가 부족합니다. 필요 골드: ${unit.cost}` };
+    const traitCost=getTraitedUnitCost(unit, traitIds);
+    if (gold < traitCost) return { ok: false, reason: `골드가 부족합니다. 필요 골드: ${traitCost}` };
     if (units.filter(item => item.ownerRole === role).length >= 40) return { ok: false, reason: '한 플레이어가 배치할 수 있는 유닛 수는 40개까지입니다.' };
     if (unitId === 'eclipse') {
       const eclipseAlreadyPlaced = mpState.mode === 'coop'
@@ -22513,19 +22777,23 @@ function requestGachaDraw(count) {
     return { ok: true };
   }
 
-  function mpCreatePlacedUnit(role, unitId, x, y) {
+  function mpCreatePlacedUnit(role, unitId, x, y, traitIds = null) {
     const data = UNIT_DATA[unitId];
+    const resolvedTraits = normalizeTraitSlots(traitIds || getUnitTraits(unitId));
+    const traitMods = getTraitModifiersForIds(unitId,resolvedTraits);
     return {
       id: mpMakeId('unit'),
       ownerRole: role,
       unitId,
       x,
       y,
-      damage: Number(data.damage),
-      baseDamage: Number(data.damage),
+      damage: Number(getTraitedUnitDamage(data,resolvedTraits)),
+      baseDamage: Number(getTraitedUnitDamage(data,resolvedTraits)),
       range: Number(data.range),
-      fireInterval: Number(data.fireInterval),
-      totalInvestment: Number(data.cost || 0),
+      fireInterval: Number(getTraitedUnitInterval(data,resolvedTraits)),
+      totalInvestment: Number(getTraitedUnitCost(data,resolvedTraits)),
+      traits: resolvedTraits,
+      traitProjectileMultiplier: traitMods.projectiles,
       cooldown: 0,
       attackCount: 0,
       attackAnimation: 0,
@@ -22552,9 +22820,9 @@ function requestGachaDraw(count) {
       samuraiBloomCast: null,
       samuraiAuraAccumulator: 0,
       upgradeLevel: 0,
-      incomeAmount: unitId === 'moneyTree' ? Number(data.incomeAmount) : 0,
-      incomeInterval: unitId === 'moneyTree' ? Number(data.incomeInterval) : 0,
-      incomeCooldown: unitId === 'moneyTree' ? Number(data.incomeInterval) : 0,
+      incomeAmount: unitId === 'moneyTree' ? Number(data.incomeAmount)*traitMods.income : 0,
+      incomeInterval: unitId === 'moneyTree' ? Number(data.incomeInterval)*traitMods.incomeInterval : 0,
+      incomeCooldown: unitId === 'moneyTree' ? Number(data.incomeInterval)*traitMods.incomeInterval : 0,
       moneyPulseUntil: 0,
       animationOffset: Math.random() * Math.PI * 2
     };
@@ -22776,19 +23044,20 @@ function requestGachaDraw(count) {
     const unitId = String(payload?.unitId || '');
     const x = Number(payload?.x);
     const y = Number(payload?.y);
-    const check = mpValidatePlacement(role, unitId, x, y);
+    const traitIds=normalizeTraitSlots(payload?.traits);
+    const check = mpValidatePlacement(role, unitId, x, y, traitIds);
     if (!check.ok) {
       if (role === mpRole) mpSetMessage(check.reason);
       return;
     }
 
-    const placed = mpCreatePlacedUnit(role, unitId, x, y);
+    const placed = mpCreatePlacedUnit(role, unitId, x, y, traitIds);
     const data = UNIT_DATA[unitId];
     if (mpState.mode === 'coop') {
-      mpState.shared.gold[role] -= data.cost;
+      mpState.shared.gold[role] -= getTraitedUnitCost(data, traitIds);
       mpState.shared.units.push(placed);
     } else {
-      mpState.sides[role].gold -= data.cost;
+      mpState.sides[role].gold -= getTraitedUnitCost(data, traitIds);
       mpState.sides[role].units.push(placed);
     }
 
@@ -22803,14 +23072,15 @@ function requestGachaDraw(count) {
       return;
     }
 
-    const check = mpValidatePlacement(mpRole, mpSelectedUnitId, point.x, point.y);
+    const selectedTraits=getUnitTraits(mpSelectedUnitId);
+    const check = mpValidatePlacement(mpRole, mpSelectedUnitId, point.x, point.y, selectedTraits);
     if (!check.ok) {
       mpSetMessage(check.reason);
       return;
     }
 
     if (mpRole === 'host') {
-      mpProcessPlace('host', { unitId: mpSelectedUnitId, x: point.x, y: point.y });
+      mpProcessPlace('host', { unitId: mpSelectedUnitId, x: point.x, y: point.y, traits:selectedTraits });
       return;
     }
 
@@ -22821,7 +23091,7 @@ function requestGachaDraw(count) {
         room_id: mpRoom.id,
         sender_id: mpUserId,
         command_type: 'place',
-        payload: { unitId: mpSelectedUnitId, x: point.x, y: point.y }
+        payload: { unitId: mpSelectedUnitId, x: point.x, y: point.y, traits:selectedTraits }
       });
 
     if (error) {
@@ -23847,12 +24117,50 @@ function requestGachaDraw(count) {
     playUnitAttackSound('errorEntity',{skill:'errorDelete',volume:1.55});mpState.announcement=`ENTITY DELETED · 일반 적 ${normals.length}명${bosses.length?` · 보스 ${bosses.length}명 ×15 피해`:''}`;mpState.announcementUntil=now+2200;
   }
 
+  function mpErrorVolleyTargets(targetState, unit, primaryTarget, count = 5) {
+    const now = Date.now();
+    const range = Number(unit.range || UNIT_DATA.errorEntity.range || 360);
+    const valid = (targetState.enemies || [])
+      .filter(enemy => !enemy.dead && Number(enemy.soilPileUntil || 0) <= now && Number(enemy.reviveInvulnerableUntil || 0) <= now)
+      .filter(enemy => Math.hypot(enemy.x - unit.x, enemy.y - unit.y) <= range);
+    valid.sort((a,b) => {
+      if (a === primaryTarget) return -1;
+      if (b === primaryTarget) return 1;
+      const pa=Number(a.targetIndex||0), pb=Number(b.targetIndex||0);
+      if (pb!==pa) return pb-pa;
+      return Math.hypot(a.x-unit.x,a.y-unit.y)-Math.hypot(b.x-unit.x,b.y-unit.y);
+    });
+    const unique=valid.slice(0,Math.max(1,Math.min(Number(count||5),valid.length)));
+    if(!unique.length&&primaryTarget&&!primaryTarget.dead)unique.push(primaryTarget);
+    return unique;
+  }
+
+  function mpApplyErrorPacketSplash(targetState, sideKey, unit, impactX, impactY, damage){
+    const d=UNIT_DATA.errorEntity, radius=Number(d.errorPacketSplashRadius||58), now=Date.now();
+    let hits=0;
+    for(const enemy of [...(targetState.enemies||[])]){
+      if(enemy.dead||Number(enemy.soilPileUntil||0)>now||Number(enemy.reviveInvulnerableUntil||0)>now)continue;
+      if(Math.hypot(enemy.x-impactX,enemy.y-impactY)>radius)continue;
+      const killed=mpApplyDamage(targetState,enemy,damage,unit.ownerRole,sideKey);
+      hits+=1;
+      if(!killed&&!enemy.dead)mpApplyErrorCorruptionStack(enemy,sideKey);
+    }
+    return hits;
+  }
+
   function mpPerformErrorAttack(targetState,sideKey,unit,target){
-    const d=UNIT_DATA.errorEntity, damage=mpEffectiveUnitDamage(unit);
+    const d=UNIT_DATA.errorEntity, damage=mpEffectiveUnitDamage(unit), volleyCount=Math.max(1,Number(d.errorVolleyCount||5));
+    const targets=mpErrorVolleyTargets(targetState,unit,target,volleyCount);
     unit.attackMode='errorCut';
-    mpPushFx(unit.x,unit.y,target.x,target.y,'#00ff66',8,sideKey,'errorPacket');
-    const killed=mpApplyDamage(targetState,target,damage,unit.ownerRole,sideKey);
-    if(!killed&&!target.dead)mpApplyErrorCorruptionStack(target,sideKey);
+    for(let i=0;i<volleyCount;i++){
+      const shotTarget=targets[i%targets.length];
+      if(!shotTarget)continue;
+      const a=Math.atan2(shotTarget.y-unit.y,shotTarget.x-unit.x), lane=(i-(volleyCount-1)/2)*5.5, nx=-Math.sin(a), ny=Math.cos(a);
+      const x1=unit.x+Math.cos(a)*30+nx*lane, y1=unit.y-6+Math.sin(a)*30+ny*lane;
+      const impactX=shotTarget.x, impactY=shotTarget.y;
+      mpPushFx(x1,y1,impactX,impactY,'#00ff66',8,sideKey,'errorPacket',{radius:Number(d.errorPacketSplashRadius||58),volleyIndex:i,seed:Math.random()*1000+i*137});
+      mpApplyErrorPacketSplash(targetState,sideKey,unit,impactX,impactY,damage);
+    }
     const count=Number(unit.attackCount||0);
     if(count%Number(d.error404Every||5)===0)mpTriggerError404(targetState,sideKey,unit);
     if(count%Number(d.rollbackEvery||10)===0)mpTriggerErrorRollback(targetState,sideKey,unit);
@@ -25547,7 +25855,7 @@ function requestGachaDraw(count) {
         mpCtx.save();mpCtx.globalCompositeOperation='lighter';
         for(let i=0;i<(mpHighLoadFrame?4:7);i++){const back=17+i*10,side=Math.sin(Number(fx.seed||0)+i*2.4+p*26)*(3+i*.5),px=x-ux*back+nx*side,py=y-uy*back+ny*side;mpCtx.save();mpCtx.translate(px,py);mpCtx.rotate(angle+(i%2?.08:-.08));mpCtx.fillStyle=i%3===0?'rgba(0,0,0,.94)':`rgba(0,255,102,${Math.max(0,.64-i*.065)*fade})`;mpCtx.shadowBlur=i%3===0?0:7;mpCtx.shadowColor='#00ff66';mpCtx.fillRect(-6-(i%2)*2,-2,12+(i%3)*4,4+(i%2));mpCtx.restore();}
         mpCtx.translate(x,y);mpCtx.rotate(angle);mpCtx.shadowBlur=mpHighLoadFrame?16:26;mpCtx.shadowColor='#00ff66';const core=mpCtx.createLinearGradient(-bladeLen,0,28,0);core.addColorStop(0,'rgba(0,255,102,0)');core.addColorStop(.34,`rgba(0,255,102,${.24*fade})`);core.addColorStop(.66,'rgba(0,0,0,.98)');core.addColorStop(.87,`rgba(60,255,132,${.92*fade})`);core.addColorStop(1,'rgba(238,255,244,.98)');mpCtx.fillStyle=core;mpCtx.strokeStyle=`rgba(0,255,102,${.9*flicker*fade})`;mpCtx.lineWidth=1.7;mpCtx.beginPath();mpCtx.moveTo(-bladeLen,-4);mpCtx.lineTo(-20,-10);mpCtx.lineTo(18,-6);mpCtx.lineTo(34,0);mpCtx.lineTo(18,6);mpCtx.lineTo(-8,4);mpCtx.lineTo(-22,11);mpCtx.closePath();mpCtx.fill();mpCtx.stroke();mpCtx.fillStyle='rgba(0,0,0,.98)';mpCtx.beginPath();mpCtx.moveTo(-28,-2);mpCtx.lineTo(13,-3);mpCtx.lineTo(24,0);mpCtx.lineTo(10,2);mpCtx.lineTo(-18,1);mpCtx.closePath();mpCtx.fill();
-        if(p>.62){const impact=(p-.62)/.38;mpCtx.rotate(-angle);mpCtx.translate(-x,-y);mpCtx.translate(fx.x2,y2);mpCtx.globalAlpha=(1-impact)*.8;mpCtx.strokeStyle='#00ff66';mpCtx.lineWidth=2.2;mpCtx.setLineDash([6,4,2,5]);mpCtx.beginPath();mpCtx.arc(0,0,15+impact*26,0,Math.PI*2);mpCtx.stroke();mpCtx.setLineDash([]);}mpCtx.restore();
+        if(p>.62){const impact=(p-.62)/.38,splashR=Number(fx.radius||58);mpCtx.rotate(-angle);mpCtx.translate(-x,-y);mpCtx.translate(fx.x2,y2);mpCtx.globalAlpha=(1-impact)*.82;mpCtx.strokeStyle='#00ff66';mpCtx.lineWidth=2.2;mpCtx.setLineDash([6,4,2,5]);mpCtx.beginPath();mpCtx.arc(0,0,15+impact*splashR,0,Math.PI*2);mpCtx.stroke();mpCtx.setLineDash([]);for(let i=0;i<(mpHighLoadFrame?4:8);i++){const a=Number(fx.seed||0)+i*.785+impact*3;mpCtx.save();mpCtx.rotate(a);mpCtx.fillStyle=i%3===0?'#050505':'#00ff66';mpCtx.fillRect(12+impact*splashR*.7,-2,7+i%3*3,4);mpCtx.restore();}}mpCtx.restore();
       } else if (fx.kind === 'error404' || fx.kind === 'errorCorrupt' || fx.kind === 'errorRollback' || fx.kind === 'errorSystem' || fx.kind === 'errorDelete') {
         const p=progress,alpha=Math.max(0,1-p),r=Number(fx.radius||58);mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.globalCompositeOperation='lighter';
         if(fx.kind==='errorSystem'){mpCtx.strokeStyle=`rgba(0,255,102,${.5*alpha})`;mpCtx.lineWidth=8*(1-p)+2;mpCtx.setLineDash([18,8,4,9]);mpCtx.beginPath();mpCtx.arc(0,0,Math.max(24,r*p),0,Math.PI*2);mpCtx.stroke();mpCtx.setLineDash([]);mpCtx.font='900 24px monospace';mpCtx.textAlign='center';mpCtx.fillStyle=`rgba(90,255,145,${.9*alpha})`;mpCtx.fillText('SYSTEM FAILURE',0,-10);}
@@ -26584,7 +26892,7 @@ function requestGachaDraw(count) {
   function personName(row){return row.nickname||'닉네임 미설정';}
   function renderSearch(rows){
     const box=document.querySelector('#friendSearchResults'); if(!rows.length){box.innerHTML='<div class="social-empty">검색 결과가 없습니다. 상대가 기존 계정이라면 한 번 로그인한 뒤 다시 검색해보세요.</div>';return;}
-    box.innerHTML=rows.map(r=>`<div class="social-person"><div class="social-person-copy"><strong>${safeText(personName(r))}</strong><small>Lv.${Number(r.level||1)}</small></div><div class="social-person-actions">${r.relation==='friend'?'<button disabled>친구</button>':r.relation==='pending'?'<button disabled>요청 중</button>':`<button class="accept" data-friend-add="${safeText(r.user_id)}">친구 추가</button>`}</div></div>`).join('');
+    box.innerHTML=rows.map(r=>{const accountId=String(r.username||'').trim();const idLine=accountId?`@${safeText(accountId)} · `:'';return `<div class="social-person"><div class="social-person-copy"><strong>${safeText(personName(r))}</strong><small>${idLine}Lv.${Number(r.level||1)}</small></div><div class="social-person-actions">${r.relation==='friend'?'<button disabled>친구</button>':r.relation==='pending'?'<button disabled>요청 중</button>':`<button class="accept" data-friend-add="${safeText(r.user_id)}">친구 추가</button>`}</div></div>`;}).join('');
     box.querySelectorAll('[data-friend-add]').forEach(btn=>btn.addEventListener('click',()=>void sendFriend(btn.dataset.friendAdd,btn)));
   }
   async function sendFriend(id,btn){btn.disabled=true;try{const result=await rpcFallback('send_game_friend_request_v5','send_game_friend_request_v4',{p_target_user_id:id});document.querySelector('#friendStatus').textContent=result==='sent'?'친구 요청을 보냈습니다.':'이미 처리 중인 요청입니다.';await searchFriends();}catch(e){document.querySelector('#friendStatus').textContent=e.message;}finally{btn.disabled=false;}}

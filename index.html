@@ -7239,10 +7239,10 @@ button {
           <div class="admin-action-grid">
             <div class="admin-action-box">
               <strong>💎 소환석 지급 / 회수</strong>
-              <input id="adminGemDeltaInput" type="number" inputmode="numeric" min="-100000" max="100000" step="1" placeholder="예: 1000 또는 -500" />
+              <input id="adminGemDeltaInput" type="number" inputmode="numeric" min="-10000000" max="10000000" step="1" placeholder="예: 1000000 또는 -500000" />
               <input id="adminGemReasonInput" type="text" maxlength="120" placeholder="사유 (필수)" value="관리자 소환석 조정" />
               <div class="admin-action-row">
-                <span class="muted">한 번에 ±100,000</span>
+                <span class="muted">한 번에 ±10,000,000</span>
                 <button id="adminGemApplyBtn" type="button">적용</button>
               </div>
             </div>
@@ -7786,8 +7786,8 @@ button {
   </div>
 
   <script>
-console.log("[TRAIT BUILD] 2026-08-19-admin-fragment-10m-v1");
-    window.BIDULGY_BUILD_VERSION = '2026-08-19-admin-fragment-10m-v1';
+console.log("[TRAIT BUILD] 2026-08-19-admin-gems-10m-v1");
+    window.BIDULGY_BUILD_VERSION = '2026-08-19-admin-fragment-fix-v2';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -9857,8 +9857,8 @@ async function applyAdminGemAdjustment() {
   const delta = Math.trunc(Number(document.querySelector('#adminGemDeltaInput')?.value));
   const reason = document.querySelector('#adminGemReasonInput')?.value?.trim() || '';
 
-  if (!Number.isFinite(delta) || delta === 0 || Math.abs(delta) > 100000) {
-    setAdminStatus('소환석 변경량을 -100000~100000 범위의 0이 아닌 정수로 입력하세요.', 'error');
+  if (!Number.isFinite(delta) || delta === 0 || Math.abs(delta) > 10000000) {
+    setAdminStatus('소환석 변경량을 -10,000,000~10,000,000 범위의 0이 아닌 정수로 입력하세요.', 'error');
     return;
   }
 
@@ -9873,15 +9873,25 @@ async function applyAdminGemAdjustment() {
   const button = document.querySelector('#adminGemApplyBtn');
   button.disabled = true;
   try {
-    const { data, error } = await supabaseClient.rpc('admin_adjust_gems', {
+    let rpcResult = await supabaseClient.rpc('admin_adjust_gems_v2', {
       p_user_id: adminSelectedUserId,
       p_delta: delta,
       p_reason: reason
     });
 
-    if (error) throw error;
+    // V2 SQL을 아직 실행하지 않은 서버에서는 기존 RPC로 한 번만 호환 재시도합니다.
+    if (rpcResult.error && /admin_adjust_gems_v2|Could not find the function|PGRST202/i.test(String(rpcResult.error.message || ''))) {
+      rpcResult = await supabaseClient.rpc('admin_adjust_gems', {
+        p_user_id: adminSelectedUserId,
+        p_delta: delta,
+        p_reason: reason
+      });
+    }
 
-    setAdminStatus(`소환석 변경 완료 · 현재 ${Number(data?.gems || 0).toLocaleString()}개`, 'good');
+    if (rpcResult.error) throw rpcResult.error;
+    const data = rpcResult.data || {};
+
+    setAdminStatus(`소환석 변경 완료 · 서버 검증 ${Number(data?.gems || 0).toLocaleString()}개`, 'good');
     document.querySelector('#adminGemDeltaInput').value = '';
     await loadAdminPlayer();
     await loadAdminLogs();
@@ -10079,16 +10089,33 @@ async function grantAdminFragments() {
   const button = document.querySelector('#adminFragmentGrantBtn');
   button.disabled = true;
   try {
-    const { data, error } = await supabaseClient.rpc('admin_grant_unit_fragments_v1', {
+    let data = null;
+    let error = null;
+
+    // V2는 지급 직후 서버 DB 값을 다시 읽어서 실제 반영 여부까지 검증합니다.
+    ({ data, error } = await supabaseClient.rpc('admin_grant_unit_fragments_v2', {
       p_user_id: adminSelectedUserId,
       p_unit_id: unitId,
       p_count: count,
       p_reason: reason
-    });
+    }));
+
+    // V2 SQL 적용 전이라면 V1로 한 번만 호환 재시도합니다.
+    if (error && /admin_grant_unit_fragments_v2|PGRST202|schema cache|function/i.test(String(error.message || ''))) {
+      console.warn('조각 지급 V2 사용 불가, V1 재시도:', error.message);
+      ({ data, error } = await supabaseClient.rpc('admin_grant_unit_fragments_v1', {
+        p_user_id: adminSelectedUserId,
+        p_unit_id: unitId,
+        p_count: count,
+        p_reason: reason
+      }));
+    }
     if (error) throw error;
 
-    const after = Math.max(0, Math.floor(Number(data?.fragments || 0)));
-    setAdminStatus(`${unit.name} 조각 ${count.toLocaleString()}개 지급 완료 · 현재 ${after.toLocaleString()}개`, 'good');
+    const after = Math.max(0, Math.floor(Number(data?.fragments ?? data?.afterFragments ?? 0)));
+    const verified = data?.serverVerified !== false;
+    if (!verified) throw new Error('SERVER_VERIFY_FAILED: 조각 지급 후 서버 검증에 실패했습니다.');
+    setAdminStatus(`${unit.name} 조각 ${count.toLocaleString()}개 지급 완료 · 서버 검증 ${after.toLocaleString()}개`, 'good');
     document.querySelector('#adminFragmentGrantCountInput').value = '1';
     await loadAdminPlayer(adminSelectedUserId);
     await loadAdminLogs();
@@ -10102,8 +10129,8 @@ async function grantAdminFragments() {
   } catch (error) {
     console.error('관리자 유닛 조각 지급 실패:', error);
     const message = String(error?.message || '알 수 없는 오류');
-    const hint = /admin_grant_unit_fragments_v1|schema cache|function|PGRST202/i.test(message)
-      ? ' · Supabase SQL Editor에서 admin_fragment_grant_10m.sql을 전체 실행하세요.'
+    const hint = /admin_grant_unit_fragments_v2|admin_grant_unit_fragments_v1|schema cache|function|PGRST202/i.test(message)
+      ? ' · Supabase SQL Editor에서 admin_fragment_grant_fix_v2.sql을 전체 실행하세요.'
       : '';
     setAdminStatus(`유닛 조각 지급 실패: ${message}${hint}`, 'error');
   } finally {
@@ -27324,4 +27351,3 @@ function requestGachaDraw(count) {
 })();
 </script>\n</body>
 </html>
-git add .

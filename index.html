@@ -6925,6 +6925,61 @@ button {
   .mp-info-panel{max-height:42vh;}
 }
 </style>
+
+<style id="featureUnlockGateStyle">
+/* 특성 / 거래 해금 조건 */
+.defense-menu-card.feature-locked {
+  position: relative;
+  overflow: hidden;
+  cursor: not-allowed;
+  filter: saturate(.5) brightness(.72);
+  border-color: rgba(180, 194, 210, .28) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.035), 0 10px 24px rgba(0,0,0,.2) !important;
+}
+.defense-menu-card.feature-locked:hover {
+  transform: none !important;
+  border-color: rgba(180, 194, 210, .35) !important;
+}
+.defense-menu-card.feature-locked::before {
+  content: '🔒';
+  position: absolute;
+  z-index: 3;
+  top: 8px;
+  right: 9px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 12px;
+  background: rgba(8,16,28,.78);
+  font-size: 19px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.28);
+  pointer-events: none;
+}
+.defense-menu-card.feature-locked::after {
+  content: attr(data-lock-label);
+  position: absolute;
+  z-index: 2;
+  left: 7px;
+  right: 7px;
+  bottom: 7px;
+  padding: 6px 7px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 9px;
+  background: rgba(4,10,19,.86);
+  color: #e8eef8;
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1.25;
+  text-align: center;
+  pointer-events: none;
+}
+.defense-menu-card.feature-locked > small {
+  opacity: .22;
+}
+</style>
+
 </head>
 
 <body>
@@ -10391,6 +10446,70 @@ async function logout() {
   }
 }
 
+    const FEATURE_LEVEL_EXP_THRESHOLDS = Object.freeze([
+      { level: 1, exp: 0 }, { level: 2, exp: 100 }, { level: 3, exp: 350 },
+      { level: 4, exp: 750 }, { level: 5, exp: 1350 }, { level: 6, exp: 2150 },
+      { level: 7, exp: 3350 }, { level: 8, exp: 4850 }, { level: 9, exp: 6650 },
+      { level: 10, exp: 8650 }
+    ]);
+
+    function getFeaturePlayerLevel() {
+      const exp = Math.max(0, Number(player?.exp || 0));
+      if (typeof window.getPlayerLevelFromExp === 'function') {
+        return Math.max(1, Number(window.getPlayerLevelFromExp(exp) || 1));
+      }
+      let level = Math.max(1, Math.floor(Number(player?.level || 1)));
+      for (const item of FEATURE_LEVEL_EXP_THRESHOLDS) if (exp >= item.exp) level = item.level;
+      return level;
+    }
+
+    function getGameFeatureAccess(feature) {
+      ensurePlayerData();
+      const level = getFeaturePlayerLevel();
+      if (feature === 'traits') {
+        const stageUnlocked = isStageUnlocked(getStageConfig(3));
+        const allowed = level >= 5 && stageUnlocked;
+        return {
+          allowed, level, stageUnlocked,
+          lockLabel: '🔒 Lv.5 + STAGE 3 해방 필요',
+          reason: `특성은 Lv.5 이상이고 3스테이지가 해방되어야 사용할 수 있습니다.\n현재 Lv.${level} · 3스테이지 ${stageUnlocked ? '해방 완료' : '잠김'}`
+        };
+      }
+      if (feature === 'trade') {
+        const stageUnlocked = isStageUnlocked(getStageConfig(2));
+        const allowed = level >= 3 && stageUnlocked;
+        return {
+          allowed, level, stageUnlocked,
+          lockLabel: '🔒 Lv.3 + STAGE 2 해방 필요',
+          reason: `유닛 거래는 Lv.3 이상이고 2스테이지가 해방되어야 사용할 수 있습니다.\n현재 Lv.${level} · 2스테이지 ${stageUnlocked ? '해방 완료' : '잠김'}`
+        };
+      }
+      return { allowed: true, level, stageUnlocked: true, lockLabel: '', reason: '' };
+    }
+    window.getGameFeatureAccess = getGameFeatureAccess;
+
+    function updateFeatureUnlockCards() {
+      const configs = [
+        ['#openTraitsBtn', 'traits'],
+        ['#openTradeBtn', 'trade']
+      ];
+      configs.forEach(([selector, feature]) => {
+        const button = document.querySelector(selector);
+        if (!button) return;
+        const access = getGameFeatureAccess(feature);
+        button.classList.toggle('feature-locked', !access.allowed);
+        button.setAttribute('aria-disabled', access.allowed ? 'false' : 'true');
+        if (access.allowed) {
+          button.removeAttribute('data-lock-label');
+          button.removeAttribute('title');
+        } else {
+          button.dataset.lockLabel = access.lockLabel;
+          button.title = access.reason.replace('\n', ' · ');
+        }
+      });
+    }
+    window.updateFeatureUnlockCards = updateFeatureUnlockCards;
+
     function openMenu() {
       ensurePlayerData();
       savePlayer();
@@ -10401,6 +10520,7 @@ async function logout() {
       applyStagePreview(selectedStage);
       showScreen('menu');
       if (typeof refreshSocialMenu === 'function') refreshSocialMenu();
+      updateFeatureUnlockCards();
       void refreshAdminAccess(true);
     }
 
@@ -10505,6 +10625,12 @@ async function logout() {
     }
     function openTraitsScreen(){
       ensurePlayerData();
+      const access=getGameFeatureAccess('traits');
+      if(!access.allowed){
+        updateFeatureUnlockCards();
+        alert(access.reason);
+        return;
+      }
       const owned=getOwnedUnitIds().filter(id=>UNIT_DATA[id] && TRAIT_RARITY_COST[UNIT_DATA[id].rarityKey]);
       if(!activeTraitUnitId || !owned.includes(activeTraitUnitId)) activeTraitUnitId=owned[0]||null;
       renderTraitScreen(); showScreen('traits');
@@ -14215,7 +14341,8 @@ function requestGachaDraw(count) {
         wetSlow: Number(data.wetSlow || .25),
         knockback: Number(data.waveKnockback || 58),
         hitRadius: 62,
-        hitEnemyIds: []
+        hitEnemyIds: [],
+        shadowClone: Boolean(placed._shadowEchoExecuting)
       });
       setBattleMessage(`🌊 포세이돈의 해수! 파도가 지나가는 순간 ${Math.round(damage)} 피해 + 젖음`);
     }
@@ -14276,7 +14403,8 @@ function requestGachaDraw(count) {
           hitIds.add(enemy.id);
           battle.shots.push({
             x1: enemy.x, y1: enemy.y, x2: enemy.x, y2: enemy.y,
-            life: .30, maxLife: .30, color: '#baf7ff', effect: 'waterImpact', seed: Math.random() * 1000
+            life: .30, maxLife: .30, color: '#baf7ff', effect: 'waterImpact', seed: Math.random() * 1000,
+            shadowClone: Boolean(shot.shadowClone)
           });
         }
         shot.hitEnemyIds = [...hitIds];
@@ -14298,7 +14426,8 @@ function requestGachaDraw(count) {
         battle.shots.push({
           x1: placed.x, y1: placed.y - 4, x2: target.x, y2: target.y,
           life: getAttackEffectDuration('poseidonThrust'), maxLife: getAttackEffectDuration('poseidonThrust'),
-          color: data.color, effect: 'poseidonThrust', angle, seed: Math.random() * 1000
+          color: data.color, effect: 'poseidonThrust', angle, seed: Math.random() * 1000,
+          shadowClone: Boolean(placed._shadowEchoExecuting)
         });
         applyDamageToEnemy(target, Number(placed.damage || data.damage) * Number(data.meleeMultiplier || 1.5));
       } else {
@@ -14310,7 +14439,8 @@ function requestGachaDraw(count) {
         battle.shots.push({
           x1: placed.x, y1: placed.y - 4, x2: endX, y2: endY,
           life: outwardDuration, maxLife: outwardDuration,
-          color: data.color, effect: 'poseidonTrident', angle, seed: Math.random() * 1000
+          color: data.color, effect: 'poseidonTrident', angle, seed: Math.random() * 1000,
+          shadowClone: Boolean(placed._shadowEchoExecuting)
         });
         enemiesAlongLine(placed.x, placed.y, endX, endY, data.tridentWidth || 20)
           .forEach(enemy => applyDamageToEnemy(enemy, Number(placed.damage || data.damage)));
@@ -14319,7 +14449,8 @@ function requestGachaDraw(count) {
           kind: 'poseidonReturn',
           timer: Math.max(.01, outwardDuration - .01),
           x1: endX, y1: endY, x2: placed.x, y2: placed.y,
-          damage: Number(placed.damage || data.damage), width: data.tridentWidth || 20
+          damage: Number(placed.damage || data.damage), width: data.tridentWidth || 20,
+          shadowClone: Boolean(placed._shadowEchoExecuting)
         });
       }
       if (placed.attackCount % Number(data.waveEvery || 7) === 0) triggerPoseidonWave(placed);
@@ -26628,6 +26759,12 @@ function requestGachaDraw(count) {
   }
 
   function showTradeScreen() {
+    const access = typeof window.getGameFeatureAccess === 'function' ? window.getGameFeatureAccess('trade') : { allowed:true };
+    if (!access.allowed) {
+      if (typeof window.updateFeatureUnlockCards === 'function') window.updateFeatureUnlockCards();
+      alert(access.reason || '유닛 거래가 아직 잠겨 있습니다.');
+      return;
+    }
     document.querySelectorAll('.screen').forEach(el => el.classList.add('hidden'));
     tradeScreen?.classList.remove('hidden');
     document.documentElement.scrollTop = 0;
@@ -27007,7 +27144,9 @@ function requestGachaDraw(count) {
   // 메뉴에서는 새 거래 요청 배지만 가볍게 확인합니다.
   menuPollTimer = setInterval(() => {
     const menuVisible = document.querySelector('#menuScreen') && !document.querySelector('#menuScreen').classList.contains('hidden');
-    if (menuVisible) void refreshTradeRows(true);
+    const access = typeof window.getGameFeatureAccess === 'function' ? window.getGameFeatureAccess('trade') : { allowed:true };
+    if (menuVisible && access.allowed) void refreshTradeRows(true);
+    else if (badge) badge.classList.add('hidden');
   }, 8000);
 
   document.querySelector('#openTradeBtn')?.addEventListener('click', showTradeScreen);
@@ -27030,8 +27169,12 @@ function requestGachaDraw(count) {
     }
   });
 
-  // 로그인 복구 직후 메뉴에 들어오면 요청 배지를 한 번 확인합니다.
-  setTimeout(() => void refreshTradeRows(true), 1800);
+  // 로그인 복구 직후 메뉴에 들어오면, 거래 해금 조건을 만족한 경우에만 요청 배지를 확인합니다.
+  setTimeout(() => {
+    const access = typeof window.getGameFeatureAccess === 'function' ? window.getGameFeatureAccess('trade') : { allowed:true };
+    if (access.allowed) void refreshTradeRows(true);
+    else if (badge) badge.classList.add('hidden');
+  }, 1800);
 })();
 </script>
 
@@ -27164,6 +27307,7 @@ function requestGachaDraw(count) {
     if(!expBarAnimating && !pendingExpAnimation) setExpBarPct(info.pct,true);
     const input=document.querySelector('#nicknameInput'); if(input && document.activeElement!==input) input.value=nickname===currentUsername && !player.nickname?'':nickname;
     setTimeout(animatePendingExpGain,220);
+    if (typeof window.updateFeatureUnlockCards === 'function') window.updateFeatureUnlockCards();
   };
 
   async function rpc(name,args={}) {

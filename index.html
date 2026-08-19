@@ -20551,6 +20551,12 @@ function requestGachaDraw(count) {
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
+      // 그림자분신술의 무기는 밝은 원래 색을 남기지 않고 완전한 검정으로 표시합니다.
+      if (unit._shadowCloneVisual) {
+        ctx.filter = 'brightness(0)';
+        ctx.shadowColor = '#000000';
+      }
+
       if (unit.unitId === 'starterArcher' || unit.unitId === 'windRanger') {
         const wind = unit.unitId === 'windRanger';
         ctx.strokeStyle = wind ? '#8ff4bd' : '#d49a55';
@@ -20857,7 +20863,7 @@ function requestGachaDraw(count) {
 
       if (placedHasTrait(unit,'shadowClone')) {
         const a=Number.isFinite(Number(unit.shadowCloneAngle))?Number(unit.shadowCloneAngle):Number(unit.angle||0);
-        const cloneUnit={...unit,angle:a,attackAnimation:Number(unit.shadowCloneAttackAnimation||0),attackMode:unit.shadowCloneAttackMode||unit.attackMode};
+        const cloneUnit={...unit,angle:a,attackAnimation:Number(unit.shadowCloneAttackAnimation||0),attackMode:unit.shadowCloneAttackMode||unit.attackMode,_shadowCloneVisual:true};
         ctx.save();
         ctx.translate(-Math.cos(a)*27,-Math.sin(a)*27+8);
         ctx.scale(.97,.97);
@@ -21006,7 +21012,11 @@ function requestGachaDraw(count) {
         ctx.save();
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        if(shot.shadowClone){ctx.filter='grayscale(1) brightness(.16) contrast(2.6)';ctx.globalAlpha=.88;}
+        if(shot.shadowClone){
+          const shadowSwordFx = ['royalSwordWave','sakuraWave','sakuraMelee','sakuraIssen','sakuraUltimateCut','eclipseSpin'].includes(String(shot.effect||''));
+          ctx.filter = shadowSwordFx ? 'brightness(0)' : 'grayscale(1) brightness(.16) contrast(2.6)';
+          ctx.globalAlpha = shadowSwordFx ? .96 : .88;
+        }
 
         if (shot.effect === 'errorPacket') {
           const p = progress;
@@ -25973,6 +25983,12 @@ function requestGachaDraw(count) {
         mpCtx.lineCap = 'round';
         mpCtx.lineJoin = 'round';
   
+        // 온라인에서도 그림자분신술의 무기는 완전 검정으로 표시합니다.
+        if (unit._shadowCloneVisual) {
+          mpCtx.filter = 'brightness(0)';
+          mpCtx.shadowColor = '#000000';
+        }
+
         if (unit.unitId === 'starterArcher' || unit.unitId === 'windRanger') {
           const wind = unit.unitId === 'windRanger';
           mpCtx.strokeStyle = wind ? '#8ff4bd' : '#d49a55';
@@ -26079,7 +26095,7 @@ function requestGachaDraw(count) {
     if (unit.unitId === 'cherrySamurai') mpCtx.rotate(mpSamuraiRenderRotation(unit, Date.now()));
     if(placedHasTrait(unit,'shadowClone')){
       const a=Number.isFinite(Number(unit.shadowCloneAngle))?Number(unit.shadowCloneAngle):Number(unit.angle||0);
-      const cloneUnit={...unit,angle:a,attackAnimation:Number(unit.shadowCloneAttackAnimation||0),attackMode:unit.shadowCloneAttackMode||unit.attackMode};
+      const cloneUnit={...unit,angle:a,attackAnimation:Number(unit.shadowCloneAttackAnimation||0),attackMode:unit.shadowCloneAttackMode||unit.attackMode,_shadowCloneVisual:true};
       mpCtx.save();mpCtx.translate(-Math.cos(a)*27,-Math.sin(a)*27+8);mpCtx.scale(.97,.97);mpCtx.globalAlpha=.46+Math.min(.18,Number(unit.shadowClonePulse||0)*.35);mpCtx.filter='grayscale(1) brightness(.08) contrast(2.4)';mpDetailStandingUnitBody(cloneUnit,time);mpDetailAimedUnitWeapon(cloneUnit,data,time);mpCtx.restore();
     }
     mpDetailStandingUnitBody(unit, time);
@@ -26445,7 +26461,11 @@ function requestGachaDraw(count) {
       mpCtx.save();
       mpCtx.lineCap = 'round';
       mpCtx.lineJoin = 'round';
-      if(fx.shadowClone){mpCtx.filter='grayscale(1) brightness(.16) contrast(2.6)';mpCtx.globalAlpha=.88;}
+      if(fx.shadowClone){
+        const shadowSwordFx = ['royalWave','royalSwordWave','sakuraWave','sakuraMelee','sakuraIssen','sakuraUltimateCut','steelSlash','eclipseSpin'].includes(String(fx.kind||''));
+        mpCtx.filter = shadowSwordFx ? 'brightness(0)' : 'grayscale(1) brightness(.16) contrast(2.6)';
+        mpCtx.globalAlpha = shadowSwordFx ? .96 : .88;
+      }
 
       if (fx.kind === 'errorPacket') {
         const p=progress,flicker=.72+.28*Math.abs(Math.sin(p*31+Number(fx.seed||0))),bladeLen=50+Math.sin(p*Math.PI)*15;

@@ -7635,7 +7635,7 @@ button {
   </div>
 
   <script>
-console.log("[ADMIN REMOVE BUILD V3] 2026-08-19-admin-remove-fix-v3");
+console.log("[ADMIN REMOVE BUILD V3] 2026-08-19-stage3-unlock-llama-v1");
     window.BIDULGY_BUILD_VERSION = '2026-08-19-admin-remove-fix-v3';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
@@ -7770,6 +7770,23 @@ const GOLEM_MENU_SVG = `
   <circle cx="116" cy="47" r="4" fill="#8ef7ff"/><circle cx="145" cy="47" r="4" fill="#8ef7ff"/>
 </svg>`;
 
+const LLAMA_MENU_SVG = `
+<svg viewBox="0 0 260 185" aria-hidden="true" focusable="false" style="width:100%;height:100%;overflow:visible">
+  <defs>
+    <linearGradient id="llamaFur" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3dfbd"/><stop offset=".55" stop-color="#c99d6a"/><stop offset="1" stop-color="#815636"/></linearGradient>
+  </defs>
+  <ellipse cx="126" cy="160" rx="78" ry="12" fill="rgba(0,0,0,.25)"/>
+  <g stroke="#4b3525" stroke-width="4" stroke-linejoin="round">
+    <ellipse cx="122" cy="102" rx="55" ry="35" fill="url(#llamaFur)"/>
+    <path d="M155 88 Q172 55 176 39 Q180 24 190 28 Q199 31 194 45 L182 87 Z" fill="url(#llamaFur)"/>
+    <path d="M183 34 l-8 -18 l14 10 l8 -16 l1 22" fill="#aa784d"/>
+    <path d="M74 111 L65 157 L82 157 L91 113 Z M109 124 L105 160 L121 160 L127 124 Z M143 124 L148 160 L164 160 L158 119 Z M171 110 L183 156 L198 151 L187 105 Z" fill="#9a6b45"/>
+    <path d="M190 43 q24 3 28 12 q-10 10 -30 7 Z" fill="#d9b486"/>
+  </g>
+  <circle cx="193" cy="42" r="3.8" fill="#151515"/><circle cx="194" cy="41" r="1.2" fill="#fff"/>
+  <path d="M74 92 q-25 -13 -32 1 q15 7 31 10" fill="#c28d5f" stroke="#4b3525" stroke-width="4"/>
+</svg>`;
+
 /*
  * 스테이지 확장 설정
  * 새 스테이지를 만들 때 이 객체에 배경 테마, 등장 적, 웨이브 생성 함수를 추가합니다.
@@ -7828,25 +7845,26 @@ const STAGE_CONFIG = Object.freeze({
   3: {
     id: 3,
     theme: 'desert',
-    name: '붉은 황야',
-    description: '뜨거운 햇빛과 모래바람을 뚫고 방어선을 지켜야 합니다.',
-    menuSubtitle: 'DESERT SIEGE',
-    warningText: '황야의 적 접근 중 · 사막 방어 준비',
-    menuEnemies: ['황야 비둘기', '돌진 비둘기', '모래 폭군'],
-    menuEnemyArt: () => REALISTIC_PIGEON_SVG,
+    name: '황야',
+    description: '메마른 황야를 가로질러 라마 군단이 몰려옵니다.\n침 공격과 회피를 버티며 방어선을 지켜내세요!',
+    menuSubtitle: 'LLAMA OUTBREAK',
+    warningText: '라마 무리 접근 중 · 황야 방어 준비',
+    menuEnemies: ['라마', '해적 라마', '오라 라마', '치명적인 라마'],
+    menuEnemyArt: () => LLAMA_MENU_SVG,
     maxWave: 50,
-    startingGold: 320,
+    startingGold: 340,
     baseHp: 2000,
-    stageBonus: 1800,
-    available: false,
+    stageBonus: 3200,
+    available: true,
+    unlockRule: 'stage2Hard',
     battlePalette: {
-      ground: '#c68a43',
-      grassLight: '#e3b96c',
-      grassDark: '#92512d',
-      path: '#8c6045',
-      pathEdge: '#e0af75'
+      ground: '#b77739',
+      grassLight: '#d9a55e',
+      grassDark: '#744128',
+      path: '#815438',
+      pathEdge: '#d7a267'
     },
-    waveFactory: null
+    waveFactory: createStageThreeWaveQueue
   }
 });
 
@@ -7958,11 +7976,15 @@ function isStageUnlocked(stageConfig) {
   if (stageConfig.unlockRule === 'stage1Hard') {
     return hasStageDifficultyClear(1, 'hard') || hasStageDifficultyClear(1, 'veryHard');
   }
+  if (stageConfig.unlockRule === 'stage2Hard') {
+    return hasStageDifficultyClear(2, 'hard') || hasStageDifficultyClear(2, 'veryHard');
+  }
   return Boolean(stageConfig.available);
 }
 
 function stageUnlockText(stageConfig) {
   if (stageConfig?.unlockRule === 'stage1Hard') return '1스테이지 어려움 이상 클리어 시 해금';
+  if (stageConfig?.unlockRule === 'stage2Hard') return '2스테이지 어려움 이상 클리어 시 해금';
   return '아직 준비 중';
 }
 
@@ -12292,8 +12314,97 @@ function requestGachaDraw(count) {
       return Array.from({ length: count }, (_, index) => makeStageTwoNormalSpec(wave, index, count));
     }
 
+    function makeStageThreeNormalSpec(wave) {
+      return {
+        type: 'normal', variant: 'llama', name: '라마', icon: '🦙',
+        health: 350, speed: Math.min(82, 52 + wave * .42), radius: 22,
+        reward: 30 + Math.floor(wave / 5),
+        llamaSpitInterval: wave >= 35 ? 3 : 0,
+        llamaSpitTimer: wave >= 35 ? 3 + Math.random() * .8 : 0,
+        llamaSpitCount: 1, llamaStunDuration: 2, llamaSpitRange: 330
+      };
+    }
+
+    function createStageThreeWaveQueue(wave) {
+      if (wave === 15) {
+        return [{
+          type: 'pirateLlamaBoss', variant: 'llama', name: '해적 라마', icon: '🦙',
+          health: 2000, speed: 48, radius: 34, reward: 650, evadeChance: .50
+        }];
+      }
+      if (wave === 35) {
+        return [{
+          type: 'auraLlamaBoss', variant: 'llama', name: '오라 라마', icon: '🦙',
+          health: 70000, speed: 43, radius: 43, reward: 2600,
+          llamaSpitInterval: 3, llamaSpitTimer: 1.4, llamaSpitCount: 3,
+          llamaStunDuration: 2, llamaSpitRange: 390,
+          llamaDashInterval: 3, llamaDashTimer: 3, llamaDashDistance: 105
+        }];
+      }
+      if (wave === 50) {
+        return [{
+          type: 'deadlyLlamaBoss', variant: 'llama', name: '치명적인 라마', icon: '🦙',
+          health: 10000, speed: 49, radius: 47, reward: 4200, evadeChance: .75,
+          llamaSpitInterval: 1, llamaSpitTimer: .55, llamaSpitCount: 1,
+          llamaStunDuration: 2, llamaSpitRange: 430
+        }];
+      }
+      const count = Math.min(26, 8 + Math.floor((wave - 1) / 2.8));
+      return Array.from({ length: count }, () => makeStageThreeNormalSpec(wave));
+    }
+
     function isStageTwoBattle() {
       return Number(battle?.stage || selectedStage) === 2;
+    }
+
+    function isStageThreeBattle() {
+      return Number(battle?.stage || selectedStage) === 3;
+    }
+
+    function stageEnemyLabel(stageId = battle?.stage) {
+      if (Number(stageId) === 2) return '골렘';
+      if (Number(stageId) === 3) return '라마';
+      return '비둘기';
+    }
+
+    function advanceEnemyAlongPath(enemy, distance) {
+      let remaining = Math.max(0, Number(distance || 0));
+      while (remaining > .1 && enemy.targetIndex < path.length) {
+        const target = path[enemy.targetIndex];
+        if (!target) break;
+        const dx = target.x - enemy.x, dy = target.y - enemy.y;
+        const d = Math.hypot(dx, dy);
+        if (d <= remaining + .5) {
+          enemy.x = target.x; enemy.y = target.y; enemy.targetIndex += 1; remaining -= d;
+        } else {
+          enemy.x += dx / Math.max(.001, d) * remaining;
+          enemy.y += dy / Math.max(.001, d) * remaining;
+          remaining = 0;
+        }
+      }
+    }
+
+    function llamaSpitAtUnits(enemy, count = 1) {
+      if (!battle || !enemy || enemy.dead) return 0;
+      const range = Number(enemy.llamaSpitRange || 330);
+      const candidates = battle.placedUnits
+        .filter(unit => !UNIT_DATA[unit.unitId]?.stunImmune)
+        .map(unit => ({ unit, d: Math.hypot(unit.x - enemy.x, unit.y - enemy.y) }))
+        .filter(item => item.d <= range)
+        .sort((a, b) => a.d - b.d);
+      const targets = candidates.slice(0, Math.max(0, Number(count || 1)));
+      for (const { unit } of targets) {
+        unit.stunRemaining = Math.max(Number(unit.stunRemaining || 0), Number(enemy.llamaStunDuration || 2));
+        battle.shots.push({
+          x1: enemy.x, y1: enemy.y - enemy.radius * .35, x2: unit.x, y2: unit.y,
+          life: .36, maxLife: .36, effect: 'llamaSpit', color: '#b7f36b', seed: Math.random() * 1000
+        });
+      }
+      if (targets.length) {
+        enemy.llamaSpitAnim = .42;
+        setBattleMessage(`${enemy.name}의 침 공격! 유닛 ${targets.length}명이 ${Number(enemy.llamaStunDuration || 2)}초 기절했습니다.`);
+      }
+      return targets.length;
     }
 
     function addBattleDirtPile(x, y, options = {}) {
@@ -12381,6 +12492,16 @@ function requestGachaDraw(count) {
           '<p>🔥 화염 마도사는 이 맵에서 공격 피해가 1/2로 감소</p>',
           '<p>💎 소환석 보상은 1스테이지의 2.5배</p>'
         ].join('');
+      } else if (battle.stage === 3) {
+        title.textContent = '🏜️ 황야 · 맵 정보';
+        body.innerHTML = [
+          '<p>일반 라마 기본 HP 350</p>',
+          '<p>15웨이브 해적 라마 · 공격 50% 회피</p>',
+          '<p>35웨이브 오라 라마 · 3초마다 돌진 + 가까운 유닛 최대 3명 침 기절</p>',
+          '<p>35웨이브부터 일반 라마도 3초마다 침 공격</p>',
+          '<p>50웨이브 치명적인 라마 · 공격 75% 회피 + 1초마다 2초 기절 침</p>',
+          '<p>기절 면역 유닛은 라마의 침 공격 대상에서 제외됩니다.</p>'
+        ].join('');
       } else {
         title.textContent = '🌿 햇살 초원 · 맵 정보';
         body.innerHTML = '<p>비둘기 침공을 막는 50웨이브 방어전입니다.</p><p>난이도에 따른 적 HP와 보상 배율이 그대로 적용됩니다.</p>';
@@ -12459,6 +12580,10 @@ function requestGachaDraw(count) {
           waveState.spawnTimer = 1.6;
         }
         else if (wave === 50) { bossName = '크리스탈 골렘'; message = '최종 보스 크리스탈 골렘 등장! 8방향 보석과 크리스탈 보호막을 사용합니다.'; }
+      } else if (battle.stage === 3) {
+        if (wave === 15) { bossName = '해적 라마'; message = '해적 라마 등장! 공격의 50%를 잔상과 함께 회피합니다.'; }
+        else if (wave === 35) { bossName = '오라 라마'; message = '오라 라마 등장! 3초마다 돌진하고 가까운 유닛 최대 3명에게 기절 침을 뱉습니다.'; }
+        else if (wave === 50) { bossName = '치명적인 라마'; message = '최종 보스 치명적인 라마! 75% 회피 + 1초마다 2초 기절 침을 사용합니다.'; }
       } else if (wave === 10) {
         bossName = '비둘기 브라더스';
         message = '비둘기 브라더스 5마리가 뭉쳐서 등장합니다!';
@@ -12813,7 +12938,12 @@ function requestGachaDraw(count) {
         soilRevived: false,
         reviveCount: 0,
         crystalShotTimer: Number(spec.crystalShotTimer || 0),
-        crystalShieldTimer: Number(spec.crystalShieldTimer || 0)
+        crystalShieldTimer: Number(spec.crystalShieldTimer || 0),
+        llamaSpitTimer: Number(spec.llamaSpitTimer || 0),
+        llamaDashTimer: Number(spec.llamaDashTimer || 0),
+        llamaSpitAnim: 0,
+        llamaDodgeAnim: 0,
+        evadeTextRemaining: 0
       });
 
       waveState.spawned += 1;
@@ -12922,7 +13052,28 @@ function requestGachaDraw(count) {
       enemy.chillRemaining = Math.max(0, Number(enemy.chillRemaining || 0) - dt);
       enemy.hardFreezeRemaining = Math.max(0, Number(enemy.hardFreezeRemaining || 0) - dt);
       enemy.errorCorruptedRemaining = Math.max(0, Number(enemy.errorCorruptedRemaining || 0) - dt);
+      enemy.evadeTextRemaining = Math.max(0, Number(enemy.evadeTextRemaining || 0) - dt);
+      enemy.llamaDodgeAnim = Math.max(0, Number(enemy.llamaDodgeAnim || 0) - dt);
+      enemy.llamaSpitAnim = Math.max(0, Number(enemy.llamaSpitAnim || 0) - dt);
       if (enemy.chillRemaining <= 0) enemy.chillStacks = 0;
+
+      if (isStageThreeBattle() && Number(enemy.llamaSpitInterval || 0) > 0) {
+        enemy.llamaSpitTimer = Number(enemy.llamaSpitTimer || enemy.llamaSpitInterval) - dt;
+        if (enemy.llamaSpitTimer <= 0) {
+          llamaSpitAtUnits(enemy, Number(enemy.llamaSpitCount || 1));
+          enemy.llamaSpitTimer += Number(enemy.llamaSpitInterval || 3);
+        }
+      }
+      if (isStageThreeBattle() && Number(enemy.llamaDashInterval || 0) > 0) {
+        enemy.llamaDashTimer = Number(enemy.llamaDashTimer || enemy.llamaDashInterval) - dt;
+        if (enemy.llamaDashTimer <= 0) {
+          const oldX = enemy.x, oldY = enemy.y;
+          advanceEnemyAlongPath(enemy, Number(enemy.llamaDashDistance || 105));
+          battle.shots.push({x1:oldX,y1:oldY,x2:enemy.x,y2:enemy.y,life:.42,maxLife:.42,effect:'llamaDash',color:'#f3d19b',seed:Math.random()*1000});
+          enemy.llamaDashAnim = .45;
+          enemy.llamaDashTimer += Number(enemy.llamaDashInterval || 3);
+        }
+      }
 
       if (Number(enemy.burnRemaining || 0) > 0) {
         enemy.burnRemaining = Math.max(0, Number(enemy.burnRemaining || 0) - dt);
@@ -13052,7 +13203,7 @@ function requestGachaDraw(count) {
           endBattle(false, '거점 성의 HP가 모두 소진되었습니다.');
         } else {
           setBattleMessage(
-            `${battle.stage === 2 ? '골렘' : '비둘기'}이 거점에 도달했습니다. 남은 HP에 비례해 거점 피해 ${baseDamage}!`
+            `${stageEnemyLabel()}이 거점에 도달했습니다. 남은 HP에 비례해 거점 피해 ${baseDamage}!`
           );
         }
         return;
@@ -13796,6 +13947,14 @@ function requestGachaDraw(count) {
     function applyDamageToEnemy(enemy, damage) {
       if (!enemy || enemy.dead || enemy.soilPileState || Number(enemy.reviveInvulnerableRemaining || 0) > 0) return false;
 
+      const evadeChance = Math.max(0, Math.min(.95, Number(enemy.evadeChance || 0)));
+      if (evadeChance > 0 && Math.random() < evadeChance) {
+        enemy.evadeTextRemaining = .52;
+        enemy.llamaDodgeAnim = .34;
+        enemy.llamaDodgeSide = Math.random() < .5 ? -1 : 1;
+        return false;
+      }
+
       let remainingDamage = Math.max(0, Number(damage || 0));
       if (Number(enemy.errorCorruptedRemaining || 0) > 0 && remainingDamage > 0) {
         remainingDamage *= Number(UNIT_DATA.errorEntity?.corruptDamageTakenMultiplier || 1.35);
@@ -13851,7 +14010,9 @@ function requestGachaDraw(count) {
         addBattleDirtPile(enemy.x, enemy.y, { radius: enemy.radius + 4 });
       }
 
-      if ((battle.stage === 1 && enemy.type === 'awakenedKing') || (battle.stage === 2 && enemy.type === 'crystalGolemBoss')) {
+      if ((battle.stage === 1 && enemy.type === 'awakenedKing') ||
+          (battle.stage === 2 && enemy.type === 'crystalGolemBoss') ||
+          (battle.stage === 3 && enemy.type === 'deadlyLlamaBoss')) {
         battle.finalBossDefeated = true;
       }
 
@@ -15304,7 +15465,7 @@ function requestGachaDraw(count) {
           grantWaveClearReward(waveState);
         } else if (!battle.ended) {
           setBattleMessage(
-            `웨이브 ${waveState.wave} 종료: 탈출한 ${battle.stage === 2 ? '골렘' : '비둘기'}이 있어 완전 클리어 보상과 스킵 충전은 없습니다.`
+            `웨이브 ${waveState.wave} 종료: 탈출한 ${stageEnemyLabel()}이 있어 완전 클리어 보상과 스킵 충전은 없습니다.`
           );
         }
       });
@@ -17038,6 +17199,37 @@ function requestGachaDraw(count) {
       drawDetailedGolem(ctx, enemy, x, y, time, performance.now(), false, false);
     }
 
+    function drawCanvasLlama(enemy, x, y, time) {
+      const r = Number(enemy.radius || 22);
+      const phase = time * .006 + Number(enemy.wingPhase || 0);
+      const step = Math.sin(phase * 2.2);
+      const heading = Number(enemy.heading || 0);
+      const facing = Math.cos(heading) < 0 ? -1 : 1;
+      const dodge = Number(enemy.llamaDodgeAnim || 0) > 0 ? Number(enemy.llamaDodgeSide || 1) * Math.sin(Math.min(1, enemy.llamaDodgeAnim / .34) * Math.PI) * r * .42 : 0;
+      const spit = Number(enemy.llamaSpitAnim || 0) > 0 ? Math.sin(Math.min(1, enemy.llamaSpitAnim / .42) * Math.PI) : 0;
+      const boss = enemy.type !== 'normal';
+      ctx.save(); ctx.translate(x, y); ctx.scale(facing, 1);
+      ctx.fillStyle='rgba(0,0,0,.28)';ctx.beginPath();ctx.ellipse(0,r*.72,r*1.15,r*.28,0,0,Math.PI*2);ctx.fill();
+      // 짧고 단단한 네 다리
+      ctx.strokeStyle='#70462c';ctx.lineWidth=Math.max(5,r*.22);ctx.lineCap='round';
+      for(const [lx,off] of [[-r*.55,step],[-r*.18,-step],[r*.22,step],[r*.52,-step]]){ctx.beginPath();ctx.moveTo(lx,r*.22);ctx.lineTo(lx+off*r*.10,r*.76);ctx.stroke();}
+      // 털 많은 몸통
+      const fur=ctx.createLinearGradient(-r,-r*.5,r,r*.55);fur.addColorStop(0,boss?'#dfb97d':'#e7cfaa');fur.addColorStop(.55,boss?'#b77a45':'#c89b69');fur.addColorStop(1,'#6f4328');ctx.fillStyle=fur;ctx.strokeStyle='#4c301f';ctx.lineWidth=2.4;ctx.beginPath();ctx.ellipse(-r*.08,0,r*1.02,r*.67,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+      // 긴 목과 머리, 회피 시 머리만 크게 젖힘
+      ctx.save();ctx.translate(r*.55 + dodge, -r*.12);ctx.rotate(-.18 - spit*.16 + dodge/r*.22);
+      ctx.fillStyle=fur;ctx.strokeStyle='#4c301f';ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(0,r*.20);ctx.quadraticCurveTo(r*.14,-r*.75,r*.28,-r*1.18);ctx.lineTo(r*.60,-r*1.10);ctx.quadraticCurveTo(r*.45,-r*.55,r*.38,r*.12);ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.beginPath();ctx.ellipse(r*.58,-r*1.08,r*.42,r*.28,-.08,0,Math.PI*2);ctx.fill();ctx.stroke();
+      // 귀
+      ctx.beginPath();ctx.moveTo(r*.43,-r*1.28);ctx.lineTo(r*.33,-r*1.70);ctx.lineTo(r*.58,-r*1.34);ctx.closePath();ctx.fill();ctx.stroke();ctx.beginPath();ctx.moveTo(r*.66,-r*1.27);ctx.lineTo(r*.82,-r*1.62);ctx.lineTo(r*.78,-r*1.25);ctx.closePath();ctx.fill();ctx.stroke();
+      // 눈과 코
+      ctx.fillStyle='#101010';ctx.beginPath();ctx.arc(r*.67,-r*1.13,Math.max(2,r*.065),0,Math.PI*2);ctx.fill();ctx.fillStyle='#2b1b14';ctx.beginPath();ctx.ellipse(r*.94,-r*1.03,r*.10,r*.07,0,0,Math.PI*2);ctx.fill();
+      if(enemy.type==='pirateLlamaBoss'){ctx.fillStyle='#171717';ctx.beginPath();ctx.ellipse(r*.67,-r*1.13,r*.18,r*.13,-.15,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#171717';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(r*.5,-r*1.28);ctx.lineTo(r*.86,-r*.98);ctx.stroke();}
+      if(enemy.type==='auraLlamaBoss'||enemy.type==='deadlyLlamaBoss'){ctx.shadowBlur=16;ctx.shadowColor=enemy.type==='deadlyLlamaBoss'?'#ff3b3b':'#d39cff';ctx.strokeStyle=enemy.type==='deadlyLlamaBoss'?'rgba(255,65,65,.8)':'rgba(207,156,255,.82)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(r*.55,-r*1.10,r*.52,0,Math.PI*2);ctx.stroke();ctx.shadowBlur=0;}
+      ctx.restore();
+      if (Number(enemy.llamaDashAnim || 0) > 0) {ctx.globalAlpha=.35;for(let i=1;i<=3;i++){ctx.fillStyle='#f0c68f';ctx.beginPath();ctx.ellipse(-i*r*.55,0,r*.55,r*.42,0,0,Math.PI*2);ctx.fill();}}
+      ctx.restore();
+    }
+
     function drawEnemy(enemy, time) {
       const formation = enemy.type === 'brother'
         ? BROTHER_FORMATION[enemy.groupIndex] || { x: 0, y: 0 }
@@ -17075,7 +17267,9 @@ function requestGachaDraw(count) {
         ctx.fill();
       }
 
+      const isLlama = battle?.stage === 3 || enemy.variant === 'llama' || /Llama/i.test(enemy.type || '');
       if (isGolem) drawCanvasGolem(enemy, drawX, drawY, time);
+      else if (isLlama) drawCanvasLlama(enemy, drawX, drawY, time);
       else { drawCanvasPigeon(enemy, drawX, drawY, time); drawKnightPigeonArmor(enemy, drawX, drawY, time); }
 
       if (enemy.timeFieldRemaining > 0) {
@@ -17125,6 +17319,9 @@ function requestGachaDraw(count) {
         ctx.save();ctx.translate(drawX,drawY);ctx.globalCompositeOperation='lighter';ctx.strokeStyle='rgba(0,255,102,.62)';ctx.lineWidth=2;ctx.setLineDash([6,3,2,4]);ctx.beginPath();ctx.arc(0,0,enemy.radius+10+Math.sin(time*.018)*3,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
         for(let i=0;i<5;i++){const a=time*.006+i*1.257,d=enemy.radius+12+(i%2)*6;ctx.fillStyle=i%2?'rgba(0,255,102,.72)':'rgba(0,0,0,.88)';ctx.fillRect(Math.cos(a)*d-3,Math.sin(a)*d-2,7+(i%3)*3,4);}
         ctx.restore();
+      }
+      if (Number(enemy.evadeTextRemaining || 0) > 0) {
+        const a=Math.min(1,Number(enemy.evadeTextRemaining||0)/.52);ctx.save();ctx.font='900 14px Arial,sans-serif';ctx.textAlign='center';ctx.fillStyle=`rgba(255,245,190,${a})`;ctx.shadowBlur=10;ctx.shadowColor='#fff2a0';ctx.fillText('회피',drawX,drawY-enemy.radius-48-(1-a)*15);ctx.restore();
       }
 
       if (enemy.timeStunRemaining > 0 && enemy.timeStunSource === 'chrono') {
@@ -17222,15 +17419,21 @@ function requestGachaDraw(count) {
 
       ctx.fillStyle = '#202736';
       ctx.fillRect(drawX - barWidth / 2, barY, barWidth, barHeight);
-      ctx.fillStyle = enemy.type === 'crystalGolemBoss'
-        ? '#67e8f9'
-        : enemy.type === 'combinedSoilGolemBoss'
-          ? '#a97850'
-          : enemy.type === 'awakenedKing'
-            ? '#ef4444'
-            : enemy.type === 'king'
-              ? '#facc15'
-              : '#45df7d';
+      ctx.fillStyle = enemy.type === 'deadlyLlamaBoss'
+        ? '#ff4545'
+        : enemy.type === 'auraLlamaBoss'
+          ? '#c084fc'
+          : enemy.type === 'pirateLlamaBoss'
+            ? '#f59e0b'
+            : enemy.type === 'crystalGolemBoss'
+              ? '#67e8f9'
+              : enemy.type === 'combinedSoilGolemBoss'
+                ? '#a97850'
+                : enemy.type === 'awakenedKing'
+                  ? '#ef4444'
+                  : enemy.type === 'king'
+                    ? '#facc15'
+                    : '#45df7d';
       ctx.fillRect(drawX - barWidth / 2, barY, barWidth * ratio, barHeight);
       if (Number(enemy.shield || 0) > 0) {
         const sr=Math.max(0,Math.min(1,Number(enemy.shield||0)/Math.max(1,Number(enemy.shieldMax||enemy.shield||1))));
@@ -20056,6 +20259,13 @@ function requestGachaDraw(count) {
             ctx.beginPath(); ctx.ellipse(Math.cos(a)*r, Math.sin(a)*r*.65, 2, 4, a, 0, Math.PI*2); ctx.fill();
           }
           ctx.restore();
+        } else if (shot.effect === 'llamaSpit') {
+          const p=Math.sin(progress*Math.PI);ctx.save();ctx.globalCompositeOperation='lighter';
+          const sx=shot.x1+(shot.x2-shot.x1)*progress,sy=shot.y1+(shot.y2-shot.y1)*progress;
+          ctx.strokeStyle=`rgba(177,243,107,${.45*p})`;ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.quadraticCurveTo((shot.x1+shot.x2)/2,Math.min(shot.y1,shot.y2)-28,sx,sy);ctx.stroke();
+          const gg=ctx.createRadialGradient(sx,sy,1,sx,sy,9);gg.addColorStop(0,'rgba(245,255,210,.95)');gg.addColorStop(.35,'rgba(167,236,82,.9)');gg.addColorStop(1,'rgba(76,130,28,0)');ctx.fillStyle=gg;ctx.beginPath();ctx.arc(sx,sy,9,0,Math.PI*2);ctx.fill();ctx.restore();
+        } else if (shot.effect === 'llamaDash') {
+          const p=Math.sin(progress*Math.PI);ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle=`rgba(242,203,151,${.55*p})`;ctx.lineWidth=18;ctx.setLineDash([18,12]);ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.lineTo(shot.x2,shot.y2);ctx.stroke();ctx.setLineDash([]);for(let i=0;i<8;i++){const q=i/7,px=shot.x1+(shot.x2-shot.x1)*q,py=shot.y1+(shot.y2-shot.y1)*q;ctx.fillStyle=`rgba(220,170,105,${.35*p})`;ctx.beginPath();ctx.arc(px,py+10,3+(i%3),0,Math.PI*2);ctx.fill();}ctx.restore();
         } else if (shot.effect === 'phoenixBreath') {
           const pulse=Math.sin(progress*Math.PI),radius=Number(shot.radius||205),half=(Number(shot.coneAngle||78)*Math.PI/180)/2;
           ctx.save();ctx.translate(shot.x1,shot.y1);ctx.rotate(shot.angle);ctx.globalCompositeOperation='lighter';

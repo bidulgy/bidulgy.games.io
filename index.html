@@ -7259,6 +7259,17 @@ button {
             </div>
 
             <div class="admin-action-box">
+              <strong>💠 유닛 조각 지급</strong>
+              <select id="adminFragmentUnitSelect"></select>
+              <input id="adminFragmentGrantCountInput" type="number" inputmode="numeric" min="1" max="10000000" step="1" value="1" />
+              <input id="adminFragmentGrantReasonInput" type="text" maxlength="120" placeholder="사유 (필수)" value="관리자 유닛 조각 지급" />
+              <div class="admin-action-row">
+                <span class="muted">보유 유닛 대상 · 1~10,000,000개</span>
+                <button id="adminFragmentGrantBtn" type="button">지급</button>
+              </div>
+            </div>
+
+            <div class="admin-action-box">
               <strong>🎲 주사위 지급</strong>
               <select id="adminDiceGrantSelect"></select>
               <input id="adminDiceGrantCountInput" type="number" inputmode="numeric" min="1" max="1000" step="1" value="1" />
@@ -7775,8 +7786,8 @@ button {
   </div>
 
   <script>
-console.log("[TRAIT BUILD] 2026-08-19-trait-auto-shadow-v3");
-    window.BIDULGY_BUILD_VERSION = '2026-08-19-trait-auto-shadow-v3';
+console.log("[TRAIT BUILD] 2026-08-19-admin-fragment-10m-v1");
+    window.BIDULGY_BUILD_VERSION = '2026-08-19-admin-fragment-10m-v1';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -8460,6 +8471,7 @@ function applyStagePreview(stageId = selectedStage) {
         damage: 1350,
         range: 340,
         fireInterval: 0.52,
+        stunImmune: true,
         footprintRadius: 108,
         multiplayerFootprintRadius: 90,
         chargePerHit: 2,
@@ -8492,7 +8504,7 @@ function applyStagePreview(stageId = selectedStage) {
         deadeyeWidth: 58,
         deadeyeMultiplier: 18,
         color: '#f4f4f5',
-        skillText: 'Charge 최대 100(1당 피해 +0.5%, 최대 +50%). 스킬 적중과 도발로 Style이 E→D→C→B→A→V로 상승합니다. Taunt는 Charge +15. Darkmatter Barrage 발동 시 크기가 다른 공허 분신 6체를 전장에 9초간 소환하며 각 분신이 독립적으로 적을 공격합니다. Impale은 전방 관통 찌르기, Cut Into Nothing은 대형 원형 공허참입니다. Charge 30 이상에서는 Voidrush가 연속 참격과 돌진을 사용하고, Style V에서는 Deadeye가 자동 발동해 초강력 관통 저격을 사용합니다.'
+        skillText: '기절 면역. Charge 최대 100(1당 피해 +0.5%, 최대 +50%). 스킬 적중과 도발로 Style이 E→D→C→B→A→V로 상승합니다. Taunt는 Charge +15. Darkmatter Barrage 발동 시 크기가 다른 공허 분신 6체를 전장에 9초간 소환하며 각 분신이 독립적으로 적을 공격합니다. Impale은 전방 관통 찌르기, Cut Into Nothing은 대형 원형 공허참입니다. Charge 30 이상에서는 Voidrush가 연속 참격과 돌진을 사용하고, Style V에서는 Deadeye가 자동 발동해 초강력 관통 저격을 사용합니다.'
       },
       errorEntity: {
         id: 'errorEntity',
@@ -9216,9 +9228,27 @@ function applyStagePreview(stageId = selectedStage) {
           if (Array.isArray(player.deck)) {
             player.deck = player.deck.map(id => id === unitId ? null : id);
           }
-        } else if (local && localCopies > cap) {
-          local.copies = cap;
-          changed = true;
+        } else {
+          if (!local) {
+            player.ownedUnits[unitId] = {
+              level: 1,
+              fragments: Math.max(0, Math.floor(Number(info?.fragmentsMin || 0))),
+              copies: Math.max(1, cap),
+              traits: [null, null]
+            };
+            changed = true;
+          } else {
+            if (localCopies > cap) {
+              local.copies = cap;
+              changed = true;
+            }
+            const fragmentFloor = Math.max(0, Math.floor(Number(info?.fragmentsMin || 0)));
+            const localFragments = Math.max(0, Math.floor(Number(local.fragments || 0)));
+            if (fragmentFloor > localFragments) {
+              local.fragments = fragmentFloor;
+              changed = true;
+            }
+          }
         }
       });
     }
@@ -9567,6 +9597,32 @@ function populateAdminUnitSelect() {
   });
 }
 
+function populateAdminFragmentGrantSelect(ownedUnits = {}) {
+  const select = document.querySelector('#adminFragmentUnitSelect');
+  if (!select) return;
+  select.innerHTML = '';
+  const ids = Object.keys(ownedUnits || {}).filter(unitId => UNIT_DATA[unitId]);
+  if (!ids.length) {
+    const option = document.createElement('option');
+    option.value = '';
+    option.textContent = '보유 유닛 없음';
+    select.appendChild(option);
+    select.disabled = true;
+    return;
+  }
+  select.disabled = false;
+  ids
+    .sort((a,b) => String(UNIT_DATA[a].name).localeCompare(String(UNIT_DATA[b].name), 'ko'))
+    .forEach(unitId => {
+      const unit = UNIT_DATA[unitId];
+      const fragments = Math.max(0, Math.floor(Number(ownedUnits?.[unitId]?.fragments || 0)));
+      const option = document.createElement('option');
+      option.value = unitId;
+      option.textContent = `${unit.icon} ${unit.name} · 조각 ${fragments.toLocaleString()}개`;
+      select.appendChild(option);
+    });
+}
+
 function populateAdminDiceGrantSelect() {
   const select = document.querySelector('#adminDiceGrantSelect');
   if (!select) return;
@@ -9695,6 +9751,8 @@ function renderAdminPlayer(data) {
   const ownedUnits = data.ownedUnits && typeof data.ownedUnits === 'object'
     ? data.ownedUnits
     : {};
+
+  populateAdminFragmentGrantSelect(ownedUnits);
 
   const unitChips = Object.entries(ownedUnits)
     .filter(([unitId]) => UNIT_DATA[unitId])
@@ -9994,6 +10052,62 @@ async function removeAdminDice(rarityKey, count, removeAll = false) {
       ? ' · Supabase에서 admin_inventory_remove_update.sql을 다시 실행하세요.'
       : '';
     setAdminStatus(`주사위 삭제 실패: ${message}${hint}`, 'error');
+  }
+}
+
+async function grantAdminFragments() {
+  if (!adminSelectedUserId) {
+    setAdminStatus('먼저 관리할 유저를 선택하세요.', 'error');
+    return;
+  }
+
+  const unitId = document.querySelector('#adminFragmentUnitSelect')?.value;
+  const count = Math.trunc(Number(document.querySelector('#adminFragmentGrantCountInput')?.value));
+  const reason = document.querySelector('#adminFragmentGrantReasonInput')?.value?.trim() || '';
+  const unit = UNIT_DATA[unitId];
+
+  if (!unit || !Number.isFinite(count) || count < 1 || count > 10000000) {
+    setAdminStatus('지급할 유닛 조각과 1~10,000,000 사이의 수량을 확인하세요.', 'error');
+    return;
+  }
+  if (reason.length < 2) {
+    setAdminStatus('관리 사유를 2자 이상 입력하세요.', 'error');
+    return;
+  }
+  if (!confirm(`${adminSelectedUsernameValue}에게 ${unit.name} 조각 ${count.toLocaleString()}개를 지급하시겠습니까?`)) return;
+
+  const button = document.querySelector('#adminFragmentGrantBtn');
+  button.disabled = true;
+  try {
+    const { data, error } = await supabaseClient.rpc('admin_grant_unit_fragments_v1', {
+      p_user_id: adminSelectedUserId,
+      p_unit_id: unitId,
+      p_count: count,
+      p_reason: reason
+    });
+    if (error) throw error;
+
+    const after = Math.max(0, Math.floor(Number(data?.fragments || 0)));
+    setAdminStatus(`${unit.name} 조각 ${count.toLocaleString()}개 지급 완료 · 현재 ${after.toLocaleString()}개`, 'good');
+    document.querySelector('#adminFragmentGrantCountInput').value = '1';
+    await loadAdminPlayer(adminSelectedUserId);
+    await loadAdminLogs();
+
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (user?.id === adminSelectedUserId) {
+      await loadPlayer(user);
+      renderInventory();
+      if (typeof renderTraitsScreen === 'function') renderTraitsScreen();
+    }
+  } catch (error) {
+    console.error('관리자 유닛 조각 지급 실패:', error);
+    const message = String(error?.message || '알 수 없는 오류');
+    const hint = /admin_grant_unit_fragments_v1|schema cache|function|PGRST202/i.test(message)
+      ? ' · Supabase SQL Editor에서 admin_fragment_grant_10m.sql을 전체 실행하세요.'
+      : '';
+    setAdminStatus(`유닛 조각 지급 실패: ${message}${hint}`, 'error');
+  } finally {
+    button.disabled = false;
   }
 }
 
@@ -13476,7 +13590,7 @@ function requestGachaDraw(count) {
         moneyTree: '공격 없음 · 기본 1초마다 15골드 · 업그레이드 시 최대 0.7초마다 25골드',
         phoenix: '0.01초 불꽃 숨결 범위공격 · 20초마다 6초 둔화+화상 · 젖음에는 화상 불가 · 60초마다 10초간 사거리×2',
         cherrySamurai: `기절 면역 · 근접 120 전방 180° 범위 · 원거리 ${unit.range} 검기 2발(각 적중지 반경 ${unit.swordWaveSplashRadius || 35} 범위) · 벚꽃 영역 ${unit.blossomAuraRange || 170}: 0.1초마다 ${unit.blossomAuraDamage || 10} 피해 · 일반 3타 후 일섬(폭 ${unit.issenWidth || 60}·거리 ${unit.issenRange || 200})×5 · 일섬 4회마다 오의 각 참격×10 · 10번째 공격마다 적 전체 3초 표식 후 ×5`,
-        eden: 'Charge 최대100(1당 피해 +0.5%) · 14타마다 크기가 다른 공허 분신 6체를 9초 소환(각자 자동 공격) · 6타 Impale · 8타 Cut Into Nothing · 11타 Taunt(+15 Charge) · Charge30↑ Voidrush · Style V Deadeye · 맵당 1기',
+        eden: '기절 면역 · Charge 최대100(1당 피해 +0.5%) · 14타마다 크기가 다른 공허 분신 6체를 9초 소환(각자 자동 공격) · 6타 Impale · 8타 Cut Into Nothing · 11타 Taunt(+15 Charge) · Charge30↑ Voidrush · Style V Deadeye · 맵당 1기',
         errorEntity: `<span class="error-live-identity"><span class="rarity-error">ERROR</span><span>//</span><span class="error-live-code">${makeErrorLiveCode()}</span></span><br>DATA CUT: 평타 5발 · 적 1명이면 5발 집중 · 각 탄환 적중지 반경58 범위피해/오류스택 · 5스택 CORRUPTED · 5타 404 · 10타 ROLLBACK · 25타 SYSTEM FAILURE · 50타 DELETE · 기절 면역`,
         eclipse: `평타 적중지 반경 ${unit.normalSlashRadius || 55} 범위 베기 · 처치 시 5% 성장(공격력·공속 +2%, 회전참 범위 +5%) · 타격 시 5% 블랙홀 · 4타마다 회전참×3 + 1초 기절 · 기절 면역`,
         astralChronomancer: '다중발사(2/3/4발) · 공전탄 최대 10발 · 각 탄환 20% 황금 시간기절 · 60회 공격마다 사거리 300 시간정지 5초'
@@ -21848,6 +21962,7 @@ function requestGachaDraw(count) {
     document.querySelector('#adminRefreshPlayerBtn').addEventListener('click', () => loadAdminPlayer());
     document.querySelector('#adminGemApplyBtn').addEventListener('click', applyAdminGemAdjustment);
     document.querySelector('#adminUnitGrantBtn').addEventListener('click', grantAdminUnit);
+    document.querySelector('#adminFragmentGrantBtn')?.addEventListener('click', grantAdminFragments);
     document.querySelector('#adminDiceGrantBtn').addEventListener('click', grantAdminDice);
     document.querySelector('#adminInventoryUnitTakeBtn').addEventListener('click', takeAdminInventoryUnit);
     document.querySelector('#adminRefreshRoomsBtn').addEventListener('click', loadAdminRooms);
@@ -27209,3 +27324,4 @@ function requestGachaDraw(count) {
 })();
 </script>\n</body>
 </html>
+git add .

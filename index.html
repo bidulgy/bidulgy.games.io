@@ -6867,10 +6867,17 @@ button {
 
 /* ===== 2026-08-19 UI/COOP/PROFILE bundle ===== */
 .menu-exp-track i,.profile-exp-track i{
-  background:linear-gradient(90deg,#ffd31f,#ffe86a,#ffbf00)!important;
-  box-shadow:0 0 10px rgba(255,211,31,.72),0 0 18px rgba(255,191,0,.32)!important;
-  transition:width .55s cubic-bezier(.2,.8,.2,1)!important;
+  position:relative;
+  background:linear-gradient(90deg,#ffb900,#ffd400 42%,#fff27b 72%,#ffbf00)!important;
+  background-size:180% 100%!important;
+  box-shadow:0 0 12px rgba(255,211,31,.95),0 0 22px rgba(255,191,0,.48)!important;
+  transition:width .72s cubic-bezier(.15,.85,.2,1)!important;
+  animation:profileExpGoldFlow .9s linear infinite;
 }
+.menu-exp-track i::after,.profile-exp-track i::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 0 38%,rgba(255,255,255,.85) 48%,transparent 59%);transform:translateX(-120%);animation:profileExpShine 1.25s ease-in-out infinite}
+@keyframes profileExpGoldFlow{to{background-position:-180% 0}}
+@keyframes profileExpShine{55%,100%{transform:translateX(150%)}}
+.exp-gain-pop{animation:expGainPop .75s ease both!important}@keyframes expGainPop{0%{filter:brightness(1)}35%{filter:brightness(1.9);box-shadow:0 0 25px #ffd400}100%{filter:brightness(1)}}
 .admin-screen{overflow-x:auto!important;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;}
 .admin-screen .card,.admin-screen .admin-content,.admin-screen .admin-player-panel{min-width:0;}
 .admin-screen table,.admin-screen .admin-table{min-width:760px;}
@@ -7715,8 +7722,8 @@ button {
   </div>
 
   <script>
-console.log("[LLAMA VISUAL BUILD] 2026-08-19-coop-ui-infinite-social-v4");
-    window.BIDULGY_BUILD_VERSION = '2026-08-19-coop-ui-infinite-social-v4';
+console.log("[LLAMA VISUAL BUILD] 2026-08-19-infinite-social-exp-v5");
+    window.BIDULGY_BUILD_VERSION = '2026-08-19-infinite-social-exp-v5';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -8655,6 +8662,11 @@ function applyStagePreview(stageId = selectedStage) {
     function showScreen(name) {
       Object.values(screens).forEach(screen => screen.classList.add('hidden'));
       screens[name].classList.remove('hidden');
+      if (name === 'menu') {
+        setTimeout(() => {
+          if (typeof window.refreshSocialMenu === 'function') window.refreshSocialMenu();
+        }, 60);
+      }
     }
 
 
@@ -12212,22 +12224,96 @@ function requestGachaDraw(count) {
       return Math.max(1, Math.round(100 * Math.pow(1.1, Math.floor((w - 1) / 10))));
     }
 
+    function infiniteThemeStageForWave(wave) {
+      const w = Math.max(1, Math.floor(Number(wave) || 1));
+      return (Math.floor((w - 1) / 50) % 3) + 1;
+    }
+
+    function infiniteLocalWave(wave) {
+      return ((Math.max(1, Math.floor(Number(wave) || 1)) - 1) % 50) + 1;
+    }
+
+    function infiniteThemeLabel(wave) {
+      const stageId = infiniteThemeStageForWave(wave);
+      return STAGE_CONFIG[stageId]?.name || '햇살 초원';
+    }
+
+    function makeInfiniteBossSpec(themeStage, localWave, hp, wave) {
+      const slot = Math.max(1, Math.min(5, Math.floor(localWave / 10)));
+      const ratios = [10, 30, 60, 100, 150];
+      const ratio = ratios[slot - 1];
+      const bossHp = Math.max(1, Math.round(hp * ratio));
+      const reward = 100 + Math.floor(wave / 10) * 18;
+
+      if (themeStage === 2) {
+        if (slot === 1) return {type:'gemGolemBoss',name:'보석 골렘',icon:'💎',health:bossHp,speed:34,radius:42,reward,abilityInterval:10,abilityTimer:10,shieldRatio:.5};
+        if (slot === 2 || slot === 3) return {type:'giantGolemBoss',name:'거대 골렘',icon:'🗿',health:bossHp,speed:31,radius:52,reward,abilityInterval:5,abilityTimer:5,abilityRange:165};
+        if (slot === 4) return {type:'combinedSoilGolemBoss',name:'합쳐진 흙 골렘',icon:'🗿',health:bossHp,speed:30,radius:55,reward,reviveChance:.45,reviveHpRatio:.75};
+        return {type:'crystalGolemBoss',name:'크리스탈 골렘',icon:'💠',health:bossHp,speed:28,radius:58,reward,crystalShotTimer:5,crystalShotInterval:5,crystalShieldTimer:10,crystalShieldInterval:10,shieldRatio:.30,abilityRange:360};
+      }
+
+      if (themeStage === 3) {
+        if (slot === 1 || slot === 3) return {type:'pirateLlamaBoss',variant:'llama',name:'해적 라마',icon:'🦙',health:bossHp,speed:50,radius:35,reward,evadeChance:.50};
+        if (slot === 2 || slot === 4) return {type:'auraLlamaBoss',variant:'llama',name:'오라마',icon:'🦙',health:bossHp,speed:45,radius:44,reward,llamaSpitInterval:3,llamaSpitTimer:1.4,llamaSpitCount:3,llamaStunDuration:2,llamaSpitRange:390,llamaDashInterval:3,llamaDashTimer:3,llamaDashDistance:105};
+        return {type:'deadlyLlamaBoss',variant:'llama',name:'치명적인 라마',icon:'🦙',health:bossHp,speed:50,radius:48,reward,evadeChance:.75,llamaSpitInterval:1,llamaSpitTimer:.55,llamaSpitCount:1,llamaStunDuration:2,llamaSpitRange:430,llamaDashInterval:3,llamaDashTimer:2.2,llamaDashDistance:145};
+      }
+
+      if (slot === 1) return {type:'brother',name:'비둘기 브라더스',icon:'🕊️',health:bossHp,speed:50,radius:29,reward,groupIndex:0};
+      if (slot === 2) return {type:'knight',name:'기사 비둘기',icon:'🕊️',health:bossHp,speed:47,radius:31,reward,abilityInterval:12,abilityTimer:12};
+      if (slot === 3 || slot === 4) return {type:'king',name:'킹 비둘기',icon:'🕊️',health:bossHp,speed:43,radius:35,reward,abilityInterval:5,abilityTimer:5,abilityRange:190};
+      return {type:'awakenedKing',name:'각성한 킹 비둘기',icon:'🕊️',health:bossHp,speed:46,radius:39,reward,abilityInterval:3,abilityTimer:3,abilityRange:235};
+    }
+
     function createInfiniteWaveQueue(wave) {
       const hp = infiniteBaseHp(wave);
-      const count = wave % 10 === 0 ? Math.min(14, 4 + Math.floor(wave / 4)) : Math.min(28, 6 + Math.floor(wave / 2));
-      const specs = Array.from({length:count}, () => ({
-        type:'normal', name:'비둘기', icon:'🕊️', health:hp,
-        speed:Math.min(96,52+wave*.55), radius:18, reward:18+Math.floor(wave/5)*2
-      }));
-      if (wave % 10 === 0) {
-        const idx = ((wave / 10) - 1) % 4;
-        if (idx === 0) {
-          for (let i=0;i<5;i++) specs.push({type:'brother',name:'비둘기 브라더스',icon:'🕊️',health:Math.round(hp*10),speed:50,radius:28,reward:90,groupIndex:i});
-        } else if (idx === 1) specs.push({type:'knight',name:'기사 비둘기',icon:'🕊️',health:Math.round(hp*50),speed:47,radius:31,reward:360,abilityInterval:12,abilityTimer:12});
-        else if (idx === 2) specs.push({type:'king',name:'킹 비둘기',icon:'🕊️',health:Math.round(hp*150),speed:43,radius:35,reward:720,abilityInterval:5,abilityTimer:5,abilityRange:190});
-        else specs.push({type:'awakenedKing',name:'각성한 킹 비둘기',icon:'🕊️',health:Math.round(hp*225),speed:46,radius:39,reward:1200,abilityInterval:3,abilityTimer:3,abilityRange:235});
+      const themeStage = infiniteThemeStageForWave(wave);
+      const localWave = infiniteLocalWave(wave);
+      const count = localWave % 10 === 0 ? Math.min(15, 5 + Math.floor(wave / 5)) : Math.min(30, 7 + Math.floor(wave / 2));
+      const specs = [];
+
+      for (let i = 0; i < count; i += 1) {
+        if (themeStage === 2) {
+          const speedy = localWave >= 11 && i % 8 === 0;
+          specs.push({
+            type:'normal', variant:speedy?'speedyGolem':'golem', name:speedy?'스피디 골렘':'골렘', icon:'🗿',
+            health:hp, speed:speedy?Math.min(150, 92 + wave*.18):Math.min(78, 42 + wave*.10), radius:speedy?18:22,
+            reward:20+Math.floor(wave/8), rolling:speedy
+          });
+        } else if (themeStage === 3) {
+          const spit = localWave >= 35;
+          specs.push({
+            type:'normal',variant:'llama',name:'라마',icon:'🦙',health:hp,
+            speed:Math.min(92,54+wave*.12),radius:22,reward:22+Math.floor(wave/8),
+            llamaSpitInterval:spit?3:0,llamaSpitTimer:spit?2.4+Math.random():0,llamaSpitCount:1,llamaStunDuration:2,llamaSpitRange:330
+          });
+        } else {
+          specs.push({type:'normal',name:'비둘기',icon:'🕊️',health:hp,speed:Math.min(104,52+wave*.22),radius:18,reward:18+Math.floor(wave/8)});
+        }
       }
+
+      if (localWave % 10 === 0) specs.push(makeInfiniteBossSpec(themeStage, localWave, hp, wave));
       return specs;
+    }
+
+    function applyInfiniteThemeForWave(wave) {
+      if (!battle?.isInfinite) return;
+      const themeStage = infiniteThemeStageForWave(wave);
+      const changed = Number(battle.infiniteThemeStage || 1) !== themeStage;
+      battle.infiniteThemeStage = themeStage;
+      const theme = STAGE_CONFIG[themeStage] || STAGE_CONFIG[1];
+      battle.stageConfig = {
+        ...theme,
+        id: themeStage,
+        name: `개인 무한모드 · ${theme.name}`,
+        maxWave: 999999,
+        stageBonus: 0,
+        rewardMultiplier: 0,
+        waveFactory: createInfiniteWaveQueue
+      };
+      if (changed) {
+        setBattleMessage(`무한모드 지역 변경 · ${theme.name}`);
+        updateStageMapInfo();
+      }
     }
 
     function createInfiniteBattle() {
@@ -12236,15 +12322,15 @@ function requestGachaDraw(count) {
       if (typeof resetLeaveBattleButton === 'function') resetLeaveBattleButton();
       void enterBattlePresentation(); ensureBattleAudio();
       const base = STAGE_CONFIG[1];
-      const stageConfig = {...base, id:1, name:'개인 무한모드', maxWave:999999, stageBonus:0, rewardMultiplier:0, waveFactory:createInfiniteWaveQueue};
+      const stageConfig = {...base, id:1, name:'개인 무한모드 · 햇살 초원', maxWave:999999, stageBonus:0, rewardMultiplier:0, waveFactory:createInfiniteWaveQueue};
       const difficulty = DIFFICULTY_CONFIG.normal;
       battle = {
-        runId: makeBattleRunId(), stage:1, stageConfig, isInfinite:true,
+        runId: makeBattleRunId(), stage:1, stageConfig, isInfinite:true, infiniteThemeStage:1,
         difficultyKey:'normal', difficulty, gold:600, lives:2000, baseMaxHp:2000,
         baseHitFlash:0, baseDamageText:0, baseDamageTextTimer:0, wave:1, maxWave:999999,
         highestLaunchedWave:0, kills:0, waveDelay:0, activeWaves:[], launchedWaves:{}, enemies:[], placedUnits:[], shots:[], delayedAttacks:[], blackHoles:[], eclipseBursts:[], edenMinions:[], dirtPiles:[], dirtConverge:null,
         selectedDeployUnitId:deck[0], selectedPlacedUnit:null, ended:false, resultShown:false, finalBossDefeated:false, bossEscaped:false,
-        earnedWaveGems:0, skipUses:0, maxSkipUses:3, autoWaveSkip:false, autoSkipTimer:.8,
+        earnedWaveGems:0, skipUses:0, maxSkipUses:20, autoWaveSkip:false, autoSkipTimer:.8,
         placementPreview:{active:false,x:0,y:0,valid:false,pointerType:'mouse'}
       };
       renderBattleDeck(); showScreen('battle'); updateStageMapInfo();
@@ -12537,17 +12623,23 @@ function requestGachaDraw(count) {
       return Array.from({ length: count }, () => makeStageThreeNormalSpec(wave));
     }
 
+    function currentBattleThemeStage() {
+      if (battle?.isInfinite) return Number(battle.infiniteThemeStage || infiniteThemeStageForWave(battle.wave || 1));
+      return Number(battle?.stage || selectedStage);
+    }
+
     function isStageTwoBattle() {
-      return Number(battle?.stage || selectedStage) === 2;
+      return currentBattleThemeStage() === 2;
     }
 
     function isStageThreeBattle() {
-      return Number(battle?.stage || selectedStage) === 3;
+      return currentBattleThemeStage() === 3;
     }
 
-    function stageEnemyLabel(stageId = battle?.stage) {
-      if (Number(stageId) === 2) return '골렘';
-      if (Number(stageId) === 3) return '라마';
+    function stageEnemyLabel(stageId = null) {
+      const id = stageId == null ? currentBattleThemeStage() : Number(stageId);
+      if (id === 2) return '골렘';
+      if (id === 3) return '라마';
       return '비둘기';
     }
 
@@ -12666,8 +12758,10 @@ function requestGachaDraw(count) {
       const body = document.querySelector('#stageMapInfoBody');
       if (!title || !body || !battle) return;
       if (battle.isInfinite) {
-        title.textContent = '♾️ 개인 무한모드 · 맵 정보';
-        body.innerHTML = '<p>일반 적 HP 100에서 시작 · 10웨이브마다 ×1.1 복리 증가</p><p>10웨이브마다 보스 등장 · 보스 HP도 해당 웨이브 일반 적 HP의 고정 배수로 증가</p><p>웨이브 제한 없음 · 기지가 파괴될 때까지 진행</p>';
+        const themeStage = Number(battle.infiniteThemeStage || infiniteThemeStageForWave(battle.wave || 1));
+        const theme = STAGE_CONFIG[themeStage] || STAGE_CONFIG[1];
+        title.textContent = `♾️ 개인 무한모드 · ${theme.name}`;
+        body.innerHTML = `<p>현재 지역: ${theme.name} · 50웨이브마다 초원 → 수정 동굴 → 황야 순환</p><p>일반 적 HP 100 시작 · 10웨이브마다 ×1.1 복리</p><p>10웨이브마다 지역 보스 · HP는 일반 적 HP의 고정 배수</p><p>스킵 버튼 1회 = 1웨이브 추가 · 연속 최대 20회</p>`;
       } else if (battle.stage === 2) {
         title.textContent = '💎 수정 동굴 · 맵 정보';
         body.innerHTML = [
@@ -12735,6 +12829,7 @@ function requestGachaDraw(count) {
       if (wave < 1 || wave > battle.maxWave) return false;
       if (battle.launchedWaves[wave]) return false;
 
+      if (battle.isInfinite) applyInfiniteThemeForWave(wave);
       const queue = createWaveQueue(wave);
       const waveState = {
         wave,
@@ -12758,11 +12853,12 @@ function requestGachaDraw(count) {
       let bossName = '';
 
       if (battle.isInfinite) {
-        if (wave % 10 === 0) {
-          const names=['비둘기 브라더스','기사 비둘기','킹 비둘기','각성한 킹 비둘기'];
-          bossName=names[((wave/10)-1)%4];
-          message=`무한모드 WAVE ${wave} · ${bossName} 등장! 일반 적 HP ${infiniteBaseHp(wave).toLocaleString()}`;
-        } else message=`무한모드 WAVE ${wave} · 일반 적 HP ${infiniteBaseHp(wave).toLocaleString()}`;
+        const themeName = infiniteThemeLabel(wave);
+        const boss = queue.find(spec => spec.type !== 'normal');
+        if (boss) {
+          bossName = boss.name || '보스';
+          message=`무한모드 WAVE ${wave} · ${themeName} · ${bossName} 등장! 일반 적 HP ${infiniteBaseHp(wave).toLocaleString()}`;
+        } else message=`무한모드 WAVE ${wave} · ${themeName} · ${stageEnemyLabel()} HP ${infiniteBaseHp(wave).toLocaleString()}`;
       } else if (battle.stage === 2) {
         if (wave === 10) { bossName = '보석이 박힌 골렘'; message = '보석 골렘 등장! 10초마다 최대체력 50%의 보호막을 만듭니다.'; }
         else if (wave === 30) { bossName = '거대 골렘'; message = '거대 골렘 등장! 5초마다 지면을 내려쳐 구르는 골렘을 소환하고 주변 유닛을 기절시킵니다.'; }
@@ -12823,7 +12919,9 @@ function requestGachaDraw(count) {
             ? '2스테이지 39웨이브는 스킵할 수 없습니다. 흙 골렘 20마리를 직접 상대해야 합니다.'
             : battle.highestLaunchedWave >= battle.maxWave
               ? '50웨이브가 이미 시작되었습니다.'
-              : '연속 웨이브 스킵 3회를 모두 사용했습니다. 진행 중인 웨이브를 클리어하면 다시 사용할 수 있습니다.';
+              : battle.isInfinite
+                ? '무한모드 연속 스킵 20회를 모두 사용했습니다. 진행 중인 웨이브를 하나 클리어하면 다시 사용할 수 있습니다.'
+                : '연속 웨이브 스킵 3회를 모두 사용했습니다. 진행 중인 웨이브를 클리어하면 다시 사용할 수 있습니다.';
           setBattleMessage(reason);
         }
         updateWaveSkipUi();
@@ -12866,9 +12964,17 @@ function requestGachaDraw(count) {
         ? Math.max(0, battle.maxSkipUses - battle.skipUses)
         : 0;
 
-      remaining.textContent = usesLeft;
+      remaining.textContent = battle?.isInfinite ? `${usesLeft} / 20` : usesLeft;
       skipButton.disabled = !canSkipWave();
-
+      if (battle?.isInfinite) {
+        skipButton.childNodes[0].nodeValue = '웨이브 +1 ';
+        autoButton.classList.add('hidden');
+        autoButton.disabled = true;
+        battle.autoWaveSkip = false;
+        return;
+      }
+      skipButton.childNodes[0].nodeValue = '웨이브 스킵 ';
+      autoButton.classList.remove('hidden');
       const autoActive = Boolean(battle?.autoWaveSkip);
       autoButton.classList.toggle('auto-active', autoActive);
       autoButton.setAttribute('aria-pressed', String(autoActive));
@@ -15758,8 +15864,9 @@ function requestGachaDraw(count) {
     }
 
     function drawBackground() {
-      const palette = battle?.stageConfig?.battlePalette || STAGE_CONFIG[1].battlePalette;
-      if (battle?.stage === 2) {
+      const visualStage = battle?.isInfinite ? Number(battle.infiniteThemeStage || 1) : Number(battle?.stage || 1);
+      const palette = battle?.stageConfig?.battlePalette || STAGE_CONFIG[visualStage]?.battlePalette || STAGE_CONFIG[1].battlePalette;
+      if (visualStage === 2) {
         const cave = ctx.createRadialGradient(canvas.width*.52, canvas.height*.44, 45, canvas.width*.52, canvas.height*.44, 600);
         cave.addColorStop(0, '#344152'); cave.addColorStop(.52, '#202733'); cave.addColorStop(1, '#0a0d13');
         ctx.fillStyle = cave; ctx.fillRect(0,0,canvas.width,canvas.height);
@@ -15776,6 +15883,22 @@ function requestGachaDraw(count) {
         }
         ctx.globalAlpha=.22; ctx.strokeStyle='#8da0b7';
         for(let i=0;i<16;i+=1){const y=18+i*34;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(130+(i%4)*90,y+10);ctx.stroke();ctx.beginPath();ctx.moveTo(canvas.width,y+4);ctx.lineTo(canvas.width-120-(i%5)*70,y+18);ctx.stroke();}
+        ctx.restore();
+        return;
+      }
+      if (visualStage === 3) {
+        const skyDust = ctx.createLinearGradient(0,0,0,canvas.height);
+        skyDust.addColorStop(0,'#9b6338'); skyDust.addColorStop(.48,'#b9793f'); skyDust.addColorStop(1,'#6b3b27');
+        ctx.fillStyle=skyDust; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.save();
+        ctx.globalAlpha=.22;
+        for(let i=0;i<48;i++){
+          const x=(i*149+37)%canvas.width, y=(i*71+19)%canvas.height;
+          ctx.fillStyle=i%3===0?'#e0b06a':'#6b3d28';
+          ctx.beginPath(); ctx.ellipse(x,y,7+(i%5)*3,3+(i%4),i*.37,0,Math.PI*2); ctx.fill();
+        }
+        ctx.globalAlpha=.16; ctx.strokeStyle='#f0c27a'; ctx.lineWidth=2;
+        for(let i=0;i<14;i++){const y=25+i*39;ctx.beginPath();ctx.moveTo((i*97)%180,y);ctx.bezierCurveTo(260,y-20,520,y+24,canvas.width,y-5);ctx.stroke();}
         ctx.restore();
         return;
       }
@@ -17590,7 +17713,7 @@ function requestGachaDraw(count) {
       const drawX = enemy.x + formation.x;
       const drawY = enemy.y + formation.y;
       const isBoss = enemy.type !== 'normal';
-      const isGolem = battle?.stage === 2 || Boolean(enemy.variant?.includes('Golem')) || /Golem/.test(enemy.type || '');
+      const isGolem = isStageTwoBattle() || Boolean(enemy.variant?.includes('Golem')) || /Golem/i.test(enemy.type || '');
 
       ctx.save();
 
@@ -20908,7 +21031,7 @@ function requestGachaDraw(count) {
 
     function getStageAdjustedUnitDamage(unitData) {
       const base = Number(unitData?.damage || 0);
-      if (battle?.stage === 2 && unitData?.id === 'flameWizard') return base * .5;
+      if (isStageTwoBattle() && unitData?.id === 'flameWizard') return base * .5;
       return base;
     }
 
@@ -26079,6 +26202,9 @@ function requestGachaDraw(count) {
   const STAGE_WAVE_XP = { 1:2, 2:3, 3:4 };
   let socialProfile = null;
   let socialNicknameRequired = false;
+  let pendingExpAnimation = null;
+  let expBarAnimationTimer = 0;
+  let expBarAnimating = false;
 
   window.getPlayerLevelFromExp = function(expValue) {
     const exp = Math.max(0, Number(expValue || 0));
@@ -26099,6 +26225,39 @@ function requestGachaDraw(count) {
   }
   function safeText(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
+  function setExpBarPct(pct, immediate=false) {
+    const safe=Math.max(0,Math.min(100,Number(pct||0)));
+    ['#menuExpFill','#profileExpFill'].forEach(sel=>{
+      const el=document.querySelector(sel); if(!el)return;
+      if(immediate){el.style.transition='none';el.style.width=`${safe}%`;void el.offsetWidth;el.style.transition='';}
+      else el.style.width=`${safe}%`;
+    });
+  }
+
+  function animatePendingExpGain() {
+    if(!pendingExpAnimation || expBarAnimating) return;
+    const menu=document.querySelector('#menuScreen');
+    if(!menu || menu.classList.contains('hidden')) return;
+    const job=pendingExpAnimation; pendingExpAnimation=null; expBarAnimating=true;
+    clearTimeout(expBarAnimationTimer);
+    const before=levelInfo(job.from), after=levelInfo(job.to);
+    const fills=['#menuExpFill','#profileExpFill'].map(x=>document.querySelector(x)).filter(Boolean);
+    fills.forEach(el=>el.classList.add('exp-gain-pop'));
+    if(before.level===after.level){
+      setExpBarPct(before.pct,true);
+      requestAnimationFrame(()=>requestAnimationFrame(()=>setExpBarPct(after.pct,false)));
+      expBarAnimationTimer=setTimeout(()=>{expBarAnimating=false;fills.forEach(el=>el.classList.remove('exp-gain-pop'));setExpBarPct(after.pct,true);},820);
+    }else{
+      setExpBarPct(before.pct,true);
+      requestAnimationFrame(()=>requestAnimationFrame(()=>setExpBarPct(100,false)));
+      expBarAnimationTimer=setTimeout(()=>{
+        setExpBarPct(0,true);
+        requestAnimationFrame(()=>requestAnimationFrame(()=>setExpBarPct(after.pct,false)));
+        expBarAnimationTimer=setTimeout(()=>{expBarAnimating=false;fills.forEach(el=>el.classList.remove('exp-gain-pop'));setExpBarPct(after.pct,true);},760);
+      },760);
+    }
+  }
+
   window.refreshSocialMenu = function() {
     if (!player) return;
     player.exp = Math.max(0, Number(player.exp || 0));
@@ -26115,19 +26274,27 @@ function requestGachaDraw(count) {
     set('#profileGameId',`ID · ${currentUsername || '-'}`); set('#profileLevelText',`LEVEL ${info.level}`);
     set('#profileExpText',next?`${fmtExp(info.exp)} / ${fmtExp(target)} EXP`:`${fmtExp(info.exp)} EXP · MAX`);
     set('#profileNextLevelText',next?`다음 레벨까지 ${fmtExp(Math.max(0,next.exp-info.exp))} EXP`:'최고 레벨에 도달했습니다.');
-    const mf=document.querySelector('#menuExpFill'), pf=document.querySelector('#profileExpFill');
-    if(mf)mf.style.width=`${info.pct}%`; if(pf)pf.style.width=`${info.pct}%`;
+    if(!expBarAnimating && !pendingExpAnimation) setExpBarPct(info.pct,true);
     const input=document.querySelector('#nicknameInput'); if(input && document.activeElement!==input) input.value=nickname===currentUsername && !player.nickname?'':nickname;
+    setTimeout(animatePendingExpGain,40);
   };
 
   async function rpc(name,args={}) {
     const {data,error}=await supabaseClient.rpc(name,args);
     if(error) throw error; return data;
   }
+  async function rpcFallback(primary, fallback, args={}) {
+    try { return await rpc(primary,args); }
+    catch(e){
+      const msg=String(e?.message||'');
+      if(fallback && /function|schema cache|Could not find|PGRST202|does not exist/i.test(msg)) return rpc(fallback,args);
+      throw e;
+    }
+  }
   async function syncProgress() {
     if(!player) return;
     try {
-      const rows=await rpc('sync_game_profile_progress',{p_exp:Number(player.exp||0)});
+      const rows=await rpcFallback('sync_game_profile_progress_v4','sync_game_profile_progress',{p_exp:Number(player.exp||0)});
       const row=Array.isArray(rows)?rows[0]:rows;
       if(row){player.exp=Math.max(Number(player.exp||0),Number(row.exp||0));player.level=getPlayerLevelFromExp(player.exp);}
       refreshSocialMenu();
@@ -26136,9 +26303,12 @@ function requestGachaDraw(count) {
   window.awardPlayerExp = function(amount, reason='') {
     if(!player) return 0;
     const gain=Math.max(0,Number(amount||0)); if(gain<=0)return 0;
-    const before=getPlayerLevelFromExp(player.exp||0);
-    player.exp=Math.round((Number(player.exp||0)+gain)*100)/100;
+    const beforeExp=Number(player.exp||0);
+    const before=getPlayerLevelFromExp(beforeExp);
+    player.exp=Math.round((beforeExp+gain)*100)/100;
     player.level=getPlayerLevelFromExp(player.exp);
+    if(pendingExpAnimation) pendingExpAnimation.to=player.exp;
+    else pendingExpAnimation={from:beforeExp,to:player.exp};
     refreshSocialMenu();
     void savePlayer(); void syncProgress();
     if(player.level>before){
@@ -26158,7 +26328,7 @@ function requestGachaDraw(count) {
   async function initializeSocialProfile(forcePrompt=false) {
     if(!player||!currentUsername)return;
     try {
-      const rows=await rpc('ensure_game_profile',{p_username:currentUsername});
+      const rows=await rpc('ensure_game_profile_v4',{});
       socialProfile=Array.isArray(rows)?rows[0]:rows;
       if(socialProfile){
         const serverExp=Number(socialProfile.exp||0), localExp=Number(player.exp||0);
@@ -26193,7 +26363,7 @@ function requestGachaDraw(count) {
     const input=document.querySelector('#nicknameInput'), status=document.querySelector('#nicknameStatus'); const btn=document.querySelector('#saveNicknameBtn');
     const value=(input?.value||'').trim().normalize('NFC'); btn.disabled=true;
     try {
-      const rows=await rpc('set_game_nickname',{p_nickname:value}); socialProfile=Array.isArray(rows)?rows[0]:rows;
+      const rows=await rpcFallback('set_game_nickname_v4','set_game_nickname',{p_nickname:value}); socialProfile=Array.isArray(rows)?rows[0]:rows;
       player.nickname=socialProfile?.nickname||value; socialNicknameRequired=false; document.querySelector('#socialCloseBtn')?.classList.remove('hidden');
       if(status){status.textContent='닉네임을 저장했습니다.';status.className='social-status good';} refreshSocialMenu(); void savePlayer();
     } catch(e){if(status){status.textContent=e.message||String(e);status.className='social-status error';}} finally{btn.disabled=false;}
@@ -26201,7 +26371,7 @@ function requestGachaDraw(count) {
   async function searchFriends(){
     const q=(document.querySelector('#friendSearchInput')?.value||'').trim().normalize('NFC'); const box=document.querySelector('#friendSearchResults'); if(!q){box.innerHTML='<div class="social-empty">닉네임 또는 게임 아이디를 입력하세요.</div>';return;}
     box.innerHTML='<div class="social-empty">검색 중...</div>';
-    try {const rows=await rpc('search_game_profiles',{p_query:q}); renderSearch(Array.isArray(rows)?rows:[]);} catch(e){box.innerHTML=`<div class="social-empty">${safeText(e.message)}</div>`;}
+    try {const rows=await rpcFallback('search_game_profiles_v4','search_game_profiles',{p_query:q}); renderSearch(Array.isArray(rows)?rows:[]);} catch(e){box.innerHTML=`<div class="social-empty">${safeText(e.message)}</div>`;}
   }
   function personName(row){return row.nickname||'닉네임 미설정';}
   function renderSearch(rows){
@@ -26209,7 +26379,7 @@ function requestGachaDraw(count) {
     box.innerHTML=rows.map(r=>`<div class="social-person"><div class="social-person-copy"><strong>${safeText(personName(r))}</strong><small>Lv.${Number(r.level||1)}</small></div><div class="social-person-actions">${r.relation==='friend'?'<button disabled>친구</button>':r.relation==='pending'?'<button disabled>요청 중</button>':`<button class="accept" data-friend-add="${safeText(r.user_id)}">친구 추가</button>`}</div></div>`).join('');
     box.querySelectorAll('[data-friend-add]').forEach(btn=>btn.addEventListener('click',()=>void sendFriend(btn.dataset.friendAdd,btn)));
   }
-  async function sendFriend(id,btn){btn.disabled=true;try{const result=await rpc('send_game_friend_request',{p_target_user_id:id});document.querySelector('#friendStatus').textContent=result==='sent'?'친구 요청을 보냈습니다.':'이미 처리 중인 요청입니다.';await searchFriends();}catch(e){document.querySelector('#friendStatus').textContent=e.message;}finally{btn.disabled=false;}}
+  async function sendFriend(id,btn){btn.disabled=true;try{const result=await rpcFallback('send_game_friend_request_v4','send_game_friend_request',{p_target_user_id:id});document.querySelector('#friendStatus').textContent=result==='sent'?'친구 요청을 보냈습니다.':'이미 처리 중인 요청입니다.';await searchFriends();}catch(e){document.querySelector('#friendStatus').textContent=e.message;}finally{btn.disabled=false;}}
   async function refreshFriendData(silent=false){
     if(!player)return; try{const [reqs,friends]=await Promise.all([rpc('list_game_friend_requests'),rpc('list_game_friends')]);renderRequests(reqs||[]);renderFriends(friends||[]);const badge=document.querySelector('#friendRequestBadge');const n=(reqs||[]).length;if(badge){badge.textContent=n;badge.classList.toggle('hidden',n<=0);}}catch(e){if(!silent){const s=document.querySelector('#friendStatus');if(s)s.textContent=`친구 정보를 불러오지 못했습니다: ${e.message}`;}}
   }

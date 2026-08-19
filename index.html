@@ -6860,6 +6860,10 @@ button {
 
 #adminOwnedUnits,#adminDiceInventory{display:block}
 </style>
+
+<style id="profileFriendsLevelStyle">
+.menu-social-cluster{display:flex;align-items:center;gap:9px;min-width:0}.menu-profile-button{display:flex;align-items:center;gap:10px;min-width:250px;max-width:360px;padding:8px 12px;border:1px solid rgba(129,194,255,.42);border-radius:17px;background:rgba(12,28,50,.82);color:#fff;text-align:left;box-shadow:0 8px 26px rgba(0,0,0,.25)}.menu-profile-avatar,.profile-avatar-large{display:grid;place-items:center;flex:0 0 auto;width:45px;height:45px;border-radius:50%;background:linear-gradient(145deg,#6dd7ff,#5667ff 55%,#b56cff);color:white;font-weight:1000;box-shadow:0 0 18px rgba(96,187,255,.35)}.menu-profile-copy{min-width:0;display:grid;gap:2px;flex:1}.menu-profile-copy strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}.menu-profile-copy small{font-size:10px;color:#c7dbef}.menu-exp-track,.profile-exp-track{display:block;width:100%;height:6px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden}.menu-exp-track i,.profile-exp-track i{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#62e7ff,#7f7cff,#ffd45b);box-shadow:0 0 10px #62e7ff;transition:width .3s ease}.menu-friends-button{position:relative;display:flex;align-items:center;gap:6px;min-height:48px;padding:8px 13px;border:1px solid rgba(255,255,255,.2);border-radius:15px;background:rgba(16,33,55,.82);color:#fff}.social-badge{position:absolute;right:-5px;top:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:99px;background:#ff4968;color:#fff;font-size:11px;line-height:20px;text-align:center}.social-hidden-welcome{display:none}.social-overlay{position:fixed;z-index:10050;inset:0;display:grid;place-items:center;padding:18px;background:rgba(2,7,16,.78);backdrop-filter:blur(10px);overflow:auto;touch-action:pan-y}.social-overlay.hidden{display:none}.social-dialog{position:relative;width:min(650px,96vw);max-height:min(780px,92dvh);overflow:auto;padding:20px;border:1px solid rgba(122,192,255,.35);border-radius:24px;background:linear-gradient(180deg,rgba(24,39,66,.99),rgba(10,18,33,.99));box-shadow:0 26px 90px rgba(0,0,0,.6);color:#fff}.social-close{position:absolute;right:12px;top:10px;z-index:2;width:38px;height:38px;padding:0;border-radius:50%;font-size:25px}.social-tabs{display:flex;gap:8px;padding-right:46px;margin-bottom:16px}.social-tabs button{flex:1;background:#263955;color:#cfe5ff}.social-tabs button.active{background:linear-gradient(135deg,#64cfff,#726cff);color:white}.social-panel h2{margin:8px 0 12px}.profile-hero{display:flex;align-items:center;gap:14px;padding:12px 0}.profile-avatar-large{width:68px;height:68px;font-size:25px}.profile-hero h2{margin:2px 0;font-size:25px}.profile-hero p,.profile-hero small{margin:0;color:#9fb5ce}.profile-level-card{display:grid;gap:7px;margin:10px 0 18px;padding:14px;border:1px solid rgba(255,255,255,.14);border-radius:16px;background:rgba(255,255,255,.05)}.profile-level-card>div:first-child{display:flex;justify-content:space-between;gap:12px}.profile-exp-track{height:10px}.profile-level-card small{color:#aebfd3}.social-label{display:block;margin:6px 0;font-weight:900}.nickname-row,.friend-search-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}.nickname-row input,.friend-search-row input{min-width:0}.social-status{min-height:20px;color:#a9bed5;font-size:12px}.social-status.error{color:#ff8ca1}.social-status.good{color:#83f4bd}.social-section-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:18px 0 8px}.social-section-title button{padding:7px 10px;min-height:34px}.social-list{display:grid;gap:8px}.social-empty{padding:15px;border:1px dashed rgba(255,255,255,.16);border-radius:13px;color:#8fa6bf;text-align:center}.social-person{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 11px;border:1px solid rgba(255,255,255,.13);border-radius:14px;background:rgba(255,255,255,.045)}.social-person-copy{min-width:0}.social-person-copy strong,.social-person-copy small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.social-person-copy small{margin-top:3px;color:#9fb2ca;font-size:11px}.social-person-actions{display:flex;gap:5px;flex:0 0 auto}.social-person-actions button{padding:7px 9px;min-height:34px;font-size:11px}.social-person-actions .danger{background:#632b3b;color:#ffd8df}.social-person-actions .accept{background:#207c61;color:#e7fff6}@media(max-width:720px){.invasion-topbar{align-items:flex-start}.menu-social-cluster{width:100%;flex-wrap:wrap}.menu-profile-button{min-width:0;flex:1 1 210px}.menu-friends-button{flex:0 0 auto}.invasion-resources{width:100%}.social-dialog{padding:16px;max-height:92dvh}.nickname-row,.friend-search-row{grid-template-columns:1fr}.social-person{align-items:flex-start;flex-direction:column}.social-person-actions{width:100%}.social-person-actions button{flex:1}}@media(max-width:390px){.menu-profile-button{width:100%;max-width:none}.menu-friends-button{flex:1;justify-content:center}.menu-profile-copy strong{font-size:13px}.menu-profile-avatar{width:40px;height:40px}.social-overlay{padding:6px}.social-dialog{width:100%;border-radius:18px}.profile-hero h2{font-size:21px}}
+</style>
 </head>
 
 <body>
@@ -6927,13 +6931,19 @@ button {
   </div>
 
   <header class="invasion-topbar">
-    <div class="commander-info">
-      <div class="commander-icon">🛡️</div>
-
-      <div>
-        <span class="commander-label">수비대 지휘관</span>
-        <p id="welcomeText" class="commander-name"></p>
-      </div>
+    <div class="menu-social-cluster">
+      <button id="menuProfileBtn" class="menu-profile-button" type="button" aria-label="프로필 열기">
+        <span id="menuProfileAvatar" class="menu-profile-avatar">P</span>
+        <span class="menu-profile-copy">
+          <strong id="menuNickname">플레이어</strong>
+          <small><span id="menuLevel">Lv.1</span> · <span id="menuExpText">0 / 100 EXP</span></small>
+          <span class="menu-exp-track"><i id="menuExpFill"></i></span>
+        </span>
+      </button>
+      <button id="menuFriendsBtn" class="menu-friends-button" type="button">
+        <span>👥</span><strong>친구</strong><b id="friendRequestBadge" class="social-badge hidden">0</b>
+      </button>
+      <p id="welcomeText" class="social-hidden-welcome"></p>
     </div>
 
     <div class="invasion-resources">
@@ -7081,7 +7091,41 @@ button {
 </section>
 
 
-  <section id="adminScreen" class="screen hidden admin-screen">
+  
+<div id="socialOverlay" class="social-overlay hidden" role="dialog" aria-modal="true">
+  <div class="social-dialog">
+    <button id="socialCloseBtn" class="social-close" type="button" aria-label="닫기">×</button>
+    <div class="social-tabs">
+      <button id="socialProfileTab" class="active" type="button">프로필</button>
+      <button id="socialFriendsTab" type="button">친구</button>
+    </div>
+    <section id="socialProfilePanel" class="social-panel">
+      <div class="profile-hero">
+        <div id="profileAvatarLarge" class="profile-avatar-large">P</div>
+        <div><small>GAME PROFILE</small><h2 id="profileNicknameTitle">플레이어</h2><p id="profileGameId">ID · -</p></div>
+      </div>
+      <div class="profile-level-card">
+        <div><strong id="profileLevelText">LEVEL 1</strong><span id="profileExpText">0 / 100 EXP</span></div>
+        <div class="profile-exp-track"><i id="profileExpFill"></i></div>
+        <small id="profileNextLevelText">다음 레벨까지 100 EXP</small>
+      </div>
+      <label class="social-label" for="nicknameInput">닉네임</label>
+      <div class="nickname-row"><input id="nicknameInput" maxlength="14" placeholder="한글/영문/숫자 2~14자"><button id="saveNicknameBtn" type="button">닉네임 저장</button></div>
+      <p id="nicknameStatus" class="social-status"></p>
+    </section>
+    <section id="socialFriendsPanel" class="social-panel hidden">
+      <h2>친구 추가</h2>
+      <div class="friend-search-row"><input id="friendSearchInput" placeholder="닉네임 또는 게임 아이디"><button id="friendSearchBtn" type="button">검색</button></div>
+      <div id="friendSearchResults" class="social-list"></div>
+      <div class="social-section-title"><strong>받은 요청</strong><button id="friendRefreshBtn" class="secondary" type="button">새로고침</button></div>
+      <div id="friendRequestList" class="social-list"></div>
+      <div class="social-section-title"><strong>친구 목록</strong><span id="friendCountText">0명</span></div>
+      <div id="friendList" class="social-list"></div>
+      <p id="friendStatus" class="social-status"></p>
+    </section>
+  </div>
+</div>
+<section id="adminScreen" class="screen hidden admin-screen">
     <div class="admin-toolbar">
       <div>
         <span class="section-kicker">SERVER ADMINISTRATION</span>
@@ -7635,8 +7679,8 @@ button {
   </div>
 
   <script>
-console.log("[ADMIN REMOVE BUILD V3] 2026-08-19-stage3-unlock-llama-v1");
-    window.BIDULGY_BUILD_VERSION = '2026-08-19-admin-remove-fix-v3';
+console.log("[LLAMA VISUAL BUILD] 2026-08-19-profile-friends-level-v2");
+    window.BIDULGY_BUILD_VERSION = '2026-08-19-profile-friends-level-v2';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -7771,20 +7815,37 @@ const GOLEM_MENU_SVG = `
 </svg>`;
 
 const LLAMA_MENU_SVG = `
-<svg viewBox="0 0 260 185" aria-hidden="true" focusable="false" style="width:100%;height:100%;overflow:visible">
+<svg viewBox="0 0 300 205" aria-hidden="true" focusable="false" style="width:100%;height:100%;overflow:visible">
   <defs>
-    <linearGradient id="llamaFur" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3dfbd"/><stop offset=".55" stop-color="#c99d6a"/><stop offset="1" stop-color="#815636"/></linearGradient>
+    <linearGradient id="llamaFurHi" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff0cf"/><stop offset=".35" stop-color="#e5c08f"/><stop offset=".72" stop-color="#b87948"/><stop offset="1" stop-color="#704026"/>
+    </linearGradient>
+    <linearGradient id="llamaNeckHi" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f3d7aa"/><stop offset="1" stop-color="#a9663d"/>
+    </linearGradient>
+    <radialGradient id="llamaFaceHi" cx="55%" cy="35%" r="75%">
+      <stop offset="0" stop-color="#f9ddb0"/><stop offset="1" stop-color="#a96439"/>
+    </radialGradient>
+    <filter id="llamaShadow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5"/></filter>
   </defs>
-  <ellipse cx="126" cy="160" rx="78" ry="12" fill="rgba(0,0,0,.25)"/>
-  <g stroke="#4b3525" stroke-width="4" stroke-linejoin="round">
-    <ellipse cx="122" cy="102" rx="55" ry="35" fill="url(#llamaFur)"/>
-    <path d="M155 88 Q172 55 176 39 Q180 24 190 28 Q199 31 194 45 L182 87 Z" fill="url(#llamaFur)"/>
-    <path d="M183 34 l-8 -18 l14 10 l8 -16 l1 22" fill="#aa784d"/>
-    <path d="M74 111 L65 157 L82 157 L91 113 Z M109 124 L105 160 L121 160 L127 124 Z M143 124 L148 160 L164 160 L158 119 Z M171 110 L183 156 L198 151 L187 105 Z" fill="#9a6b45"/>
-    <path d="M190 43 q24 3 28 12 q-10 10 -30 7 Z" fill="#d9b486"/>
+  <ellipse cx="144" cy="177" rx="94" ry="14" fill="#2b160c" opacity=".26" filter="url(#llamaShadow)"/>
+  <g stroke="#53331f" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M71 118 Q70 153 66 176 Q73 183 86 178 L95 126 Z" fill="#9b603b"/>
+    <path d="M112 128 Q108 157 110 180 Q119 185 132 179 L135 127 Z" fill="#b17245"/>
+    <path d="M164 127 Q166 158 171 180 Q181 184 191 176 L187 121 Z" fill="#a86741"/>
+    <path d="M200 112 Q208 147 218 171 Q228 173 237 163 L220 105 Z" fill="#8d5133"/>
+    <path d="M78 82 Q108 64 167 68 Q207 73 218 104 Q207 135 166 142 Q105 143 72 122 Q58 102 78 82 Z" fill="url(#llamaFurHi)"/>
+    <path d="M186 88 Q199 61 207 35 Q214 12 230 16 Q246 21 239 43 L221 95 Z" fill="url(#llamaNeckHi)"/>
+    <path d="M216 27 Q230 18 245 27 Q256 37 248 51 Q240 63 216 56 Q204 45 216 27 Z" fill="url(#llamaFaceHi)"/>
+    <path d="M226 21 L220 2 L237 16 L248 0 L247 23" fill="#b16d43"/>
+    <path d="M244 37 Q269 35 281 48 Q267 61 244 57 Z" fill="#d9a878"/>
+    <path d="M73 91 Q48 74 35 87 Q46 104 75 105" fill="#b47749"/>
   </g>
-  <circle cx="193" cy="42" r="3.8" fill="#151515"/><circle cx="194" cy="41" r="1.2" fill="#fff"/>
-  <path d="M74 92 q-25 -13 -32 1 q15 7 31 10" fill="#c28d5f" stroke="#4b3525" stroke-width="4"/>
+  <path d="M90 78 Q83 87 90 93 M108 74 Q101 84 108 90 M127 72 Q119 82 126 89 M151 72 Q143 83 150 91 M176 78 Q168 87 175 95" fill="none" stroke="#fff2d7" stroke-width="4" stroke-linecap="round" opacity=".7"/>
+  <ellipse cx="231" cy="34" rx="5" ry="6" fill="#1b1512"/><circle cx="232.5" cy="32" r="1.4" fill="#fff"/>
+  <ellipse cx="269" cy="49" rx="4" ry="3" fill="#3b2418"/>
+  <path d="M248 53 Q257 58 268 54" fill="none" stroke="#5b3020" stroke-width="2"/>
+  <path d="M63 177 Q75 172 87 178 M108 180 Q121 174 133 179 M169 180 Q181 174 192 177 M217 171 Q228 166 237 163" stroke="#342018" stroke-width="5" stroke-linecap="round"/>
 </svg>`;
 
 /*
@@ -7849,7 +7910,7 @@ const STAGE_CONFIG = Object.freeze({
     description: '메마른 황야를 가로질러 라마 군단이 몰려옵니다.\n침 공격과 회피를 버티며 방어선을 지켜내세요!',
     menuSubtitle: 'LLAMA OUTBREAK',
     warningText: '라마 무리 접근 중 · 황야 방어 준비',
-    menuEnemies: ['라마', '해적 라마', '오라 라마', '치명적인 라마'],
+    menuEnemies: ['라마', '해적 라마', '오라마', '치명적인 라마'],
     menuEnemyArt: () => LLAMA_MENU_SVG,
     maxWave: 50,
     startingGold: 340,
@@ -8567,6 +8628,9 @@ function applyStagePreview(stageId = selectedStage) {
       return {
         gems: 500,
         highestStage: 0,
+        exp: 0,
+        level: 1,
+        nickname: '',
         stageDifficultyClears: {},
         pendingBattleRewards: [],
         ownedUnits: {
@@ -8602,6 +8666,9 @@ function applyStagePreview(stageId = selectedStage) {
 
       if (typeof player.gems !== 'number') player.gems = 500;
       if (typeof player.highestStage !== 'number') player.highestStage = 0;
+      if (!Number.isFinite(Number(player.exp)) || Number(player.exp) < 0) player.exp = 0;
+      if (!Number.isFinite(Number(player.level)) || Number(player.level) < 1) player.level = 1;
+      if (typeof player.nickname !== 'string') player.nickname = '';
       if (!player.stageDifficultyClears || typeof player.stageDifficultyClears !== 'object') player.stageDifficultyClears = {};
       if (!Array.isArray(player.pendingBattleRewards)) {
         player.pendingBattleRewards = [];
@@ -9132,6 +9199,7 @@ async function signup() {
 
   if (loaded) {
     openMenu();
+    if (typeof initializeSocialProfile === 'function') void initializeSocialProfile(true);
   }
 }
 async function login() {
@@ -9181,6 +9249,7 @@ async function login() {
 
   if (loaded) {
     openMenu();
+    if (typeof initializeSocialProfile === 'function') void initializeSocialProfile(false);
   }
 }
 
@@ -9976,6 +10045,7 @@ async function logout() {
 
   if (loaded) {
     openMenu();
+    if (typeof initializeSocialProfile === 'function') void initializeSocialProfile(false);
   }
 }
 
@@ -9988,6 +10058,7 @@ async function logout() {
 
       applyStagePreview(selectedStage);
       showScreen('menu');
+      if (typeof refreshSocialMenu === 'function') refreshSocialMenu();
       void refreshAdminAccess(true);
     }
 
@@ -12334,7 +12405,7 @@ function requestGachaDraw(count) {
       }
       if (wave === 35) {
         return [{
-          type: 'auraLlamaBoss', variant: 'llama', name: '오라 라마', icon: '🦙',
+          type: 'auraLlamaBoss', variant: 'llama', name: '오라마', icon: '🦙',
           health: 70000, speed: 43, radius: 43, reward: 2600,
           llamaSpitInterval: 3, llamaSpitTimer: 1.4, llamaSpitCount: 3,
           llamaStunDuration: 2, llamaSpitRange: 390,
@@ -12346,7 +12417,8 @@ function requestGachaDraw(count) {
           type: 'deadlyLlamaBoss', variant: 'llama', name: '치명적인 라마', icon: '🦙',
           health: 10000, speed: 49, radius: 47, reward: 4200, evadeChance: .75,
           llamaSpitInterval: 1, llamaSpitTimer: .55, llamaSpitCount: 1,
-          llamaStunDuration: 2, llamaSpitRange: 430
+          llamaStunDuration: 2, llamaSpitRange: 430,
+          llamaDashInterval: 3, llamaDashTimer: 2.2, llamaDashDistance: 145
         }];
       }
       const count = Math.min(26, 8 + Math.floor((wave - 1) / 2.8));
@@ -12497,9 +12569,9 @@ function requestGachaDraw(count) {
         body.innerHTML = [
           '<p>일반 라마 기본 HP 350</p>',
           '<p>15웨이브 해적 라마 · 공격 50% 회피</p>',
-          '<p>35웨이브 오라 라마 · 3초마다 돌진 + 가까운 유닛 최대 3명 침 기절</p>',
+          '<p>35웨이브 오라마 · 3초마다 돌진 + 가까운 유닛 최대 3명 침 기절</p>',
           '<p>35웨이브부터 일반 라마도 3초마다 침 공격</p>',
-          '<p>50웨이브 치명적인 라마 · 공격 75% 회피 + 1초마다 2초 기절 침</p>',
+          '<p>50웨이브 치명적인 라마 · 공격 75% 회피 + 1초마다 2초 기절 침 + 3초마다 돌진</p>',
           '<p>기절 면역 유닛은 라마의 침 공격 대상에서 제외됩니다.</p>'
         ].join('');
       } else {
@@ -12582,8 +12654,8 @@ function requestGachaDraw(count) {
         else if (wave === 50) { bossName = '크리스탈 골렘'; message = '최종 보스 크리스탈 골렘 등장! 8방향 보석과 크리스탈 보호막을 사용합니다.'; }
       } else if (battle.stage === 3) {
         if (wave === 15) { bossName = '해적 라마'; message = '해적 라마 등장! 공격의 50%를 잔상과 함께 회피합니다.'; }
-        else if (wave === 35) { bossName = '오라 라마'; message = '오라 라마 등장! 3초마다 돌진하고 가까운 유닛 최대 3명에게 기절 침을 뱉습니다.'; }
-        else if (wave === 50) { bossName = '치명적인 라마'; message = '최종 보스 치명적인 라마! 75% 회피 + 1초마다 2초 기절 침을 사용합니다.'; }
+        else if (wave === 35) { bossName = '오라마'; message = '오라마 등장! 3초마다 돌진하고 가까운 유닛 최대 3명에게 기절 침을 뱉습니다.'; }
+        else if (wave === 50) { bossName = '치명적인 라마'; message = '최종 보스 치명적인 라마! 75% 회피 + 1초마다 2초 기절 침 + 3초마다 돌진을 사용합니다.'; }
       } else if (wave === 10) {
         bossName = '비둘기 브라더스';
         message = '비둘기 브라더스 5마리가 뭉쳐서 등장합니다!';
@@ -15441,6 +15513,10 @@ function requestGachaDraw(count) {
       battle.earnedWaveGems += rewardAmount;
       player.gems += rewardAmount;
       queueBattleReward('wave', battle.stage, waveState.wave, difficulty.key);
+      if (!waveState.profileExpGranted) {
+        waveState.profileExpGranted = true;
+        awardStageWaveExp(battle.stage, difficulty.key, waveState.wave);
+      }
       battle.skipUses = 0;
 
       void savePlayer();
@@ -17201,35 +17277,182 @@ function requestGachaDraw(count) {
 
     function drawCanvasLlama(enemy, x, y, time) {
       const r = Number(enemy.radius || 22);
-      const phase = time * .006 + Number(enemy.wingPhase || 0);
-      const step = Math.sin(phase * 2.2);
+      const phase = time * .0062 + Number(enemy.wingPhase || 0);
+      const gait = Math.sin(phase * 2.25);
+      const gait2 = Math.sin(phase * 2.25 + Math.PI);
       const heading = Number(enemy.heading || 0);
       const facing = Math.cos(heading) < 0 ? -1 : 1;
-      const dodge = Number(enemy.llamaDodgeAnim || 0) > 0 ? Number(enemy.llamaDodgeSide || 1) * Math.sin(Math.min(1, enemy.llamaDodgeAnim / .34) * Math.PI) * r * .42 : 0;
-      const spit = Number(enemy.llamaSpitAnim || 0) > 0 ? Math.sin(Math.min(1, enemy.llamaSpitAnim / .42) * Math.PI) : 0;
+      const isPirate = enemy.type === 'pirateLlamaBoss';
+      const isAura = enemy.type === 'auraLlamaBoss';
+      const isDeadly = enemy.type === 'deadlyLlamaBoss';
       const boss = enemy.type !== 'normal';
-      ctx.save(); ctx.translate(x, y); ctx.scale(facing, 1);
-      ctx.fillStyle='rgba(0,0,0,.28)';ctx.beginPath();ctx.ellipse(0,r*.72,r*1.15,r*.28,0,0,Math.PI*2);ctx.fill();
-      // 짧고 단단한 네 다리
-      ctx.strokeStyle='#70462c';ctx.lineWidth=Math.max(5,r*.22);ctx.lineCap='round';
-      for(const [lx,off] of [[-r*.55,step],[-r*.18,-step],[r*.22,step],[r*.52,-step]]){ctx.beginPath();ctx.moveTo(lx,r*.22);ctx.lineTo(lx+off*r*.10,r*.76);ctx.stroke();}
-      // 털 많은 몸통
-      const fur=ctx.createLinearGradient(-r,-r*.5,r,r*.55);fur.addColorStop(0,boss?'#dfb97d':'#e7cfaa');fur.addColorStop(.55,boss?'#b77a45':'#c89b69');fur.addColorStop(1,'#6f4328');ctx.fillStyle=fur;ctx.strokeStyle='#4c301f';ctx.lineWidth=2.4;ctx.beginPath();ctx.ellipse(-r*.08,0,r*1.02,r*.67,0,0,Math.PI*2);ctx.fill();ctx.stroke();
-      // 긴 목과 머리, 회피 시 머리만 크게 젖힘
-      ctx.save();ctx.translate(r*.55 + dodge, -r*.12);ctx.rotate(-.18 - spit*.16 + dodge/r*.22);
-      ctx.fillStyle=fur;ctx.strokeStyle='#4c301f';ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(0,r*.20);ctx.quadraticCurveTo(r*.14,-r*.75,r*.28,-r*1.18);ctx.lineTo(r*.60,-r*1.10);ctx.quadraticCurveTo(r*.45,-r*.55,r*.38,r*.12);ctx.closePath();ctx.fill();ctx.stroke();
-      ctx.beginPath();ctx.ellipse(r*.58,-r*1.08,r*.42,r*.28,-.08,0,Math.PI*2);ctx.fill();ctx.stroke();
-      // 귀
-      ctx.beginPath();ctx.moveTo(r*.43,-r*1.28);ctx.lineTo(r*.33,-r*1.70);ctx.lineTo(r*.58,-r*1.34);ctx.closePath();ctx.fill();ctx.stroke();ctx.beginPath();ctx.moveTo(r*.66,-r*1.27);ctx.lineTo(r*.82,-r*1.62);ctx.lineTo(r*.78,-r*1.25);ctx.closePath();ctx.fill();ctx.stroke();
-      // 눈과 코
-      ctx.fillStyle='#101010';ctx.beginPath();ctx.arc(r*.67,-r*1.13,Math.max(2,r*.065),0,Math.PI*2);ctx.fill();ctx.fillStyle='#2b1b14';ctx.beginPath();ctx.ellipse(r*.94,-r*1.03,r*.10,r*.07,0,0,Math.PI*2);ctx.fill();
-      if(enemy.type==='pirateLlamaBoss'){ctx.fillStyle='#171717';ctx.beginPath();ctx.ellipse(r*.67,-r*1.13,r*.18,r*.13,-.15,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#171717';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(r*.5,-r*1.28);ctx.lineTo(r*.86,-r*.98);ctx.stroke();}
-      if(enemy.type==='auraLlamaBoss'||enemy.type==='deadlyLlamaBoss'){ctx.shadowBlur=16;ctx.shadowColor=enemy.type==='deadlyLlamaBoss'?'#ff3b3b':'#d39cff';ctx.strokeStyle=enemy.type==='deadlyLlamaBoss'?'rgba(255,65,65,.8)':'rgba(207,156,255,.82)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(r*.55,-r*1.10,r*.52,0,Math.PI*2);ctx.stroke();ctx.shadowBlur=0;}
+      const dodgeP = Number(enemy.llamaDodgeAnim || 0) > 0 ? Math.min(1, Number(enemy.llamaDodgeAnim || 0) / .34) : 0;
+      const dodgeSide = Number(enemy.llamaDodgeSide || 1);
+      const dodge = dodgeP > 0 ? dodgeSide * Math.sin(dodgeP * Math.PI) * r * .46 : 0;
+      const spitP = Number(enemy.llamaSpitAnim || 0) > 0 ? Math.sin(Math.min(1, Number(enemy.llamaSpitAnim || 0) / .42) * Math.PI) : 0;
+      const dashP = Math.max(0, Number(enemy.llamaDashAnim || 0));
+      const bob = Math.abs(gait) * r * .025;
+      const stretch = dashP > 0 ? Math.min(1, dashP / .4) : 0;
+
+      ctx.save();
+      ctx.translate(x, y - bob);
+      ctx.scale(facing, 1);
+
+      // 대시 잔상
+      if (dashP > 0) {
+        ctx.save();
+        for (let i = 4; i >= 1; i--) {
+          ctx.globalAlpha = .06 + i * .035;
+          ctx.fillStyle = isDeadly ? '#ff4a46' : isAura ? '#b578ff' : '#e8bb83';
+          ctx.beginPath();
+          ctx.ellipse(-i * r * .48, -r * .03, r * .92, r * .46, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      // 지면 그림자: 발과 붙어 있어 떠 보이지 않음
+      ctx.fillStyle = 'rgba(24,12,7,.30)';
+      ctx.beginPath();
+      ctx.ellipse(-r*.03, r*.83, r*1.12, r*.22, 0, 0, Math.PI*2);
+      ctx.fill();
+
+      // 오라 보스의 바닥 에너지
+      if (isAura || isDeadly) {
+        const auraColor = isDeadly ? '255,52,59' : '188,116,255';
+        ctx.save();
+        ctx.globalCompositeOperation='lighter';
+        ctx.strokeStyle=`rgba(${auraColor},${.35 + Math.sin(time*.012)*.12})`;
+        ctx.lineWidth=Math.max(2,r*.07);
+        ctx.setLineDash([r*.22,r*.12]);
+        ctx.beginPath();ctx.ellipse(0,r*.74,r*1.12,r*.31,0,0,Math.PI*2);ctx.stroke();
+        ctx.setLineDash([]);ctx.restore();
+      }
+
+      // 털 팔레트
+      const bodyGrad = ctx.createLinearGradient(-r*.9,-r*.5,r*.95,r*.6);
+      if (isDeadly) {
+        bodyGrad.addColorStop(0,'#3d2021'); bodyGrad.addColorStop(.45,'#8f3430'); bodyGrad.addColorStop(.72,'#5b201f'); bodyGrad.addColorStop(1,'#1d1113');
+      } else if (isAura) {
+        bodyGrad.addColorStop(0,'#ead6ba'); bodyGrad.addColorStop(.45,'#c59877'); bodyGrad.addColorStop(.75,'#8f5f4e'); bodyGrad.addColorStop(1,'#583730');
+      } else if (isPirate) {
+        bodyGrad.addColorStop(0,'#e0bd88'); bodyGrad.addColorStop(.45,'#b87848'); bodyGrad.addColorStop(.75,'#744126'); bodyGrad.addColorStop(1,'#3f251a');
+      } else {
+        bodyGrad.addColorStop(0,'#f6e2bf'); bodyGrad.addColorStop(.38,'#d8ad7c'); bodyGrad.addColorStop(.72,'#a66b43'); bodyGrad.addColorStop(1,'#65402b');
+      }
+
+      const darkLeg = isDeadly ? '#35191b' : '#714329';
+      const hoof = isDeadly ? '#171015' : '#35231a';
+
+      // 네 다리: 관절이 있는 짧은 보행, 앞/뒤 다리 원근감 구분
+      const legs = [
+        {x:-r*.58, p:gait, far:true}, {x:-r*.18,p:gait2,far:false},
+        {x:r*.28,p:gait2,far:true}, {x:r*.58,p:gait,far:false}
+      ];
+      for (const leg of legs.filter(l=>l.far)) {
+        const swing=leg.p*r*.10*(1+stretch*.9), kneeX=leg.x+swing*.45, footX=leg.x+swing;
+        ctx.strokeStyle = isDeadly ? '#2b1718' : '#805033'; ctx.lineWidth=Math.max(5,r*.19); ctx.lineCap='round';ctx.lineJoin='round';
+        ctx.beginPath();ctx.moveTo(leg.x,r*.27);ctx.lineTo(kneeX,r*.53);ctx.lineTo(footX,r*.78);ctx.stroke();
+        ctx.fillStyle=hoof;ctx.beginPath();ctx.ellipse(footX+r*.03,r*.79,r*.16,r*.075,0,0,Math.PI*2);ctx.fill();
+      }
+
+      // 풍성한 몸통 + 털 가장자리
+      ctx.fillStyle=bodyGrad;ctx.strokeStyle=isDeadly?'#1e1012':'#4a2d20';ctx.lineWidth=Math.max(2,r*.075);
+      ctx.beginPath();
+      ctx.moveTo(-r*.93,-r*.16);
+      ctx.bezierCurveTo(-r*.88,-r*.61,-r*.42,-r*.70,r*.08,-r*.62);
+      ctx.bezierCurveTo(r*.63,-r*.63,r*.98,-r*.35,r*.94,r*.05);
+      ctx.bezierCurveTo(r*.91,r*.48,r*.48,r*.58,-r*.15,r*.57);
+      ctx.bezierCurveTo(-r*.69,r*.59,-r*1.03,r*.33,-r*.93,-r*.16);
+      ctx.closePath();ctx.fill();ctx.stroke();
+      // 털 하이라이트 덩어리
+      ctx.save();ctx.globalAlpha=isDeadly?.28:.45;ctx.strokeStyle=isDeadly?'#ff7068':'#fff0d0';ctx.lineWidth=Math.max(1.5,r*.055);ctx.lineCap='round';
+      for(let i=0;i<7;i++){
+        const xx=-r*.68+i*r*.22, yy=-r*.34+(i%2)*r*.10;
+        ctx.beginPath();ctx.moveTo(xx,yy);ctx.quadraticCurveTo(xx+r*.08,yy-r*.10,xx+r*.17,yy);ctx.stroke();
+      }
       ctx.restore();
-      if (Number(enemy.llamaDashAnim || 0) > 0) {ctx.globalAlpha=.35;for(let i=1;i<=3;i++){ctx.fillStyle='#f0c68f';ctx.beginPath();ctx.ellipse(-i*r*.55,0,r*.55,r*.42,0,0,Math.PI*2);ctx.fill();}}
+
+      // 몸통 장식
+      if (isPirate) {
+        ctx.fillStyle='#7a1718';ctx.beginPath();ctx.moveTo(-r*.7,-r*.49);ctx.lineTo(r*.38,-r*.58);ctx.lineTo(r*.48,-r*.41);ctx.lineTo(-r*.66,-r*.32);ctx.closePath();ctx.fill();
+        ctx.strokeStyle='#d3a64e';ctx.lineWidth=Math.max(2,r*.06);ctx.beginPath();ctx.moveTo(-r*.55,-r*.38);ctx.lineTo(r*.53,r*.18);ctx.stroke();
+        ctx.fillStyle='#d9ae52';ctx.beginPath();ctx.arc(r*.02,-r*.09,r*.10,0,Math.PI*2);ctx.fill();
+      }
+      if (isAura || isDeadly) {
+        ctx.save();ctx.globalCompositeOperation='lighter';ctx.shadowBlur=r*.45;ctx.shadowColor=isDeadly?'#ff3b42':'#b875ff';ctx.strokeStyle=isDeadly?'rgba(255,79,84,.84)':'rgba(205,151,255,.86)';ctx.lineWidth=Math.max(2,r*.065);
+        ctx.beginPath();ctx.moveTo(-r*.52,-r*.12);ctx.bezierCurveTo(-r*.22,-r*.45,r*.12,r*.36,r*.50,-r*.08);ctx.stroke();
+        ctx.beginPath();ctx.arc(-r*.08,-r*.03,r*.17,0,Math.PI*2);ctx.stroke();ctx.restore();
+      }
+
+      // 가까운 다리
+      for (const leg of legs.filter(l=>!l.far)) {
+        const swing=leg.p*r*.11*(1+stretch*.9), kneeX=leg.x+swing*.42, footX=leg.x+swing;
+        ctx.strokeStyle=darkLeg;ctx.lineWidth=Math.max(6,r*.21);ctx.lineCap='round';ctx.lineJoin='round';
+        ctx.beginPath();ctx.moveTo(leg.x,r*.28);ctx.lineTo(kneeX,r*.54);ctx.lineTo(footX,r*.80);ctx.stroke();
+        ctx.fillStyle=hoof;ctx.beginPath();ctx.ellipse(footX+r*.04,r*.81,r*.17,r*.08,0,0,Math.PI*2);ctx.fill();
+      }
+
+      // 꼬리
+      ctx.fillStyle=bodyGrad;ctx.strokeStyle=isDeadly?'#1d1012':'#4a2d20';ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(-r*.88,-r*.25);ctx.quadraticCurveTo(-r*1.28,-r*.54,-r*1.33,-r*.21);ctx.quadraticCurveTo(-r*1.11,-r*.03,-r*.87,-r*.08);ctx.closePath();ctx.fill();ctx.stroke();
+
+      // 목/머리는 회피 시 별도로 젖혀짐
+      ctx.save();
+      ctx.translate(r*.58 + dodge, -r*.14);
+      ctx.rotate(-.11 - spitP*.13 + dodge/r*.18);
+      const neckGrad=ctx.createLinearGradient(0,r*.2,r*.45,-r*1.15);neckGrad.addColorStop(0,isDeadly?'#5a2222':'#9c603d');neckGrad.addColorStop(.55,isDeadly?'#8e3330':'#d0a072');neckGrad.addColorStop(1,isDeadly?'#3c1c1e':'#efd1a2');
+      ctx.fillStyle=neckGrad;ctx.strokeStyle=isDeadly?'#1f1012':'#4a2d20';ctx.lineWidth=Math.max(2,r*.07);
+      ctx.beginPath();ctx.moveTo(-r*.04,r*.22);ctx.bezierCurveTo(r*.08,-r*.22,r*.10,-r*.77,r*.26,-r*1.16);ctx.lineTo(r*.55,-r*1.08);ctx.bezierCurveTo(r*.45,-r*.56,r*.43,-r*.06,r*.37,r*.21);ctx.closePath();ctx.fill();ctx.stroke();
+
+      // 턱이 있는 자연스러운 옆머리
+      const headGrad=ctx.createRadialGradient(r*.48,-r*1.18,r*.08,r*.55,-r*1.05,r*.50);headGrad.addColorStop(0,isDeadly?'#a9413d':'#f0d0a2');headGrad.addColorStop(1,isDeadly?'#4b1f22':'#9f603b');
+      ctx.fillStyle=headGrad;ctx.beginPath();ctx.moveTo(r*.27,-r*1.28);ctx.bezierCurveTo(r*.50,-r*1.48,r*.77,-r*1.36,r*.86,-r*1.14);ctx.bezierCurveTo(r*1.05,-r*1.08,r*1.08,-r*.88,r*.86,-r*.79);ctx.bezierCurveTo(r*.61,-r*.70,r*.37,-r*.82,r*.24,-r*1.02);ctx.closePath();ctx.fill();ctx.stroke();
+
+      // 주둥이
+      ctx.fillStyle=isDeadly?'#6f2d2d':'#c88e63';ctx.beginPath();ctx.ellipse(r*.91,-r*.97,r*.31,r*.18,-.04,0,Math.PI*2);ctx.fill();ctx.stroke();
+      // 귀: 위로 뻗되 비대칭
+      ctx.fillStyle=isDeadly?'#70272a':'#b87850';
+      ctx.beginPath();ctx.moveTo(r*.37,-r*1.33);ctx.lineTo(r*.28,-r*1.73);ctx.quadraticCurveTo(r*.46,-r*1.64,r*.55,-r*1.34);ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.beginPath();ctx.moveTo(r*.62,-r*1.35);ctx.lineTo(r*.78,-r*1.68);ctx.quadraticCurveTo(r*.88,-r*1.49,r*.78,-r*1.27);ctx.closePath();ctx.fill();ctx.stroke();
+      // 눈/눈썹
+      ctx.fillStyle='#171312';ctx.beginPath();ctx.ellipse(r*.67,-r*1.17,r*.07,r*.08,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=isDeadly?'#ff6868':'#fff';ctx.beginPath();ctx.arc(r*.685,-r*1.19,r*.018,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle=isDeadly?'#291014':'#5b3825';ctx.lineWidth=Math.max(1.5,r*.05);ctx.beginPath();ctx.moveTo(r*.56,-r*1.28);ctx.lineTo(r*.75,-r*1.25);ctx.stroke();
+      ctx.fillStyle='#382219';ctx.beginPath();ctx.ellipse(r*1.11,-r*.98,r*.045,r*.038,0,0,Math.PI*2);ctx.fill();
+
+      // 해적 라마: 두건 + 안대 + 금 장식
+      if (isPirate) {
+        ctx.fillStyle='#8d191d';ctx.beginPath();ctx.moveTo(r*.24,-r*1.39);ctx.quadraticCurveTo(r*.63,-r*1.57,r*.92,-r*1.31);ctx.lineTo(r*.80,-r*1.18);ctx.quadraticCurveTo(r*.53,-r*1.35,r*.27,-r*1.24);ctx.closePath();ctx.fill();
+        ctx.fillStyle='#171719';ctx.beginPath();ctx.ellipse(r*.67,-r*1.17,r*.17,r*.13,-.1,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle='#161619';ctx.lineWidth=Math.max(2,r*.06);ctx.beginPath();ctx.moveTo(r*.45,-r*1.33);ctx.lineTo(r*.90,-r*1.05);ctx.stroke();
+        ctx.fillStyle='#e0b34e';ctx.beginPath();ctx.arc(r*.90,-r*.95,r*.065,0,Math.PI*2);ctx.fill();
+      }
+
+      // 오라/치명적 보스 머리 효과
+      if (isAura || isDeadly) {
+        const c=isDeadly?'255,55,62':'199,132,255';
+        ctx.save();ctx.globalCompositeOperation='lighter';ctx.shadowBlur=r*.58;ctx.shadowColor=`rgb(${c})`;ctx.strokeStyle=`rgba(${c},.82)`;ctx.lineWidth=Math.max(2,r*.07);
+        ctx.beginPath();ctx.arc(r*.56,-r*1.12,r*.58,0,Math.PI*2);ctx.stroke();
+        for(let i=0;i<4;i++){const a=time*.004+i*Math.PI/2,rr=r*.60;ctx.fillStyle=`rgba(${c},.72)`;ctx.beginPath();ctx.arc(r*.56+Math.cos(a)*rr,-r*1.12+Math.sin(a)*rr,r*.045,0,Math.PI*2);ctx.fill();}
+        ctx.restore();
+      }
+      if (isDeadly) {
+        // 치명적 라마: 뒤로 휘어진 검은 뿔과 붉은 균열
+        ctx.fillStyle='#191316';ctx.strokeStyle='#481a1d';ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(r*.36,-r*1.38);ctx.bezierCurveTo(r*.10,-r*1.66,r*.05,-r*1.95,r*.28,-r*2.08);ctx.bezierCurveTo(r*.23,-r*1.78,r*.45,-r*1.63,r*.53,-r*1.36);ctx.closePath();ctx.fill();ctx.stroke();
+        ctx.beginPath();ctx.moveTo(r*.73,-r*1.37);ctx.bezierCurveTo(r*.98,-r*1.66,r*1.00,-r*1.91,r*.78,-r*2.02);ctx.bezierCurveTo(r*.84,-r*1.73,r*.66,-r*1.58,r*.61,-r*1.34);ctx.closePath();ctx.fill();ctx.stroke();
+      }
+      ctx.restore();
+
+      // 달릴 때 먼지: 실제 발이 지면을 찍을 때만
+      if (Math.abs(gait) > .86 || stretch > .2) {
+        ctx.save();ctx.globalAlpha=.26 + stretch*.24;ctx.fillStyle='#d99d61';
+        for(let i=0;i<3;i++){const dx=-r*.7-Math.random()*r*.7,dy=r*.72-Math.random()*r*.08;ctx.beginPath();ctx.arc(dx,dy,r*(.05+i*.018),0,Math.PI*2);ctx.fill();}
+        ctx.restore();
+      }
       ctx.restore();
     }
-
     function drawEnemy(enemy, time) {
       const formation = enemy.type === 'brother'
         ? BROTHER_FORMATION[enemy.groupIndex] || { x: 0, y: 0 }
@@ -20436,6 +20659,10 @@ function requestGachaDraw(count) {
         player.stageDifficultyClears ||= {};
         player.stageDifficultyClears[String(battle.stage)] ||= {};
         player.stageDifficultyClears[String(battle.stage)][difficulty.key] = true;
+        if (Number(battle.stage) === 1 && !battle.profileStageClearExpGranted) {
+          battle.profileStageClearExpGranted = true;
+          awardStageClearExp(battle.stage, difficulty.key);
+        }
         battle.resultText = `스테이지 ${battle.stage} 클리어!`;
         setBattleMessage(
           `최종 보스를 처치했습니다! ${difficulty.name} 난이도 웨이브 보상 ${battle.earnedWaveGems.toLocaleString()}개와 스테이지 보너스 ${stageBonus.toLocaleString()}개를 획득했습니다. ${stageConfig.name}에 다시 도전할 수 있습니다.`
@@ -25549,5 +25776,173 @@ function requestGachaDraw(count) {
   }, { passive: false });
 })();
 </script>
-</body>
+\n<script id="profileFriendsLevelScript">
+(() => {
+  const LEVEL_THRESHOLDS = [
+    {level:1, exp:0},{level:2, exp:100},{level:3, exp:250},{level:4, exp:400},{level:5, exp:600},
+    {level:6, exp:800},{level:7, exp:1200},{level:8, exp:1500},{level:9, exp:1800},{level:10, exp:2000}
+  ];
+  const DIFF_XP = { easy:.5, normal:1, hard:1.5, veryHard:2 };
+  const STAGE_WAVE_XP = { 1:2, 2:3, 3:4 };
+  let socialProfile = null;
+  let socialNicknameRequired = false;
+
+  window.getPlayerLevelFromExp = function(expValue) {
+    const exp = Math.max(0, Number(expValue || 0));
+    let level = 1;
+    for (const item of LEVEL_THRESHOLDS) if (exp >= item.exp) level = item.level;
+    return level;
+  };
+  function levelInfo(expValue) {
+    const exp = Math.max(0, Number(expValue || 0));
+    const level = getPlayerLevelFromExp(exp);
+    const current = LEVEL_THRESHOLDS.find(x => x.level === level) || LEVEL_THRESHOLDS[0];
+    const next = LEVEL_THRESHOLDS.find(x => x.level === level + 1) || null;
+    const pct = next ? Math.max(0,Math.min(100,(exp-current.exp)/(next.exp-current.exp)*100)) : 100;
+    return {exp,level,current,next,pct};
+  }
+  function fmtExp(value) {
+    const n=Number(value||0); return Number.isInteger(n)?String(n):n.toFixed(1).replace(/\.0$/,'');
+  }
+  function safeText(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+  window.refreshSocialMenu = function() {
+    if (!player) return;
+    player.exp = Math.max(0, Number(player.exp || 0));
+    player.level = getPlayerLevelFromExp(player.exp);
+    const info=levelInfo(player.exp);
+    const nickname=String(player.nickname || socialProfile?.nickname || currentUsername || '플레이어');
+    const avatar=(nickname.trim()[0]||'P').toUpperCase();
+    const next=info.next;
+    const target=next?next.exp:info.exp;
+    const set=(id,v)=>{const el=document.querySelector(id);if(el)el.textContent=v;};
+    set('#menuNickname',nickname); set('#menuLevel',`Lv.${info.level}`);
+    set('#menuExpText',next?`${fmtExp(info.exp)} / ${fmtExp(target)} EXP`:`${fmtExp(info.exp)} EXP · MAX`);
+    set('#menuProfileAvatar',avatar); set('#profileAvatarLarge',avatar); set('#profileNicknameTitle',nickname);
+    set('#profileGameId',`ID · ${currentUsername || '-'}`); set('#profileLevelText',`LEVEL ${info.level}`);
+    set('#profileExpText',next?`${fmtExp(info.exp)} / ${fmtExp(target)} EXP`:`${fmtExp(info.exp)} EXP · MAX`);
+    set('#profileNextLevelText',next?`다음 레벨까지 ${fmtExp(Math.max(0,next.exp-info.exp))} EXP`:'최고 레벨에 도달했습니다.');
+    const mf=document.querySelector('#menuExpFill'), pf=document.querySelector('#profileExpFill');
+    if(mf)mf.style.width=`${info.pct}%`; if(pf)pf.style.width=`${info.pct}%`;
+    const input=document.querySelector('#nicknameInput'); if(input && document.activeElement!==input) input.value=nickname===currentUsername && !player.nickname?'':nickname;
+  };
+
+  async function rpc(name,args={}) {
+    const {data,error}=await supabaseClient.rpc(name,args);
+    if(error) throw error; return data;
+  }
+  async function syncProgress() {
+    if(!player) return;
+    try {
+      const rows=await rpc('sync_game_profile_progress',{p_exp:Number(player.exp||0)});
+      const row=Array.isArray(rows)?rows[0]:rows;
+      if(row){player.exp=Math.max(Number(player.exp||0),Number(row.exp||0));player.level=getPlayerLevelFromExp(player.exp);}
+      refreshSocialMenu();
+    } catch(e){ console.warn('프로필 EXP 서버 동기화 실패:',e.message); }
+  }
+  window.awardPlayerExp = function(amount, reason='') {
+    if(!player) return 0;
+    const gain=Math.max(0,Number(amount||0)); if(gain<=0)return 0;
+    const before=getPlayerLevelFromExp(player.exp||0);
+    player.exp=Math.round((Number(player.exp||0)+gain)*100)/100;
+    player.level=getPlayerLevelFromExp(player.exp);
+    refreshSocialMenu();
+    void savePlayer(); void syncProgress();
+    if(player.level>before){
+      const el=document.querySelector('#profileLevelText'); if(el)el.classList.add('level-up-flash');
+      console.info(`[LEVEL UP] Lv.${player.level} · ${reason}`);
+    }
+    return gain;
+  };
+  window.awardStageWaveExp = function(stage,difficulty,wave) {
+    const base=Number(STAGE_WAVE_XP[Number(stage)]||0); const mult=Number(DIFF_XP[difficulty]||1);
+    return awardPlayerExp(base*mult,`스테이지 ${stage} 웨이브 ${wave}`);
+  };
+  window.awardStageClearExp = function(stage,difficulty) {
+    if(Number(stage)!==1)return 0; return awardPlayerExp(10*Number(DIFF_XP[difficulty]||1),'1스테이지 완주 보너스');
+  };
+
+  async function initializeSocialProfile(forcePrompt=false) {
+    if(!player||!currentUsername)return;
+    try {
+      const rows=await rpc('ensure_game_profile',{p_username:currentUsername});
+      socialProfile=Array.isArray(rows)?rows[0]:rows;
+      if(socialProfile){
+        const serverExp=Number(socialProfile.exp||0), localExp=Number(player.exp||0);
+        player.exp=Math.max(serverExp,localExp); player.level=getPlayerLevelFromExp(player.exp);
+        if(socialProfile.nickname) player.nickname=socialProfile.nickname;
+        await syncProgress(); void savePlayer(); refreshSocialMenu();
+        if(forcePrompt || !socialProfile.nickname) openSocial('profile',true);
+        void refreshFriendData(true);
+      }
+    } catch(e){
+      console.warn('프로필 서버 초기화 실패:',e.message); refreshSocialMenu();
+    }
+  }
+  window.initializeSocialProfile=initializeSocialProfile;
+
+  function openSocial(tab='profile',required=false){
+    socialNicknameRequired=Boolean(required && !socialProfile?.nickname);
+    document.querySelector('#socialOverlay')?.classList.remove('hidden');
+    document.querySelector('#socialCloseBtn')?.classList.toggle('hidden',socialNicknameRequired);
+    switchTab(tab); refreshSocialMenu(); if(tab==='friends')void refreshFriendData(false);
+  }
+  function closeSocial(){if(socialNicknameRequired)return;document.querySelector('#socialOverlay')?.classList.add('hidden');}
+  function switchTab(tab){
+    const isProfile=tab!=='friends';
+    document.querySelector('#socialProfilePanel')?.classList.toggle('hidden',!isProfile);
+    document.querySelector('#socialFriendsPanel')?.classList.toggle('hidden',isProfile);
+    document.querySelector('#socialProfileTab')?.classList.toggle('active',isProfile);
+    document.querySelector('#socialFriendsTab')?.classList.toggle('active',!isProfile);
+    if(!isProfile)void refreshFriendData(false);
+  }
+  async function saveNickname(){
+    const input=document.querySelector('#nicknameInput'), status=document.querySelector('#nicknameStatus'); const btn=document.querySelector('#saveNicknameBtn');
+    const value=input?.value?.trim()||''; btn.disabled=true;
+    try {
+      const rows=await rpc('set_game_nickname',{p_nickname:value}); socialProfile=Array.isArray(rows)?rows[0]:rows;
+      player.nickname=socialProfile?.nickname||value; socialNicknameRequired=false; document.querySelector('#socialCloseBtn')?.classList.remove('hidden');
+      if(status){status.textContent='닉네임을 저장했습니다.';status.className='social-status good';} refreshSocialMenu(); void savePlayer();
+    } catch(e){if(status){status.textContent=e.message||String(e);status.className='social-status error';}} finally{btn.disabled=false;}
+  }
+  async function searchFriends(){
+    const q=document.querySelector('#friendSearchInput')?.value?.trim()||''; const box=document.querySelector('#friendSearchResults'); if(!q){box.innerHTML='<div class="social-empty">닉네임 또는 게임 아이디를 입력하세요.</div>';return;}
+    box.innerHTML='<div class="social-empty">검색 중...</div>';
+    try {const rows=await rpc('search_game_profiles',{p_query:q}); renderSearch(Array.isArray(rows)?rows:[]);} catch(e){box.innerHTML=`<div class="social-empty">${safeText(e.message)}</div>`;}
+  }
+  function personName(row){return row.nickname||row.username||'플레이어';}
+  function renderSearch(rows){
+    const box=document.querySelector('#friendSearchResults'); if(!rows.length){box.innerHTML='<div class="social-empty">검색 결과가 없습니다.</div>';return;}
+    box.innerHTML=rows.map(r=>`<div class="social-person"><div class="social-person-copy"><strong>${safeText(personName(r))}</strong><small>@${safeText(r.username)} · Lv.${Number(r.level||1)}</small></div><div class="social-person-actions">${r.relation==='friend'?'<button disabled>친구</button>':r.relation==='pending'?'<button disabled>요청 중</button>':`<button class="accept" data-friend-add="${safeText(r.user_id)}">친구 추가</button>`}</div></div>`).join('');
+    box.querySelectorAll('[data-friend-add]').forEach(btn=>btn.addEventListener('click',()=>void sendFriend(btn.dataset.friendAdd,btn)));
+  }
+  async function sendFriend(id,btn){btn.disabled=true;try{const result=await rpc('send_game_friend_request',{p_target_user_id:id});document.querySelector('#friendStatus').textContent=result==='sent'?'친구 요청을 보냈습니다.':'이미 처리 중인 요청입니다.';await searchFriends();}catch(e){document.querySelector('#friendStatus').textContent=e.message;}finally{btn.disabled=false;}}
+  async function refreshFriendData(silent=false){
+    if(!player)return; try{const [reqs,friends]=await Promise.all([rpc('list_game_friend_requests'),rpc('list_game_friends')]);renderRequests(reqs||[]);renderFriends(friends||[]);const badge=document.querySelector('#friendRequestBadge');const n=(reqs||[]).length;if(badge){badge.textContent=n;badge.classList.toggle('hidden',n<=0);}}catch(e){if(!silent){const s=document.querySelector('#friendStatus');if(s)s.textContent=`친구 정보를 불러오지 못했습니다: ${e.message}`;}}
+  }
+  function renderRequests(rows){const box=document.querySelector('#friendRequestList');if(!box)return;if(!rows.length){box.innerHTML='<div class="social-empty">받은 친구 요청이 없습니다.</div>';return;}box.innerHTML=rows.map(r=>`<div class="social-person"><div class="social-person-copy"><strong>${safeText(personName(r))}</strong><small>@${safeText(r.username)} · Lv.${Number(r.level||1)}</small></div><div class="social-person-actions"><button class="accept" data-friend-accept="${safeText(r.request_id)}">수락</button><button class="danger" data-friend-decline="${safeText(r.request_id)}">거절</button></div></div>`).join('');box.querySelectorAll('[data-friend-accept]').forEach(b=>b.onclick=()=>void respondFriend(b.dataset.friendAccept,true));box.querySelectorAll('[data-friend-decline]').forEach(b=>b.onclick=()=>void respondFriend(b.dataset.friendDecline,false));}
+  async function respondFriend(id,accept){try{await rpc('respond_game_friend_request',{p_request_id:id,p_accept:accept});await refreshFriendData(false);}catch(e){document.querySelector('#friendStatus').textContent=e.message;}}
+  function renderFriends(rows){const box=document.querySelector('#friendList');const count=document.querySelector('#friendCountText');if(count)count.textContent=`${rows.length}명`;if(!box)return;if(!rows.length){box.innerHTML='<div class="social-empty">아직 친구가 없습니다.</div>';return;}box.innerHTML=rows.map(r=>`<div class="social-person"><div class="social-person-copy"><strong>${safeText(personName(r))}</strong><small>@${safeText(r.username)} · Lv.${Number(r.level||1)}</small></div><div class="social-person-actions"><button class="danger" data-friend-remove="${safeText(r.user_id)}">삭제</button></div></div>`).join('');box.querySelectorAll('[data-friend-remove]').forEach(b=>b.onclick=()=>void removeFriend(b.dataset.friendRemove));}
+  async function removeFriend(id){if(!confirm('친구 목록에서 삭제하시겠습니까?'))return;try{await rpc('remove_game_friend',{p_friend_user_id:id});await refreshFriendData(false);}catch(e){document.querySelector('#friendStatus').textContent=e.message;}}
+
+  document.querySelector('#menuProfileBtn')?.addEventListener('click',()=>openSocial('profile',false));
+  document.querySelector('#menuFriendsBtn')?.addEventListener('click',()=>openSocial('friends',false));
+  document.querySelector('#socialCloseBtn')?.addEventListener('click',closeSocial);
+  document.querySelector('#socialProfileTab')?.addEventListener('click',()=>switchTab('profile'));
+  document.querySelector('#socialFriendsTab')?.addEventListener('click',()=>switchTab('friends'));
+  document.querySelector('#saveNicknameBtn')?.addEventListener('click',()=>void saveNickname());
+  document.querySelector('#nicknameInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')void saveNickname();});
+  document.querySelector('#friendSearchBtn')?.addEventListener('click',()=>void searchFriends());
+  document.querySelector('#friendSearchInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')void searchFriends();});
+  document.querySelector('#friendRefreshBtn')?.addEventListener('click',()=>void refreshFriendData(false));
+  document.querySelector('#socialOverlay')?.addEventListener('click',e=>{if(e.target.id==='socialOverlay')closeSocial();});
+
+  supabaseClient.auth.onAuthStateChange((event,session)=>{
+    if(!session){socialProfile=null;return;}
+    if(event==='SIGNED_IN'||event==='INITIAL_SESSION'||event==='TOKEN_REFRESHED')setTimeout(()=>void initializeSocialProfile(false),450);
+  });
+  setTimeout(()=>{refreshSocialMenu();void initializeSocialProfile(false);},1800);
+  setInterval(()=>{const menu=document.querySelector('#menuScreen');if(menu&&!menu.classList.contains('hidden'))void refreshFriendData(true);},12000);
+})();
+</script>\n</body>
 </html>

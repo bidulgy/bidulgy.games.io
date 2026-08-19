@@ -7722,7 +7722,7 @@ button {
   </div>
 
   <script>
-console.log("[INFINITE GROWTH BUILD] 2026-08-19-infinite-wave-gems100-v4");
+console.log("[INFINITE GROWTH BUILD] 2026-08-19-friend-search-v7");
     window.BIDULGY_BUILD_VERSION = '2026-08-19-infinite-wave-gems100-v4';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
@@ -26551,10 +26551,35 @@ function requestGachaDraw(count) {
       if(status){status.textContent=`닉네임 서버 저장 완료: ${player.nickname}`;status.className='social-status good';} refreshSocialMenu(); await savePlayer();
     } catch(e){if(status){status.textContent=e?.message||String(e);status.className='social-status error';}} finally{btn.disabled=false;}
   }
+  async function rpcFirstAvailable(names,args={}) {
+    let lastError=null;
+    for(const name of names){
+      try{return await rpc(name,args);}catch(e){
+        lastError=e;
+        const msg=String(e?.message||'');
+        if(!/function|schema cache|Could not find|PGRST202|does not exist/i.test(msg)) throw e;
+      }
+    }
+    throw lastError||new Error('사용 가능한 서버 함수를 찾지 못했습니다.');
+  }
   async function searchFriends(){
-    const q=(document.querySelector('#friendSearchInput')?.value||'').trim().normalize('NFC'); const box=document.querySelector('#friendSearchResults'); if(!q){box.innerHTML='<div class="social-empty">닉네임 또는 게임 아이디를 입력하세요.</div>';return;}
+    const q=(document.querySelector('#friendSearchInput')?.value||'').trim().normalize('NFC');
+    const box=document.querySelector('#friendSearchResults');
+    if(!box)return;
+    if(!q){box.innerHTML='<div class="social-empty">닉네임 또는 게임 아이디를 입력하세요.</div>';return;}
     box.innerHTML='<div class="social-empty">검색 중...</div>';
-    try {const rows=await rpcFallback('search_game_profiles_v5','search_game_profiles_v4',{p_query:q}); renderSearch(Array.isArray(rows)?rows:[]);} catch(e){box.innerHTML=`<div class="social-empty">${safeText(e.message)}</div>`;}
+    try {
+      const rows=await rpcFirstAvailable(['search_game_profiles_v7','search_game_profiles_v5','search_game_profiles_v4'],{p_query:q});
+      const list=Array.isArray(rows)?rows:[];
+      renderSearch(list);
+      const status=document.querySelector('#friendStatus');
+      if(status){status.textContent=list.length?`${list.length}명의 플레이어를 찾았습니다.`:'검색 결과가 없습니다.';status.className='social-status';}
+    } catch(e){
+      const msg=e?.message||String(e);
+      box.innerHTML=`<div class="social-empty">친구 검색 실패: ${safeText(msg)}</div>`;
+      const status=document.querySelector('#friendStatus');
+      if(status){status.textContent=`검색 서버 오류: ${msg}`;status.className='social-status error';}
+    }
   }
   function personName(row){return row.nickname||'닉네임 미설정';}
   function renderSearch(rows){

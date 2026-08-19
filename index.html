@@ -4492,10 +4492,18 @@ body {
 .trait-unit-button .trait-unit-icon{font-size:28px}.trait-unit-button small{display:block;color:#aab3c7;margin-top:2px}
 .trait-detail-card{min-width:0}.trait-selected-head{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.1)}
 .trait-selected-head .big-icon{font-size:46px}.trait-selected-head h3{margin:0}.trait-cost{margin-left:auto;text-align:right;font-size:12px;color:#b9c3d9}.trait-cost strong{display:block;color:#ffe27a;font-size:15px}
-.trait-slots{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.trait-slot{border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px;background:rgba(255,255,255,.035)}
-.trait-slot.special{border-color:rgba(255,210,82,.55);box-shadow:inset 0 0 24px rgba(255,190,60,.05)}.trait-slot-name{font-weight:900;font-size:15px}.trait-slot-desc{font-size:12px;color:#bdc6d8;min-height:38px;margin:6px 0 10px;line-height:1.45}
+.trait-slots{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.trait-slot{border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px;background:rgba(255,255,255,.035);transition:border-color .16s,box-shadow .16s,transform .16s}
+.trait-slot.special{border-color:rgba(255,210,82,.55);box-shadow:inset 0 0 24px rgba(255,190,60,.05)}
+.trait-slot.auto-selected{border-color:#ffd84f!important;box-shadow:0 0 0 2px rgba(255,216,79,.42),0 0 26px rgba(255,205,54,.18),inset 0 0 22px rgba(255,214,72,.06)!important}
+.trait-slot.auto-selected::before{content:'자동 뽑기 슬롯';display:block;color:#ffe36e;font-size:10px;font-weight:900;letter-spacing:.08em;margin-bottom:4px}
+.trait-slot-name{font-weight:900;font-size:15px}.trait-slot-desc{font-size:12px;color:#bdc6d8;min-height:38px;margin:6px 0 10px;line-height:1.45}
 .trait-roll-btn{width:100%}.trait-probability{margin-top:14px;padding:12px;border-radius:14px;background:rgba(0,0,0,.22);font-size:12px;line-height:1.6}.trait-probability b{color:#ffe27a}
 .trait-result{min-height:22px;margin-top:10px;font-weight:800;color:#ffe27a}.trait-special-note{color:#8ee7ff;font-weight:800}
+.trait-auto-panel{margin-top:14px;padding:12px;border:1px solid rgba(255,215,79,.22);border-radius:14px;background:linear-gradient(135deg,rgba(255,210,60,.08),rgba(11,18,35,.74))}
+.trait-auto-head{display:flex;gap:10px;align-items:center;justify-content:space-between}.trait-auto-head b{color:#ffe36e}
+.trait-auto-targets{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.trait-auto-target{display:flex;align-items:center;gap:6px;padding:7px 9px;border:1px solid rgba(255,255,255,.12);border-radius:999px;background:rgba(0,0,0,.20);font-size:11px;cursor:pointer;user-select:none}
+.trait-auto-target:has(input:checked){border-color:#ffd84f;background:rgba(255,215,72,.12);box-shadow:0 0 14px rgba(255,211,70,.12)}.trait-auto-target input{accent-color:#ffd84f}
+.trait-auto-status{margin-top:9px;font-size:12px;color:#dfe7f4}.trait-auto-status.running{color:#ffe36e;font-weight:900}.trait-auto-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
 .fragment-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:10px}.fragment-card{position:relative;padding:14px;border:1px solid rgba(255,255,255,.12);border-radius:15px;background:linear-gradient(145deg,rgba(255,255,255,.06),rgba(3,7,16,.86));overflow:hidden}.fragment-card:before{content:'';position:absolute;inset:-30% auto auto -20%;width:120px;height:120px;background:radial-gradient(circle,rgba(121,192,255,.18),transparent 70%)}.fragment-card .fragment-icon{font-size:30px}.fragment-card h4{margin:8px 0 2px}.fragment-count{font-size:20px;font-weight:900;color:#9edcff}.fragment-card small{color:#aeb8cd}
 .trait-shield-fx{pointer-events:none}
 @media(max-width:720px){.trait-layout{grid-template-columns:1fr}.trait-unit-list{max-height:34vh}.trait-slots{grid-template-columns:1fr}.trait-selected-head{align-items:flex-start}.trait-cost{font-size:11px}.fragment-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -7767,8 +7775,8 @@ button {
   </div>
 
   <script>
-console.log("[INFINITE GROWTH BUILD] 2026-08-19-trait-system-v1");
-    window.BIDULGY_BUILD_VERSION = '2026-08-19-trait-system-v1';
+console.log("[TRAIT BUILD] 2026-08-19-trait-auto-shadow-v3");
+    window.BIDULGY_BUILD_VERSION = '2026-08-19-trait-auto-shadow-v3';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -8683,15 +8691,15 @@ function applyStagePreview(stageId = selectedStage) {
     };
 
     const TRAIT_DATA = {
-      swift: { id:'swift', name:'신속', chance:30, desc:'공격/생산 쿨타임 ×0.8', intervalMultiplier:.8 },
-      aggressive: { id:'aggressive', name:'공격적', moneyTreeName:'비싼', chance:30, desc:'데미지 ×1.2', moneyTreeDesc:'버는 돈 ×1.2', damageMultiplier:1.2, incomeMultiplier:1.2 },
+      swift: { id:'swift', name:'신속', chance:36, desc:'공격/생산 쿨타임 ×0.8', intervalMultiplier:.8 },
+      aggressive: { id:'aggressive', name:'공격적', moneyTreeName:'비싼', chance:36, desc:'데미지 ×1.2', moneyTreeDesc:'버는 돈 ×1.2', damageMultiplier:1.2, incomeMultiplier:1.2 },
       cheap: { id:'cheap', name:'싼 설치비용', chance:20, desc:'설치비용 ×0.5', costMultiplier:.5 },
-      sale: { id:'sale', name:'특가세일', chance:15, desc:'설치비용 ×1/3', costMultiplier:1/3 },
+      sale: { id:'sale', name:'특가세일', chance:3, desc:'설치비용 ×1/3', costMultiplier:1/3 },
       light: { id:'light', name:'빛', chance:2, desc:'공격/생산 쿨타임 ×0.5', intervalMultiplier:.5 },
       dark: { id:'dark', name:'어둠', chance:2, desc:'방어력 무시 · 맞은 적 이동속도 감소', moneyTreeDesc:'수입 ×1.2 · 돈 버는 속도 ×1.2 · 수입 때 무작위 적 둔화', armorIgnore:true, hitSlow:.20, hitSlowDuration:2, incomeMultiplier:1.2, incomeSpeedMultiplier:1.2 },
-      shadowClone: { id:'shadowClone', name:'그림자분신술', chance:1, desc:'탄환 개수 ×2', moneyTreeDesc:'버는 돈 ×2', projectileMultiplier:2, incomeMultiplier:2 },
+      shadowClone: { id:'shadowClone', name:'그림자분신술', chance:1, desc:'유닛 뒤의 검은 분신이 본체 공격 직후 같은 공격을 한 번 더 사용 · 분신 공격도 스킬 카운트/전용 특성에 반영', moneyTreeDesc:'버는 돈 ×2', incomeMultiplier:2 },
       royalShield: { id:'royalShield', name:'방패소환', special:true, chanceText:'1%', desc:'공격 20회마다 가장 가까운 길에 방패가 하늘에서 떨어져 3초 동안 적의 진행을 막음' },
-      iceVortex: { id:'iceVortex', name:'얼음의 소용돌이', special:true, chanceText:'0.8%', desc:'공격할 때마다 회전 얼음 1개 생성 · 8개가 모이면 0.12초 간격으로 모두 발사' }
+      iceVortex: { id:'iceVortex', name:'얼음의 소용돌이', special:true, chanceText:'0.8%', desc:'공격마다 회전 얼음 1개 생성 · 8개가 모이면 적이 있을 때 0.12초 간격으로 발사 · 적이 사라지면 남은 얼음은 다시 주변을 회전' }
     };
 
     function normalizeTraitSlots(value) {
@@ -8734,6 +8742,15 @@ function applyStagePreview(stageId = selectedStage) {
     function getTraitedProjectileCount(placed){ const n=Number(placed?.traitProjectileMultiplier||1); return Math.max(1,Math.round(n)); }
 
     let activeTraitUnitId = null;
+    const TRAIT_NORMAL_TARGET_IDS = ['swift','aggressive','cheap','sale','light','dark','shadowClone'];
+    let traitAutoEnabled = false;
+    let traitAutoSlot = 0;
+    let traitAutoTargetIds = new Set();
+    let traitAutoRunning = false;
+    let traitAutoToken = 0;
+    let traitAutoRollCount = 0;
+    let traitAutoLastTrait = null;
+    let traitLastResultText = '';
 
     const screens = {
       auth: document.querySelector('#authScreen'),
@@ -10318,6 +10335,33 @@ async function logout() {
 
     function traitRarityCost(unit){ return Number(TRAIT_RARITY_COST[unit?.rarityKey] || 0); }
     function traitSpecialChanceText(unitId){ return unitId==='royalGuardian' ? '전용 특수 1%' : unitId==='iceQueen' ? '전용 특수 0.8%' : ''; }
+    function traitAutoAllowedTargets(unitId){
+      const ids=[...TRAIT_NORMAL_TARGET_IDS];
+      if(unitId==='royalGuardian') ids.push('royalShield');
+      if(unitId==='iceQueen') ids.push('iceVortex');
+      return ids;
+    }
+    function stopTraitAutoRoll(message=''){
+      traitAutoRunning=false;
+      traitAutoToken+=1;
+      if(message) traitLastResultText=message;
+    }
+    function setTraitAutoEnabled(enabled){
+      if(!enabled) stopTraitAutoRoll('자동 특성 뽑기가 꺼졌습니다.');
+      traitAutoEnabled=Boolean(enabled);
+      if(traitAutoEnabled){
+        const allowed=new Set(traitAutoAllowedTargets(activeTraitUnitId));
+        traitAutoTargetIds=new Set([...traitAutoTargetIds].filter(id=>allowed.has(id)));
+        traitLastResultText='멈출 특성을 선택하고 SLOT 1 또는 SLOT 2를 누른 뒤, 뽑기 버튼을 한 번 눌러 시작하세요.';
+      }
+      renderTraitScreen();
+    }
+    function selectTraitAutoSlot(slot){
+      if(slot!==0&&slot!==1) return;
+      if(traitAutoRunning) stopTraitAutoRoll('슬롯을 변경해 자동 뽑기를 중지했습니다.');
+      traitAutoSlot=slot;
+      renderTraitScreen();
+    }
     function openTraitsScreen(){
       ensurePlayerData();
       const owned=getOwnedUnitIds().filter(id=>UNIT_DATA[id] && TRAIT_RARITY_COST[UNIT_DATA[id].rarityKey]);
@@ -10330,16 +10374,55 @@ async function logout() {
       if(!list||!detail) return;
       const ids=getOwnedUnitIds().filter(id=>UNIT_DATA[id] && TRAIT_RARITY_COST[UNIT_DATA[id].rarityKey]);
       list.innerHTML=ids.map(id=>{const u=UNIT_DATA[id], fr=Math.floor(Number(player.ownedUnits?.[id]?.fragments||0)); return `<button type="button" class="trait-unit-button ${activeTraitUnitId===id?'active':''}" data-trait-unit="${id}"><span class="trait-unit-icon">${u.icon}</span><span><strong>${u.name}</strong><small class="${u.rarityClass}">${u.rarity}</small></span><b>💠${fr}</b></button>`}).join('') || '<p class="muted">보유 유닛이 없습니다.</p>';
-      list.querySelectorAll('[data-trait-unit]').forEach(btn=>btn.addEventListener('click',()=>{activeTraitUnitId=btn.dataset.traitUnit;renderTraitScreen();}));
+      list.querySelectorAll('[data-trait-unit]').forEach(btn=>btn.addEventListener('click',()=>{
+        if(activeTraitUnitId!==btn.dataset.traitUnit && traitAutoRunning) stopTraitAutoRoll('유닛을 변경해 자동 뽑기를 중지했습니다.');
+        activeTraitUnitId=btn.dataset.traitUnit;
+        const allowed=new Set(traitAutoAllowedTargets(activeTraitUnitId));
+        traitAutoTargetIds=new Set([...traitAutoTargetIds].filter(id=>allowed.has(id)));
+        traitLastResultText='';
+        renderTraitScreen();
+      }));
       if(!activeTraitUnitId || !UNIT_DATA[activeTraitUnitId]){detail.innerHTML='<p class="muted">유닛을 선택하세요.</p>';return;}
       const u=UNIT_DATA[activeTraitUnitId], owned=player.ownedUnits[activeTraitUnitId], slots=normalizeTraitSlots(owned?.traits), cost=traitRarityCost(u), fr=Math.floor(Number(owned?.fragments||0));
-      const slotHtml=slots.map((id,i)=>{const t=TRAIT_DATA[id]; return `<div class="trait-slot ${t?.special?'special':''}"><small>SLOT ${i+1}</small><div class="trait-slot-name">${t?getTraitDisplayName(id,u.id):'비어 있음'}</div><div class="trait-slot-desc">${t?getTraitDescription(id,u.id):'새 특성을 뽑으면 이 슬롯에 장착됩니다.'}</div><button class="trait-roll-btn" data-trait-roll-slot="${i}" ${fr<1||player.gems<cost?'disabled':''}>🎲 ${id?'다시 뽑기':'특성 뽑기'} · 💠1 + 💎${cost.toLocaleString()}</button></div>`}).join('');
-      detail.innerHTML=`<div class="trait-selected-head"><div class="big-icon">${u.icon}</div><div><small class="${u.rarityClass}">${u.rarity}</small><h3>${u.name}</h3><small>조각 ${fr}개 · 최대 2특성</small></div><div class="trait-cost"><span>1회 비용</span><strong>💠1 + 💎${cost.toLocaleString()}</strong></div></div><div class="trait-slots">${slotHtml}</div><div class="trait-probability"><b>일반 특성 확률</b><br>신속 30% · 공격적 30% · 싼 설치비용 20% · 특가세일 15% · 빛 2% · 어둠 2% · 그림자분신술 1%${traitSpecialChanceText(u.id)?`<br><span class="trait-special-note">${traitSpecialChanceText(u.id)} · 일반 특성보다 먼저 별도 판정</span>`:''}<br><span class="muted">돈나무에서는 공격적→비싼으로 표시되고 일부 효과가 수입 능력으로 변환됩니다.</span></div><div id="traitResult" class="trait-result"></div>`;
-      detail.querySelectorAll('[data-trait-roll-slot]').forEach(btn=>btn.addEventListener('click',()=>rollUnitTrait(activeTraitUnitId,Number(btn.dataset.traitRollSlot),btn)));
+      const slotHtml=slots.map((id,i)=>{
+        const t=TRAIT_DATA[id];
+        const selected=traitAutoEnabled && traitAutoSlot===i;
+        const disabled=fr<1||player.gems<cost||traitAutoRunning||(traitAutoEnabled&&!selected);
+        const btnLabel=traitAutoEnabled ? (selected ? '▶ 1회 뽑고 자동 시작' : `SLOT ${i+1} 선택 필요`) : `🎲 ${id?'다시 뽑기':'특성 뽑기'}`;
+        return `<div class="trait-slot ${t?.special?'special':''} ${selected?'auto-selected':''}" data-trait-slot-card="${i}"><small>SLOT ${i+1}</small><div class="trait-slot-name">${t?getTraitDisplayName(id,u.id):'비어 있음'}</div><div class="trait-slot-desc">${t?getTraitDescription(id,u.id):'새 특성을 뽑으면 이 슬롯에 장착됩니다.'}</div><button class="trait-roll-btn" data-trait-roll-slot="${i}" ${disabled?'disabled':''}>${btnLabel} · 💠1 + 💎${cost.toLocaleString()}</button></div>`;
+      }).join('');
+      const allowedTargets=traitAutoAllowedTargets(u.id);
+      const targetHtml=allowedTargets.map(id=>{
+        const t=TRAIT_DATA[id], checked=traitAutoTargetIds.has(id);
+        return `<label class="trait-auto-target"><input type="checkbox" data-trait-auto-target="${id}" ${checked?'checked':''}><span>${getTraitDisplayName(id,u.id)}${t?.special?` · ${t.chanceText||''}`:''}</span></label>`;
+      }).join('');
+      const autoStatus=traitAutoRunning ? `자동 뽑기 진행 중 · ${traitAutoRollCount}회 · 최근 ${traitAutoLastTrait?getTraitDisplayName(traitAutoLastTrait,u.id):'-'}` : (traitAutoEnabled ? `대상 슬롯: SLOT ${traitAutoSlot+1} · 멈춤 조건 ${traitAutoTargetIds.size}개 선택` : '자동 뽑기 OFF');
+      const autoPanel=`<div class="trait-auto-panel"><div class="trait-auto-head"><div><b>⚡ 자동 특성 뽑기</b><div class="muted" style="font-size:11px;margin-top:2px;">0.3초마다 실제 특성을 뽑고, 선택한 특성이 나오면 즉시 멈춥니다.</div></div><button id="traitAutoToggle" class="${traitAutoEnabled?'danger':'secondary'}">${traitAutoEnabled?'자동 뽑기 끄기':'자동 뽑기 켜기'}</button></div>${traitAutoEnabled?`<div class="trait-auto-targets">${targetHtml}</div><div class="trait-auto-status ${traitAutoRunning?'running':''}">${autoStatus}</div><div class="trait-auto-actions">${traitAutoRunning?'<button id="traitAutoStop" class="danger">■ 지금 중지</button>':''}<span class="muted" style="font-size:11px;">멈출 특성은 여러 개 선택할 수 있습니다. 슬롯을 누르면 노란색 테두리로 선택됩니다.</span></div>`:`<div class="trait-auto-status">${autoStatus}</div>`}</div>`;
+      detail.innerHTML=`<div class="trait-selected-head"><div class="big-icon">${u.icon}</div><div><small class="${u.rarityClass}">${u.rarity}</small><h3>${u.name}</h3><small>조각 ${fr}개 · 최대 2특성</small></div><div class="trait-cost"><span>1회 비용</span><strong>💠1 + 💎${cost.toLocaleString()}</strong></div></div>${autoPanel}<div class="trait-slots">${slotHtml}</div><div class="trait-probability"><b>일반 특성 확률</b><br>신속 36% · 공격적 36% · 싼 설치비용 20% · 특가세일 3% · 빛 2% · 어둠 2% · 그림자분신술 1%${traitSpecialChanceText(u.id)?`<br><span class="trait-special-note">${traitSpecialChanceText(u.id)} · 일반 특성보다 먼저 별도 판정</span>`:''}<br><span class="muted">돈나무에서는 공격적→비싼으로 표시되고 일부 효과가 수입 능력으로 변환됩니다.</span></div><div id="traitResult" class="trait-result">${traitLastResultText||''}</div>`;
+      detail.querySelector('#traitAutoToggle')?.addEventListener('click',()=>setTraitAutoEnabled(!traitAutoEnabled));
+      detail.querySelector('#traitAutoStop')?.addEventListener('click',()=>{stopTraitAutoRoll('자동 특성 뽑기를 사용자가 중지했습니다.');renderTraitScreen();});
+      detail.querySelectorAll('[data-trait-auto-target]').forEach(input=>input.addEventListener('change',()=>{
+        const id=input.dataset.traitAutoTarget;
+        if(input.checked) traitAutoTargetIds.add(id); else traitAutoTargetIds.delete(id);
+        const status=detail.querySelector('.trait-auto-status');
+        if(status && !traitAutoRunning) status.textContent=`대상 슬롯: SLOT ${traitAutoSlot+1} · 멈춤 조건 ${traitAutoTargetIds.size}개 선택`;
+      }));
+      detail.querySelectorAll('[data-trait-slot-card]').forEach(card=>card.addEventListener('click',ev=>{
+        if(!traitAutoEnabled || ev.target.closest('button')) return;
+        selectTraitAutoSlot(Number(card.dataset.traitSlotCard));
+      }));
+      detail.querySelectorAll('[data-trait-roll-slot]').forEach(btn=>btn.addEventListener('click',()=>{
+        const slot=Number(btn.dataset.traitRollSlot);
+        if(traitAutoEnabled){
+          if(slot!==traitAutoSlot){selectTraitAutoSlot(slot);return;}
+          void startTraitAutoRoll(activeTraitUnitId,slot);
+        } else void rollUnitTrait(activeTraitUnitId,slot,btn);
+      }));
     }
-    async function rollUnitTrait(unitId,slot,button){
-      const unit=UNIT_DATA[unitId]; if(!unit||!player?.ownedUnits?.[unitId]) return;
-      button.disabled=true; const resultEl=document.querySelector('#traitResult'); if(resultEl) resultEl.textContent='특성 데이터를 분석하는 중...';
+    async function rollUnitTrait(unitId,slot,button=null,options={}){
+      const unit=UNIT_DATA[unitId]; if(!unit||!player?.ownedUnits?.[unitId]) return null;
+      if(button) button.disabled=true;
+      if(!options.quiet){const resultEl=document.querySelector('#traitResult');if(resultEl)resultEl.textContent='특성 데이터를 분석하는 중...';}
       try{
         const {data,error}=await supabaseClient.rpc('roll_unit_trait_v1',{p_unit_id:unitId,p_slot:slot+1});
         if(error) throw error;
@@ -10348,11 +10431,47 @@ async function logout() {
         player.ownedUnits[unitId].fragments=Math.max(0,Number(r.fragments??player.ownedUnits[unitId].fragments));
         player.ownedUnits[unitId].traits=normalizeTraitSlots(r.traits);
         if(Number.isFinite(Number(r.gems))) player.gems=Number(r.gems);
-        await savePlayer();
         document.querySelector('#menuGems') && (document.querySelector('#menuGems').textContent=player.gems.toLocaleString());
-        if(resultEl) resultEl.textContent=`✨ SLOT ${slot+1} · ${getTraitDisplayName(traitId,unitId)} 획득!`;
-        renderTraitScreen();
-      }catch(err){console.error('특성 뽑기 실패',err); if(resultEl) resultEl.textContent=`특성 뽑기 실패: ${err?.message||err}`; button.disabled=false;}
+        traitAutoLastTrait=traitId;
+        traitLastResultText=`✨ SLOT ${slot+1} · ${getTraitDisplayName(traitId,unitId)} 획득!`;
+        if(!options.skipSave) await savePlayer();
+        if(!options.skipRender) renderTraitScreen();
+        return traitId;
+      }catch(err){
+        console.error('특성 뽑기 실패',err);traitLastResultText=`특성 뽑기 실패: ${err?.message||err}`;
+        if(!options.skipRender) renderTraitScreen();
+        if(button) button.disabled=false;
+        if(options.rethrow) throw err;
+        return null;
+      }
+    }
+    async function startTraitAutoRoll(unitId,slot){
+      if(traitAutoRunning) return;
+      if(!traitAutoEnabled){traitLastResultText='자동 특성 뽑기를 먼저 켜주세요.';renderTraitScreen();return;}
+      if(slot!==traitAutoSlot){traitLastResultText=`SLOT ${traitAutoSlot+1}을 선택한 뒤 시작해주세요.`;renderTraitScreen();return;}
+      if(traitAutoTargetIds.size===0){traitLastResultText='자동 뽑기를 멈출 특성을 하나 이상 선택해주세요.';renderTraitScreen();return;}
+      const allowed=new Set(traitAutoAllowedTargets(unitId));
+      traitAutoTargetIds=new Set([...traitAutoTargetIds].filter(id=>allowed.has(id)));
+      if(traitAutoTargetIds.size===0){traitLastResultText='이 유닛에서 나올 수 있는 멈춤 특성을 선택해주세요.';renderTraitScreen();return;}
+      traitAutoRunning=true;traitAutoRollCount=0;const token=++traitAutoToken;traitLastResultText='자동 뽑기 시작 · 첫 뽑기를 실행합니다.';renderTraitScreen();
+      while(traitAutoRunning && token===traitAutoToken){
+        if(screens.traits?.classList.contains('hidden') || activeTraitUnitId!==unitId || traitAutoSlot!==slot){stopTraitAutoRoll('화면/유닛/슬롯이 변경되어 자동 뽑기를 중지했습니다.');break;}
+        const unit=UNIT_DATA[unitId], owned=player.ownedUnits?.[unitId], cost=traitRarityCost(unit);
+        if(!owned || Number(owned.fragments||0)<1){stopTraitAutoRoll('조각이 부족해서 자동 특성 뽑기가 멈췄습니다.');break;}
+        if(Number(player.gems||0)<cost){stopTraitAutoRoll('소환석이 부족해서 자동 특성 뽑기가 멈췄습니다.');break;}
+        const started=performance.now();
+        try{
+          const traitId=await rollUnitTrait(unitId,slot,null,{skipSave:true,skipRender:true,quiet:true,rethrow:true});
+          traitAutoRollCount+=1;traitAutoLastTrait=traitId;
+          if(traitAutoTargetIds.has(traitId)){
+            traitAutoRunning=false;traitLastResultText=`🎯 ${getTraitDisplayName(traitId,unitId)} 획득! 자동 뽑기가 ${traitAutoRollCount}회에서 멈췄습니다.`;
+            try{await savePlayer();}catch(_){} renderTraitScreen();return;
+          }
+          traitLastResultText=`자동 뽑기 ${traitAutoRollCount}회 · 최근 ${getTraitDisplayName(traitId,unitId)} · 계속 진행 중...`;renderTraitScreen();
+        }catch(err){stopTraitAutoRoll(`자동 뽑기 중지: ${err?.message||err}`);break;}
+        const wait=Math.max(0,300-(performance.now()-started));if(wait>0)await new Promise(resolve=>setTimeout(resolve,wait));
+      }
+      try{await savePlayer();}catch(_){} renderTraitScreen();
     }
 
     function openCollection(tab = 'units') {
@@ -14164,10 +14283,11 @@ function requestGachaDraw(count) {
       if (ticks <= 0) return;
       placed.phoenixBreathAccumulator -= ticks * tickInterval;
       const damage = Number(placed.damage || data.damage) * ticks;
+      const shadowPhoenix=placedHasTrait(placed,'shadowClone');
       const half = (Number(data.flameConeAngle || 78) * Math.PI / 180) / 2;
       for (const enemy of battle.enemies) {
         if (enemy.dead || enemy.soilPileState) continue;
-        if (isEnemyInsideCone(enemy, placed, placed.angle, currentRange, half)) applyDamageToEnemy(enemy, damage);
+        if (isEnemyInsideCone(enemy, placed, placed.angle, currentRange, half)) applyDamageToEnemy(enemy, damage*(shadowPhoenix?2:1));
       }
       placed.phoenixFxTimer = Number(placed.phoenixFxTimer || 0) - dt;
       if (placed.phoenixFxTimer <= 0) {
@@ -14182,6 +14302,7 @@ function requestGachaDraw(count) {
           color: data.color, effect: 'phoenixBreath', angle: placed.angle, seed: Math.random() * 1000,
           radius: breathRange, coneAngle: data.flameConeAngle || 78
         });
+        if(shadowPhoenix) scheduleDelayedAttack({kind:'shadowPhoenixFx',timer:.10,sourceId:placed.id,angle:placed.angle,range:breathRange,shadowClone:true});
         placed.phoenixFxTimer = .09;
       }
     }
@@ -14689,8 +14810,41 @@ function requestGachaDraw(count) {
       battle.delayedAttacks.push(attack);
     }
 
-    function triggerDelayedAttack(attack) {
+    function triggerDelayedAttackCore(attack) {
       if (!battle || battle.ended) return;
+
+      if (attack.kind === 'shadowCloneReplay') {
+        const source=(battle.placedUnits||[]).find(unit=>unit.id===attack.sourceId);
+        if(!source || source.unitId==='moneyTree' || !placedHasTrait(source,'shadowClone')) return;
+        const oldCooldown=Number(source.cooldown||0), oldAnimation=Number(source.attackAnimation||0), oldMode=source.attackMode, oldAngle=Number(source.angle||0);
+        const delayedBefore=(battle.delayedAttacks||[]).length;
+        source._shadowEchoExecuting=true;
+        source.cooldown=0;
+        try{
+          updatePlacedUnitCore(source,0);
+          source.shadowCloneAttackAnimation=Math.max(1,Number(source.attackAnimation||1));
+          source.shadowCloneAttackMode=source.attackMode;
+          source.shadowCloneAngle=Number(source.angle||oldAngle);
+          source.shadowClonePulse=.42;
+          for(let i=delayedBefore;i<(battle.delayedAttacks||[]).length;i++) battle.delayedAttacks[i].shadowClone=true;
+        }finally{
+          source._shadowEchoExecuting=false;
+          source.cooldown=oldCooldown;
+          source.attackAnimation=oldAnimation;
+          source.attackMode=oldMode;
+          source.angle=oldAngle;
+        }
+        return;
+      }
+
+      if (attack.kind === 'shadowPhoenixFx') {
+        const source=(battle.placedUnits||[]).find(u=>u.id===attack.sourceId);
+        if(!source) return;
+        const mouth=getPhoenixMouthPosition(source,18), a=Number(attack.angle||source.angle||0), breathRange=Math.max(36,Number(attack.range||120));
+        battle.shots.push({x1:mouth.x,y1:mouth.y,x2:mouth.x+Math.cos(a)*Math.min(breathRange,150),y2:mouth.y+Math.sin(a)*Math.min(breathRange,150),life:getAttackEffectDuration('phoenixBreath'),maxLife:getAttackEffectDuration('phoenixBreath'),color:'#050505',effect:'phoenixBreath',angle:a,seed:Math.random()*1000,radius:breathRange,coneAngle:UNIT_DATA.phoenix.flameConeAngle||78,shadowClone:true});
+        source.shadowCloneAttackAnimation=.7;source.shadowCloneAngle=a;source.shadowCloneAttackMode='phoenixBreath';source.shadowClonePulse=.32;
+        return;
+      }
 
       if (attack.kind === 'sakuraCorridor') {
         playUnitAttackSound('cherrySamurai', { skill: 'samuraiUltimateCut', volume: 1.12 });
@@ -14735,10 +14889,31 @@ function requestGachaDraw(count) {
         return;
       }
 
+      if (attack.kind === 'iceTraitOrbVolley') {
+        const source=(battle.placedUnits||[]).find(u=>u.id===attack.sourceId);
+        if(!source || !placedHasTrait(source,'iceVortex')) return;
+        source.iceTraitOrbs=Array.isArray(source.iceTraitOrbs)?source.iceTraitOrbs:[];
+        if(!source.iceTraitOrbs.length){source.iceTraitVolleyActive=false;return;}
+        const target=getFrontmostEnemyFromPoint(source.x,source.y,source.range);
+        if(!target){
+          // 적이 사라지면 남은 얼음은 삭제하지 않고 다시 주위를 돕니다.
+          source.iceTraitVolleyActive=false;
+          return;
+        }
+        source.iceTraitOrbs.shift();
+        battle.shots.push({x1:source.x,y1:source.y,x2:target.x,y2:target.y,life:.34,maxLife:.34,color:'#9fefff',effect:'iceArrow',angle:Math.atan2(target.y-source.y,target.x-source.x),seed:Math.random()*1000,shadowClone:Boolean(attack.shadowClone)});
+        applyTraitDamage(source,target,source.damage);
+        if(!target.dead)applyIceStatus(target,UNIT_DATA.iceQueen);
+        if(source.iceTraitOrbs.length){scheduleDelayedAttack({kind:'iceTraitOrbVolley',timer:.12,sourceId:source.id,shadowClone:Boolean(attack.shadowClone)});}
+        else source.iceTraitVolleyActive=false;
+        return;
+      }
       if (attack.kind === 'iceTraitOrb') {
-        const source=battle.placedUnits.find(u=>u.id===attack.sourceId);
-        const target=getFrontmostEnemyFromPoint(attack.x,attack.y,attack.range);
-        if(target){battle.shots.push({x1:attack.x,y1:attack.y,x2:target.x,y2:target.y,life:.34,maxLife:.34,color:'#9fefff',effect:'iceArrow',angle:Math.atan2(target.y-attack.y,target.x-attack.x),seed:Math.random()*1000});if(source)applyTraitDamage(source,target,attack.damage);else applyDamageToEnemy(target,attack.damage);if(!target.dead)applyIceStatus(target,UNIT_DATA.iceQueen);}
+        // 이전 저장/진행 중인 공격과의 호환용
+        const source=(battle.placedUnits||[]).find(u=>u.id===attack.sourceId);
+        const x=source?.x??attack.x, y=source?.y??attack.y, range=source?.range??attack.range;
+        const target=getFrontmostEnemyFromPoint(x,y,range);
+        if(target){battle.shots.push({x1:x,y1:y,x2:target.x,y2:target.y,life:.34,maxLife:.34,color:'#9fefff',effect:'iceArrow',angle:Math.atan2(target.y-y,target.x-x),seed:Math.random()*1000,shadowClone:Boolean(attack.shadowClone)});if(source)applyTraitDamage(source,target,source.damage);else applyDamageToEnemy(target,attack.damage);if(!target.dead)applyIceStatus(target,UNIT_DATA.iceQueen);}
         return;
       }
 
@@ -14822,6 +14997,15 @@ function requestGachaDraw(count) {
       }
     }
 
+    function triggerDelayedAttack(attack) {
+      if(!battle) return;
+      const before=(battle.shots||[]).length;
+      triggerDelayedAttackCore(attack);
+      if(attack?.shadowClone){
+        for(let i=before;i<(battle.shots||[]).length;i++) battle.shots[i].shadowClone=true;
+      }
+    }
+
     function updateDelayedAttacks(dt) {
       if (!battle?.delayedAttacks?.length) return;
 
@@ -14850,9 +15034,16 @@ function requestGachaDraw(count) {
     function enemyBlockedByTraitShield(enemy){ return Boolean(battle?.traitShields?.some(sh=>sh.fall<=0&&Math.hypot(enemy.x-sh.x,enemy.y-sh.y)<38)); }
     function drawTraitShields(){ if(!battle?.traitShields)return; for(const sh of battle.traitShields){const p=1-Math.max(0,sh.fall)/sh.maxFall;const y=sh.y-(1-p)*190;ctx.save();ctx.translate(sh.x,y);ctx.shadowBlur=22;ctx.shadowColor='#ffe36a';ctx.fillStyle='#29384d';ctx.strokeStyle='#ffe681';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(0,-30);ctx.lineTo(24,-20);ctx.lineTo(20,18);ctx.lineTo(0,34);ctx.lineTo(-20,18);ctx.lineTo(-24,-20);ctx.closePath();ctx.fill();ctx.stroke();ctx.strokeStyle='#fff2a6';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,-22);ctx.lineTo(0,24);ctx.moveTo(-15,-12);ctx.lineTo(15,-12);ctx.stroke();ctx.restore();} }
     function updateIceVortexTrait(placed){
-      if(!placedHasTrait(placed,'iceVortex'))return; placed.iceTraitOrbs=Array.isArray(placed.iceTraitOrbs)?placed.iceTraitOrbs:[];
+      if(!placedHasTrait(placed,'iceVortex'))return;
+      placed.iceTraitOrbs=Array.isArray(placed.iceTraitOrbs)?placed.iceTraitOrbs:[];
       if(placed.iceTraitOrbs.length<8) placed.iceTraitOrbs.push({phase:Math.random()*Math.PI*2});
-      if(placed.iceTraitOrbs.length>=8){const count=placed.iceTraitOrbs.length;placed.iceTraitOrbs=[];for(let i=0;i<count;i++)scheduleDelayedAttack({kind:'iceTraitOrb',timer:i*.12,x:placed.x,y:placed.y,damage:placed.damage,range:placed.range,sourceId:placed.id});}
+      if(placed.iceTraitOrbs.length>=8 && !placed.iceTraitVolleyActive){
+        const target=getFrontmostEnemyFromPoint(placed.x,placed.y,placed.range);
+        if(target){
+          placed.iceTraitVolleyActive=true;
+          scheduleDelayedAttack({kind:'iceTraitOrbVolley',timer:.02,sourceId:placed.id,shadowClone:Boolean(placed._shadowEchoExecuting)});
+        }
+      }
     }
     function drawIceTraitOrbs(unit,time){ if(!Array.isArray(unit.iceTraitOrbs)||!unit.iceTraitOrbs.length)return;unit.iceTraitOrbs.forEach((orb,i)=>{const a=time*.0035+orb.phase+i*.7,r=42+(i%2)*8;ctx.save();ctx.translate(Math.cos(a)*r,Math.sin(a)*r-8);ctx.rotate(a*1.8);ctx.shadowBlur=14;ctx.shadowColor='#9af3ff';ctx.fillStyle='#dffcff';ctx.strokeStyle='#65d8ff';ctx.beginPath();ctx.moveTo(0,-9);ctx.lineTo(6,0);ctx.lineTo(0,9);ctx.lineTo(-6,0);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();}); }
 
@@ -15775,7 +15966,7 @@ function requestGachaDraw(count) {
       if (count % Number(data.deleteEvery || 50) === 0) triggerErrorDelete(placed);
     }
 
-    function updatePlacedUnit(placed, dt) {
+    function updatePlacedUnitCore(placed, dt) {
       if (UNIT_DATA[placed.unitId]?.stunImmune) placed.stunRemaining = 0;
       else placed.stunRemaining = Math.max(0, (placed.stunRemaining || 0) - dt);
       placed.attackSlowRemaining = Math.max(0, (placed.attackSlowRemaining || 0) - dt);
@@ -16176,6 +16367,17 @@ function requestGachaDraw(count) {
           );
         }
       });
+    }
+
+    function updatePlacedUnit(placed, dt) {
+      placed.shadowCloneAttackAnimation=Math.max(0,Number(placed.shadowCloneAttackAnimation||0)-dt*7.5);
+      placed.shadowClonePulse=Math.max(0,Number(placed.shadowClonePulse||0)-dt);
+      const before=Number(placed.attackCount||0);
+      updatePlacedUnitCore(placed,dt);
+      const after=Number(placed.attackCount||0);
+      if(after>before && placed.unitId!=='moneyTree' && placedHasTrait(placed,'shadowClone') && !placed._shadowEchoExecuting){
+        scheduleDelayedAttack({kind:'shadowCloneReplay',timer:.10,sourceId:placed.id,shadowClone:true});
+      }
     }
 
     function updateBattle(dt) {
@@ -20359,6 +20561,18 @@ function requestGachaDraw(count) {
       ctx.translate(renderPos.x, renderPos.y);
       if (unit.unitId === 'phoenix' && Number(unit.phoenixFlightRemaining || 0) > 0) ctx.translate(0, -18);
 
+      if (placedHasTrait(unit,'shadowClone')) {
+        const a=Number.isFinite(Number(unit.shadowCloneAngle))?Number(unit.shadowCloneAngle):Number(unit.angle||0);
+        const cloneUnit={...unit,angle:a,attackAnimation:Number(unit.shadowCloneAttackAnimation||0),attackMode:unit.shadowCloneAttackMode||unit.attackMode};
+        ctx.save();
+        ctx.translate(-Math.cos(a)*27,-Math.sin(a)*27+8);
+        ctx.scale(.97,.97);
+        ctx.globalAlpha=.48+Math.min(.18,Number(unit.shadowClonePulse||0)*.35);
+        ctx.filter='grayscale(1) brightness(.08) contrast(2.4)';
+        drawDetailedUnitSprite(cloneUnit,time);
+        ctx.restore();
+      }
+
       if (battle.selectedPlacedUnit === unit) {
         ctx.beginPath();
         ctx.arc(0, 2, 37, 0, Math.PI * 2);
@@ -20498,6 +20712,7 @@ function requestGachaDraw(count) {
         ctx.save();
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
+        if(shot.shadowClone){ctx.filter='grayscale(1) brightness(.16) contrast(2.6)';ctx.globalAlpha=.88;}
 
         if (shot.effect === 'errorPacket') {
           const p = progress;
@@ -23496,16 +23711,27 @@ function requestGachaDraw(count) {
     if(unit.attackCount%Number(data.waveEvery||7)===0) mpTriggerPoseidonWave(targetState,sideKey,unit);
   }
 
-  function mpFireIceQueenArrow(targetState, sideKey, unit, enemy) {
+  function mpFireIceQueenArrow(targetState, sideKey, unit, enemy, shadowClone=false) {
     if(!enemy || enemy.dead) return false;
-    mpPushFx(unit.x,unit.y,enemy.x,enemy.y,UNIT_DATA.iceQueen.color,5,sideKey,'iceArrow');
+    mpPushFx(unit.x,unit.y,enemy.x,enemy.y,UNIT_DATA.iceQueen.color,5,sideKey,'iceArrow',{shadowClone:Boolean(shadowClone)});
     mpApplyDamage(targetState,enemy,mpEffectiveUnitDamage(unit),unit.ownerRole,sideKey);
     if(!enemy.dead) mpApplyIceStatus(enemy,UNIT_DATA.iceQueen);
     return true;
   }
 
+  function mpUpdateIceVortexTrait(targetState,sideKey,unit){
+    if(!placedHasTrait(unit,'iceVortex')) return;
+    unit.iceTraitOrbs=Array.isArray(unit.iceTraitOrbs)?unit.iceTraitOrbs:[];
+    if(unit.iceTraitOrbs.length<8) unit.iceTraitOrbs.push({phase:Math.random()*Math.PI*2});
+    if(unit.iceTraitOrbs.length>=8 && !unit.iceTraitVolleyActive && mpFindTarget(unit,targetState.enemies)){
+      unit.iceTraitVolleyActive=true;
+      mpState.delayedAttacks.push({kind:'iceTraitOrbVolley',at:Date.now()+20,sideKey,unitId:unit.id,ownerRole:unit.ownerRole,shadowClone:Boolean(unit._shadowEchoExecuting)});
+    }
+  }
+
   function mpPerformIceQueenAttack(targetState, sideKey, unit, target) {
     const data=UNIT_DATA.iceQueen; unit.attackMode='iceShot';
+    mpUpdateIceVortexTrait(targetState,sideKey,unit);
     if(unit.attackCount%Number(data.volleyEvery||7)===0){
       playUnitAttackSound('iceQueen',{skill:'iceVolley',volume:1.08});
       mpState.delayedAttacks ||= [];
@@ -24168,7 +24394,7 @@ function requestGachaDraw(count) {
     if(count%Number(d.deleteEvery||50)===0)mpTriggerErrorDelete(targetState,sideKey,unit);
   }
 
-  function mpPerformUnitAttack(targetState, sideKey, unit, target) {
+  function mpPerformUnitAttackCore(targetState, sideKey, unit, target) {
     const data = UNIT_DATA[unit.unitId];
     if (!data || !target || target.dead) return;
     if (unit.unitId !== 'cherrySamurai' && unit.unitId !== 'eclipse') playUnitAttackSound(unit.unitId, { volume: .98 });
@@ -24373,6 +24599,15 @@ function requestGachaDraw(count) {
     }
   }
 
+  function mpPerformUnitAttack(targetState, sideKey, unit, target) {
+    const before=Number(unit.attackCount||0);
+    mpPerformUnitAttackCore(targetState,sideKey,unit,target);
+    const after=Number(unit.attackCount||0);
+    if(after>before && unit.unitId!=='moneyTree' && placedHasTrait(unit,'shadowClone') && !unit._shadowEchoExecuting){
+      mpState.delayedAttacks.push({kind:'shadowCloneReplay',at:Date.now()+100,sideKey,unitId:unit.id,ownerRole:unit.ownerRole,shadowClone:true});
+    }
+  }
+
   function mpUpdateUnits(targetState, dt, sideKey = null) {
     const now = Date.now();
     for (const unit of targetState.units) {
@@ -24380,6 +24615,8 @@ function requestGachaDraw(count) {
       if (unit.unitId === 'cherrySamurai') mpAnimSpeed = unit.attackMode === 'sakuraUltimate' ? .24 : (unit.attackMode === 'sakuraIssen' ? 1.35 : (unit.attackMode === 'sakuraMelee' ? 1.62 : 2.15));
       else if (unit.unitId === 'royalGuardian') mpAnimSpeed = 3.0;
       unit.attackAnimation = Math.max(0, Number(unit.attackAnimation || 0) - dt * mpAnimSpeed);
+      unit.shadowCloneAttackAnimation=Math.max(0,Number(unit.shadowCloneAttackAnimation||0)-dt*mpAnimSpeed);
+      unit.shadowClonePulse=Math.max(0,Number(unit.shadowClonePulse||0)-dt);
       if (unit.unitId === 'cherrySamurai') mpUpdateCherrySamuraiBlossomAura(targetState, sideKey, unit, dt);
       if (unit.unitId === 'astralChronomancer') mpUpdateChronoUnit(targetState, sideKey, unit);
       if (UNIT_DATA[unit.unitId]?.stunImmune) unit.stunUntil = 0;
@@ -24410,61 +24647,97 @@ function requestGachaDraw(count) {
 
   function mpProcessDelayedAttacks() {
     const now = Date.now();
-    const remain = [];
-    for (const attack of mpState.delayedAttacks || []) {
+    const pending=[...(mpState.delayedAttacks||[])];
+    mpState.delayedAttacks=[];
+    for (const attack of pending) {
       if (attack.at > now) {
-        remain.push(attack);
+        mpState.delayedAttacks.push(attack);
         continue;
       }
       const targetState = mpState.mode === 'coop'
         ? mpState.shared
         : mpState.sides[attack.sideKey];
       if (!targetState) continue;
+      if (attack.kind === 'shadowCloneReplay') {
+        const source=(targetState.units||[]).find(u=>u.id===attack.unitId);
+        if(!source || source.unitId==='moneyTree' || !placedHasTrait(source,'shadowClone')) continue;
+        const target=mpFindTarget(source,targetState.enemies);
+        if(!target) continue;
+        const oldCooldown=Number(source.cooldown||0),oldAnimation=Number(source.attackAnimation||0),oldMode=source.attackMode,oldAngle=Number(source.angle||0);
+        const fxBefore=(mpState.fx||[]).length, delayedBefore=mpState.delayedAttacks.length;
+        source._shadowEchoExecuting=true;
+        try{
+          mpPerformUnitAttackCore(targetState,attack.sideKey,source,target);
+          source.shadowCloneAttackAnimation=Math.max(1,Number(source.attackAnimation||1));
+          source.shadowCloneAttackMode=source.attackMode;
+          source.shadowCloneAngle=Number(source.angle||oldAngle);
+          source.shadowClonePulse=.42;
+          for(let i=fxBefore;i<(mpState.fx||[]).length;i++) mpState.fx[i].shadowClone=true;
+          for(let i=delayedBefore;i<mpState.delayedAttacks.length;i++) mpState.delayedAttacks[i].shadowClone=true;
+        }finally{
+          source._shadowEchoExecuting=false;source.cooldown=oldCooldown;source.attackAnimation=oldAnimation;source.attackMode=oldMode;source.angle=oldAngle;
+        }
+        continue;
+      }
+      if (attack.kind === 'iceTraitOrbVolley') {
+        const source=(targetState.units||[]).find(u=>u.id===attack.unitId);
+        if(!source || !placedHasTrait(source,'iceVortex')) continue;
+        source.iceTraitOrbs=Array.isArray(source.iceTraitOrbs)?source.iceTraitOrbs:[];
+        if(!source.iceTraitOrbs.length){source.iceTraitVolleyActive=false;continue;}
+        const target=mpFindTarget(source,targetState.enemies);
+        if(!target){source.iceTraitVolleyActive=false;continue;}
+        source.iceTraitOrbs.shift();
+        mpPushFx(source.x,source.y,target.x,target.y,'#9fefff',6,attack.sideKey,'iceArrow',{shadowClone:Boolean(attack.shadowClone)});
+        mpApplyDamage(targetState,target,mpEffectiveUnitDamage(source),source.ownerRole,attack.sideKey);
+        if(!target.dead) mpApplyIceStatus(target,UNIT_DATA.iceQueen);
+        if(source.iceTraitOrbs.length) mpState.delayedAttacks.push({kind:'iceTraitOrbVolley',at:Date.now()+120,sideKey:attack.sideKey,unitId:source.id,ownerRole:source.ownerRole,shadowClone:Boolean(attack.shadowClone)});
+        else source.iceTraitVolleyActive=false;
+        continue;
+      }
       if (attack.kind === 'poseidonWaveHit') {
         const enemy=(targetState.enemies||[]).find(e=>e.id===attack.enemyId);
         if(enemy && !enemy.dead && Number(enemy.soilPileUntil||0)<=now && Number(enemy.reviveInvulnerableUntil||0)<=now){
           mpApplyDamage(targetState,enemy,Number(attack.damage||0),attack.ownerRole,attack.sideKey);
           if(!enemy.dead){mpApplyWetStatus(enemy,Number(attack.wetDuration||3),Number(attack.wetSlow||.25));mpPushEnemyBackward(enemy,Number(attack.knockback||58));}
-          mpPushFx(enemy.x,enemy.y,enemy.x,enemy.y,'#baf7ff',10,attack.sideKey,'waterImpact');
+          mpPushFx(enemy.x,enemy.y,enemy.x,enemy.y,'#baf7ff',10,attack.sideKey,'waterImpact',{shadowClone:Boolean(attack.shadowClone)});
         }
         continue;
       }
       if (attack.kind === 'poseidonReturn') {
         const owner=(targetState.units||[]).find(u=>u.id===attack.unitId) || {ownerRole:attack.ownerRole};
         playUnitAttackSound('poseidon',{skill:'poseidonReturn',volume:1.02});
-        mpPushFx(attack.x1,attack.y1,attack.x2,attack.y2,'#8cecff',9,attack.sideKey,'poseidonReturn');
+        mpPushFx(attack.x1,attack.y1,attack.x2,attack.y2,'#8cecff',9,attack.sideKey,'poseidonReturn',{shadowClone:Boolean(attack.shadowClone)});
         mpEnemiesAlongLine(targetState,attack.x1,attack.y1,attack.x2,attack.y2,attack.width||20).forEach(e=>mpApplyDamage(targetState,e,attack.damage,owner.ownerRole||attack.ownerRole,attack.sideKey));
         continue;
       }
       if (attack.kind === 'edenDeadeye') {
         const owner=(targetState.units||[]).find(u=>u.id===attack.unitId) || {ownerRole:attack.ownerRole};
         playUnitAttackSound('eden',{skill:'edenDeadeye',volume:1.28});
-        mpPushFx(attack.x1,attack.y1,attack.x2,attack.y2,'#fff',22,attack.sideKey,'edenDeadeye',{width:attack.width||44});
+        mpPushFx(attack.x1,attack.y1,attack.x2,attack.y2,'#fff',22,attack.sideKey,'edenDeadeye',{width:attack.width||44,shadowClone:Boolean(attack.shadowClone)});
         mpEnemiesAlongLine(targetState,attack.x1,attack.y1,attack.x2,attack.y2,Number(attack.width||44)/2)
           .forEach(e=>mpApplyDamage(targetState,e,attack.damage,owner.ownerRole||attack.ownerRole,attack.sideKey));
         continue;
       }
       if (attack.kind === 'iceQueenArrow') {
         const owner=(targetState.units||[]).find(u=>u.id===attack.unitId);
-        if(owner){const enemy=mpFrontmostEnemyInUnitRange(targetState,owner,owner.range);if(enemy)mpFireIceQueenArrow(targetState,attack.sideKey,owner,enemy);}
+        if(owner){const enemy=mpFrontmostEnemyInUnitRange(targetState,owner,owner.range);if(enemy)mpFireIceQueenArrow(targetState,attack.sideKey,owner,enemy,Boolean(attack.shadowClone));}
         continue;
       }
       if (attack.kind === 'sakuraCorridor') {
         playUnitAttackSound('cherrySamurai',{skill:'samuraiUltimateCut',volume:1.04});
         const owner=(targetState.units||[]).find(u=>u.id===attack.unitId) || { ownerRole: attack.ownerRole };
-        mpPushFx(attack.x1,attack.y1,attack.x2,attack.y2,'#ff9bd0',attack.style?.startsWith('diag')?22:15,attack.sideKey,'sakuraUltimateCut',{width:attack.width,style:attack.style});
+        mpPushFx(attack.x1,attack.y1,attack.x2,attack.y2,'#ff9bd0',attack.style?.startsWith('diag')?22:15,attack.sideKey,'sakuraUltimateCut',{width:attack.width,style:attack.style,shadowClone:Boolean(attack.shadowClone)});
         mpDamageAlongSamuraiLine(targetState,attack.sideKey,owner,attack.x1,attack.y1,attack.x2,attack.y2,attack.width||60,attack.damage);
         continue;
       }
       playUnitAttackSound('skyDragonKnight',{skill:'dragonLightning',volume:1.02});
-      mpPushFx(attack.x, attack.y - 120, attack.x, attack.y + 20, '#fff4a5', 7, attack.sideKey, 'lightning', { radius: attack.radius });
+      mpPushFx(attack.x, attack.y - 120, attack.x, attack.y + 20, '#fff4a5', 7, attack.sideKey, 'lightning', { radius: attack.radius, shadowClone:Boolean(attack.shadowClone) });
       [...targetState.enemies].forEach(enemy => {
         if (!enemy.dead && Math.hypot(enemy.x - attack.x, enemy.y - attack.y) <= attack.radius + enemy.radius * .3) {
           mpApplyDamage(targetState, enemy, attack.damage, attack.ownerRole, attack.sideKey);
         }
       });
     }
-    mpState.delayedAttacks = remain;
   }
 
   function mpUpdateFx(dt) {
@@ -25489,6 +25762,11 @@ function requestGachaDraw(count) {
     mpCtx.stroke();
 
     if (unit.unitId === 'cherrySamurai') mpCtx.rotate(mpSamuraiRenderRotation(unit, Date.now()));
+    if(placedHasTrait(unit,'shadowClone')){
+      const a=Number.isFinite(Number(unit.shadowCloneAngle))?Number(unit.shadowCloneAngle):Number(unit.angle||0);
+      const cloneUnit={...unit,angle:a,attackAnimation:Number(unit.shadowCloneAttackAnimation||0),attackMode:unit.shadowCloneAttackMode||unit.attackMode};
+      mpCtx.save();mpCtx.translate(-Math.cos(a)*27,-Math.sin(a)*27+8);mpCtx.scale(.97,.97);mpCtx.globalAlpha=.46+Math.min(.18,Number(unit.shadowClonePulse||0)*.35);mpCtx.filter='grayscale(1) brightness(.08) contrast(2.4)';mpDetailStandingUnitBody(cloneUnit,time);mpDetailAimedUnitWeapon(cloneUnit,data,time);mpCtx.restore();
+    }
     mpDetailStandingUnitBody(unit, time);
     mpDetailAimedUnitWeapon(unit, data, time);
 
@@ -25516,6 +25794,9 @@ function requestGachaDraw(count) {
       });
     }
 
+    if(unit.unitId==='iceQueen' && Array.isArray(unit.iceTraitOrbs) && unit.iceTraitOrbs.length){
+      unit.iceTraitOrbs.forEach((orb,i)=>{const a=time*.0035+(orb.phase||0)+i*.7,r=42+(i%2)*8;mpCtx.save();mpCtx.translate(Math.cos(a)*r,Math.sin(a)*r-8);mpCtx.rotate(a*1.8);mpCtx.shadowBlur=12;mpCtx.shadowColor='#9af3ff';mpCtx.fillStyle='#dffcff';mpCtx.strokeStyle='#65d8ff';mpCtx.beginPath();mpCtx.moveTo(0,-9);mpCtx.lineTo(6,0);mpCtx.lineTo(0,9);mpCtx.lineTo(-6,0);mpCtx.closePath();mpCtx.fill();mpCtx.stroke();mpCtx.restore();});
+    }
     if (unit.unitId === 'eclipse') {
       drawEclipseOrbitArt(mpCtx, time, unit, mpHighLoadFrame ? .72 : 1);
     }
@@ -25849,6 +26130,7 @@ function requestGachaDraw(count) {
       mpCtx.save();
       mpCtx.lineCap = 'round';
       mpCtx.lineJoin = 'round';
+      if(fx.shadowClone){mpCtx.filter='grayscale(1) brightness(.16) contrast(2.6)';mpCtx.globalAlpha=.88;}
 
       if (fx.kind === 'errorPacket') {
         const p=progress,flicker=.72+.28*Math.abs(Math.sin(p*31+Number(fx.seed||0))),bladeLen=50+Math.sin(p*Math.PI)*15;

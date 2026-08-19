@@ -7679,8 +7679,8 @@ button {
   </div>
 
   <script>
-console.log("[LLAMA VISUAL BUILD] 2026-08-19-profile-friends-level-v2");
-    window.BIDULGY_BUILD_VERSION = '2026-08-19-profile-friends-level-v2';
+console.log("[LLAMA VISUAL BUILD] 2026-08-19-friend-search-nickname-v3");
+    window.BIDULGY_BUILD_VERSION = '2026-08-19-friend-search-nickname-v3';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -25898,7 +25898,7 @@ function requestGachaDraw(count) {
   }
   async function saveNickname(){
     const input=document.querySelector('#nicknameInput'), status=document.querySelector('#nicknameStatus'); const btn=document.querySelector('#saveNicknameBtn');
-    const value=input?.value?.trim()||''; btn.disabled=true;
+    const value=(input?.value||'').trim().normalize('NFC'); btn.disabled=true;
     try {
       const rows=await rpc('set_game_nickname',{p_nickname:value}); socialProfile=Array.isArray(rows)?rows[0]:rows;
       player.nickname=socialProfile?.nickname||value; socialNicknameRequired=false; document.querySelector('#socialCloseBtn')?.classList.remove('hidden');
@@ -25906,23 +25906,23 @@ function requestGachaDraw(count) {
     } catch(e){if(status){status.textContent=e.message||String(e);status.className='social-status error';}} finally{btn.disabled=false;}
   }
   async function searchFriends(){
-    const q=document.querySelector('#friendSearchInput')?.value?.trim()||''; const box=document.querySelector('#friendSearchResults'); if(!q){box.innerHTML='<div class="social-empty">닉네임 또는 게임 아이디를 입력하세요.</div>';return;}
+    const q=(document.querySelector('#friendSearchInput')?.value||'').trim().normalize('NFC'); const box=document.querySelector('#friendSearchResults'); if(!q){box.innerHTML='<div class="social-empty">닉네임 또는 게임 아이디를 입력하세요.</div>';return;}
     box.innerHTML='<div class="social-empty">검색 중...</div>';
     try {const rows=await rpc('search_game_profiles',{p_query:q}); renderSearch(Array.isArray(rows)?rows:[]);} catch(e){box.innerHTML=`<div class="social-empty">${safeText(e.message)}</div>`;}
   }
   function personName(row){return row.nickname||row.username||'플레이어';}
   function renderSearch(rows){
-    const box=document.querySelector('#friendSearchResults'); if(!rows.length){box.innerHTML='<div class="social-empty">검색 결과가 없습니다.</div>';return;}
-    box.innerHTML=rows.map(r=>`<div class="social-person"><div class="social-person-copy"><strong>${safeText(personName(r))}</strong><small>@${safeText(r.username)} · Lv.${Number(r.level||1)}</small></div><div class="social-person-actions">${r.relation==='friend'?'<button disabled>친구</button>':r.relation==='pending'?'<button disabled>요청 중</button>':`<button class="accept" data-friend-add="${safeText(r.user_id)}">친구 추가</button>`}</div></div>`).join('');
+    const box=document.querySelector('#friendSearchResults'); if(!rows.length){box.innerHTML='<div class="social-empty">검색 결과가 없습니다. 상대가 기존 계정이라면 한 번 로그인한 뒤 다시 검색해보세요.</div>';return;}
+    box.innerHTML=rows.map(r=>`<div class="social-person"><div class="social-person-copy"><strong>${safeText(personName(r))}</strong><small>Lv.${Number(r.level||1)}</small></div><div class="social-person-actions">${r.relation==='friend'?'<button disabled>친구</button>':r.relation==='pending'?'<button disabled>요청 중</button>':`<button class="accept" data-friend-add="${safeText(r.user_id)}">친구 추가</button>`}</div></div>`).join('');
     box.querySelectorAll('[data-friend-add]').forEach(btn=>btn.addEventListener('click',()=>void sendFriend(btn.dataset.friendAdd,btn)));
   }
   async function sendFriend(id,btn){btn.disabled=true;try{const result=await rpc('send_game_friend_request',{p_target_user_id:id});document.querySelector('#friendStatus').textContent=result==='sent'?'친구 요청을 보냈습니다.':'이미 처리 중인 요청입니다.';await searchFriends();}catch(e){document.querySelector('#friendStatus').textContent=e.message;}finally{btn.disabled=false;}}
   async function refreshFriendData(silent=false){
     if(!player)return; try{const [reqs,friends]=await Promise.all([rpc('list_game_friend_requests'),rpc('list_game_friends')]);renderRequests(reqs||[]);renderFriends(friends||[]);const badge=document.querySelector('#friendRequestBadge');const n=(reqs||[]).length;if(badge){badge.textContent=n;badge.classList.toggle('hidden',n<=0);}}catch(e){if(!silent){const s=document.querySelector('#friendStatus');if(s)s.textContent=`친구 정보를 불러오지 못했습니다: ${e.message}`;}}
   }
-  function renderRequests(rows){const box=document.querySelector('#friendRequestList');if(!box)return;if(!rows.length){box.innerHTML='<div class="social-empty">받은 친구 요청이 없습니다.</div>';return;}box.innerHTML=rows.map(r=>`<div class="social-person"><div class="social-person-copy"><strong>${safeText(personName(r))}</strong><small>@${safeText(r.username)} · Lv.${Number(r.level||1)}</small></div><div class="social-person-actions"><button class="accept" data-friend-accept="${safeText(r.request_id)}">수락</button><button class="danger" data-friend-decline="${safeText(r.request_id)}">거절</button></div></div>`).join('');box.querySelectorAll('[data-friend-accept]').forEach(b=>b.onclick=()=>void respondFriend(b.dataset.friendAccept,true));box.querySelectorAll('[data-friend-decline]').forEach(b=>b.onclick=()=>void respondFriend(b.dataset.friendDecline,false));}
+  function renderRequests(rows){const box=document.querySelector('#friendRequestList');if(!box)return;if(!rows.length){box.innerHTML='<div class="social-empty">받은 친구 요청이 없습니다.</div>';return;}box.innerHTML=rows.map(r=>`<div class="social-person"><div class="social-person-copy"><strong>${safeText(personName(r))}</strong><small>Lv.${Number(r.level||1)}</small></div><div class="social-person-actions"><button class="accept" data-friend-accept="${safeText(r.request_id)}">수락</button><button class="danger" data-friend-decline="${safeText(r.request_id)}">거절</button></div></div>`).join('');box.querySelectorAll('[data-friend-accept]').forEach(b=>b.onclick=()=>void respondFriend(b.dataset.friendAccept,true));box.querySelectorAll('[data-friend-decline]').forEach(b=>b.onclick=()=>void respondFriend(b.dataset.friendDecline,false));}
   async function respondFriend(id,accept){try{await rpc('respond_game_friend_request',{p_request_id:id,p_accept:accept});await refreshFriendData(false);}catch(e){document.querySelector('#friendStatus').textContent=e.message;}}
-  function renderFriends(rows){const box=document.querySelector('#friendList');const count=document.querySelector('#friendCountText');if(count)count.textContent=`${rows.length}명`;if(!box)return;if(!rows.length){box.innerHTML='<div class="social-empty">아직 친구가 없습니다.</div>';return;}box.innerHTML=rows.map(r=>`<div class="social-person"><div class="social-person-copy"><strong>${safeText(personName(r))}</strong><small>@${safeText(r.username)} · Lv.${Number(r.level||1)}</small></div><div class="social-person-actions"><button class="danger" data-friend-remove="${safeText(r.user_id)}">삭제</button></div></div>`).join('');box.querySelectorAll('[data-friend-remove]').forEach(b=>b.onclick=()=>void removeFriend(b.dataset.friendRemove));}
+  function renderFriends(rows){const box=document.querySelector('#friendList');const count=document.querySelector('#friendCountText');if(count)count.textContent=`${rows.length}명`;if(!box)return;if(!rows.length){box.innerHTML='<div class="social-empty">아직 친구가 없습니다.</div>';return;}box.innerHTML=rows.map(r=>`<div class="social-person"><div class="social-person-copy"><strong>${safeText(personName(r))}</strong><small>Lv.${Number(r.level||1)}</small></div><div class="social-person-actions"><button class="danger" data-friend-remove="${safeText(r.user_id)}">삭제</button></div></div>`).join('');box.querySelectorAll('[data-friend-remove]').forEach(b=>b.onclick=()=>void removeFriend(b.dataset.friendRemove));}
   async function removeFriend(id){if(!confirm('친구 목록에서 삭제하시겠습니까?'))return;try{await rpc('remove_game_friend',{p_friend_user_id:id});await refreshFriendData(false);}catch(e){document.querySelector('#friendStatus').textContent=e.message;}}
 
   document.querySelector('#menuProfileBtn')?.addEventListener('click',()=>openSocial('profile',false));

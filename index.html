@@ -15345,10 +15345,11 @@ function requestGachaDraw(count) {
           y1: placed.y - 5,
           x2: target.x,
           y2: target.y,
-          life: getAttackEffectDuration('royalConeSlash'),
-          maxLife: getAttackEffectDuration('royalConeSlash'),
+          life: getAttackEffectDuration('sakuraMelee'),
+          maxLife: getAttackEffectDuration('sakuraMelee'),
           color: data.color,
-          effect: 'royalConeSlash',
+          effect: 'sakuraMelee',
+          slashTheme: 'royal',
           angle: targetAngle,
           seed: Math.random() * 1000,
           radius: meleeRange,
@@ -16244,7 +16245,16 @@ function requestGachaDraw(count) {
       placed.attackSlowRemaining = Math.max(0, (placed.attackSlowRemaining || 0) - dt);
       placed.cooldown -= dt;
       if (placed.unitId === 'cherrySamurai') updateCherrySamuraiBlossomAura(placed, dt);
-      let animationSpeed = placed.unitId === 'royalGuardian' ? 3.0 : 5.5;
+      let animationSpeed = 5.5;
+      if (
+        placed.unitId === 'starterKnight' ||
+        (placed.unitId === 'royalGuardian' && placed.attackMode === 'coneSlash') ||
+        (placed.unitId === 'eclipse' && placed.attackMode !== 'eclipseSpin')
+      ) {
+        animationSpeed = 1.62; // 벚꽃 사무라이 근접 베기와 동일한 재생 속도
+      } else if (placed.unitId === 'royalGuardian') {
+        animationSpeed = 3.0; // 원거리 검기 준비 동작은 기존 유지
+      }
       if (placed.unitId === 'cherrySamurai') {
         animationSpeed = placed.attackMode === 'sakuraUltimate' ? .24 : (placed.attackMode === 'sakuraIssen' ? 1.35 : (placed.attackMode === 'sakuraMelee' ? 1.62 : 2.15));
       }
@@ -16409,19 +16419,22 @@ function requestGachaDraw(count) {
         playUnitAttackSound('eclipse');
         const effect = getAttackEffectType(placed.unitId);
         const duration = getAttackEffectDuration(effect);
+        const slashRadius = eclipseData.normalSlashRadius || 55;
         battle.shots.push({
-          x1: placed.x,
-          y1: placed.y,
+          x1: target.x,
+          y1: target.y,
           x2: target.x,
           y2: target.y,
-          life: duration,
-          maxLife: duration,
+          life: getAttackEffectDuration('sakuraMelee'),
+          maxLife: getAttackEffectDuration('sakuraMelee'),
           color: eclipseData.color,
-          effect,
+          effect: 'sakuraMelee',
+          slashTheme: 'eclipse',
           angle: targetAngle,
+          radius: slashRadius,
+          coneAngle: 180,
           seed: Math.random() * 1000
         });
-        const slashRadius = eclipseData.normalSlashRadius || 55;
         const slashVictims = battle.enemies.filter(enemy =>
           !enemy.dead && Math.hypot(enemy.x - target.x, enemy.y - target.y) <= slashRadius
         );
@@ -16446,9 +16459,9 @@ function requestGachaDraw(count) {
         const slashDamage = placed.damage * (heavy ? (data.heavySlashMultiplier || 2) : 1);
         battle.shots.push({
           x1: placed.x, y1: placed.y - 4, x2: target.x, y2: target.y,
-          life: heavy ? .34 : getAttackEffectDuration('steelSlash'),
-          maxLife: heavy ? .34 : getAttackEffectDuration('steelSlash'),
-          color: data.color, effect: 'steelSlash', angle: targetAngle,
+          life: getAttackEffectDuration('sakuraMelee'),
+          maxLife: getAttackEffectDuration('sakuraMelee'),
+          color: data.color, effect: 'sakuraMelee', slashTheme: 'steel', angle: targetAngle,
           seed: Math.random() * 1000, radius: placed.range, coneAngle
         });
         victims.forEach(enemy => applyDamageToEnemy(enemy, slashDamage));
@@ -19303,7 +19316,9 @@ function requestGachaDraw(count) {
 
     function drawEclipseTwinBladesArt(g, time, unit, attack, quality = 1) {
       const t = time * .001;
-      const swing = attack > 0 ? Math.sin((1 - Math.min(1, attack)) * Math.PI) : 0;
+      // 일반 베기는 벚꽃 사무라이와 같은 전체 검 스윙을 사용하므로
+      // 이클립스 자체의 작은 흔들림은 회전참에서만 유지합니다.
+      const swing = unit?.attackMode === 'eclipseSpin' && attack > 0 ? Math.sin((1 - Math.min(1, attack)) * Math.PI) : 0;
       const hues = [348 + Math.sin(t*.9)*9, 5 + Math.cos(t*.77)*8];
 
       for (let bladeIndex = 0; bladeIndex < 2; bladeIndex += 1) {
@@ -20474,6 +20489,20 @@ function requestGachaDraw(count) {
       }
     }
 
+    function cherrySamuraiMeleeSwingOffset(attackValue) {
+      const attack = Math.max(0, Math.min(1, Number(attackValue || 0)));
+      if (attack <= 0) return 0;
+      const p = 1 - attack;
+      // 벚꽃 사무라이 근접 베기와 완전히 같은: 짧은 백스윙 → 가속 → 180° 베기 → 감속.
+      if (p < .16) {
+        const w = p / .16;
+        return -1.34 - (w * w * (3 - 2 * w)) * .22;
+      }
+      const w = (p - .16) / .84;
+      const eased = w * w * (3 - 2 * w);
+      return -1.56 + eased * 3.12;
+    }
+
     function drawAimedUnitWeapon(unit, data, time) {
       const attack = unit.attackAnimation || 0;
       const recoil = attack * 5;
@@ -20481,14 +20510,18 @@ function requestGachaDraw(count) {
       let weaponAngle = baseAngle;
       let weaponRecoil = recoil;
 
-      if (unit.unitId === 'royalGuardian' && attack > 0) {
+      const usesSamuraiSlashMotion =
+        unit.unitId === 'starterKnight' ||
+        (unit.unitId === 'royalGuardian' && unit.attackMode === 'coneSlash') ||
+        (unit.unitId === 'eclipse' && unit.attackMode !== 'eclipseSpin');
+
+      if (usesSamuraiSlashMotion && attack > 0) {
+        weaponRecoil = 0;
+        weaponAngle += cherrySamuraiMeleeSwingOffset(attack);
+      } else if (unit.unitId === 'royalGuardian' && attack > 0 && unit.attackMode === 'rangedSmash') {
         const motionProgress = 1 - attack;
         weaponRecoil = 0;
-        if (unit.attackMode === 'coneSlash') {
-          weaponAngle += -1.05 + motionProgress * 2.10;
-        } else if (unit.attackMode === 'rangedSmash') {
-          weaponAngle += -1.48 + motionProgress * 1.72;
-        }
+        weaponAngle += -1.48 + motionProgress * 1.72;
       }
 
       if (unit.unitId === 'cherrySamurai') {
@@ -20500,18 +20533,7 @@ function requestGachaDraw(count) {
         } else if (attack > 0) {
           const motionProgress = 1 - attack;
           if (unit.attackMode === 'sakuraMelee') {
-            // 짧게 뒤로 당긴 뒤 가속해서 180°를 베고 끝에서 감속합니다.
-            const p = Math.max(0, Math.min(1, motionProgress));
-            let swing;
-            if (p < .16) {
-              const w = p / .16;
-              swing = -1.34 - (w * w * (3 - 2 * w)) * .22;
-            } else {
-              const w = (p - .16) / .84;
-              const eased = w * w * (3 - 2 * w);
-              swing = -1.56 + eased * 3.12;
-            }
-            weaponAngle += swing;
+            weaponAngle += cherrySamuraiMeleeSwingOffset(attack);
           } else if (unit.attackMode === 'sakuraWave') {
             weaponAngle += -1.42 + motionProgress * 2.84;
           } else if (unit.attackMode === 'sakuraIssen') {
@@ -21200,6 +21222,15 @@ function requestGachaDraw(count) {
           if (progress > .70) trailSpan *= Math.max(0, 1 - (progress - .70) / .30);
           const tailAngle = Math.max(-half, headAngle - trailSpan);
           const vanish = progress < .72 ? 1 : Math.max(0, 1 - (progress - .72) / .28);
+          const slashTheme = String(shot.slashTheme || 'sakura');
+          const slashOuterRgb = slashTheme === 'steel' ? [150, 202, 245]
+            : slashTheme === 'royal' ? [255, 204, 55]
+            : slashTheme === 'eclipse' ? [255, 52, 88]
+            : [255, 120, 185];
+          const slashGlow = slashTheme === 'steel' ? '#c9e9ff'
+            : slashTheme === 'royal' ? '#ffe36e'
+            : slashTheme === 'eclipse' ? '#ff385d'
+            : '#ff86bd';
           ctx.save(); ctx.translate(shot.x1, shot.y1); ctx.rotate(shot.angle);
           ctx.globalCompositeOperation='lighter'; ctx.lineCap='round';
           for (let bladeIndex = 0; bladeIndex < 2; bladeIndex++) {
@@ -21211,12 +21242,12 @@ function requestGachaDraw(count) {
               const a1 = tailAngle + (headAngle - tailAngle) * t1;
               const headWeight = .14 + t1 * .86;
               const alpha = vanish * headWeight;
-              ctx.shadowBlur = 12 + 22 * headWeight; ctx.shadowColor = '#fff2fa';
+              ctx.shadowBlur = 12 + 22 * headWeight; ctx.shadowColor = '#ffffff';
               ctx.strokeStyle = `rgba(255,255,255,${.93 * alpha})`;
               ctx.lineWidth = 5.0 + 4.5 * headWeight;
               ctx.beginPath(); ctx.arc(0, 0, bladeRadius, a0, a1); ctx.stroke();
-              ctx.shadowBlur = 8; ctx.shadowColor = '#ff86bd';
-              ctx.strokeStyle = `rgba(255,120,185,${.52 * alpha})`;
+              ctx.shadowBlur = 8; ctx.shadowColor = slashGlow;
+              ctx.strokeStyle = `rgba(${slashOuterRgb[0]},${slashOuterRgb[1]},${slashOuterRgb[2]},${.52 * alpha})`;
               ctx.lineWidth = 10 + 5 * headWeight;
               ctx.beginPath(); ctx.arc(0, 0, bladeRadius + 2, a0, a1); ctx.stroke();
             }
@@ -21225,14 +21256,16 @@ function requestGachaDraw(count) {
             ctx.shadowBlur=24;ctx.shadowColor='#ffffff';ctx.fillStyle=`rgba(255,255,255,${.92*vanish})`;
             ctx.beginPath();ctx.ellipse(hx,hy,3.2,11,headAngle,0,Math.PI*2);ctx.fill();
           }
-          const petalCount = 15;
-          for (let i=0;i<petalCount;i++) {
-            const local = (i+.5)/petalCount;
-            const a = tailAngle + (headAngle-tailAngle)*local;
-            const d = radius*(.55 + (i%5)*.075);
-            ctx.save();ctx.translate(Math.cos(a)*d,Math.sin(a)*d);ctx.rotate(a+progress*5+i*.8);
-            ctx.fillStyle=`rgba(255,164,210,${vanish*(.30+local*.55)})`;
-            ctx.beginPath();ctx.ellipse(0,0,2.2,5.5,.2,0,Math.PI*2);ctx.fill();ctx.restore();
+          if (slashTheme === 'sakura') {
+            const petalCount = 15;
+            for (let i=0;i<petalCount;i++) {
+              const local = (i+.5)/petalCount;
+              const a = tailAngle + (headAngle-tailAngle)*local;
+              const d = radius*(.55 + (i%5)*.075);
+              ctx.save();ctx.translate(Math.cos(a)*d,Math.sin(a)*d);ctx.rotate(a+progress*5+i*.8);
+              ctx.fillStyle=`rgba(255,164,210,${vanish*(.30+local*.55)})`;
+              ctx.beginPath();ctx.ellipse(0,0,2.2,5.5,.2,0,Math.PI*2);ctx.fill();ctx.restore();
+            }
           }
           ctx.restore();
         } else if (shot.effect === 'sakuraWave') {
@@ -24730,8 +24763,8 @@ function requestGachaDraw(count) {
       }
 
       playUnitAttackSound('eclipse',{volume:.98});
-      mpPushFx(unit.x, unit.y, target.x, target.y, '#ff355d', 7, sideKey, 'eclipseSlash', { radius: eclipseData.normalSlashRadius || 55 });
       const slashRadius = eclipseData.normalSlashRadius || 55;
+      mpPushFx(target.x, target.y, target.x, target.y, '#ff355d', 7, sideKey, 'sakuraMelee', { angle: unit.angle, radius: slashRadius, coneAngle: 180, slashTheme: 'eclipse' });
       [...targetState.enemies]
         .filter(enemy => !enemy.dead && Math.hypot(enemy.x - target.x, enemy.y - target.y) <= slashRadius)
         .forEach(enemy => {
@@ -24754,7 +24787,7 @@ function requestGachaDraw(count) {
         return d <= unit.range && Math.abs(mpAngleDelta(Math.atan2(dy, dx), angle)) <= half;
       });
       const damage = mpEffectiveUnitDamage(unit) * (heavy ? (knightData.heavySlashMultiplier || 2) : 1);
-      mpPushFx(unit.x, unit.y, target.x, target.y, knightData.color || '#dce6f3', heavy ? 10 : 7, sideKey, 'steelSlash', { angle, radius: unit.range, coneAngle });
+      mpPushFx(unit.x, unit.y, target.x, target.y, knightData.color || '#dce6f3', heavy ? 10 : 7, sideKey, 'sakuraMelee', { angle, radius: unit.range, coneAngle, slashTheme: 'steel' });
       victims.forEach(enemy => mpApplyDamage(targetState, enemy, damage, unit.ownerRole, sideKey));
       return;
     }
@@ -24828,7 +24861,7 @@ function requestGachaDraw(count) {
         if (d > (data.meleeRange || 120)) return false;
         return Math.abs(mpAngleDelta(Math.atan2(dy, dx), angle)) <= half;
       });
-      mpPushFx(unit.x, unit.y, target.x, target.y, '#ffd04a', 8, sideKey, 'royalCone', { angle, radius: data.meleeRange || 120, coneAngle: data.coneAngle || 120 });
+      mpPushFx(unit.x, unit.y, target.x, target.y, '#ffd04a', 8, sideKey, 'sakuraMelee', { angle, radius: data.meleeRange || 120, coneAngle: data.coneAngle || 120, slashTheme: 'royal' });
       victims.forEach(enemy => mpApplyDamage(targetState, enemy, mpEffectiveUnitDamage(unit), unit.ownerRole, sideKey));
       return;
     }
@@ -24886,6 +24919,11 @@ function requestGachaDraw(count) {
     for (const unit of targetState.units) {
       let mpAnimSpeed = 6.5;
       if (unit.unitId === 'cherrySamurai') mpAnimSpeed = unit.attackMode === 'sakuraUltimate' ? .24 : (unit.attackMode === 'sakuraIssen' ? 1.35 : (unit.attackMode === 'sakuraMelee' ? 1.62 : 2.15));
+      else if (
+        unit.unitId === 'starterKnight' ||
+        (unit.unitId === 'royalGuardian' && unit.attackMode === 'coneSlash') ||
+        (unit.unitId === 'eclipse' && unit.attackMode !== 'eclipseSpin')
+      ) mpAnimSpeed = 1.62;
       else if (unit.unitId === 'royalGuardian') mpAnimSpeed = 3.0;
       unit.attackAnimation = Math.max(0, Number(unit.attackAnimation || 0) - dt * mpAnimSpeed);
       unit.shadowCloneAttackAnimation=Math.max(0,Number(unit.shadowCloneAttackAnimation||0)-dt*mpAnimSpeed);
@@ -25910,18 +25948,22 @@ function requestGachaDraw(count) {
         let weaponAngle = baseAngle;
         let weaponRecoil = recoil;
   
-        if (unit.unitId === 'royalGuardian' && attack > 0) {
+        const usesSamuraiSlashMotion =
+          unit.unitId === 'starterKnight' ||
+          (unit.unitId === 'royalGuardian' && unit.attackMode === 'coneSlash') ||
+          (unit.unitId === 'eclipse' && unit.attackMode !== 'eclipseSpin');
+
+        if (usesSamuraiSlashMotion && attack > 0) {
+          weaponRecoil = 0;
+          weaponAngle += cherrySamuraiMeleeSwingOffset(attack);
+        } else if (unit.unitId === 'royalGuardian' && attack > 0 && unit.attackMode === 'rangedSmash') {
           const motionProgress = 1 - attack;
           weaponRecoil = 0;
-          if (unit.attackMode === 'coneSlash') {
-            weaponAngle += -1.05 + motionProgress * 2.10;
-          } else if (unit.attackMode === 'rangedSmash') {
-            weaponAngle += -1.48 + motionProgress * 1.72;
-          }
+          weaponAngle += -1.48 + motionProgress * 1.72;
         }
 
         if (unit.unitId === 'cherrySamurai') {
-          weaponRecoil=0;const wallNow=Date.now(),bloom=unit.samuraiBloomCast,bloomActive=bloom&&wallNow>=Number(bloom.startAt||0)&&wallNow<=Number(bloom.endAt||0);if(bloomActive){weaponAngle=-Math.PI/2;}else if(attack>0){const p=1-attack;if(unit.attackMode==='sakuraMelee'){let swing;if(p<.16){const w=p/.16;swing=-1.34-(w*w*(3-2*w))*.22;}else{const w=(p-.16)/.84,e=w*w*(3-2*w);swing=-1.56+e*3.12;}weaponAngle+=swing;}else if(unit.attackMode==='sakuraWave')weaponAngle+=-1.42+p*2.84;else if(unit.attackMode==='sakuraIssen')weaponAngle+=.78;else if(unit.attackMode==='sakuraUltimate')weaponAngle+=Math.sin(p*Math.PI*4)*.85;}
+          weaponRecoil=0;const wallNow=Date.now(),bloom=unit.samuraiBloomCast,bloomActive=bloom&&wallNow>=Number(bloom.startAt||0)&&wallNow<=Number(bloom.endAt||0);if(bloomActive){weaponAngle=-Math.PI/2;}else if(attack>0){const p=1-attack;if(unit.attackMode==='sakuraMelee')weaponAngle+=cherrySamuraiMeleeSwingOffset(attack);else if(unit.attackMode==='sakuraWave')weaponAngle+=-1.42+p*2.84;else if(unit.attackMode==='sakuraIssen')weaponAngle+=.78;else if(unit.attackMode==='sakuraUltimate')weaponAngle+=Math.sin(p*Math.PI*4)*.85;}
         }
   
         mpCtx.save();
@@ -26470,9 +26512,11 @@ function requestGachaDraw(count) {
         mpCtx.fillStyle=g;mpCtx.beginPath();mpCtx.moveTo(0,0);mpCtx.arc(0,0,radius,-half,half);mpCtx.closePath();mpCtx.fill();
         for(let i=0;i<3;i+=1){mpCtx.strokeStyle=`rgba(255,239,130,${pulse*(.9-i*.2)})`;mpCtx.lineWidth=7-i*1.7;mpCtx.beginPath();mpCtx.arc(0,0,radius*(.62+i*.15),-half,half);mpCtx.stroke();}mpCtx.strokeStyle=`rgba(255,255,245,${.95*pulse})`;mpCtx.lineWidth=3;mpCtx.beginPath();mpCtx.arc(0,0,radius*(.82+progress*.08),-half*.96,half*.96);mpCtx.stroke();
       } else if (fx.kind === 'sakuraMelee') {
-        const radius=Number(fx.radius||120),half=((Number(fx.coneAngle||180)*Math.PI/180)/2),total=half*2,motion=Math.max(0,Math.min(1,progress/.78)),eased=motion*motion*(3-2*motion),head=-half+total*eased;let span=total*Math.min(.62,Math.max(.08,motion*.90));if(progress>.70)span*=Math.max(0,1-(progress-.70)/.30);const tail=Math.max(-half,head-span),vanish=progress<.72?1:Math.max(0,1-(progress-.72)/.28);mpCtx.translate(fx.x1,y1);mpCtx.rotate(fx.angle||angle);mpCtx.globalCompositeOperation='lighter';mpCtx.lineCap='round';
-        for(let b=0;b<2;b++){const rr=radius*(b===0?.78:.90),segs=mpHighLoadFrame?10:18;for(let seg=0;seg<segs;seg++){const t0=seg/segs,t1=(seg+1)/segs,a0=tail+(head-tail)*t0,a1=tail+(head-tail)*t1,w=.14+t1*.86,alpha=vanish*w;mpCtx.shadowBlur=mpHighLoadFrame?10:12+20*w;mpCtx.shadowColor='#fff2fa';mpCtx.strokeStyle=`rgba(255,255,255,${.93*alpha})`;mpCtx.lineWidth=5+4.5*w;mpCtx.beginPath();mpCtx.arc(0,0,rr,a0,a1);mpCtx.stroke();mpCtx.shadowBlur=7;mpCtx.shadowColor='#ff86bd';mpCtx.strokeStyle=`rgba(255,120,185,${.50*alpha})`;mpCtx.lineWidth=10+5*w;mpCtx.beginPath();mpCtx.arc(0,0,rr+2,a0,a1);mpCtx.stroke();}const hx=Math.cos(head)*rr,hy=Math.sin(head)*rr;mpCtx.shadowBlur=20;mpCtx.shadowColor='#fff';mpCtx.fillStyle=`rgba(255,255,255,${.9*vanish})`;mpCtx.beginPath();mpCtx.ellipse(hx,hy,3,10,head,0,Math.PI*2);mpCtx.fill();}
-        if(!mpHighLoadFrame){for(let i=0;i<12;i++){const local=(i+.5)/12,a=tail+(head-tail)*local,d=radius*(.55+(i%4)*.09);mpCtx.save();mpCtx.translate(Math.cos(a)*d,Math.sin(a)*d);mpCtx.rotate(a+progress*5+i*.8);mpCtx.fillStyle=`rgba(255,164,210,${vanish*(.3+local*.5)})`;mpCtx.beginPath();mpCtx.ellipse(0,0,2.1,5.2,.2,0,Math.PI*2);mpCtx.fill();mpCtx.restore();}}
+        const radius=Number(fx.radius||120),half=((Number(fx.coneAngle||180)*Math.PI/180)/2),total=half*2,motion=Math.max(0,Math.min(1,progress/.78)),eased=motion*motion*(3-2*motion),head=-half+total*eased;let span=total*Math.min(.62,Math.max(.08,motion*.90));if(progress>.70)span*=Math.max(0,1-(progress-.70)/.30);const tail=Math.max(-half,head-span),vanish=progress<.72?1:Math.max(0,1-(progress-.72)/.28);
+        const slashTheme=String(fx.slashTheme||'sakura'),slashOuter=slashTheme==='steel'?[150,202,245]:slashTheme==='royal'?[255,204,55]:slashTheme==='eclipse'?[255,52,88]:[255,120,185],slashGlow=slashTheme==='steel'?'#c9e9ff':slashTheme==='royal'?'#ffe36e':slashTheme==='eclipse'?'#ff385d':'#ff86bd';
+        mpCtx.translate(fx.x1,y1);mpCtx.rotate(fx.angle||angle);mpCtx.globalCompositeOperation='lighter';mpCtx.lineCap='round';
+        for(let b=0;b<2;b++){const rr=radius*(b===0?.78:.90),segs=mpHighLoadFrame?10:18;for(let seg=0;seg<segs;seg++){const t0=seg/segs,t1=(seg+1)/segs,a0=tail+(head-tail)*t0,a1=tail+(head-tail)*t1,w=.14+t1*.86,alpha=vanish*w;mpCtx.shadowBlur=mpHighLoadFrame?10:12+20*w;mpCtx.shadowColor='#fff';mpCtx.strokeStyle=`rgba(255,255,255,${.93*alpha})`;mpCtx.lineWidth=5+4.5*w;mpCtx.beginPath();mpCtx.arc(0,0,rr,a0,a1);mpCtx.stroke();mpCtx.shadowBlur=7;mpCtx.shadowColor=slashGlow;mpCtx.strokeStyle=`rgba(${slashOuter[0]},${slashOuter[1]},${slashOuter[2]},${.50*alpha})`;mpCtx.lineWidth=10+5*w;mpCtx.beginPath();mpCtx.arc(0,0,rr+2,a0,a1);mpCtx.stroke();}const hx=Math.cos(head)*rr,hy=Math.sin(head)*rr;mpCtx.shadowBlur=20;mpCtx.shadowColor='#fff';mpCtx.fillStyle=`rgba(255,255,255,${.9*vanish})`;mpCtx.beginPath();mpCtx.ellipse(hx,hy,3,10,head,0,Math.PI*2);mpCtx.fill();}
+        if(slashTheme==='sakura'&&!mpHighLoadFrame){for(let i=0;i<12;i++){const local=(i+.5)/12,a=tail+(head-tail)*local,d=radius*(.55+(i%4)*.09);mpCtx.save();mpCtx.translate(Math.cos(a)*d,Math.sin(a)*d);mpCtx.rotate(a+progress*5+i*.8);mpCtx.fillStyle=`rgba(255,164,210,${vanish*(.3+local*.5)})`;mpCtx.beginPath();mpCtx.ellipse(0,0,2.1,5.2,.2,0,Math.PI*2);mpCtx.fill();mpCtx.restore();}}
       } else if (fx.kind === 'sakuraWave') {
         const tail=84,tx=x-ux*tail,ty=y-uy*tail;mpCtx.save();mpCtx.translate(x,y);mpCtx.rotate(angle);mpCtx.globalCompositeOperation='lighter';mpCtx.shadowBlur=mpHighLoadFrame?18:32;mpCtx.shadowColor='#e9fbff';const blade=mpCtx.createLinearGradient(-78,0,38,0);blade.addColorStop(0,'rgba(150,225,255,0)');blade.addColorStop(.35,`rgba(185,240,255,${.34*fade})`);blade.addColorStop(.68,`rgba(225,249,255,${.84*fade})`);blade.addColorStop(.88,`rgba(255,225,244,${.92*fade})`);blade.addColorStop(1,`rgba(255,255,255,${fade})`);mpCtx.fillStyle=blade;mpCtx.beginPath();mpCtx.moveTo(-72,-3);mpCtx.quadraticCurveTo(-8,-31,38,-2);mpCtx.quadraticCurveTo(11,6,-72,5);mpCtx.closePath();mpCtx.fill();mpCtx.strokeStyle=`rgba(255,255,255,${fade})`;mpCtx.lineWidth=3.1;mpCtx.beginPath();mpCtx.moveTo(-58,-2);mpCtx.quadraticCurveTo(2,-24,36,-1);mpCtx.stroke();mpCtx.restore();mpCtx.strokeStyle=`rgba(205,243,255,${.30*fade})`;mpCtx.lineWidth=13;mpCtx.beginPath();mpCtx.moveTo(tx,ty);mpCtx.lineTo(x,y);mpCtx.stroke();mpCtx.strokeStyle=`rgba(255,145,201,${.28*fade})`;mpCtx.lineWidth=7;mpCtx.beginPath();mpCtx.moveTo(tx-ny*5,ty+nx*5);mpCtx.lineTo(x-ny*2,y+nx*2);mpCtx.stroke();for(let i=0;i<(mpHighLoadFrame?6:12);i++){const back=12+i*7,side=Math.sin(fx.seed+i*2.1)*14;mpCtx.save();mpCtx.translate(x-ux*back+nx*side,y-uy*back+ny*side);mpCtx.rotate(angle+i*.85+progress*2);mpCtx.fillStyle=`rgba(255,170,214,${fade*(.86-i*.045)})`;mpCtx.beginPath();mpCtx.ellipse(0,0,2.2,5.3,0,0,Math.PI*2);mpCtx.fill();mpCtx.restore();}
       } else if (fx.kind === 'sakuraIssen' || fx.kind === 'sakuraUltimateCut') {

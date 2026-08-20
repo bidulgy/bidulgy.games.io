@@ -16227,7 +16227,7 @@ function requestGachaDraw(count) {
           life: getAttackEffectDuration('errorPacket'), maxLife: getAttackEffectDuration('errorPacket'),
           color: '#00ff66', effect: 'errorPacket', angle: shotAngle,
           seed: Math.random() * 1000 + i * 137,
-          radius: Number(data.errorPacketSplashRadius || 58), volleyIndex: i
+          radius: Number(data.errorPacketSplashRadius || 58), volleyIndex: i, volleyCount: volleyCount
         });
         applyErrorPacketSplash(placed, impactX, impactY, Number(placed.damage || data.damage));
       }
@@ -20994,28 +20994,75 @@ function requestGachaDraw(count) {
       const clamp01 = value => Math.max(0, Math.min(1, value));
       const lerp = (start, end, amount) => start + (end - start) * amount;
 
+      // ERROR의 5발 탄환은 한 점에서 출발해 위/아래로 크게 벌어졌다가
+      // 같은 적에게 모이는 곡선 궤도를 사용합니다.
+      const errorPacketCurveState = (x1, y1, x2, y2, t, volleyIndex = 0, volleyCount = 5, seed = 0) => {
+        const safeT = clamp01(t);
+        const dx = x2 - x1, dy = y2 - y1;
+        const distance = Math.max(1, Math.hypot(dx, dy));
+        const ux0 = dx / distance, uy0 = dy / distance;
+        const nx0 = -uy0, ny0 = ux0;
+        const count = Math.max(1, Math.floor(Number(volleyCount || 5)));
+        const center = (count - 1) / 2;
+        const normalized = center > 0 ? (Number(volleyIndex || 0) - center) / center : 0;
+        const amplitude = Math.min(205, Math.max(74, distance * .36));
+        const absN = Math.min(1.35, Math.abs(normalized));
+        let bow = Math.sign(normalized) * amplitude * (.28 + .78 * Math.pow(absN, .88));
+        // 가운데 탄환도 완전 직선 대신 아주 살짝 위로 휘게 합니다.
+        if (Math.abs(normalized) < .08) bow = -amplitude * .075;
+        // 발수가 5발을 넘는 경우 동일 궤도가 정확히 겹치지 않도록 아주 작은 차이를 줍니다.
+        const extra = count > 5 ? Math.sin(Number(seed || 0) * .017 + Number(volleyIndex || 0) * 1.73) * 12 : 0;
+        bow += extra;
+
+        const c1x = x1 + dx * .28 + nx0 * bow * .92;
+        const c1y = y1 + dy * .28 + ny0 * bow * .92;
+        const c2x = x1 + dx * .70 + nx0 * bow * 1.08;
+        const c2y = y1 + dy * .70 + ny0 * bow * 1.08;
+
+        const mt = 1 - safeT;
+        const x = mt*mt*mt*x1 + 3*mt*mt*safeT*c1x + 3*mt*safeT*safeT*c2x + safeT*safeT*safeT*x2;
+        const y = mt*mt*mt*y1 + 3*mt*mt*safeT*c1y + 3*mt*safeT*safeT*c2y + safeT*safeT*safeT*y2;
+        const tx = 3*mt*mt*(c1x-x1) + 6*mt*safeT*(c2x-c1x) + 3*safeT*safeT*(x2-c2x);
+        const ty = 3*mt*mt*(c1y-y1) + 6*mt*safeT*(c2y-c1y) + 3*safeT*safeT*(y2-c2y);
+        const tangentLen = Math.max(.001, Math.hypot(tx, ty));
+        const ux = tx / tangentLen, uy = ty / tangentLen;
+        return { x, y, ux, uy, nx: -uy, ny: ux, angle: Math.atan2(ty, tx) };
+      };
+
       battle.shots.forEach(shot => {
         const progress = clamp01(1 - shot.life / shot.maxLife);
         const travel = 1 - Math.pow(1 - progress, 3);
         const dx = shot.x2 - shot.x1;
         const dy = shot.y2 - shot.y1;
         const distance = Math.max(1, Math.hypot(dx, dy));
-        const ux = dx / distance;
-        const uy = dy / distance;
-        const nx = -uy;
-        const ny = ux;
-        const x = lerp(shot.x1, shot.x2, travel);
-        const y = lerp(shot.y1, shot.y2, travel);
+        let ux = dx / distance;
+        let uy = dy / distance;
+        let nx = -uy;
+        let ny = ux;
+        let x = lerp(shot.x1, shot.x2, travel);
+        let y = lerp(shot.y1, shot.y2, travel);
         const fade = Math.max(0, 1 - progress);
-        const angle = Math.atan2(dy, dx);
+        let angle = Math.atan2(dy, dx);
+
+        if (shot.effect === 'errorPacket') {
+          const curve = errorPacketCurveState(
+            shot.x1, shot.y1, shot.x2, shot.y2, travel,
+            shot.volleyIndex, shot.volleyCount, shot.seed
+          );
+          x = curve.x; y = curve.y;
+          ux = curve.ux; uy = curve.uy;
+          nx = curve.nx; ny = curve.ny;
+          angle = curve.angle;
+        }
 
         ctx.save();
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         if(shot.shadowClone){
-          const shadowSwordFx = ['royalSwordWave','sakuraWave','sakuraMelee','sakuraIssen','sakuraUltimateCut','eclipseSpin'].includes(String(shot.effect||''));
-          ctx.filter = shadowSwordFx ? 'brightness(0)' : 'grayscale(1) brightness(.16) contrast(2.6)';
-          ctx.globalAlpha = shadowSwordFx ? .96 : .88;
+          // 그림자분신의 탄환/검기/슬래시는 원본 색이 남지 않도록 진한 순검정으로 통일합니다.
+          ctx.filter = 'brightness(0) contrast(4)';
+          ctx.globalAlpha = .99;
+          ctx.shadowColor = '#000000';
         }
 
         if (shot.effect === 'errorPacket') {
@@ -21024,7 +21071,31 @@ function requestGachaDraw(count) {
           const bladeLen = 52 + Math.sin(p*Math.PI)*16;
           const tailLen = 82;
           ctx.save();
-          ctx.globalCompositeOperation='lighter';
+          ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter';
+
+          // 사용자가 그린 형태처럼 5개의 탄환 궤적이 위/아래로 퍼졌다가 목표에 합쳐지는 잔상.
+          const trailStart = Math.max(0, travel - .32);
+          ctx.save();
+          ctx.globalCompositeOperation = shot.shadowClone ? 'source-over' : 'source-over';
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          for (let s = 0; s <= 12; s++) {
+            const tt = trailStart + (travel - trailStart) * (s / 12);
+            const cp = errorPacketCurveState(
+              shot.x1, shot.y1, shot.x2, shot.y2, tt,
+              shot.volleyIndex, shot.volleyCount, shot.seed
+            );
+            if (s === 0) ctx.moveTo(cp.x, cp.y); else ctx.lineTo(cp.x, cp.y);
+          }
+          ctx.strokeStyle = shot.shadowClone ? 'rgba(0,0,0,.98)' : `rgba(0,18,6,${.72*fade})`;
+          ctx.lineWidth = shot.shadowClone ? 8.5 : 7;
+          ctx.stroke();
+          if (!shot.shadowClone) {
+            ctx.strokeStyle = `rgba(0,255,102,${.42*fade})`;
+            ctx.lineWidth = 2.2;
+            ctx.stroke();
+          }
+          ctx.restore();
           // 궤적은 하나의 직선이 아니라 짧게 끊긴 데이터 패킷들로 보이게 한다.
           for(let i=0;i<7;i++){
             const back=18+i*10;
@@ -21059,7 +21130,7 @@ function requestGachaDraw(count) {
           ctx.restore();
         } else if (shot.effect === 'error404' || shot.effect === 'errorCorrupt' || shot.effect === 'errorRollback' || shot.effect === 'errorSystem' || shot.effect === 'errorDelete') {
           const p = progress, alpha = Math.max(0, 1-p), r = Number(shot.radius || 58);
-          ctx.save(); ctx.translate(shot.x1, shot.y1); ctx.globalCompositeOperation='lighter';
+          ctx.save(); ctx.translate(shot.x1, shot.y1); ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter';
           if (shot.effect === 'errorSystem') {
             ctx.strokeStyle=`rgba(0,255,102,${.50*alpha})`; ctx.lineWidth=8*(1-p)+2; ctx.setLineDash([18,8,4,9]);
             ctx.beginPath(); ctx.arc(0,0,Math.max(24,r*p),0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
@@ -21084,7 +21155,7 @@ function requestGachaDraw(count) {
           ctx.restore();
         } else if (shot.effect === 'crystalRay') {
           const pulse=Math.sin(progress*Math.PI);
-          ctx.save();ctx.globalCompositeOperation='lighter';
+          ctx.save();ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter';
           const endProgress=Math.min(1,progress*2.4);
           const ex=shot.x1+dx*endProgress, ey=shot.y1+dy*endProgress;
           ctx.strokeStyle=`rgba(101,235,255,${.36+fade*.35})`;ctx.lineWidth=14*pulse+4;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.lineTo(ex,ey);ctx.stroke();
@@ -21242,7 +21313,7 @@ function requestGachaDraw(count) {
             : slashTheme === 'eclipse' ? '#ff385d'
             : '#ff86bd';
           ctx.save(); ctx.translate(shot.x1, shot.y1); ctx.rotate(shot.angle);
-          ctx.globalCompositeOperation='lighter'; ctx.lineCap='round';
+          ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter'; ctx.lineCap='round';
           for (let bladeIndex = 0; bladeIndex < 2; bladeIndex++) {
             const bladeRadius = radius * (bladeIndex === 0 ? .78 : .90);
             const segments = 20;
@@ -21280,7 +21351,7 @@ function requestGachaDraw(count) {
           ctx.restore();
         } else if (shot.effect === 'sakuraWave') {
           const tail=84; const tx=x-ux*tail, ty=y-uy*tail;
-          ctx.save(); ctx.translate(x,y); ctx.rotate(angle); ctx.globalCompositeOperation='lighter';
+          ctx.save(); ctx.translate(x,y); ctx.rotate(angle); ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter';
           ctx.shadowBlur=32;ctx.shadowColor='#e9fbff';
           // 길고 얇은 초승달 검기. 중심은 백색, 바깥은 청백색과 벚꽃색으로 겹칩니다.
           const blade=ctx.createLinearGradient(-78,0,38,0);
@@ -21306,7 +21377,7 @@ function requestGachaDraw(count) {
           const flash = Math.max(0, 1 - Math.max(0, progress - .20) / .80);
           const pathWidth = Math.max(10, Number(shot.width || (ultimate ? 60 : 60)));
           ctx.save();
-          ctx.globalCompositeOperation = 'lighter';
+          ctx.globalCompositeOperation = shot.shadowClone ? 'source-over' : 'lighter';
           ctx.lineCap = 'round';
           ctx.shadowColor = xCut ? '#fff9fd' : '#ff72b6';
           ctx.shadowBlur = xCut ? 46 : 30;
@@ -21352,7 +21423,7 @@ function requestGachaDraw(count) {
 
           if (xCut) {
             const mx=(shot.x1+shot.x2)/2,my=(shot.y1+shot.y2)/2;
-            ctx.save(); ctx.globalCompositeOperation='lighter';
+            ctx.save(); ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter';
             const shock = ctx.createRadialGradient(mx,my,8,mx,my,68 + progress*60);
             shock.addColorStop(0,`rgba(255,245,252,${.24*flash})`);
             shock.addColorStop(.48,`rgba(255,98,170,${.12*flash})`);
@@ -21363,7 +21434,7 @@ function requestGachaDraw(count) {
           const radius = Number(shot.radius || 52);
           const p = Math.min(1, progress * 1.18);
           const alpha = Math.max(0, 1 - progress);
-          ctx.save(); ctx.translate(shot.x1, shot.y1); ctx.globalCompositeOperation='lighter';
+          ctx.save(); ctx.translate(shot.x1, shot.y1); ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter';
           const burst = ctx.createRadialGradient(0,0,2,0,0,radius*(.35+p));
           burst.addColorStop(0,`rgba(255,255,255,${.95*alpha})`);
           burst.addColorStop(.22,`rgba(255,177,221,${.8*alpha})`);
@@ -21504,7 +21575,7 @@ function requestGachaDraw(count) {
           const spinRadius = Math.max(62, Number(shot.radius || 90));
           ctx.save();
           ctx.translate(shot.x2, shot.y2);
-          ctx.globalCompositeOperation = 'lighter';
+          ctx.globalCompositeOperation = shot.shadowClone ? 'source-over' : 'lighter';
 
           // 실제 범위와 동일한 월식 경계. 일식 성장 횟수에 따라 함께 커집니다.
           ctx.setLineDash([9, 7]);
@@ -21569,7 +21640,7 @@ function requestGachaDraw(count) {
         } else if (shot.effect === 'eclipseSlash') {
           const pulse = Math.sin(progress * Math.PI);
           ctx.save(); ctx.translate(shot.x2, shot.y2); ctx.rotate(shot.angle);
-          ctx.globalCompositeOperation='lighter';
+          ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter';
           ctx.shadowBlur=30; ctx.shadowColor='#ff234f';
           for (let layer=0; layer<5; layer+=1) {
             const r=31+layer*8;
@@ -21585,7 +21656,7 @@ function requestGachaDraw(count) {
           ctx.restore();
         } else if (shot.effect === 'iceArrow') {
           const tailX=x-ux*46,tailY=y-uy*46;
-          ctx.save();ctx.globalCompositeOperation='lighter';
+          ctx.save();ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter';
           ctx.shadowBlur=22;ctx.shadowColor='#8ee7ff';
           const trail=ctx.createLinearGradient(tailX,tailY,x,y);trail.addColorStop(0,'rgba(100,220,255,0)');trail.addColorStop(.48,`rgba(126,229,255,${.48*fade})`);trail.addColorStop(1,`rgba(240,255,255,${.94*fade})`);
           ctx.strokeStyle=trail;ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(tailX,tailY);ctx.lineTo(x,y);ctx.stroke();
@@ -21599,13 +21670,13 @@ function requestGachaDraw(count) {
           if(progress>.68){const q=(progress-.68)/.32;ctx.translate(shot.x2,shot.y2);ctx.strokeStyle=`rgba(210,250,255,${1-q})`;ctx.lineWidth=2.2;for(let i=0;i<6;i++){const a=i*Math.PI/3;ctx.beginPath();ctx.moveTo(Math.cos(a)*5,Math.sin(a)*5);ctx.lineTo(Math.cos(a)*(12+q*18),Math.sin(a)*(12+q*18));ctx.stroke();}}
           ctx.restore();
         } else if (shot.effect === 'poseidonThrust') {
-          const pulse=Math.sin(progress*Math.PI);ctx.save();ctx.translate(shot.x1,shot.y1);ctx.rotate(shot.angle);ctx.globalCompositeOperation='lighter';
+          const pulse=Math.sin(progress*Math.PI);ctx.save();ctx.translate(shot.x1,shot.y1);ctx.rotate(shot.angle);ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter';
           ctx.strokeStyle=`rgba(230,253,255,${.92*pulse})`;ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(4,0);ctx.lineTo(95*progress,0);ctx.stroke();
           ctx.strokeStyle=`rgba(49,201,255,${.48*pulse})`;ctx.lineWidth=14;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(90*progress,0);ctx.stroke();
           for(const off of [-8,0,8]){ctx.strokeStyle=`rgba(220,250,255,${.75*pulse})`;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(72*progress,0);ctx.lineTo(96*progress,off);ctx.stroke();}ctx.restore();
         } else if (shot.effect === 'poseidonTrident' || shot.effect === 'poseidonReturn') {
           const returning=shot.effect==='poseidonReturn',tail=returning?34:58,tailX=x-ux*tail,tailY=y-uy*tail;
-          ctx.save();ctx.globalCompositeOperation='lighter';ctx.shadowBlur=24;ctx.shadowColor='#35d9ff';
+          ctx.save();ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter';ctx.shadowBlur=24;ctx.shadowColor='#35d9ff';
           // 해류 꼬리
           for(let layer=0;layer<3;layer++){ctx.strokeStyle=`rgba(${95+layer*45},${220+layer*12},255,${(.44-layer*.09)*fade})`;ctx.lineWidth=16-layer*5;ctx.beginPath();ctx.moveTo(tailX+nx*layer*3,tailY+ny*layer*3);ctx.quadraticCurveTo((tailX+x)/2+nx*Math.sin(progress*18+layer)*10,(tailY+y)/2+ny*Math.sin(progress*18+layer)*10,x,y);ctx.stroke();}
           // 회전 물고리
@@ -21627,7 +21698,7 @@ function requestGachaDraw(count) {
           const eased=1-Math.pow(1-Math.min(1,progress),2.1);
           const headD=total*eased,tailD=Math.max(0,headD-170),head=atDist(headD);
           const pulse=Math.min(1,progress/.12)*Math.min(1,(1-progress)/.12+0.18);
-          ctx.save();ctx.globalCompositeOperation='lighter';ctx.lineCap='round';ctx.lineJoin='round';
+          ctx.save();ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter';ctx.lineCap='round';ctx.lineJoin='round';
           // 파도가 지나간 자리의 짧은 수류 꼬리만 남긴다. 길 전체가 동시에 빛나지 않는다.
           const samples=[];for(let i=0;i<=18;i++)samples.push(atDist(tailD+(headD-tailD)*(i/18)));
           for(let l=0;l<4;l++){ctx.strokeStyle=`rgba(${58+l*28},${176+l*18},${225+l*8},${(.20+l*.07)*pulse})`;ctx.lineWidth=54-l*9;ctx.beginPath();samples.forEach((pt,i)=>i?ctx.lineTo(pt.x,pt.y):ctx.moveTo(pt.x,pt.y));ctx.stroke();}
@@ -21649,7 +21720,7 @@ function requestGachaDraw(count) {
           ctx.restore();
         } else if (shot.effect === 'waterImpact') {
           const pulse = Math.sin(progress * Math.PI);
-          ctx.save(); ctx.translate(shot.x1, shot.y1); ctx.globalCompositeOperation = 'lighter';
+          ctx.save(); ctx.translate(shot.x1, shot.y1); ctx.globalCompositeOperation = shot.shadowClone ? 'source-over' : 'lighter';
           for (let i = 0; i < 3; i++) {
             ctx.strokeStyle = `rgba(${170+i*25},${235+i*6},255,${pulse*(.72-i*.16)})`;
             ctx.lineWidth = 5 - i;
@@ -21663,38 +21734,38 @@ function requestGachaDraw(count) {
           }
           ctx.restore();
         } else if (shot.effect === 'llamaSpit') {
-          const p=Math.sin(progress*Math.PI);ctx.save();ctx.globalCompositeOperation='lighter';
+          const p=Math.sin(progress*Math.PI);ctx.save();ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter';
           const sx=shot.x1+(shot.x2-shot.x1)*progress,sy=shot.y1+(shot.y2-shot.y1)*progress;
           ctx.strokeStyle=`rgba(177,243,107,${.45*p})`;ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.quadraticCurveTo((shot.x1+shot.x2)/2,Math.min(shot.y1,shot.y2)-28,sx,sy);ctx.stroke();
           const gg=ctx.createRadialGradient(sx,sy,1,sx,sy,9);gg.addColorStop(0,'rgba(245,255,210,.95)');gg.addColorStop(.35,'rgba(167,236,82,.9)');gg.addColorStop(1,'rgba(76,130,28,0)');ctx.fillStyle=gg;ctx.beginPath();ctx.arc(sx,sy,9,0,Math.PI*2);ctx.fill();ctx.restore();
         } else if (shot.effect === 'llamaDash') {
-          const p=Math.sin(progress*Math.PI);ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle=`rgba(242,203,151,${.55*p})`;ctx.lineWidth=18;ctx.setLineDash([18,12]);ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.lineTo(shot.x2,shot.y2);ctx.stroke();ctx.setLineDash([]);for(let i=0;i<8;i++){const q=i/7,px=shot.x1+(shot.x2-shot.x1)*q,py=shot.y1+(shot.y2-shot.y1)*q;ctx.fillStyle=`rgba(220,170,105,${.35*p})`;ctx.beginPath();ctx.arc(px,py+10,3+(i%3),0,Math.PI*2);ctx.fill();}ctx.restore();
+          const p=Math.sin(progress*Math.PI);ctx.save();ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter';ctx.strokeStyle=`rgba(242,203,151,${.55*p})`;ctx.lineWidth=18;ctx.setLineDash([18,12]);ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.lineTo(shot.x2,shot.y2);ctx.stroke();ctx.setLineDash([]);for(let i=0;i<8;i++){const q=i/7,px=shot.x1+(shot.x2-shot.x1)*q,py=shot.y1+(shot.y2-shot.y1)*q;ctx.fillStyle=`rgba(220,170,105,${.35*p})`;ctx.beginPath();ctx.arc(px,py+10,3+(i%3),0,Math.PI*2);ctx.fill();}ctx.restore();
         } else if (shot.effect === 'phoenixBreath') {
           const pulse=Math.sin(progress*Math.PI),radius=Number(shot.radius||205),half=(Number(shot.coneAngle||78)*Math.PI/180)/2;
-          ctx.save();ctx.translate(shot.x1,shot.y1);ctx.rotate(shot.angle);ctx.globalCompositeOperation='lighter';
+          ctx.save();ctx.translate(shot.x1,shot.y1);ctx.rotate(shot.angle);ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter';
           const flame=ctx.createRadialGradient(0,0,4,0,0,Math.min(radius,190));flame.addColorStop(0,`rgba(255,255,224,${.92*pulse})`);flame.addColorStop(.18,`rgba(255,224,88,${.76*pulse})`);flame.addColorStop(.45,`rgba(255,122,28,${.55*pulse})`);flame.addColorStop(.76,`rgba(239,45,18,${.30*pulse})`);flame.addColorStop(1,'rgba(160,10,0,0)');ctx.fillStyle=flame;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,Math.min(radius,190),-half,half);ctx.closePath();ctx.fill();
           // 불꽃 깃털처럼 갈라지는 스트림
           for(let i=0;i<12;i++){const a=-half+(i/11)*(half*2)+Math.sin(progress*16+i)*.04,rr=24+progress*135+(i%4)*8;ctx.save();ctx.translate(Math.cos(a)*rr,Math.sin(a)*rr);ctx.rotate(a);const fg=ctx.createLinearGradient(-8,0,12,0);fg.addColorStop(0,'rgba(255,80,20,0)');fg.addColorStop(.5,i%3?'#ffad31':'#fff19a');fg.addColorStop(1,'rgba(255,235,120,0)');ctx.fillStyle=fg;ctx.beginPath();ctx.moveTo(-10,-3);ctx.quadraticCurveTo(2,-7,14,0);ctx.quadraticCurveTo(2,7,-10,3);ctx.closePath();ctx.fill();ctx.restore();}
           for(let i=0;i<10;i++){const a=-half+((i*37)%100)/100*(half*2),rr=30+((i*53)%130)*progress;ctx.fillStyle=`rgba(255,${130+(i%3)*42},${28+(i%2)*55},${.58*fade})`;ctx.beginPath();ctx.arc(Math.cos(a)*rr,Math.sin(a)*rr,2+(i%3),0,Math.PI*2);ctx.fill();}
           ctx.restore();
         } else if (shot.effect === 'phoenixRoar') {
-          const p=Math.sin(progress*Math.PI);ctx.save();ctx.globalCompositeOperation='lighter';ctx.translate(shot.x1,shot.y1);for(let i=0;i<4;i++){ctx.strokeStyle=`rgba(255,${165+i*18},${55+i*28},${p*(.7-i*.12)})`;ctx.lineWidth=10-i*2;ctx.beginPath();ctx.arc(0,0,30+progress*(190+i*34),0,Math.PI*2);ctx.stroke();}ctx.restore();
+          const p=Math.sin(progress*Math.PI);ctx.save();ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter';ctx.translate(shot.x1,shot.y1);for(let i=0;i<4;i++){ctx.strokeStyle=`rgba(255,${165+i*18},${55+i*28},${p*(.7-i*.12)})`;ctx.lineWidth=10-i*2;ctx.beginPath();ctx.arc(0,0,30+progress*(190+i*34),0,Math.PI*2);ctx.stroke();}ctx.restore();
         } else if (shot.effect === 'edenBolt' || shot.effect === 'edenBarrage') {
           const barrage=shot.effect==='edenBarrage',wave=Math.sin(progress*Math.PI*(barrage?11:8)+shot.seed)*(barrage?20:11);
           ctx.save();ctx.globalCompositeOperation='source-over';ctx.strokeStyle=`rgba(5,5,8,${.96*fade})`;ctx.lineWidth=barrage?14:9;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.bezierCurveTo(shot.x1+dx*.3+nx*wave,shot.y1+dy*.3+ny*wave,shot.x1+dx*.7-nx*wave,shot.y1+dy*.7-ny*wave,x,y);ctx.stroke();
-          ctx.globalCompositeOperation='lighter';ctx.strokeStyle=`rgba(255,255,255,${.82*fade})`;ctx.lineWidth=barrage?3.5:3;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.bezierCurveTo(shot.x1+dx*.3+nx*wave,shot.y1+dy*.3+ny*wave,shot.x1+dx*.7-nx*wave,shot.y1+dy*.7-ny*wave,x,y);ctx.stroke();
+          ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter';ctx.strokeStyle=`rgba(255,255,255,${.82*fade})`;ctx.lineWidth=barrage?3.5:3;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.bezierCurveTo(shot.x1+dx*.3+nx*wave,shot.y1+dy*.3+ny*wave,shot.x1+dx*.7-nx*wave,shot.y1+dy*.7-ny*wave,x,y);ctx.stroke();
           ctx.translate(x,y);ctx.rotate(shot.angle+Math.sin(progress*12+shot.seed)*.25);ctx.globalCompositeOperation='source-over';ctx.fillStyle='#030304';ctx.shadowBlur=18;ctx.shadowColor='rgba(255,255,255,.45)';ctx.beginPath();ctx.ellipse(0,0,barrage?12:8,barrage?8:6,0,0,Math.PI*2);ctx.fill();
           if(barrage){ctx.fillStyle='#000';ctx.beginPath();ctx.ellipse(2,0,7,3,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';for(let i=0;i<4;i++){const tx=-3+i*2;ctx.beginPath();ctx.moveTo(tx,-2.5);ctx.lineTo(tx+1,0);ctx.lineTo(tx+2,-2.5);ctx.closePath();ctx.fill();}}
           ctx.restore();
         } else if (shot.effect === 'edenTaunt') {
           const p=Math.sin(progress*Math.PI),r=Number(shot.radius||92);
-          ctx.save();ctx.translate(shot.x1,shot.y1);ctx.globalCompositeOperation='lighter';
+          ctx.save();ctx.translate(shot.x1,shot.y1);ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter';
           ctx.fillStyle=`rgba(0,0,0,${.52*p})`;ctx.beginPath();ctx.arc(0,0,24+progress*r*.45,0,Math.PI*2);ctx.fill();
           for(let i=0;i<4;i++){ctx.strokeStyle=i%2?`rgba(255,255,255,${p*(.72-i*.1)})`:`rgba(18,18,22,${p*(.9-i*.1)})`;ctx.lineWidth=8-i*1.5;ctx.beginPath();ctx.ellipse(0,4,28+progress*(r+i*13),10+progress*(r*.33+i*5),progress*1.4+i*.5,0,Math.PI*2);ctx.stroke();}
           ctx.restore();
         } else if (shot.effect === 'edenImpale') {
           const p=Math.sin(progress*Math.PI),w=Number(shot.width||52);
-          ctx.save();ctx.translate(shot.x1,shot.y1);ctx.rotate(shot.angle);ctx.globalCompositeOperation='lighter';
+          ctx.save();ctx.translate(shot.x1,shot.y1);ctx.rotate(shot.angle);ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter';
           const reach=Math.hypot(shot.x2-shot.x1,shot.y2-shot.y1),tip=reach*Math.min(1,progress*2.2);
           ctx.strokeStyle=`rgba(255,255,255,${.94*p})`;ctx.lineWidth=5;ctx.shadowBlur=24;ctx.shadowColor='#fff';ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(tip,0);ctx.stroke();
           ctx.strokeStyle=`rgba(3,3,5,${.98*p})`;ctx.lineWidth=w;ctx.shadowBlur=0;ctx.beginPath();ctx.moveTo(6,0);ctx.lineTo(tip,0);ctx.stroke();
@@ -21702,7 +21773,7 @@ function requestGachaDraw(count) {
           ctx.restore();
         } else if (shot.effect === 'edenDeadeye') {
           const p=Math.sin(progress*Math.PI),w=Number(shot.width||44);
-          ctx.save();ctx.globalCompositeOperation='lighter';
+          ctx.save();ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter';
           // 검은 중심을 흰 광선이 감싸는 관통 저격
           ctx.shadowBlur=36;ctx.shadowColor='#fff';ctx.strokeStyle=`rgba(255,255,255,${.96*p})`;ctx.lineWidth=w*.42;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.lineTo(shot.x2,shot.y2);ctx.stroke();
           ctx.shadowBlur=0;ctx.strokeStyle=`rgba(0,0,0,${.98*p})`;ctx.lineWidth=w*.24;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.lineTo(shot.x2,shot.y2);ctx.stroke();
@@ -21712,13 +21783,13 @@ function requestGachaDraw(count) {
         } else if (shot.effect === 'edenCut') {
           const pulse=Math.sin(progress*Math.PI),r=Number(shot.radius||190);ctx.save();ctx.translate(shot.x1,shot.y1);ctx.globalCompositeOperation='source-over';
           ctx.fillStyle=`rgba(0,0,0,${.42*pulse})`;ctx.beginPath();ctx.arc(0,0,r*.82,0,Math.PI*2);ctx.fill();
-          ctx.globalCompositeOperation='lighter';for(let i=0;i<6;i++){const rot=progress*Math.PI*2.5+i*Math.PI/3;ctx.save();ctx.rotate(rot);const cg=ctx.createLinearGradient(-r,0,r,0);cg.addColorStop(0,'rgba(255,255,255,0)');cg.addColorStop(.42,`rgba(255,255,255,${.62*pulse})`);cg.addColorStop(.5,'#fff');cg.addColorStop(.59,`rgba(255,255,255,${.25*pulse})`);cg.addColorStop(1,'rgba(255,255,255,0)');ctx.strokeStyle=cg;ctx.lineWidth=7+(i%2)*3;ctx.beginPath();ctx.arc(0,0,r*(.55+(i%3)*.11),-.88,.88);ctx.stroke();ctx.restore();}
+          ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter';for(let i=0;i<6;i++){const rot=progress*Math.PI*2.5+i*Math.PI/3;ctx.save();ctx.rotate(rot);const cg=ctx.createLinearGradient(-r,0,r,0);cg.addColorStop(0,'rgba(255,255,255,0)');cg.addColorStop(.42,`rgba(255,255,255,${.62*pulse})`);cg.addColorStop(.5,'#fff');cg.addColorStop(.59,`rgba(255,255,255,${.25*pulse})`);cg.addColorStop(1,'rgba(255,255,255,0)');ctx.strokeStyle=cg;ctx.lineWidth=7+(i%2)*3;ctx.beginPath();ctx.arc(0,0,r*(.55+(i%3)*.11),-.88,.88);ctx.stroke();ctx.restore();}
           ctx.strokeStyle=`rgba(255,255,255,${.74*pulse})`;ctx.lineWidth=2.2;ctx.beginPath();ctx.arc(0,0,r*.9,0,Math.PI*2);ctx.stroke();ctx.restore();
         } else if (shot.effect === 'edenRush') {
           const pulse=Math.sin(progress*Math.PI),w=Number(shot.width||105);ctx.save();ctx.globalCompositeOperation='source-over';
           // 시작점 포탈
           ctx.translate(shot.x1,shot.y1);ctx.scale(1,.42);ctx.fillStyle=`rgba(0,0,0,${.92*pulse})`;ctx.beginPath();ctx.arc(0,0,54+progress*18,0,Math.PI*2);ctx.fill();ctx.strokeStyle=`rgba(255,255,255,${.74*pulse})`;ctx.lineWidth=4;ctx.beginPath();ctx.arc(0,0,48+progress*22,0,Math.PI*2);ctx.stroke();ctx.setTransform(1,0,0,1,0,0);
-          ctx.globalCompositeOperation='lighter';for(let i=0;i<5;i++){ctx.strokeStyle=i%2?`rgba(255,255,255,${pulse*(.9-i*.08)})`:`rgba(12,12,15,${pulse*(.9-i*.07)})`;ctx.lineWidth=Math.max(4,w-i*17);ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.lineTo(shot.x2,shot.y2);ctx.stroke();}ctx.restore();
+          ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter';for(let i=0;i<5;i++){ctx.strokeStyle=i%2?`rgba(255,255,255,${pulse*(.9-i*.08)})`:`rgba(12,12,15,${pulse*(.9-i*.07)})`;ctx.lineWidth=Math.max(4,w-i*17);ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.lineTo(shot.x2,shot.y2);ctx.stroke();}ctx.restore();
         } else if (shot.effect === 'timeRift' || shot.effect === 'timeRiftGolden') {
           const golden = shot.effect === 'timeRiftGolden' || shot.golden;
           const primary = golden ? '255,216,79' : '216,180,254';
@@ -24700,7 +24771,7 @@ function requestGachaDraw(count) {
       const a=Math.atan2(shotTarget.y-unit.y,shotTarget.x-unit.x), lane=(i-(volleyCount-1)/2)*5.5, nx=-Math.sin(a), ny=Math.cos(a);
       const x1=unit.x+Math.cos(a)*30+nx*lane, y1=unit.y-6+Math.sin(a)*30+ny*lane;
       const impactX=shotTarget.x, impactY=shotTarget.y;
-      mpPushFx(x1,y1,impactX,impactY,'#00ff66',8,sideKey,'errorPacket',{radius:Number(d.errorPacketSplashRadius||58),volleyIndex:i,seed:Math.random()*1000+i*137});
+      mpPushFx(x1,y1,impactX,impactY,'#00ff66',8,sideKey,'errorPacket',{radius:Number(d.errorPacketSplashRadius||58),volleyIndex:i,volleyCount:volleyCount,seed:Math.random()*1000+i*137});
       mpApplyErrorPacketSplash(targetState,sideKey,unit,impactX,impactY,damage);
     }
     const count=Number(unit.attackCount||0);
@@ -26423,6 +26494,35 @@ function requestGachaDraw(count) {
   function mpDrawFx() {
     const viewedRole = mpState.mode === 'pvp' ? mpGetViewedSideRole() : null;
     const nowTime = performance.now();
+
+    const mpErrorPacketCurveState = (x1, y1, x2, y2, t, volleyIndex = 0, volleyCount = 5, seed = 0) => {
+      const safeT = Math.max(0, Math.min(1, Number(t || 0)));
+      const dx = x2 - x1, dy = y2 - y1;
+      const distance = Math.max(1, Math.hypot(dx, dy));
+      const ux0 = dx / distance, uy0 = dy / distance;
+      const nx0 = -uy0, ny0 = ux0;
+      const count = Math.max(1, Math.floor(Number(volleyCount || 5)));
+      const center = (count - 1) / 2;
+      const normalized = center > 0 ? (Number(volleyIndex || 0) - center) / center : 0;
+      const amplitude = Math.min(205, Math.max(74, distance * .36));
+      const absN = Math.min(1.35, Math.abs(normalized));
+      let bow = Math.sign(normalized) * amplitude * (.28 + .78 * Math.pow(absN, .88));
+      if (Math.abs(normalized) < .08) bow = -amplitude * .075;
+      if (count > 5) bow += Math.sin(Number(seed || 0) * .017 + Number(volleyIndex || 0) * 1.73) * 12;
+
+      const c1x = x1 + dx * .28 + nx0 * bow * .92;
+      const c1y = y1 + dy * .28 + ny0 * bow * .92;
+      const c2x = x1 + dx * .70 + nx0 * bow * 1.08;
+      const c2y = y1 + dy * .70 + ny0 * bow * 1.08;
+      const mt = 1 - safeT;
+      const x = mt*mt*mt*x1 + 3*mt*mt*safeT*c1x + 3*mt*safeT*safeT*c2x + safeT*safeT*safeT*x2;
+      const y = mt*mt*mt*y1 + 3*mt*mt*safeT*c1y + 3*mt*safeT*safeT*c2y + safeT*safeT*safeT*y2;
+      const tx = 3*mt*mt*(c1x-x1) + 6*mt*safeT*(c2x-c1x) + 3*safeT*safeT*(x2-c2x);
+      const ty = 3*mt*mt*(c1y-y1) + 6*mt*safeT*(c2y-c1y) + 3*safeT*safeT*(y2-c2y);
+      const tangentLen = Math.max(.001, Math.hypot(tx, ty));
+      const ux = tx / tangentLen, uy = ty / tangentLen;
+      return {x,y,ux,uy,nx:-uy,ny:ux,angle:Math.atan2(ty,tx)};
+    };
     for (const hole of mpState.blackHoles || []) {
       if (mpState.mode === 'pvp' && hole.sideKey !== viewedRole) continue;
       const hy = mpState.mode === 'coop' ? mpDisplayY(hole.y) : hole.y;
@@ -26450,31 +26550,51 @@ function requestGachaDraw(count) {
       const dx = fx.x2 - fx.x1;
       const dy = y2 - y1;
       const len = Math.max(1, Math.hypot(dx, dy));
-      const ux = dx / len;
-      const uy = dy / len;
-      const nx = -uy;
-      const ny = ux;
-      const x = lerp(fx.x1, fx.x2, travel);
-      const y = lerp(y1, y2, travel);
-      const angle = Math.atan2(dy, dx);
+      let ux = dx / len;
+      let uy = dy / len;
+      let nx = -uy;
+      let ny = ux;
+      let x = lerp(fx.x1, fx.x2, travel);
+      let y = lerp(y1, y2, travel);
+      let angle = Math.atan2(dy, dx);
+
+      if (fx.kind === 'errorPacket') {
+        const curve = mpErrorPacketCurveState(
+          fx.x1, y1, fx.x2, y2, travel,
+          fx.volleyIndex, fx.volleyCount, fx.seed
+        );
+        x=curve.x; y=curve.y; ux=curve.ux; uy=curve.uy; nx=curve.nx; ny=curve.ny; angle=curve.angle;
+      }
 
       mpCtx.save();
       mpCtx.lineCap = 'round';
       mpCtx.lineJoin = 'round';
       if(fx.shadowClone){
-        const shadowSwordFx = ['royalWave','royalSwordWave','sakuraWave','sakuraMelee','sakuraIssen','sakuraUltimateCut','steelSlash','eclipseSpin'].includes(String(fx.kind||''));
-        mpCtx.filter = shadowSwordFx ? 'brightness(0)' : 'grayscale(1) brightness(.16) contrast(2.6)';
-        mpCtx.globalAlpha = shadowSwordFx ? .96 : .88;
+        // 온라인에서도 그림자분신 공격 이펙트는 진한 순검정으로 통일합니다.
+        mpCtx.filter='brightness(0) contrast(4)';
+        mpCtx.globalAlpha=.99;
+        mpCtx.shadowColor='#000000';
       }
 
       if (fx.kind === 'errorPacket') {
         const p=progress,flicker=.72+.28*Math.abs(Math.sin(p*31+Number(fx.seed||0))),bladeLen=50+Math.sin(p*Math.PI)*15;
-        mpCtx.save();mpCtx.globalCompositeOperation='lighter';
+        mpCtx.save();mpCtx.globalCompositeOperation=fx.shadowClone?'source-over':'lighter';
+
+        const trailStart=Math.max(0,travel-.32);
+        mpCtx.save();mpCtx.globalCompositeOperation='source-over';mpCtx.lineCap='round';mpCtx.beginPath();
+        for(let s=0;s<=12;s++){
+          const tt=trailStart+(travel-trailStart)*(s/12);
+          const cp=mpErrorPacketCurveState(fx.x1,y1,fx.x2,y2,tt,fx.volleyIndex,fx.volleyCount,fx.seed);
+          if(s===0)mpCtx.moveTo(cp.x,cp.y);else mpCtx.lineTo(cp.x,cp.y);
+        }
+        mpCtx.strokeStyle=fx.shadowClone?'rgba(0,0,0,.98)':`rgba(0,18,6,${.72*fade})`;mpCtx.lineWidth=fx.shadowClone?8.5:7;mpCtx.stroke();
+        if(!fx.shadowClone){mpCtx.strokeStyle=`rgba(0,255,102,${.42*fade})`;mpCtx.lineWidth=2.2;mpCtx.stroke();}
+        mpCtx.restore();
         for(let i=0;i<(mpHighLoadFrame?4:7);i++){const back=17+i*10,side=Math.sin(Number(fx.seed||0)+i*2.4+p*26)*(3+i*.5),px=x-ux*back+nx*side,py=y-uy*back+ny*side;mpCtx.save();mpCtx.translate(px,py);mpCtx.rotate(angle+(i%2?.08:-.08));mpCtx.fillStyle=i%3===0?'rgba(0,0,0,.94)':`rgba(0,255,102,${Math.max(0,.64-i*.065)*fade})`;mpCtx.shadowBlur=i%3===0?0:7;mpCtx.shadowColor='#00ff66';mpCtx.fillRect(-6-(i%2)*2,-2,12+(i%3)*4,4+(i%2));mpCtx.restore();}
         mpCtx.translate(x,y);mpCtx.rotate(angle);mpCtx.shadowBlur=mpHighLoadFrame?16:26;mpCtx.shadowColor='#00ff66';const core=mpCtx.createLinearGradient(-bladeLen,0,28,0);core.addColorStop(0,'rgba(0,255,102,0)');core.addColorStop(.34,`rgba(0,255,102,${.24*fade})`);core.addColorStop(.66,'rgba(0,0,0,.98)');core.addColorStop(.87,`rgba(60,255,132,${.92*fade})`);core.addColorStop(1,'rgba(238,255,244,.98)');mpCtx.fillStyle=core;mpCtx.strokeStyle=`rgba(0,255,102,${.9*flicker*fade})`;mpCtx.lineWidth=1.7;mpCtx.beginPath();mpCtx.moveTo(-bladeLen,-4);mpCtx.lineTo(-20,-10);mpCtx.lineTo(18,-6);mpCtx.lineTo(34,0);mpCtx.lineTo(18,6);mpCtx.lineTo(-8,4);mpCtx.lineTo(-22,11);mpCtx.closePath();mpCtx.fill();mpCtx.stroke();mpCtx.fillStyle='rgba(0,0,0,.98)';mpCtx.beginPath();mpCtx.moveTo(-28,-2);mpCtx.lineTo(13,-3);mpCtx.lineTo(24,0);mpCtx.lineTo(10,2);mpCtx.lineTo(-18,1);mpCtx.closePath();mpCtx.fill();
         if(p>.62){const impact=(p-.62)/.38,splashR=Number(fx.radius||58);mpCtx.rotate(-angle);mpCtx.translate(-x,-y);mpCtx.translate(fx.x2,y2);mpCtx.globalAlpha=(1-impact)*.82;mpCtx.strokeStyle='#00ff66';mpCtx.lineWidth=2.2;mpCtx.setLineDash([6,4,2,5]);mpCtx.beginPath();mpCtx.arc(0,0,15+impact*splashR,0,Math.PI*2);mpCtx.stroke();mpCtx.setLineDash([]);for(let i=0;i<(mpHighLoadFrame?4:8);i++){const a=Number(fx.seed||0)+i*.785+impact*3;mpCtx.save();mpCtx.rotate(a);mpCtx.fillStyle=i%3===0?'#050505':'#00ff66';mpCtx.fillRect(12+impact*splashR*.7,-2,7+i%3*3,4);mpCtx.restore();}}mpCtx.restore();
       } else if (fx.kind === 'error404' || fx.kind === 'errorCorrupt' || fx.kind === 'errorRollback' || fx.kind === 'errorSystem' || fx.kind === 'errorDelete') {
-        const p=progress,alpha=Math.max(0,1-p),r=Number(fx.radius||58);mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.globalCompositeOperation='lighter';
+        const p=progress,alpha=Math.max(0,1-p),r=Number(fx.radius||58);mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.globalCompositeOperation=fx.shadowClone?'source-over':'lighter';
         if(fx.kind==='errorSystem'){mpCtx.strokeStyle=`rgba(0,255,102,${.5*alpha})`;mpCtx.lineWidth=8*(1-p)+2;mpCtx.setLineDash([18,8,4,9]);mpCtx.beginPath();mpCtx.arc(0,0,Math.max(24,r*p),0,Math.PI*2);mpCtx.stroke();mpCtx.setLineDash([]);mpCtx.font='900 24px monospace';mpCtx.textAlign='center';mpCtx.fillStyle=`rgba(90,255,145,${.9*alpha})`;mpCtx.fillText('SYSTEM FAILURE',0,-10);}
         else if(fx.kind==='errorDelete'){mpCtx.strokeStyle=`rgba(0,255,102,${.92*alpha})`;mpCtx.lineWidth=3;mpCtx.setLineDash([4,3]);mpCtx.strokeRect(-r*.72,-r*.72,r*1.44,r*1.44);mpCtx.setLineDash([]);mpCtx.fillStyle=`rgba(0,0,0,${.8*alpha})`;mpCtx.fillRect(-r*.65,-10,r*1.3,20);mpCtx.font='900 10px monospace';mpCtx.textAlign='center';mpCtx.fillStyle=`rgba(185,255,205,${alpha})`;mpCtx.fillText('DELETED',0,1);}
         else if(fx.kind==='errorRollback'){mpCtx.strokeStyle=`rgba(0,255,102,${.76*alpha})`;mpCtx.lineWidth=2;for(let i=0;i<4;i++){const yy=(i-1.5)*7;mpCtx.beginPath();mpCtx.moveTo(r*.6,yy);mpCtx.lineTo(-r*.5,yy);mpCtx.lineTo(-r*.3,yy-5);mpCtx.moveTo(-r*.5,yy);mpCtx.lineTo(-r*.3,yy+5);mpCtx.stroke();}}
@@ -26482,7 +26602,7 @@ function requestGachaDraw(count) {
         mpCtx.restore();
       } else if (fx.kind === 'crystalRay') {
         const p=1-Math.max(0,fx.ttl)/Math.max(.001,fx.maxTtl||.72),pulse=Math.sin(Math.min(1,p)*Math.PI);
-        mpCtx.save();mpCtx.globalCompositeOperation='lighter';mpCtx.strokeStyle=`rgba(107,238,255,${.3+.55*(1-p)})`;mpCtx.lineWidth=5+10*pulse;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.lineTo(fx.x2,y2);mpCtx.stroke();mpCtx.strokeStyle=`rgba(240,254,255,${.9*(1-p)})`;mpCtx.lineWidth=2.8;mpCtx.stroke();mpCtx.restore();
+        mpCtx.save();mpCtx.globalCompositeOperation=fx.shadowClone?'source-over':'lighter';mpCtx.strokeStyle=`rgba(107,238,255,${.3+.55*(1-p)})`;mpCtx.lineWidth=5+10*pulse;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.lineTo(fx.x2,y2);mpCtx.stroke();mpCtx.strokeStyle=`rgba(240,254,255,${.9*(1-p)})`;mpCtx.lineWidth=2.8;mpCtx.stroke();mpCtx.restore();
       } else if (fx.kind === 'arrow') {
         const tailX = x - ux * 27, tailY = y - uy * 27;
         const g = mpCtx.createLinearGradient(tailX - ux*18, tailY - uy*18, x, y);
@@ -26508,7 +26628,7 @@ function requestGachaDraw(count) {
         if (royal) {
           // 왕실 수호자의 원거리 검기는 목표 지점에서 원이 번쩍이는 대신 실제 칼날 모양의 검기가 날아갑니다.
           const tailX=x-ux*52, tailY=y-uy*52;
-          mpCtx.save();mpCtx.translate(x,y);mpCtx.rotate(angle);mpCtx.globalCompositeOperation='lighter';mpCtx.shadowBlur=20;mpCtx.shadowColor='#ffe36e';
+          mpCtx.save();mpCtx.translate(x,y);mpCtx.rotate(angle);mpCtx.globalCompositeOperation=fx.shadowClone?'source-over':'lighter';mpCtx.shadowBlur=20;mpCtx.shadowColor='#ffe36e';
           const g=mpCtx.createLinearGradient(-52,0,30,0);g.addColorStop(0,'rgba(255,180,20,0)');g.addColorStop(.48,`rgba(255,214,58,${.55*fade})`);g.addColorStop(.82,`rgba(255,248,183,${.88*fade})`);g.addColorStop(1,`rgba(255,255,245,${fade})`);
           mpCtx.fillStyle=g;mpCtx.beginPath();mpCtx.moveTo(-48,-4);mpCtx.quadraticCurveTo(-5,-20,30,-2);mpCtx.quadraticCurveTo(9,3,-48,5);mpCtx.closePath();mpCtx.fill();
           mpCtx.strokeStyle=`rgba(255,255,230,${fade})`;mpCtx.lineWidth=2.4;mpCtx.beginPath();mpCtx.moveTo(-40,-2);mpCtx.quadraticCurveTo(0,-15,28,-1);mpCtx.stroke();mpCtx.restore();
@@ -26534,18 +26654,18 @@ function requestGachaDraw(count) {
       } else if (fx.kind === 'sakuraMelee') {
         const radius=Number(fx.radius||120),half=((Number(fx.coneAngle||180)*Math.PI/180)/2),total=half*2,motion=Math.max(0,Math.min(1,progress/.78)),eased=motion*motion*(3-2*motion),head=-half+total*eased;let span=total*Math.min(.62,Math.max(.08,motion*.90));if(progress>.70)span*=Math.max(0,1-(progress-.70)/.30);const tail=Math.max(-half,head-span),vanish=progress<.72?1:Math.max(0,1-(progress-.72)/.28);
         const slashTheme=String(fx.slashTheme||'sakura'),slashOuter=slashTheme==='steel'?[150,202,245]:slashTheme==='royal'?[255,204,55]:slashTheme==='eclipse'?[255,52,88]:[255,120,185],slashGlow=slashTheme==='steel'?'#c9e9ff':slashTheme==='royal'?'#ffe36e':slashTheme==='eclipse'?'#ff385d':'#ff86bd';
-        mpCtx.translate(fx.x1,y1);mpCtx.rotate(fx.angle||angle);mpCtx.globalCompositeOperation='lighter';mpCtx.lineCap='round';
+        mpCtx.translate(fx.x1,y1);mpCtx.rotate(fx.angle||angle);mpCtx.globalCompositeOperation=fx.shadowClone?'source-over':'lighter';mpCtx.lineCap='round';
         for(let b=0;b<2;b++){const rr=radius*(b===0?.78:.90),segs=mpHighLoadFrame?10:18;for(let seg=0;seg<segs;seg++){const t0=seg/segs,t1=(seg+1)/segs,a0=tail+(head-tail)*t0,a1=tail+(head-tail)*t1,w=.14+t1*.86,alpha=vanish*w;mpCtx.shadowBlur=mpHighLoadFrame?10:12+20*w;mpCtx.shadowColor='#fff';mpCtx.strokeStyle=`rgba(255,255,255,${.93*alpha})`;mpCtx.lineWidth=5+4.5*w;mpCtx.beginPath();mpCtx.arc(0,0,rr,a0,a1);mpCtx.stroke();mpCtx.shadowBlur=7;mpCtx.shadowColor=slashGlow;mpCtx.strokeStyle=`rgba(${slashOuter[0]},${slashOuter[1]},${slashOuter[2]},${.50*alpha})`;mpCtx.lineWidth=10+5*w;mpCtx.beginPath();mpCtx.arc(0,0,rr+2,a0,a1);mpCtx.stroke();}const hx=Math.cos(head)*rr,hy=Math.sin(head)*rr;mpCtx.shadowBlur=20;mpCtx.shadowColor='#fff';mpCtx.fillStyle=`rgba(255,255,255,${.9*vanish})`;mpCtx.beginPath();mpCtx.ellipse(hx,hy,3,10,head,0,Math.PI*2);mpCtx.fill();}
         if(slashTheme==='sakura'&&!mpHighLoadFrame){for(let i=0;i<12;i++){const local=(i+.5)/12,a=tail+(head-tail)*local,d=radius*(.55+(i%4)*.09);mpCtx.save();mpCtx.translate(Math.cos(a)*d,Math.sin(a)*d);mpCtx.rotate(a+progress*5+i*.8);mpCtx.fillStyle=`rgba(255,164,210,${vanish*(.3+local*.5)})`;mpCtx.beginPath();mpCtx.ellipse(0,0,2.1,5.2,.2,0,Math.PI*2);mpCtx.fill();mpCtx.restore();}}
       } else if (fx.kind === 'sakuraWave') {
-        const tail=84,tx=x-ux*tail,ty=y-uy*tail;mpCtx.save();mpCtx.translate(x,y);mpCtx.rotate(angle);mpCtx.globalCompositeOperation='lighter';mpCtx.shadowBlur=mpHighLoadFrame?18:32;mpCtx.shadowColor='#e9fbff';const blade=mpCtx.createLinearGradient(-78,0,38,0);blade.addColorStop(0,'rgba(150,225,255,0)');blade.addColorStop(.35,`rgba(185,240,255,${.34*fade})`);blade.addColorStop(.68,`rgba(225,249,255,${.84*fade})`);blade.addColorStop(.88,`rgba(255,225,244,${.92*fade})`);blade.addColorStop(1,`rgba(255,255,255,${fade})`);mpCtx.fillStyle=blade;mpCtx.beginPath();mpCtx.moveTo(-72,-3);mpCtx.quadraticCurveTo(-8,-31,38,-2);mpCtx.quadraticCurveTo(11,6,-72,5);mpCtx.closePath();mpCtx.fill();mpCtx.strokeStyle=`rgba(255,255,255,${fade})`;mpCtx.lineWidth=3.1;mpCtx.beginPath();mpCtx.moveTo(-58,-2);mpCtx.quadraticCurveTo(2,-24,36,-1);mpCtx.stroke();mpCtx.restore();mpCtx.strokeStyle=`rgba(205,243,255,${.30*fade})`;mpCtx.lineWidth=13;mpCtx.beginPath();mpCtx.moveTo(tx,ty);mpCtx.lineTo(x,y);mpCtx.stroke();mpCtx.strokeStyle=`rgba(255,145,201,${.28*fade})`;mpCtx.lineWidth=7;mpCtx.beginPath();mpCtx.moveTo(tx-ny*5,ty+nx*5);mpCtx.lineTo(x-ny*2,y+nx*2);mpCtx.stroke();for(let i=0;i<(mpHighLoadFrame?6:12);i++){const back=12+i*7,side=Math.sin(fx.seed+i*2.1)*14;mpCtx.save();mpCtx.translate(x-ux*back+nx*side,y-uy*back+ny*side);mpCtx.rotate(angle+i*.85+progress*2);mpCtx.fillStyle=`rgba(255,170,214,${fade*(.86-i*.045)})`;mpCtx.beginPath();mpCtx.ellipse(0,0,2.2,5.3,0,0,Math.PI*2);mpCtx.fill();mpCtx.restore();}
+        const tail=84,tx=x-ux*tail,ty=y-uy*tail;mpCtx.save();mpCtx.translate(x,y);mpCtx.rotate(angle);mpCtx.globalCompositeOperation=fx.shadowClone?'source-over':'lighter';mpCtx.shadowBlur=mpHighLoadFrame?18:32;mpCtx.shadowColor='#e9fbff';const blade=mpCtx.createLinearGradient(-78,0,38,0);blade.addColorStop(0,'rgba(150,225,255,0)');blade.addColorStop(.35,`rgba(185,240,255,${.34*fade})`);blade.addColorStop(.68,`rgba(225,249,255,${.84*fade})`);blade.addColorStop(.88,`rgba(255,225,244,${.92*fade})`);blade.addColorStop(1,`rgba(255,255,255,${fade})`);mpCtx.fillStyle=blade;mpCtx.beginPath();mpCtx.moveTo(-72,-3);mpCtx.quadraticCurveTo(-8,-31,38,-2);mpCtx.quadraticCurveTo(11,6,-72,5);mpCtx.closePath();mpCtx.fill();mpCtx.strokeStyle=`rgba(255,255,255,${fade})`;mpCtx.lineWidth=3.1;mpCtx.beginPath();mpCtx.moveTo(-58,-2);mpCtx.quadraticCurveTo(2,-24,36,-1);mpCtx.stroke();mpCtx.restore();mpCtx.strokeStyle=`rgba(205,243,255,${.30*fade})`;mpCtx.lineWidth=13;mpCtx.beginPath();mpCtx.moveTo(tx,ty);mpCtx.lineTo(x,y);mpCtx.stroke();mpCtx.strokeStyle=`rgba(255,145,201,${.28*fade})`;mpCtx.lineWidth=7;mpCtx.beginPath();mpCtx.moveTo(tx-ny*5,ty+nx*5);mpCtx.lineTo(x-ny*2,y+nx*2);mpCtx.stroke();for(let i=0;i<(mpHighLoadFrame?6:12);i++){const back=12+i*7,side=Math.sin(fx.seed+i*2.1)*14;mpCtx.save();mpCtx.translate(x-ux*back+nx*side,y-uy*back+ny*side);mpCtx.rotate(angle+i*.85+progress*2);mpCtx.fillStyle=`rgba(255,170,214,${fade*(.86-i*.045)})`;mpCtx.beginPath();mpCtx.ellipse(0,0,2.2,5.3,0,0,Math.PI*2);mpCtx.fill();mpCtx.restore();}
       } else if (fx.kind === 'sakuraIssen' || fx.kind === 'sakuraUltimateCut') {
-        const ultimate=fx.kind==='sakuraUltimateCut',xCut=ultimate&&(fx.style==='diag1'||fx.style==='diag2'),speed=xCut?5.8:(ultimate?4.4:5.2),lineProgress=Math.min(1,progress*speed),ex=lerp(fx.x1,fx.x2,lineProgress),ey=lerp(y1,y2,lineProgress),flash=Math.max(0,1-Math.max(0,progress-.20)/.80),pathWidth=Math.max(10,Number(fx.width||60));mpCtx.globalCompositeOperation='lighter';mpCtx.lineCap='round';mpCtx.shadowColor=xCut?'#fff9fd':'#ff72b6';mpCtx.shadowBlur=mpHighLoadFrame?16:(xCut?46:30);
+        const ultimate=fx.kind==='sakuraUltimateCut',xCut=ultimate&&(fx.style==='diag1'||fx.style==='diag2'),speed=xCut?5.8:(ultimate?4.4:5.2),lineProgress=Math.min(1,progress*speed),ex=lerp(fx.x1,fx.x2,lineProgress),ey=lerp(y1,y2,lineProgress),flash=Math.max(0,1-Math.max(0,progress-.20)/.80),pathWidth=Math.max(10,Number(fx.width||60));mpCtx.globalCompositeOperation=fx.shadowClone?'source-over':'lighter';mpCtx.lineCap='round';mpCtx.shadowColor=xCut?'#fff9fd':'#ff72b6';mpCtx.shadowBlur=mpHighLoadFrame?16:(xCut?46:30);
         mpCtx.strokeStyle=`rgba(255,78,157,${.24*flash})`;mpCtx.lineWidth=pathWidth*(xCut?.78:.62);mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.lineTo(ex,ey);mpCtx.stroke();mpCtx.strokeStyle=`rgba(255,180,224,${.66*flash})`;mpCtx.lineWidth=pathWidth*(xCut?.38:.28);mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.lineTo(ex,ey);mpCtx.stroke();mpCtx.strokeStyle=`rgba(255,255,255,${.98*flash})`;mpCtx.lineWidth=xCut?9:6;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.lineTo(ex,ey);mpCtx.stroke();
         const ghostCount=mpHighLoadFrame?2:(xCut?5:4);for(let i=0;i<ghostCount;i++){const off=(i-2)*(xCut?7:5);mpCtx.strokeStyle=`rgba(220,242,255,${Math.max(0,.42-i*.055)*flash})`;mpCtx.lineWidth=Math.max(1.4,4.4-i*.6);mpCtx.beginPath();mpCtx.moveTo(fx.x1+nx*off-ux*i*6,y1+ny*off-uy*i*6);mpCtx.lineTo(ex+nx*off,ey+ny*off);mpCtx.stroke();}
         if(!mpHighLoadFrame){const pc=xCut?22:15;for(let i=0;i<pc;i++){const t=((i*37)%pc+.5)/pc,px=lerp(fx.x1,fx.x2,t),py=lerp(y1,y2,t),side=Math.sin(fx.seed+i*2.27)*(12+(i%4)*6),drift=progress*(12+(i%5)*4);mpCtx.save();mpCtx.translate(px+nx*side-ux*drift,py+ny*side-uy*drift);mpCtx.rotate(angle+i*.83+progress*6.5);mpCtx.fillStyle=`rgba(255,${145+(i%3)*22},${202+(i%2)*22},${flash*(.44+(i%4)*.11)})`;mpCtx.beginPath();mpCtx.ellipse(0,0,2.5,6.2,.25,0,Math.PI*2);mpCtx.fill();mpCtx.restore();}}
       } else if (fx.kind === 'sakuraMarkBurst') {
-        const radius=Number(fx.radius||52),p=Math.min(1,progress*1.18),alpha=Math.max(0,1-progress);mpCtx.translate(fx.x1,y1);mpCtx.globalCompositeOperation='lighter';const b=mpCtx.createRadialGradient(0,0,2,0,0,radius*(.35+p));b.addColorStop(0,`rgba(255,255,255,${.95*alpha})`);b.addColorStop(.22,`rgba(255,177,221,${.8*alpha})`);b.addColorStop(.62,`rgba(255,74,155,${.38*alpha})`);b.addColorStop(1,'rgba(255,60,150,0)');mpCtx.fillStyle=b;mpCtx.beginPath();mpCtx.arc(0,0,radius*(.35+p),0,Math.PI*2);mpCtx.fill();mpCtx.strokeStyle=`rgba(255,240,250,${.88*alpha})`;mpCtx.lineWidth=4;mpCtx.beginPath();mpCtx.arc(0,0,8+p*radius*.85,0,Math.PI*2);mpCtx.stroke();if(!mpHighLoadFrame){for(let i=0;i<16;i++){const a=fx.seed+i*Math.PI*2/16,d=8+p*(32+(i%5)*7);mpCtx.save();mpCtx.translate(Math.cos(a)*d,Math.sin(a)*d);mpCtx.rotate(a+progress*7);mpCtx.fillStyle=`rgba(255,${128+(i%4)*24},${192+(i%3)*18},${alpha})`;mpCtx.beginPath();mpCtx.ellipse(0,0,3,7,.2,0,Math.PI*2);mpCtx.fill();mpCtx.restore();}}
+        const radius=Number(fx.radius||52),p=Math.min(1,progress*1.18),alpha=Math.max(0,1-progress);mpCtx.translate(fx.x1,y1);mpCtx.globalCompositeOperation=fx.shadowClone?'source-over':'lighter';const b=mpCtx.createRadialGradient(0,0,2,0,0,radius*(.35+p));b.addColorStop(0,`rgba(255,255,255,${.95*alpha})`);b.addColorStop(.22,`rgba(255,177,221,${.8*alpha})`);b.addColorStop(.62,`rgba(255,74,155,${.38*alpha})`);b.addColorStop(1,'rgba(255,60,150,0)');mpCtx.fillStyle=b;mpCtx.beginPath();mpCtx.arc(0,0,radius*(.35+p),0,Math.PI*2);mpCtx.fill();mpCtx.strokeStyle=`rgba(255,240,250,${.88*alpha})`;mpCtx.lineWidth=4;mpCtx.beginPath();mpCtx.arc(0,0,8+p*radius*.85,0,Math.PI*2);mpCtx.stroke();if(!mpHighLoadFrame){for(let i=0;i<16;i++){const a=fx.seed+i*Math.PI*2/16,d=8+p*(32+(i%5)*7);mpCtx.save();mpCtx.translate(Math.cos(a)*d,Math.sin(a)*d);mpCtx.rotate(a+progress*7);mpCtx.fillStyle=`rgba(255,${128+(i%4)*24},${192+(i%3)*18},${alpha})`;mpCtx.beginPath();mpCtx.ellipse(0,0,3,7,.2,0,Math.PI*2);mpCtx.fill();mpCtx.restore();}}
       } else if (fx.kind === 'arcane') {
         const wave=Math.sin(progress*Math.PI*7+fx.seed)*18;
         mpCtx.shadowBlur=14;mpCtx.shadowColor='#9b64ff';
@@ -26566,7 +26686,7 @@ function requestGachaDraw(count) {
       } else if (fx.kind === 'poseidonWave') {
         const eased=1-Math.pow(1-Math.min(1,progress),2.0),waveX=lerp(fx.x1,fx.x2,eased),dir=Math.sign(fx.x2-fx.x1)||1;
         const pulse=Math.min(1,progress/.12)*Math.min(1,(1-progress)/.12+.18);
-        mpCtx.save();mpCtx.globalCompositeOperation='lighter';mpCtx.lineCap='round';
+        mpCtx.save();mpCtx.globalCompositeOperation=fx.shadowClone?'source-over':'lighter';mpCtx.lineCap='round';
         // 길 전체가 동시에 반짝이지 않고 파도 바로 뒤쪽만 물길이 남는다.
         const trailEnd=waveX-dir*165;
         for(let i=0;i<4;i++){mpCtx.strokeStyle=`rgba(${55+i*28},${178+i*18},${226+i*8},${(.18+i*.07)*pulse})`;mpCtx.lineWidth=52-i*9;mpCtx.beginPath();mpCtx.moveTo(trailEnd,y1);mpCtx.quadraticCurveTo((trailEnd+waveX)/2,y1+Math.sin(progress*12+i)*7,waveX,y1);mpCtx.stroke();}
@@ -26579,7 +26699,7 @@ function requestGachaDraw(count) {
         for(let i=0;i<(mpHighLoadFrame?12:22);i++){const a=fx.seed+i*2.37+progress*7.4,r=18+(i%7)*8,px=30+Math.cos(a)*r*.72,py=Math.sin(a)*r*.62;mpCtx.fillStyle=i%4===0?`rgba(255,255,255,${.9*pulse})`:`rgba(145,239,255,${.7*pulse})`;mpCtx.beginPath();mpCtx.arc(px,py,1.5+(i%4)*.7,0,Math.PI*2);mpCtx.fill();}
         mpCtx.restore();
       } else if (fx.kind === 'waterImpact') {
-        const pulse=Math.sin(progress*Math.PI);mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.globalCompositeOperation='lighter';
+        const pulse=Math.sin(progress*Math.PI);mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.globalCompositeOperation=fx.shadowClone?'source-over':'lighter';
         for(let i=0;i<3;i++){mpCtx.strokeStyle=`rgba(${170+i*25},${235+i*6},255,${pulse*(.72-i*.16)})`;mpCtx.lineWidth=5-i;mpCtx.beginPath();mpCtx.arc(0,0,7+progress*(22+i*8),0,Math.PI*2);mpCtx.stroke();}
         for(let i=0;i<(mpHighLoadFrame?5:9);i++){const a=fx.seed+i*Math.PI*2/9,r=8+progress*(20+(i%3)*7);mpCtx.fillStyle=`rgba(220,252,255,${pulse*.82})`;mpCtx.beginPath();mpCtx.ellipse(Math.cos(a)*r,Math.sin(a)*r*.65,2,4,a,0,Math.PI*2);mpCtx.fill();}mpCtx.restore();
       } else if (fx.kind === 'phoenixBreath') {
@@ -26588,27 +26708,27 @@ function requestGachaDraw(count) {
       } else if (fx.kind === 'phoenixRoar') {
         const pulse=Math.sin(progress*Math.PI);mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.shadowBlur=22;mpCtx.shadowColor='#ff7a2f';for(let i=0;i<4;i++){mpCtx.strokeStyle=`rgba(255,${170+i*18},${70+i*20},${pulse*(.72-i*.12)})`;mpCtx.lineWidth=8-i*1.5;mpCtx.beginPath();mpCtx.arc(0,0,35+progress*(180+i*55),0,Math.PI*2);mpCtx.stroke();}mpCtx.restore();
       } else if (fx.kind === 'edenBolt' || fx.kind === 'edenBarrage') {
-        const barrage=fx.kind==='edenBarrage',wave=Math.sin(progress*Math.PI*(barrage?11:8)+fx.seed)*(barrage?20:11);mpCtx.save();mpCtx.globalCompositeOperation='source-over';mpCtx.strokeStyle=`rgba(4,4,7,${.96*fade})`;mpCtx.lineWidth=barrage?14:9;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.bezierCurveTo(fx.x1+dx*.3+nx*wave,y1+dy*.3+ny*wave,fx.x1+dx*.7-nx*wave,y1+dy*.7-ny*wave,x,y);mpCtx.stroke();mpCtx.globalCompositeOperation='lighter';mpCtx.strokeStyle=`rgba(255,255,255,${.82*fade})`;mpCtx.lineWidth=3;mpCtx.stroke();mpCtx.translate(x,y);mpCtx.rotate(angle);mpCtx.globalCompositeOperation='source-over';mpCtx.fillStyle='#020203';mpCtx.shadowBlur=16;mpCtx.shadowColor='rgba(255,255,255,.45)';mpCtx.beginPath();mpCtx.ellipse(0,0,barrage?11:8,barrage?7:5.5,0,0,Math.PI*2);mpCtx.fill();if(barrage){mpCtx.fillStyle='#fff';for(let i=0;i<4;i++){const tx=-4+i*2.3;mpCtx.beginPath();mpCtx.moveTo(tx,-2.2);mpCtx.lineTo(tx+1,0);mpCtx.lineTo(tx+2,-2.2);mpCtx.closePath();mpCtx.fill();}}mpCtx.restore();
+        const barrage=fx.kind==='edenBarrage',wave=Math.sin(progress*Math.PI*(barrage?11:8)+fx.seed)*(barrage?20:11);mpCtx.save();mpCtx.globalCompositeOperation='source-over';mpCtx.strokeStyle=`rgba(4,4,7,${.96*fade})`;mpCtx.lineWidth=barrage?14:9;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.bezierCurveTo(fx.x1+dx*.3+nx*wave,y1+dy*.3+ny*wave,fx.x1+dx*.7-nx*wave,y1+dy*.7-ny*wave,x,y);mpCtx.stroke();mpCtx.globalCompositeOperation=fx.shadowClone?'source-over':'lighter';mpCtx.strokeStyle=`rgba(255,255,255,${.82*fade})`;mpCtx.lineWidth=3;mpCtx.stroke();mpCtx.translate(x,y);mpCtx.rotate(angle);mpCtx.globalCompositeOperation='source-over';mpCtx.fillStyle='#020203';mpCtx.shadowBlur=16;mpCtx.shadowColor='rgba(255,255,255,.45)';mpCtx.beginPath();mpCtx.ellipse(0,0,barrage?11:8,barrage?7:5.5,0,0,Math.PI*2);mpCtx.fill();if(barrage){mpCtx.fillStyle='#fff';for(let i=0;i<4;i++){const tx=-4+i*2.3;mpCtx.beginPath();mpCtx.moveTo(tx,-2.2);mpCtx.lineTo(tx+1,0);mpCtx.lineTo(tx+2,-2.2);mpCtx.closePath();mpCtx.fill();}}mpCtx.restore();
       } else if (fx.kind === 'edenTaunt') {
-        const p=Math.sin(progress*Math.PI),rr=Number(fx.radius||92);mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.globalCompositeOperation='lighter';
+        const p=Math.sin(progress*Math.PI),rr=Number(fx.radius||92);mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.globalCompositeOperation=fx.shadowClone?'source-over':'lighter';
         mpCtx.fillStyle=`rgba(0,0,0,${.52*p})`;mpCtx.beginPath();mpCtx.arc(0,0,24+progress*rr*.45,0,Math.PI*2);mpCtx.fill();
         for(let i=0;i<4;i++){mpCtx.strokeStyle=i%2?`rgba(255,255,255,${p*(.72-i*.1)})`:`rgba(18,18,22,${p*(.9-i*.1)})`;mpCtx.lineWidth=8-i*1.5;mpCtx.beginPath();mpCtx.ellipse(0,4,28+progress*(rr+i*13),10+progress*(rr*.33+i*5),progress*1.4+i*.5,0,Math.PI*2);mpCtx.stroke();}mpCtx.restore();
       } else if (fx.kind === 'edenImpale') {
         const p=Math.sin(progress*Math.PI),w=Number(fx.width||52),reach=Math.hypot(dx,dy),tip=reach*Math.min(1,progress*2.2);
-        mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.rotate(angle);mpCtx.globalCompositeOperation='lighter';
+        mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.rotate(angle);mpCtx.globalCompositeOperation=fx.shadowClone?'source-over':'lighter';
         mpCtx.shadowBlur=24;mpCtx.shadowColor='#fff';mpCtx.strokeStyle=`rgba(255,255,255,${.94*p})`;mpCtx.lineWidth=5;mpCtx.beginPath();mpCtx.moveTo(0,0);mpCtx.lineTo(tip,0);mpCtx.stroke();
         mpCtx.shadowBlur=0;mpCtx.strokeStyle=`rgba(3,3,5,${.98*p})`;mpCtx.lineWidth=w;mpCtx.beginPath();mpCtx.moveTo(6,0);mpCtx.lineTo(tip,0);mpCtx.stroke();
         mpCtx.strokeStyle=`rgba(255,255,255,${.72*p})`;mpCtx.lineWidth=2;for(const off of [-w*.38,w*.38]){mpCtx.beginPath();mpCtx.moveTo(0,off);mpCtx.lineTo(tip,off*.08);mpCtx.stroke();}mpCtx.restore();
       } else if (fx.kind === 'edenDeadeye') {
-        const p=Math.sin(progress*Math.PI),w=Number(fx.width||44);mpCtx.save();mpCtx.globalCompositeOperation='lighter';
+        const p=Math.sin(progress*Math.PI),w=Number(fx.width||44);mpCtx.save();mpCtx.globalCompositeOperation=fx.shadowClone?'source-over':'lighter';
         mpCtx.shadowBlur=36;mpCtx.shadowColor='#fff';mpCtx.strokeStyle=`rgba(255,255,255,${.96*p})`;mpCtx.lineWidth=w*.42;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.lineTo(fx.x2,y2);mpCtx.stroke();
         mpCtx.shadowBlur=0;mpCtx.strokeStyle=`rgba(0,0,0,${.98*p})`;mpCtx.lineWidth=w*.24;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.lineTo(fx.x2,y2);mpCtx.stroke();
         mpCtx.strokeStyle=`rgba(255,255,255,${.88*p})`;mpCtx.lineWidth=2;mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.lineTo(fx.x2,y2);mpCtx.stroke();
         mpCtx.translate(fx.x2,y2);for(let i=0;i<4;i++){mpCtx.strokeStyle=`rgba(255,255,255,${p*(.7-i*.12)})`;mpCtx.lineWidth=4-i*.6;mpCtx.beginPath();mpCtx.arc(0,0,16+progress*(44+i*16),0,Math.PI*2);mpCtx.stroke();}mpCtx.restore();
       } else if (fx.kind === 'edenCut') {
-        const rr=Number(fx.radius||150),pulse=Math.sin(progress*Math.PI);mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.globalCompositeOperation='lighter';for(const rot of [-.58,.58]){mpCtx.save();mpCtx.rotate(rot);const cg=mpCtx.createLinearGradient(-rr,0,rr,0);cg.addColorStop(0,'rgba(255,255,255,0)');cg.addColorStop(.42,`rgba(255,255,255,${.92*pulse})`);cg.addColorStop(.5,'#fff');cg.addColorStop(.58,`rgba(20,20,25,${.8*pulse})`);cg.addColorStop(1,'rgba(0,0,0,0)');mpCtx.strokeStyle=cg;mpCtx.lineWidth=12;mpCtx.beginPath();mpCtx.moveTo(-rr,0);mpCtx.lineTo(rr,0);mpCtx.stroke();mpCtx.restore();}mpCtx.restore();
+        const rr=Number(fx.radius||150),pulse=Math.sin(progress*Math.PI);mpCtx.save();mpCtx.translate(fx.x1,y1);mpCtx.globalCompositeOperation=fx.shadowClone?'source-over':'lighter';for(const rot of [-.58,.58]){mpCtx.save();mpCtx.rotate(rot);const cg=mpCtx.createLinearGradient(-rr,0,rr,0);cg.addColorStop(0,'rgba(255,255,255,0)');cg.addColorStop(.42,`rgba(255,255,255,${.92*pulse})`);cg.addColorStop(.5,'#fff');cg.addColorStop(.58,`rgba(20,20,25,${.8*pulse})`);cg.addColorStop(1,'rgba(0,0,0,0)');mpCtx.strokeStyle=cg;mpCtx.lineWidth=12;mpCtx.beginPath();mpCtx.moveTo(-rr,0);mpCtx.lineTo(rr,0);mpCtx.stroke();mpCtx.restore();}mpCtx.restore();
       } else if (fx.kind === 'edenRush') {
-        const width=Number(fx.width||70),pulse=Math.max(0,1-progress*.72);mpCtx.save();mpCtx.globalCompositeOperation='lighter';mpCtx.strokeStyle=`rgba(255,255,255,${.82*pulse})`;mpCtx.lineWidth=width*.22;mpCtx.shadowBlur=26;mpCtx.shadowColor='#fff';mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.lineTo(x,y);mpCtx.stroke();mpCtx.strokeStyle=`rgba(5,5,8,${.9*pulse})`;mpCtx.lineWidth=width*.48;mpCtx.beginPath();mpCtx.moveTo(fx.x1+nx*8,y1+ny*8);mpCtx.lineTo(x+nx*8,y+ny*8);mpCtx.stroke();mpCtx.restore();
+        const width=Number(fx.width||70),pulse=Math.max(0,1-progress*.72);mpCtx.save();mpCtx.globalCompositeOperation=fx.shadowClone?'source-over':'lighter';mpCtx.strokeStyle=`rgba(255,255,255,${.82*pulse})`;mpCtx.lineWidth=width*.22;mpCtx.shadowBlur=26;mpCtx.shadowColor='#fff';mpCtx.beginPath();mpCtx.moveTo(fx.x1,y1);mpCtx.lineTo(x,y);mpCtx.stroke();mpCtx.strokeStyle=`rgba(5,5,8,${.9*pulse})`;mpCtx.lineWidth=width*.48;mpCtx.beginPath();mpCtx.moveTo(fx.x1+nx*8,y1+ny*8);mpCtx.lineTo(x+nx*8,y+ny*8);mpCtx.stroke();mpCtx.restore();
       } else if (fx.kind === 'dragonLance') {
         const tailX=x-ux*42,tailY=y-uy*42;mpCtx.shadowBlur=16;mpCtx.shadowColor='#ffe36e';mpCtx.strokeStyle=`rgba(255,223,91,${.8*fade})`;mpCtx.lineWidth=9;mpCtx.beginPath();mpCtx.moveTo(tailX,tailY);mpCtx.lineTo(x,y);mpCtx.stroke();
         mpCtx.save();mpCtx.translate(x,y);mpCtx.rotate(angle);const spear=mpCtx.createLinearGradient(-28,0,18,0);spear.addColorStop(0,'#8a4a00');spear.addColorStop(.55,'#ffd84f');spear.addColorStop(1,'#fff7bf');mpCtx.strokeStyle=spear;mpCtx.lineWidth=4;mpCtx.beginPath();mpCtx.moveTo(-28,0);mpCtx.lineTo(16,0);mpCtx.stroke();mpCtx.fillStyle='#fff1a1';mpCtx.beginPath();mpCtx.moveTo(24,0);mpCtx.lineTo(11,-7);mpCtx.lineTo(11,7);mpCtx.closePath();mpCtx.fill();mpCtx.restore();
@@ -26620,7 +26740,7 @@ function requestGachaDraw(count) {
         const pulse=Math.sin(progress*Math.PI);
         const spin=-progress*Math.PI*2;
         const spinRadius=Math.max(62,Number(fx.radius||90));
-        mpCtx.save();mpCtx.translate(fx.x2,y2);mpCtx.globalCompositeOperation='lighter';
+        mpCtx.save();mpCtx.translate(fx.x2,y2);mpCtx.globalCompositeOperation=fx.shadowClone?'source-over':'lighter';
         mpCtx.setLineDash([9,7]);mpCtx.strokeStyle=`rgba(255,78,108,${.52*pulse})`;mpCtx.lineWidth=2.4;mpCtx.beginPath();mpCtx.arc(0,0,spinRadius,0,Math.PI*2);mpCtx.stroke();mpCtx.setLineDash([]);
         mpCtx.shadowBlur=mpHighLoadFrame?24:34;mpCtx.shadowColor='#ff234f';
         const ringCount=mpHighLoadFrame?3:4;
@@ -26631,7 +26751,7 @@ function requestGachaDraw(count) {
         mpCtx.fillStyle='#160208';mpCtx.fillRect(-16,23,32,6);mpCtx.fillStyle='#8c1028';mpCtx.fillRect(-4,29,8,20);mpCtx.beginPath();mpCtx.arc(0,52,6,0,Math.PI*2);mpCtx.fill();
         mpCtx.rotate(-spin);const impact=mpCtx.createRadialGradient(0,0,1,0,0,spinRadius);impact.addColorStop(0,`rgba(255,248,250,${.62*pulse})`);impact.addColorStop(.25,`rgba(255,45,78,${.38*pulse})`);impact.addColorStop(1,'rgba(255,0,40,0)');mpCtx.fillStyle=impact;mpCtx.beginPath();mpCtx.arc(0,0,spinRadius,0,Math.PI*2);mpCtx.fill();mpCtx.restore();
       } else if (fx.kind === 'eclipseSlash') {
-        const pulse=Math.sin(progress*Math.PI);mpCtx.save();mpCtx.translate(fx.x2,y2);mpCtx.rotate(angle);mpCtx.globalCompositeOperation='lighter';mpCtx.shadowBlur=mpHighLoadFrame?20:30;mpCtx.shadowColor='#ff234f';
+        const pulse=Math.sin(progress*Math.PI);mpCtx.save();mpCtx.translate(fx.x2,y2);mpCtx.rotate(angle);mpCtx.globalCompositeOperation=fx.shadowClone?'source-over':'lighter';mpCtx.shadowBlur=mpHighLoadFrame?20:30;mpCtx.shadowColor='#ff234f';
         const layers=mpHighLoadFrame?3:5;for(let layer=0;layer<layers;layer+=1){const r=31+layer*8;mpCtx.strokeStyle=layer===0?`rgba(255,236,241,${.92*pulse})`:`rgba(255,${70+layer*14},${100+layer*11},${(.72-layer*.09)*pulse})`;mpCtx.lineWidth=8-layer*1.25;mpCtx.beginPath();mpCtx.arc(0,-7,r,-1.22,.98);mpCtx.stroke();mpCtx.beginPath();mpCtx.arc(0,7,r,-.98,1.22);mpCtx.stroke();}
         const impact=mpCtx.createRadialGradient(0,0,1,0,0,44);impact.addColorStop(0,`rgba(255,245,248,${.48*pulse})`);impact.addColorStop(.28,`rgba(255,54,88,${.26*pulse})`);impact.addColorStop(1,'rgba(255,0,45,0)');mpCtx.fillStyle=impact;mpCtx.beginPath();mpCtx.arc(0,0,44,0,Math.PI*2);mpCtx.fill();mpCtx.restore();
       } else if (fx.kind === 'lightning') {

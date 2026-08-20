@@ -7428,6 +7428,14 @@ button {
             <span>🧰</span>
             <span><strong>50회 구매</strong><small>소환석 5,000개</small></span>
           </button>
+          <button id="summon100Btn" class="premium-summon-button gacha-draw-button" data-draw-count="100" data-default-label="100회 구매">
+            <span>🚚</span>
+            <span><strong>100회 구매</strong><small>소환석 10,000개</small></span>
+          </button>
+          <button id="summon500Btn" class="premium-summon-button gacha-draw-button" data-draw-count="500" data-default-label="500회 구매">
+            <span>🏭</span>
+            <span><strong>500회 구매</strong><small>소환석 50,000개</small></span>
+          </button>
         </div>
         <p class="gacha-double-click-guide">구매 버튼은 한 번만 누릅니다. 보급 상자를 두 번 눌러 개봉하고, 바로 한 번 더 빠르게 누르면 연출을 건너뛰고 확인 버튼이 즉시 나타납니다.</p>
 
@@ -8564,7 +8572,7 @@ function applyStagePreview(stageId = selectedStage) {
       errorEntity: {
         id: 'errorEntity',
         name: 'ERROR',
-        icon: '▣',
+        icon: '⟁',
         rarity: 'ERROR',
         rarityKey: 'error',
         rarityClass: 'rarity-error',
@@ -8606,7 +8614,7 @@ function applyStagePreview(stageId = selectedStage) {
         rarityKey: 'admin',
         rarityClass: 'rarity-admin',
         cost: 650,
-        damage: 600,
+        damage: 6000,
         range: 230,
         fireInterval: 0.75 / 1.2,
         normalSlashRadius: 55,
@@ -8624,7 +8632,7 @@ function applyStagePreview(stageId = selectedStage) {
         multiplayerFootprintRadius: 96,
         maxPlaced: 1,
         color: '#ff355d',
-        skillText: '모든 평타는 적중 지점 반경 55 범위 베기입니다. 적을 처치할 때마다 5% 확률로 공격력과 공격속도가 각각 2% 영구 증가하고 월식 회전참 범위가 5% 증가합니다. 평타 적중 시 5% 확률로 3초 블랙홀을 생성해 반경 150의 적을 끌어당긴 뒤 평타 피해로 폭발합니다. 4번 벨 때마다 기본 반경 90의 월식 회전참으로 범위 안 모든 적에게 평타의 3배 피해와 1초 기절을 줍니다. 이클립스는 기절 면역이며 전장에는 한 번에 1명만 배치할 수 있습니다.'
+        skillText: '기본 공격력 6000. 모든 평타는 이클립스가 바라보는 방향의 전방 180°·사거리 230 범위를 한 번에 베어 범위 안 모든 적에게 피해를 줍니다. 적을 처치할 때마다 5% 확률로 공격력과 공격속도가 각각 2% 영구 증가하고 월식 회전참 범위가 5% 증가합니다. 평타 적중 시 5% 확률로 3초 블랙홀을 생성해 반경 150의 적을 끌어당긴 뒤 평타 피해로 폭발합니다. 4번 벨 때마다 기본 반경 90의 월식 회전참으로 범위 안 모든 적에게 평타의 3배 피해와 1초 기절을 줍니다. 이클립스는 기절 면역이며 전장에는 한 번에 1명만 배치할 수 있습니다.'
       },
       astralChronomancer: {
         id: 'astralChronomancer',
@@ -11396,7 +11404,7 @@ async function logout() {
 
       await waitWithGachaQuickSkip(260, quickTap);
       burst.classList.add('revealed');
-      await waitWithGachaQuickSkip(1250 + Math.min(700, rarityKeys.length * 25), quickTap);
+      await waitWithGachaQuickSkip(1250 + Math.min(700, rarityKeys.length * 8), quickTap);
       quickTap.cleanup();
       panel.classList.add('visible');
 
@@ -12877,47 +12885,105 @@ function requestGachaDraw(count) {
       }
     }
 
-    function makeInfiniteBossSpec(themeStage, localWave, hp, wave) {
-      const slot = Math.max(1, Math.min(5, Math.floor(localWave / 10)));
-      const ratios = [10, 30, 60, 100, 150];
-      const ratio = ratios[slot - 1];
-      const bossHp = Math.max(1, Math.round(hp * ratio));
+    function makeInfiniteBossSpecs(themeStage, localWave, hp, wave) {
       const reward = 100 + Math.floor(wave / 10) * 18;
+      const makeHp = ratio => Math.max(1, Math.round(hp * ratio));
+
+      // 무한모드 보스는 각 맵의 원본 스테이지와 같은 웨이브/순서로 등장합니다.
+      if (themeStage === 1) {
+        if (localWave === 10) {
+          const bossHp = makeHp(10);
+          return Array.from({length:5}, (_,groupIndex)=>({
+            type:'brother',name:'비둘기 브라더스',icon:'🕊️',health:bossHp,
+            speed:54,radius:51,reward,groupIndex
+          }));
+        }
+        if (localWave === 25) {
+          return [{type:'knight',name:'기사 비둘기',icon:'🕊️',health:makeHp(30),speed:50,radius:29,reward}];
+        }
+        if (localWave === 40) {
+          return [{type:'king',name:'킹 비둘기',icon:'🕊️',health:makeHp(100),speed:45,radius:32,reward,abilityInterval:5,abilityTimer:5,abilityRange:190}];
+        }
+        if (localWave === 50) {
+          return [{type:'awakenedKing',name:'각성한 킹 비둘기',icon:'🕊️',health:makeHp(150),speed:48,radius:36,reward,abilityInterval:3,abilityTimer:3,abilityRange:235}];
+        }
+        return [];
+      }
 
       if (themeStage === 2) {
-        if (slot === 1) return {type:'gemGolemBoss',name:'보석 골렘',icon:'💎',health:bossHp,speed:34,radius:42,reward,abilityInterval:10,abilityTimer:10,shieldRatio:.5};
-        if (slot === 2 || slot === 3) return {type:'giantGolemBoss',name:'거대 골렘',icon:'🗿',health:bossHp,speed:31,radius:52,reward,abilityInterval:5,abilityTimer:5,abilityRange:165};
-        if (slot === 4) return {type:'combinedSoilGolemBoss',name:'합쳐진 흙 골렘',icon:'🗿',health:bossHp,speed:30,radius:55,reward,reviveChance:.45,reviveHpRatio:.75};
-        return {type:'crystalGolemBoss',name:'크리스탈 골렘',icon:'💠',health:bossHp,speed:28,radius:58,reward,crystalShotTimer:5,crystalShotInterval:5,crystalShieldTimer:10,crystalShieldInterval:10,shieldRatio:.30,abilityRange:360};
+        if (localWave === 10) {
+          return [{type:'gemGolemBoss',name:'보석이 박힌 골렘',icon:'💎',health:makeHp(10),speed:43,radius:36,reward,abilityInterval:10,abilityTimer:10,shieldRatio:.50}];
+        }
+        if (localWave === 30) {
+          return [{type:'giantGolemBoss',name:'거대 골렘',icon:'🗿',health:makeHp(60),speed:34,radius:48,reward,abilityInterval:5,abilityTimer:5,abilityRange:205}];
+        }
+        if (localWave === 40) {
+          return [{type:'combinedSoilGolemBoss',name:'합쳐진 흙 골렘',icon:'🗿',health:makeHp(100),speed:31,radius:54,reward,reviveChance:.75,reviveHpRatio:.75}];
+        }
+        if (localWave === 50) {
+          return [{type:'crystalGolemBoss',name:'크리스탈 골렘',icon:'💠',health:makeHp(150),speed:28,radius:58,reward,
+            crystalShotTimer:5,crystalShotInterval:5,crystalShieldTimer:10,crystalShieldInterval:10,shieldRatio:.30,abilityRange:360}];
+        }
+        return [];
       }
 
       if (themeStage === 3) {
-        if (slot === 1 || slot === 3) return {type:'pirateLlamaBoss',variant:'llama',name:'해적 라마',icon:'🦙',health:bossHp,speed:50,radius:35,reward,evadeChance:.50};
-        if (slot === 2 || slot === 4) return {type:'auraLlamaBoss',variant:'llama',name:'오라마',icon:'🦙',health:bossHp,speed:45,radius:44,reward,llamaSpitInterval:3,llamaSpitTimer:1.4,llamaSpitCount:3,llamaStunDuration:2,llamaSpitRange:390,llamaDashInterval:3,llamaDashTimer:3,llamaDashDistance:105};
-        return {type:'deadlyLlamaBoss',variant:'llama',name:'치명적인 라마',icon:'🦙',health:bossHp,speed:50,radius:48,reward,evadeChance:.75,llamaSpitInterval:1,llamaSpitTimer:.55,llamaSpitCount:1,llamaStunDuration:2,llamaSpitRange:430,llamaDashInterval:3,llamaDashTimer:2.2,llamaDashDistance:145};
+        if (localWave === 15) {
+          return [{type:'pirateLlamaBoss',variant:'llama',name:'해적 라마',icon:'🦙',health:makeHp(10),speed:48,radius:34,reward,evadeChance:.50}];
+        }
+        if (localWave === 35) {
+          return [{type:'auraLlamaBoss',variant:'llama',name:'오라마',icon:'🦙',health:makeHp(60),speed:43,radius:43,reward,
+            llamaSpitInterval:3,llamaSpitTimer:1.4,llamaSpitCount:3,llamaStunDuration:2,llamaSpitRange:390,
+            llamaDashInterval:3,llamaDashTimer:3,llamaDashDistance:105}];
+        }
+        if (localWave === 50) {
+          return [{type:'deadlyLlamaBoss',variant:'llama',name:'치명적인 라마',icon:'🦙',health:makeHp(150),speed:49,radius:47,reward,evadeChance:.75,
+            llamaSpitInterval:1,llamaSpitTimer:.55,llamaSpitCount:1,llamaStunDuration:2,llamaSpitRange:430,
+            llamaDashInterval:3,llamaDashTimer:2.2,llamaDashDistance:145}];
+        }
       }
-
-      if (slot === 1) return {type:'brother',name:'비둘기 브라더스',icon:'🕊️',health:bossHp,speed:50,radius:29,reward,groupIndex:0};
-      if (slot === 2) return {type:'knight',name:'기사 비둘기',icon:'🕊️',health:bossHp,speed:47,radius:31,reward,abilityInterval:12,abilityTimer:12};
-      if (slot === 3 || slot === 4) return {type:'king',name:'킹 비둘기',icon:'🕊️',health:bossHp,speed:43,radius:35,reward,abilityInterval:5,abilityTimer:5,abilityRange:190};
-      return {type:'awakenedKing',name:'각성한 킹 비둘기',icon:'🕊️',health:bossHp,speed:46,radius:39,reward,abilityInterval:3,abilityTimer:3,abilityRange:235};
+      return [];
     }
 
     function createInfiniteWaveQueue(wave) {
       const hp = infiniteBaseHp(wave);
       const themeStage = infiniteThemeStageForWave(wave);
       const localWave = infiniteLocalWave(wave);
-      const count = localWave % 10 === 0 ? Math.min(15, 5 + Math.floor(wave / 5)) : Math.min(30, 7 + Math.floor(wave / 2));
+      const bossSpecs = makeInfiniteBossSpecs(themeStage, localWave, hp, wave);
+
+      // 수정 동굴 39웨이브도 원본과 동일하게 흙 골렘 20마리가 먼저 등장하고,
+      // 다음 40웨이브에서 합쳐진 흙 골렘 보스로 이어집니다.
+      if (themeStage === 2 && localWave === 39) {
+        return Array.from({length:20}, (_,index)=>({
+          type:'normal',variant:'soilGolem',name:'흙 골렘',icon:'🪨',
+          health:Math.max(1,Math.round(hp*1.5)),speed:Math.min(72,38+wave*.08),radius:22,
+          reward:30+Math.floor(wave/8),noRevive:true,leavePermanentDirt:true,wave39Soil:true,groupIndex:index
+        }));
+      }
+
+      // 원본 스테이지처럼 보스 웨이브는 보스만 등장시킵니다.
+      if (bossSpecs.length) return bossSpecs;
+
+      const count = Math.min(30, 7 + Math.floor(wave / 2));
       const specs = [];
 
       for (let i = 0; i < count; i += 1) {
         if (themeStage === 2) {
-          const speedy = localWave >= 11 && i % 8 === 0;
-          specs.push({
-            type:'normal', variant:speedy?'speedyGolem':'golem', name:speedy?'스피디 골렘':'골렘', icon:'🗿',
-            health:hp, speed:speedy?Math.min(150, 92 + wave*.18):Math.min(78, 42 + wave*.10), radius:speedy?18:22,
-            reward:20+Math.floor(wave/8), rolling:speedy
-          });
+          const useSpeedy = localWave >= 11 && i % 8 === 0;
+          const useSoil = localWave >= 30 && i % 8 === 4;
+          if (useSoil) {
+            specs.push({
+              type:'normal',variant:'soilGolem',name:'흙 골렘',icon:'🪨',
+              health:Math.max(1,Math.round(hp*1.5)),speed:Math.min(72,38+wave*.08),radius:22,
+              reward:28+Math.floor(wave/8),reviveOnce:true,reviveHealthRatio:2/3
+            });
+          } else {
+            specs.push({
+              type:'normal',variant:useSpeedy?'speedyGolem':'golem',name:useSpeedy?'스피디 골렘':'골렘',icon:'🗿',
+              health:hp,speed:useSpeedy?Math.min(150,92+wave*.18):Math.min(78,42+wave*.10),radius:useSpeedy?18:22,
+              reward:20+Math.floor(wave/8),rolling:useSpeedy
+            });
+          }
         } else if (themeStage === 3) {
           const spit = localWave >= 35;
           specs.push({
@@ -12930,7 +12996,6 @@ function requestGachaDraw(count) {
         }
       }
 
-      if (localWave % 10 === 0) specs.push(makeInfiniteBossSpec(themeStage, localWave, hp, wave));
       return specs;
     }
 
@@ -13400,7 +13465,7 @@ function requestGachaDraw(count) {
         const themeStage = Number(battle.infiniteThemeStage || infiniteThemeStageForWave(battle.wave || 1));
         const theme = STAGE_CONFIG[themeStage] || STAGE_CONFIG[1];
         title.textContent = `♾️ 개인 무한모드 · ${theme.name}`;
-        body.innerHTML = `<p>현재 지역: ${theme.name} · 50웨이브마다 초원 → 수정 동굴 → 황야 순환</p><p>일반 적 HP 100 시작 · 10웨이브마다 ×1.1 복리 + 50웨이브마다 추가 ×1.5 복리</p><p>10웨이브마다 지역 보스 · HP는 일반 적 HP의 고정 배수</p><p>EXP: 1~50은 2, 51~100은 3, 이후 50웨이브마다 +1 EXP</p><p>웨이브당 소환석 100부터 시작 · 적 HP와 같은 성장률 적용 · 50웨이브 체크포인트 보상은 추가 지급</p><p>스킵 버튼 1회 = 1웨이브 추가 · 연속 최대 5회 · 맵 전환 웨이브는 스킵 불가</p>`;
+        body.innerHTML = `<p>현재 지역: ${theme.name} · 50웨이브마다 초원 → 수정 동굴 → 황야 순환</p><p>일반 적 HP 100 시작 · 10웨이브마다 ×1.1 복리 + 50웨이브마다 추가 ×1.5 복리</p><p>보스 웨이브는 각 맵의 원본 스테이지와 동일 · 초원 10/25/40/50 · 수정 동굴 10/30/40/50 · 황야 15/35/50</p><p>EXP: 1~50은 2, 51~100은 3, 이후 50웨이브마다 +1 EXP</p><p>웨이브당 소환석 100부터 시작 · 적 HP와 같은 성장률 적용 · 50웨이브 체크포인트 보상은 추가 지급</p><p>스킵 버튼 1회 = 1웨이브 추가 · 연속 최대 5회 · 맵 전환 웨이브는 스킵 불가</p>`;
       } else if (battle.stage === 2) {
         title.textContent = '💎 수정 동굴 · 맵 정보';
         body.innerHTML = [
@@ -13745,7 +13810,7 @@ function requestGachaDraw(count) {
         cherrySamurai: `기절 면역 · 근접 120 전방 180° 범위 · 원거리 ${unit.range} 검기 2발(각 적중지 반경 ${unit.swordWaveSplashRadius || 35} 범위) · 벚꽃 영역 ${unit.blossomAuraRange || 170}: 0.1초마다 ${unit.blossomAuraDamage || 10} 피해 · 일반 3타 후 일섬(폭 ${unit.issenWidth || 60}·거리 ${unit.issenRange || 200})×5 · 일섬 4회마다 오의 각 참격×10 · 10번째 공격마다 적 전체 3초 표식 후 ×5`,
         eden: '기절 면역 · Charge 최대100(1당 피해 +0.5%) · 14타마다 크기가 다른 공허 분신 6체를 9초 소환(각자 자동 공격) · 6타 Impale · 8타 Cut Into Nothing · 11타 Taunt(+15 Charge) · Charge30↑ Voidrush · Style V Deadeye · 맵당 1기',
         errorEntity: `<span class="error-live-identity"><span class="rarity-error">ERROR</span><span>//</span><span class="error-live-code">${makeErrorLiveCode()}</span></span><br>DATA CUT: 평타 5발 · 적 1명이면 5발 집중 · 각 탄환 적중지 반경58 범위피해/오류스택 · 5스택 CORRUPTED · 5타 404 · 10타 ROLLBACK · 25타 SYSTEM FAILURE · 50타 DELETE · 기절 면역`,
-        eclipse: `평타 적중지 반경 ${unit.normalSlashRadius || 55} 범위 베기 · 처치 시 5% 성장(공격력·공속 +2%, 회전참 범위 +5%) · 타격 시 5% 블랙홀 · 4타마다 회전참×3 + 1초 기절 · 기절 면역`,
+        eclipse: `공격력 ${Math.round(unit.damage || 6000).toLocaleString()} · 전방 180° 사거리 ${unit.range || 230} 범위 베기 · 처치 시 5% 성장(공격력·공속 +2%, 회전참 범위 +5%) · 타격 시 5% 블랙홀 · 4타마다 회전참×3 + 1초 기절 · 기절 면역`,
         astralChronomancer: '다중발사(2/3/4발) · 공전탄 최대 10발 · 각 탄환 20% 황금 시간기절 · 60회 공격마다 사거리 300 시간정지 5초'
       };
       return summaries[unit.id] || '기본 공격 유닛';
@@ -16417,12 +16482,12 @@ function requestGachaDraw(count) {
         }
 
         playUnitAttackSound('eclipse');
-        const effect = getAttackEffectType(placed.unitId);
-        const duration = getAttackEffectDuration(effect);
-        const slashRadius = eclipseData.normalSlashRadius || 55;
+        const coneAngle = 180;
+        const halfAngle = Math.PI / 2;
+        const slashRange = Number(placed.range || eclipseData.range || 230);
         battle.shots.push({
-          x1: target.x,
-          y1: target.y,
+          x1: placed.x,
+          y1: placed.y - 4,
           x2: target.x,
           y2: target.y,
           life: getAttackEffectDuration('sakuraMelee'),
@@ -16431,12 +16496,12 @@ function requestGachaDraw(count) {
           effect: 'sakuraMelee',
           slashTheme: 'eclipse',
           angle: targetAngle,
-          radius: slashRadius,
-          coneAngle: 180,
+          radius: slashRange,
+          coneAngle,
           seed: Math.random() * 1000
         });
         const slashVictims = battle.enemies.filter(enemy =>
-          !enemy.dead && Math.hypot(enemy.x - target.x, enemy.y - target.y) <= slashRadius
+          !enemy.dead && isEnemyInsideCone(enemy, placed, targetAngle, slashRange, halfAngle)
         );
         slashVictims.forEach(enemy => {
           const killed = applyTraitDamage(placed, enemy, placed.damage);
@@ -16445,6 +16510,7 @@ function requestGachaDraw(count) {
         if (Math.random() < (eclipseData.hitBlackHoleChance || .05)) {
           createEclipseBlackHole(placed, target);
         }
+        setBattleMessage(`🌑 이클립스 · 전방 180° 월식 베기! ${slashVictims.length}명 타격 · 공격력 ${Math.round(Number(placed.damage || eclipseData.damage)).toLocaleString()}`);
         return;
       }
 
@@ -19387,6 +19453,89 @@ function requestGachaDraw(count) {
       }
     }
 
+
+    function isSwordHoldingUnit(unit) {
+      return ['starterKnight','royalGuardian','cherrySamurai','eclipse'].includes(String(unit?.unitId || ''));
+    }
+
+    function drawSwordHoldingHandsArt(g, unit, layer = 'behind') {
+      const id = String(unit?.unitId || '');
+      if (!isSwordHoldingUnit(unit)) return;
+
+      const shadow = Boolean(unit?._shadowCloneVisual);
+      const configs = {
+        starterKnight: {
+          grips:[[-9,0]], shoulders:[[-20,9]],
+          sleeve: shadow ? '#000' : '#43566b', armor: shadow ? '#000' : '#a8bfd5',
+          skin: shadow ? '#000' : '#e6b48f', edge: shadow ? '#000' : '#dcecff'
+        },
+        royalGuardian: {
+          grips:[[-9,0]], shoulders:[[-20,8]],
+          sleeve: shadow ? '#000' : '#5d410b', armor: shadow ? '#000' : '#d5a72e',
+          skin: shadow ? '#000' : '#e8b991', edge: shadow ? '#000' : '#fff0a0'
+        },
+        cherrySamurai: {
+          grips:[[-8,-7],[-8,7]], shoulders:[[-19,-5],[-19,7]],
+          sleeve: shadow ? '#000' : '#442438', armor: shadow ? '#000' : '#8b3f66',
+          skin: shadow ? '#000' : '#edb895', edge: shadow ? '#000' : '#ffc0dd'
+        },
+        eclipse: {
+          grips:[[-11,-9],[-11,9]], shoulders:[[-21,-6],[-21,7]],
+          sleeve: '#030104', armor: '#250711',
+          skin: '#090206', edge: shadow ? '#000' : '#ff446a'
+        }
+      };
+      const c = configs[id];
+      if (!c) return;
+
+      g.save();
+      g.lineCap = 'round';
+      g.lineJoin = 'round';
+
+      if (layer === 'behind') {
+        c.grips.forEach((grip, i) => {
+          const shoulder = c.shoulders[i] || c.shoulders[0];
+          g.strokeStyle = c.sleeve;
+          g.lineWidth = id === 'eclipse' ? 9 : 8;
+          g.beginPath();
+          g.moveTo(shoulder[0], shoulder[1]);
+          g.quadraticCurveTo((shoulder[0]+grip[0])*.52, (shoulder[1]+grip[1])*.52 + (i ? 1 : -1), grip[0], grip[1]);
+          g.stroke();
+
+          g.strokeStyle = c.armor;
+          g.lineWidth = id === 'eclipse' ? 5.5 : 4.8;
+          g.beginPath();
+          g.moveTo(shoulder[0]+3, shoulder[1]);
+          g.lineTo(grip[0]-2, grip[1]);
+          g.stroke();
+        });
+      } else {
+        c.grips.forEach((grip, i) => {
+          g.shadowColor = c.edge;
+          g.shadowBlur = shadow ? 0 : (id === 'eclipse' ? 7 : 3);
+          g.fillStyle = id === 'eclipse' ? c.armor : c.skin;
+          g.strokeStyle = c.edge;
+          g.lineWidth = 1.1;
+          g.beginPath();
+          g.ellipse(grip[0], grip[1], id === 'eclipse' ? 5.0 : 4.4, id === 'cherrySamurai' ? 4.0 : 4.6, 0, 0, Math.PI*2);
+          g.fill();
+          g.stroke();
+          g.shadowBlur = 0;
+
+          // 손가락이 손잡이를 감싼 선
+          g.strokeStyle = shadow ? '#000' : (id === 'eclipse' ? '#8e1833' : 'rgba(70,36,28,.72)');
+          g.lineWidth = 1.1;
+          for (let f = -1; f <= 1; f += 1) {
+            g.beginPath();
+            g.moveTo(grip[0]-2.5, grip[1]+f*1.45);
+            g.lineTo(grip[0]+2.8, grip[1]+f*1.45);
+            g.stroke();
+          }
+        });
+      }
+      g.restore();
+    }
+
     function drawEclipseOrbitArt(g, time, unit, quality = 1) {
       const t = time * .001;
       const orbitRadius = 58;
@@ -20163,158 +20312,239 @@ function requestGachaDraw(count) {
 
     function drawErrorEntityAuraArt(g, time, unit, quality = 1) {
       const t = time * .001;
-      const seed = Number(unit.animationOffset || 0) * 7.73 + 1.17;
-      const pulse = .82 + Math.sin(t * 6.3 + seed) * .13;
+      const seed = Number(unit.animationOffset || 0) * 9.17 + 4.04;
       const attack = Number(unit.attackAnimation || 0);
-      g.save();
+      const pulse = .72 + .28 * Math.sin(t * 5.7 + seed);
 
-      // 바닥: 정상적인 마법진이 아니라 좌표가 끊어진 '손상된 UI'처럼 보이는 링.
       g.save();
-      g.translate(0, 12);
-      g.scale(1, .38);
-      g.globalCompositeOperation = 'lighter';
-      for (let ring = 0; ring < 3; ring += 1) {
-        const r = 48 + ring * 13 + Math.sin(t * (2.1 + ring * .3) + seed) * 3;
-        g.strokeStyle = ring === 1
-          ? `rgba(0,255,112,${(.28 + attack*.12) * pulse})`
-          : `rgba(75,255,140,${(.18 - ring*.03) * pulse})`;
-        g.lineWidth = 2.4 - ring * .45;
-        g.setLineDash(ring === 0 ? [18, 5, 3, 11] : [8 + ring*4, 9, 2, 7]);
-        g.lineDashOffset = (ring % 2 ? 1 : -1) * t * (22 + ring * 8);
+      g.translate(0, 9);
+      g.scale(1, .46);
+
+      // 검은 보이드 디스크
+      const voidDisk = g.createRadialGradient(0,0,6,0,0,62);
+      voidDisk.addColorStop(0,'rgba(0,0,0,.82)');
+      voidDisk.addColorStop(.62,'rgba(0,4,2,.54)');
+      voidDisk.addColorStop(1,'rgba(0,0,0,0)');
+      g.fillStyle=voidDisk;
+      g.beginPath();g.arc(0,0,62,0,Math.PI*2);g.fill();
+
+      // 깨진 육각형 ERROR 게이트
+      g.save();
+      g.rotate(t*.38);
+      const segments = quality > .65 ? 6 : 4;
+      for(let ring=0; ring<3; ring++){
+        const radius=43+ring*12;
+        g.strokeStyle = ring===1
+          ? `rgba(255,28,92,${.34 + attack*.16})`
+          : `rgba(0,255,112,${.40 - ring*.08 + pulse*.08})`;
+        g.lineWidth=ring===1?2.8:2.1;
+        g.setLineDash(ring===0?[20,5,3,10]:ring===1?[7,7,18,4]:[4,11]);
+        g.lineDashOffset=(ring%2?-1:1)*t*(28+ring*14);
         g.beginPath();
-        g.arc(0, 0, r, 0, Math.PI * 2);
+        for(let i=0;i<=6;i++){
+          const a=i*Math.PI/3;
+          const x=Math.cos(a)*radius, y=Math.sin(a)*radius;
+          if(i===0)g.moveTo(x,y);else g.lineTo(x,y);
+        }
         g.stroke();
       }
       g.setLineDash([]);
-      // 검은 데이터 결손 조각.
-      const blocks = quality > .7 ? 13 : 7;
-      for (let i = 0; i < blocks; i += 1) {
-        const a = seed + i * 2.399 + t * (.35 + (i%4)*.04);
-        const r = 27 + (i % 5) * 10;
-        const x = Math.cos(a) * r;
-        const y = Math.sin(a) * r * .72;
+      g.restore();
+
+      // 네 방향의 끊긴 데이터 칼날
+      const shards = quality > .7 ? 12 : 7;
+      for(let i=0;i<shards;i++){
+        const a=t*(i%2?.7:-.55)+seed+i*Math.PI*2/shards;
+        const r=48+(i%4)*9;
         g.save();
-        g.translate(x, y);
-        g.rotate(a + (i%2 ? t : -t) * .8);
-        g.fillStyle = i % 3 === 0 ? 'rgba(0,0,0,.92)' : `rgba(0,255,102,${.17 + .08*(i%3)})`;
-        g.fillRect(-4-(i%2)*2, -2, 8+(i%3)*3, 4+(i%2)*2);
+        g.translate(Math.cos(a)*r,Math.sin(a)*r*.78);
+        g.rotate(a+.35);
+        g.shadowColor=i%3===0?'#ff1c5c':'#00ff70';
+        g.shadowBlur=quality> .65?10:4;
+        g.fillStyle=i%3===0?'rgba(255,18,83,.82)':'rgba(0,255,112,.72)';
+        g.beginPath();g.moveTo(-8,-2);g.lineTo(7,-1);g.lineTo(13,0);g.lineTo(7,2);g.lineTo(-8,1);g.closePath();g.fill();
         g.restore();
       }
       g.restore();
 
-      // 공중의 깨진 코드 조각과 수직 스캔 노이즈.
-      const motes = quality > .7 ? 17 : 9;
-      for (let i = 0; i < motes; i += 1) {
-        const phase = seed + i * 1.73;
-        const x = Math.sin(phase * 2.2) * (27 + (i%4)*10) + Math.sin(t*5+i)*3;
-        const y = 22 - ((t * (19 + i%5*3) + i*11) % 73);
-        const alpha = .24 + .28 * (.5 + .5*Math.sin(t*8 + i));
-        g.fillStyle = i%4===0 ? `rgba(255,255,255,${alpha*.45})` : `rgba(0,255,102,${alpha})`;
-        if (i%3===0) {
-          g.fillRect(x, y, 1.5, 9 + (i%4)*3);
-        } else {
-          g.fillRect(x, y, 3 + (i%3)*2, 2 + (i%2));
-        }
+      // 몸 주위를 가르는 수직 스캔/코드 파편
+      const motes=quality>.7?20:10;
+      for(let i=0;i<motes;i++){
+        const phase=seed+i*1.773;
+        const x=Math.sin(phase*1.9)*(25+(i%5)*9);
+        const y=28-((t*(24+(i%4)*5)+i*13)%88);
+        const magenta=i%6===0;
+        g.fillStyle=magenta?'rgba(255,33,96,.78)':`rgba(0,255,112,${.28+(i%4)*.10})`;
+        if(i%3===0)g.fillRect(x,y,1.5,11+(i%4)*4);
+        else g.fillRect(x,y,4+(i%3)*2,2);
       }
       g.restore();
     }
 
     function drawErrorEntityBodyArt(g, time, unit, quality = 1) {
-      const t = time * .001;
-      const seed = Number(unit.animationOffset || 0) * 5.37 + 2.4;
-      const attack = Number(unit.attackAnimation || 0);
-      const hover = Math.sin(t * 3.1 + seed) * 1.8;
-      const glitch = Math.sin(t * 21 + seed) > .82 ? 3.5 : 0;
+      const t=time*.001;
+      const seed=Number(unit.animationOffset||0)*6.71+1.9;
+      const attack=Number(unit.attackAnimation||0);
+      const hover=Math.sin(t*3.4+seed)*2.2;
+      const glitchBurst=Math.sin(t*27+seed)>.91 ? (Math.sin(t*61)>0?4:-4) : 0;
+
       g.save();
-      g.translate(glitch * (Math.sin(t*47)>0 ? 1 : -1), hover);
+      g.translate(glitchBurst,hover);
 
-      // 낮고 넓은 그림자. 몸이 떠 있어도 지면과 연결된 느낌을 유지.
-      g.fillStyle = 'rgba(0,0,0,.48)';
-      g.beginPath(); g.ellipse(0, 25-hover, 28, 8, 0, 0, Math.PI*2); g.fill();
-      g.strokeStyle = `rgba(0,255,102,${.20 + attack*.18})`;
-      g.lineWidth = 1.5;
-      g.beginPath(); g.ellipse(0, 24-hover, 22, 5.5, 0, 0, Math.PI*2); g.stroke();
+      // 지면 그림자 + 데이터 균열
+      g.fillStyle='rgba(0,0,0,.60)';
+      g.beginPath();g.ellipse(0,26-hover,30,8,0,0,Math.PI*2);g.fill();
+      g.strokeStyle='rgba(0,255,112,.32)';g.lineWidth=1.2;
+      for(let i=0;i<4;i++){g.beginPath();g.moveTo(-8+i*5,22);g.lineTo(-17+i*9,29);g.stroke();}
 
-      // 뒤쪽에 완전한 원이 아닌 부서진 ERROR 헤일로.
-      g.save(); g.translate(0,-15); g.rotate(t*.42);
-      g.strokeStyle = 'rgba(0,255,102,.58)'; g.lineWidth = 3;
-      for (let i=0;i<6;i++) {
-        const a=i*Math.PI/3 + (i%2)*.18;
-        g.beginPath();g.arc(0,0,28+(i%2)*3,a,a+.46);g.stroke();
-      }
-      g.fillStyle='rgba(0,0,0,.9)';
-      for(let i=0;i<5;i++) { const a=i*1.83+t*.3; g.save();g.rotate(a);g.fillRect(25,-3,9+(i%3)*3,6);g.restore(); }
-      g.restore();
-
-      // 몸통: 사람 갑옷이 아니라 서로 맞지 않는 데이터 판들이 떠 있는 구조.
-      const torso = g.createLinearGradient(-18,-12,18,18);
-      torso.addColorStop(0,'#020403'); torso.addColorStop(.35,'#0b1510'); torso.addColorStop(.66,'#000'); torso.addColorStop(1,'#101713');
-      g.fillStyle=torso;g.strokeStyle='rgba(0,255,102,.72)';g.lineWidth=1.4;
+      // 뒤쪽 찢어진 데이터 망토: 검은 날개처럼 보이는 실루엣
+      g.save();
+      g.globalAlpha=.92;
+      const cloak=g.createLinearGradient(0,-12,0,30);
+      cloak.addColorStop(0,'#09040a');cloak.addColorStop(.5,'#010102');cloak.addColorStop(1,'rgba(0,0,0,.15)');
+      g.fillStyle=cloak;
+      g.strokeStyle='rgba(0,255,112,.23)';
+      g.lineWidth=1;
       g.beginPath();
-      g.moveTo(-20,-7);g.lineTo(-11,-17);g.lineTo(10,-15);g.lineTo(20,-5);g.lineTo(13,18);g.lineTo(2,22);g.lineTo(-15,15);g.closePath();
-      g.fill();g.stroke();
-      // 일부 판은 일부러 좌표가 어긋나 있음.
-      g.fillStyle='#020202';g.strokeStyle='rgba(105,255,158,.55)';
-      g.save();g.translate(-5+Math.sin(t*17)*1.3,0);g.rotate(-.08);g.beginPath();g.moveTo(-11,-8);g.lineTo(1,-12);g.lineTo(3,6);g.lineTo(-13,10);g.closePath();g.fill();g.stroke();g.restore();
-      g.save();g.translate(8+Math.cos(t*19)*1.2,2);g.rotate(.10);g.beginPath();g.moveTo(-2,-11);g.lineTo(11,-7);g.lineTo(8,12);g.lineTo(-4,9);g.closePath();g.fill();g.stroke();g.restore();
-
-      // 중앙 오류 코어: 세로로 찢긴 초록 균열.
-      g.save();g.globalCompositeOperation='lighter';g.shadowBlur=18;g.shadowColor='#00ff66';
-      const core=g.createLinearGradient(0,-12,0,16);core.addColorStop(0,'rgba(240,255,245,.95)');core.addColorStop(.32,'#54ff91');core.addColorStop(.68,'#00ff66');core.addColorStop(1,'rgba(0,255,102,0)');
-      g.fillStyle=core;g.beginPath();g.moveTo(-2,-12);g.lineTo(4,-5);g.lineTo(-1,2);g.lineTo(3,9);g.lineTo(-2,17);g.lineTo(-5,7);g.lineTo(-1,0);g.lineTo(-5,-7);g.closePath();g.fill();g.restore();
-
-      // 머리: 얼굴이 없는 깨진 직육면체 마스크. ERR 글자는 짧게 깜박임.
-      g.save();g.translate(0,-25);g.rotate(Math.sin(t*4.2)*.025);
-      g.fillStyle='#010202';g.strokeStyle='rgba(0,255,102,.75)';g.lineWidth=1.5;
-      g.beginPath();g.moveTo(-14,-9);g.lineTo(12,-11);g.lineTo(17,-3);g.lineTo(11,9);g.lineTo(-13,8);g.lineTo(-17,0);g.closePath();g.fill();g.stroke();
-      // 화면 노이즈 슬릿
-      g.fillStyle='rgba(0,255,102,.92)';g.shadowBlur=11;g.shadowColor='#00ff66';
-      g.fillRect(-10,-2,20,2.3);
-      g.fillStyle='rgba(0,0,0,.9)';g.fillRect(-3,-5,4,9);
-      if (Math.sin(t*16+seed)>.45) { g.shadowBlur=0;g.font='900 6px monospace';g.textAlign='center';g.fillStyle='rgba(138,255,178,.9)';g.fillText('ERR',0,6); }
-      // 머리 한 조각이 옆으로 분리되어 글리치처럼 떠 있음.
-      g.shadowBlur=0;g.fillStyle='#000';g.strokeStyle='rgba(0,255,102,.55)';g.fillRect(15+Math.sin(t*23)*2,-6,7,8);g.strokeRect(15+Math.sin(t*23)*2,-6,7,8);
+      g.moveTo(-10,-12);g.lineTo(-31,-3);g.lineTo(-22,4);g.lineTo(-36,12);g.lineTo(-18,13);g.lineTo(-28,27);g.lineTo(-5,18);
+      g.lineTo(0,13);
+      g.lineTo(6,19);g.lineTo(29,27);g.lineTo(19,13);g.lineTo(36,10);g.lineTo(22,3);g.lineTo(31,-5);g.lineTo(10,-12);
+      g.closePath();g.fill();g.stroke();
       g.restore();
 
-      // 어깨/팔: 관절 대신 분리된 블록이 초록 데이터선으로 연결.
+      // 어깨에 떠 있는 두 개의 ERROR 핀
       for(const side of [-1,1]){
-        const sx=side*18, sy=-7;
-        g.fillStyle='#050807';g.strokeStyle='rgba(0,255,102,.56)';g.lineWidth=1.2;
-        g.beginPath();g.moveTo(sx-side*2,sy-7);g.lineTo(sx+side*10,sy-4);g.lineTo(sx+side*8,sy+7);g.lineTo(sx-side*3,sy+5);g.closePath();g.fill();g.stroke();
-        const elbowX=side*(26+attack*2), elbowY=5+side*Math.sin(t*5+side)*1.5;
-        g.strokeStyle='rgba(0,255,102,.42)';g.lineWidth=2;g.setLineDash([3,3]);g.beginPath();g.moveTo(sx+side*5,sy+3);g.lineTo(elbowX,elbowY);g.stroke();g.setLineDash([]);
-        g.fillStyle='#000';g.strokeStyle='rgba(122,255,168,.62)';g.beginPath();g.roundRect(elbowX-5,elbowY-6,10,12,2);g.fill();g.stroke();
-        const handX=side*(31+attack*3), handY=14;
-        g.strokeStyle='rgba(0,255,102,.38)';g.beginPath();g.moveTo(elbowX,elbowY+4);g.lineTo(handX,handY);g.stroke();
-        g.fillStyle='#050705';g.fillRect(handX-4,handY-4,8,8);
+        const sx=side*(22+Math.sin(t*4+side)*1.5),sy=-8;
+        g.save();g.translate(sx,sy);g.rotate(side*(.28+Math.sin(t*3)*.05));
+        g.shadowColor=side<0?'#00ff70':'#ff1c5c';g.shadowBlur=12*quality;
+        g.fillStyle='#030304';g.strokeStyle=side<0?'#00ff70':'#ff346e';g.lineWidth=1.4;
+        g.beginPath();g.moveTo(-8,-5);g.lineTo(3,-8);g.lineTo(11,0);g.lineTo(3,8);g.lineTo(-8,5);g.lineTo(-3,0);g.closePath();g.fill();g.stroke();
+        g.restore();
       }
 
-      // 하체는 긴 다리가 아니라 작은 분리 블록 2개만 남겨 비인간적인 실루엣.
+      // 몸통: 날카로운 흑색 외골격
+      const armor=g.createLinearGradient(-18,-14,18,18);
+      armor.addColorStop(0,'#111217');armor.addColorStop(.28,'#030405');armor.addColorStop(.62,'#000');armor.addColorStop(1,'#171018');
+      g.fillStyle=armor;g.strokeStyle='rgba(133,255,175,.62)';g.lineWidth=1.3;
+      g.beginPath();
+      g.moveTo(-17,-13);g.lineTo(-8,-19);g.lineTo(9,-18);g.lineTo(18,-10);g.lineTo(15,14);g.lineTo(7,22);g.lineTo(-8,22);g.lineTo(-16,13);g.closePath();
+      g.fill();g.stroke();
+
+      // 가슴의 X-shaped corruption core
+      g.save();g.globalCompositeOperation='lighter';
+      g.shadowBlur=18+attack*12;g.shadowColor='#00ff70';
+      g.strokeStyle='#6aff9e';g.lineWidth=3.2;
+      g.beginPath();g.moveTo(-8,-8);g.lineTo(8,10);g.moveTo(8,-8);g.lineTo(-8,10);g.stroke();
+      g.shadowColor='#ff1c5c';g.shadowBlur=12;
+      g.strokeStyle='rgba(255,34,99,.80)';g.lineWidth=1.4;
+      g.beginPath();g.moveTo(-10,1);g.lineTo(10,1);g.stroke();
+      g.restore();
+
+      // 머리: 뿔 달린 비인간적 바이저
+      g.save();g.translate(0,-27);g.rotate(Math.sin(t*4.8+seed)*.025);
+      g.fillStyle='#020203';g.strokeStyle='rgba(0,255,112,.72)';g.lineWidth=1.4;
+      g.beginPath();
+      g.moveTo(-15,-6);g.lineTo(-8,-14);g.lineTo(0,-17);g.lineTo(9,-14);g.lineTo(16,-5);
+      g.lineTo(12,10);g.lineTo(0,14);g.lineTo(-12,10);g.closePath();g.fill();g.stroke();
+      // 길게 솟은 데이터 뿔
+      g.fillStyle='#050306';
+      g.beginPath();g.moveTo(-10,-12);g.lineTo(-22,-29);g.lineTo(-6,-18);g.closePath();g.fill();g.stroke();
+      g.beginPath();g.moveTo(10,-12);g.lineTo(22,-29);g.lineTo(6,-18);g.closePath();g.fill();g.stroke();
+      // 비대칭 듀얼 바이저
+      g.shadowBlur=13;g.shadowColor='#00ff70';g.fillStyle='#00ff70';g.fillRect(-10,-3,13,2.8);
+      g.shadowColor='#ff1c5c';g.fillStyle='#ff1c5c';g.fillRect(5,-3,6,2.8);
+      g.shadowBlur=0;
+      // 턱 부분의 404 이빨
+      g.fillStyle='rgba(190,255,210,.75)';
+      for(let i=0;i<4;i++){g.beginPath();g.moveTo(-6+i*4,6);g.lineTo(-4+i*4,10);g.lineTo(-2+i*4,6);g.closePath();g.fill();}
+      g.restore();
+
+      // 팔: 길고 날카로운 장갑 팔. 오른팔은 무기 방향으로 뻗음.
       for(const side of [-1,1]){
-        const x=side*8 + Math.sin(t*5+side)*1.2;
-        g.fillStyle='#030504';g.strokeStyle='rgba(0,255,102,.46)';g.beginPath();g.roundRect(x-6,16,12,11,2);g.fill();g.stroke();
-        g.fillStyle='rgba(0,255,102,.24)';g.fillRect(x-4,27,8,2);
+        const reach=side>0?attack*4:0;
+        const ex=side*(24+reach), ey=4+(side<0?4:-2);
+        g.strokeStyle='#09090c';g.lineWidth=9;g.lineCap='round';
+        g.beginPath();g.moveTo(side*14,-7);g.lineTo(ex,ey);g.stroke();
+        g.strokeStyle=side<0?'rgba(0,255,112,.62)':'rgba(255,34,99,.58)';g.lineWidth=1.6;
+        g.beginPath();g.moveTo(side*15,-8);g.lineTo(ex,ey);g.stroke();
+        g.fillStyle='#020203';g.beginPath();g.arc(ex,ey,5.2,0,Math.PI*2);g.fill();
       }
+
+      // 하체는 다리가 아니라 픽셀 연기처럼 붕괴
+      for(let i=0;i<8;i++){
+        const side=i%2?-1:1;
+        const x=side*(4+(i%4)*4)+Math.sin(t*7+i)*2;
+        const y=17+(i%4)*5;
+        g.fillStyle=i%5===0?'rgba(255,28,92,.55)':`rgba(0,255,112,${.18+(i%3)*.10})`;
+        g.fillRect(x,y,3+(i%2)*2,5+(i%3)*3);
+      }
+
+      // 순간 글리치 복제 실루엣
+      if(quality>.65 && Math.sin(t*18+seed)>.72){
+        g.globalAlpha=.20;
+        g.strokeStyle=Math.sin(t*41)>0?'#00ff70':'#ff1c5c';
+        g.lineWidth=2;
+        g.strokeRect(-18+(Math.sin(t*41)>0?5:-5),-45,36,66);
+      }
+
       g.restore();
     }
 
     function drawErrorEntityWeaponArt(g, unit, time, attack = 0) {
       const t=time*.001;
-      const pulse=.78+Math.sin(t*12)*.18;
+      const pulse=.72+.28*Math.sin(t*10.5);
       g.save();
-      // 손에 든 총 대신 앞쪽 공간이 찢어져 '데이터 포트'가 열림.
-      g.globalCompositeOperation='lighter';
-      for(let i=0;i<3;i++){
-        g.save();g.rotate(t*(i%2?1:-1)*(1.6+i*.25)+i*2.1);
-        g.strokeStyle=i===0?'rgba(190,255,211,.9)':`rgba(0,255,102,${.55-i*.10})`;
-        g.lineWidth=2.3-i*.4;g.setLineDash([8+i*2,4,2,5]);
-        g.beginPath();g.arc(28,0,10+i*4,0,Math.PI*2);g.stroke();g.setLineDash([]);g.restore();
-      }
-      g.shadowBlur=20+attack*12;g.shadowColor='#00ff66';
-      g.fillStyle=`rgba(0,255,102,${.42+.3*attack})`;g.beginPath();g.arc(28,0,5+attack*3,0,Math.PI*2);g.fill();
+
+      // 손에 연결된 'NULL RAIL' 글리치 캐논
+      g.translate(-7,0);
+      g.shadowColor='#00ff70';g.shadowBlur=13+attack*16;
+      const gun=g.createLinearGradient(-10,-7,72,8);
+      gun.addColorStop(0,'#151118');gun.addColorStop(.25,'#030304');gun.addColorStop(.62,'#090a0c');gun.addColorStop(1,'#010102');
+      g.fillStyle=gun;g.strokeStyle='rgba(0,255,112,.82)';g.lineWidth=1.3;
+      g.beginPath();
+      g.moveTo(-10,-6);g.lineTo(15,-8);g.lineTo(27,-13);g.lineTo(57,-9);g.lineTo(70,-3);
+      g.lineTo(78,0);g.lineTo(69,4);g.lineTo(56,9);g.lineTo(26,11);g.lineTo(14,6);g.lineTo(-10,5);g.closePath();
+      g.fill();g.stroke();
+
+      // 붉은 경고 레일
+      g.shadowColor='#ff1c5c';g.shadowBlur=9;
+      g.strokeStyle='rgba(255,35,99,.92)';g.lineWidth=2.4;
+      g.beginPath();g.moveTo(9,-5);g.lineTo(55,-5);g.lineTo(69,-1);g.stroke();
       g.shadowBlur=0;
-      // 포트 주변에 불규칙한 검은 데이터 파편.
-      for(let i=0;i<5;i++){const a=t*2+i*1.257,rr=14+(i%2)*5;g.save();g.translate(28+Math.cos(a)*rr,Math.sin(a)*rr);g.rotate(a);g.fillStyle='#020202';g.strokeStyle='rgba(0,255,102,.7)';g.lineWidth=.8;g.fillRect(-4,-2,8+(i%2)*3,4);g.strokeRect(-4,-2,8+(i%2)*3,4);g.restore();}
+
+      // 상부 데이터 코어
+      g.fillStyle='#020202';g.strokeStyle='rgba(180,255,205,.72)';
+      g.beginPath();g.roundRect(17,-17,28,8,2);g.fill();g.stroke();
+      g.font='900 6px monospace';g.textAlign='center';g.fillStyle='#70ffa2';
+      g.fillText(Math.sin(t*12)>0?'NULL':'404',31,-11);
+
+      // 손잡이
+      g.fillStyle='#080509';g.beginPath();g.moveTo(6,5);g.lineTo(22,6);g.lineTo(17,19);g.lineTo(7,18);g.closePath();g.fill();
+      g.strokeStyle='rgba(255,42,101,.45)';g.stroke();
+
+      // 총구: 회전하는 육각 포털
+      g.translate(79,0);
+      g.globalCompositeOperation='lighter';
+      for(let ring=0;ring<3;ring++){
+        g.save();g.rotate(t*(ring%2?1.7:-1.25)+ring*.6);
+        g.strokeStyle=ring===1?'rgba(255,37,101,.80)':`rgba(0,255,112,${.72-ring*.12})`;
+        g.lineWidth=2.5-ring*.45;
+        g.beginPath();
+        const r=7+ring*4+attack*2;
+        for(let i=0;i<=6;i++){const a=i*Math.PI/3,x=Math.cos(a)*r,y=Math.sin(a)*r;if(i===0)g.moveTo(x,y);else g.lineTo(x,y);}
+        g.stroke();g.restore();
+      }
+      g.shadowBlur=20;g.shadowColor='#00ff70';g.fillStyle=`rgba(150,255,185,${.50+.28*attack})`;
+      g.beginPath();g.arc(0,0,3.5+attack*2.5,0,Math.PI*2);g.fill();
+      g.globalCompositeOperation='source-over';
+
+      // 총구 주위 검은 파편
+      for(let i=0;i<6;i++){
+        const a=t*2.4+i*Math.PI/3,rr=15+(i%2)*5;
+        g.save();g.translate(Math.cos(a)*rr,Math.sin(a)*rr);g.rotate(a);
+        g.fillStyle='#000';g.strokeStyle=i%2?'#ff1c5c':'#00ff70';g.lineWidth=.7;
+        g.fillRect(-3,-1.5,7+(i%3)*2,3);g.strokeRect(-3,-1.5,7+(i%3)*2,3);g.restore();
+      }
       g.restore();
     }
 
@@ -20557,6 +20787,8 @@ function requestGachaDraw(count) {
         ctx.shadowColor = '#000000';
       }
 
+      drawSwordHoldingHandsArt(ctx, unit, 'behind');
+
       if (unit.unitId === 'starterArcher' || unit.unitId === 'windRanger') {
         const wind = unit.unitId === 'windRanger';
         ctx.strokeStyle = wind ? '#8ff4bd' : '#d49a55';
@@ -20570,6 +20802,8 @@ function requestGachaDraw(count) {
         const blade = ctx.createLinearGradient(0,0,46,0); blade.addColorStop(0,royal?'#8c5a00':'#596979'); blade.addColorStop(.38,'#ffffff'); blade.addColorStop(1,royal?'#ffe76b':'#b8d9f5');
         ctx.fillStyle = blade; ctx.beginPath(); ctx.moveTo(0,-3); ctx.lineTo(39,-2.2); ctx.lineTo(50,0); ctx.lineTo(39,2.2); ctx.lineTo(0,3); ctx.closePath(); ctx.fill();
         ctx.fillStyle = royal?'#b47a00':'#465565'; ctx.fillRect(-3,-8,5,16);
+        ctx.fillStyle = royal?'#4d2d05':'#293746'; ctx.fillRect(-16,-2.8,13,5.6);
+        ctx.fillStyle = royal?'#f2c94c':'#8196aa'; ctx.beginPath();ctx.arc(-16,0,3.2,0,Math.PI*2);ctx.fill();
         ctx.strokeStyle = royal?'#fff2a3':'#e8f2fb'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-8,-8); ctx.lineTo(7,8); ctx.moveTo(-8,8); ctx.lineTo(7,-8); ctx.stroke();
       } else if (unit.unitId === 'starterMage' || unit.unitId === 'flameWizard' || unit.unitId === 'astralChronomancer') {
         const fire = unit.unitId === 'flameWizard';
@@ -20628,6 +20862,7 @@ function requestGachaDraw(count) {
         ctx.strokeStyle='#fff3a3';ctx.lineWidth=1.4;ctx.stroke();
       }
 
+      drawSwordHoldingHandsArt(ctx, unit, 'front');
       ctx.restore();
     }
 
@@ -24844,15 +25079,23 @@ function requestGachaDraw(count) {
       }
 
       playUnitAttackSound('eclipse',{volume:.98});
-      const slashRadius = eclipseData.normalSlashRadius || 55;
-      mpPushFx(target.x, target.y, target.x, target.y, '#ff355d', 7, sideKey, 'sakuraMelee', { angle: unit.angle, radius: slashRadius, coneAngle: 180, slashTheme: 'eclipse' });
-      [...targetState.enemies]
-        .filter(enemy => !enemy.dead && Math.hypot(enemy.x - target.x, enemy.y - target.y) <= slashRadius)
-        .forEach(enemy => {
-          const killed = mpApplyDamage(targetState, enemy, mpEffectiveUnitDamage(unit), unit.ownerRole, sideKey);
-          if (killed) mpTriggerEclipseGrowth(unit, enemy, sideKey);
-        });
+      const coneAngle = 180;
+      const half = Math.PI / 2;
+      const slashRange = Number(unit.range || eclipseData.range || 230);
+      mpPushFx(unit.x, unit.y - 4, target.x, target.y, '#ff355d', 9, sideKey, 'sakuraMelee', { angle: unit.angle, radius: slashRange, coneAngle, slashTheme: 'eclipse' });
+      const slashVictims = [...targetState.enemies].filter(enemy => {
+        if (enemy.dead) return false;
+        const dx = enemy.x - unit.x, dy = enemy.y - unit.y;
+        const distance = Math.hypot(dx, dy);
+        return distance <= slashRange && Math.abs(mpAngleDelta(Math.atan2(dy, dx), unit.angle)) <= half;
+      });
+      slashVictims.forEach(enemy => {
+        const killed = mpApplyDamage(targetState, enemy, mpEffectiveUnitDamage(unit), unit.ownerRole, sideKey);
+        if (killed) mpTriggerEclipseGrowth(unit, enemy, sideKey);
+      });
       if (Math.random() < (eclipseData.hitBlackHoleChance || .05)) mpCreateEclipseBlackHole(targetState, sideKey, unit, target);
+      mpState.announcement = `🌑 ${mpNameForRole(unit.ownerRole)}의 이클립스 · 전방 180° 월식 베기! ${slashVictims.length}명 타격`;
+      mpState.announcementUntil = Date.now() + 1100;
       return;
     }
 
@@ -26060,6 +26303,8 @@ function requestGachaDraw(count) {
           mpCtx.shadowColor = '#000000';
         }
 
+        drawSwordHoldingHandsArt(mpCtx, unit, 'behind');
+
         if (unit.unitId === 'starterArcher' || unit.unitId === 'windRanger') {
           const wind = unit.unitId === 'windRanger';
           mpCtx.strokeStyle = wind ? '#8ff4bd' : '#d49a55';
@@ -26073,6 +26318,8 @@ function requestGachaDraw(count) {
           const blade = mpCtx.createLinearGradient(0,0,46,0); blade.addColorStop(0,royal?'#8c5a00':'#596979'); blade.addColorStop(.38,'#ffffff'); blade.addColorStop(1,royal?'#ffe76b':'#b8d9f5');
           mpCtx.fillStyle = blade; mpCtx.beginPath(); mpCtx.moveTo(0,-3); mpCtx.lineTo(39,-2.2); mpCtx.lineTo(50,0); mpCtx.lineTo(39,2.2); mpCtx.lineTo(0,3); mpCtx.closePath(); mpCtx.fill();
           mpCtx.fillStyle = royal?'#b47a00':'#465565'; mpCtx.fillRect(-3,-8,5,16);
+          mpCtx.fillStyle = royal?'#4d2d05':'#293746'; mpCtx.fillRect(-16,-2.8,13,5.6);
+          mpCtx.fillStyle = royal?'#f2c94c':'#8196aa'; mpCtx.beginPath();mpCtx.arc(-16,0,3.2,0,Math.PI*2);mpCtx.fill();
           mpCtx.strokeStyle = royal?'#fff2a3':'#e8f2fb'; mpCtx.lineWidth=2; mpCtx.beginPath(); mpCtx.moveTo(-8,-8); mpCtx.lineTo(7,8); mpCtx.moveTo(-8,8); mpCtx.lineTo(7,-8); mpCtx.stroke();
         } else if (unit.unitId === 'starterMage' || unit.unitId === 'flameWizard' || unit.unitId === 'astralChronomancer') {
           const fire = unit.unitId === 'flameWizard';
@@ -26107,6 +26354,7 @@ function requestGachaDraw(count) {
           mpCtx.strokeStyle='#fff3a3';mpCtx.lineWidth=1.4;mpCtx.stroke();
         }
   
+        drawSwordHoldingHandsArt(mpCtx, unit, 'front');
         mpCtx.restore();
       }
 
@@ -26925,6 +27173,7 @@ function requestGachaDraw(count) {
   const badge = document.querySelector('#tradeMenuBadge');
   const forbiddenUnitIds = new Set(['starterArcher','starterKnight','starterMage','eclipse']);
   let myUserId = null;
+  let tradeAccessToken = null;
   let tradeRows = [];
   let activeTradeId = null;
   let offerDraft = {};
@@ -26957,12 +27206,54 @@ function requestGachaDraw(count) {
     void refreshTradeRows(true);
   }
 
-  function closeTradeScreen() {
+  function finishTradeExitToMenu() {
     stopTradePolling();
     tradeScreen?.classList.add('hidden');
     activeTradeId = null;
     offerDraft = {};
+    unitPicker?.classList.add('hidden');
+    workspace?.classList.add('hidden');
     openMenu();
+  }
+
+  async function closeTradeScreen() {
+    const leavingTradeId = activeTradeId;
+
+    // 거래 중 한쪽이 메뉴로 나가면 서버 거래도 즉시 취소합니다.
+    if (leavingTradeId) {
+      try {
+        await tradeRpc('trade_cancel', { p_trade_id: leavingTradeId });
+      } catch (error) {
+        const message = String(error?.message || error || '');
+        // 이미 완료/취소된 거래라면 그대로 나갑니다.
+        if (!/이미 종료|이미 처리|찾을 수 없습니다|현재.*거래|cancelled|completed/i.test(message)) {
+          setTradeStatus(`거래 종료 실패: ${message}`, 'error');
+          return;
+        }
+      }
+    }
+
+    finishTradeExitToMenu();
+  }
+
+  // 새로고침/탭 닫기/다른 페이지 이동처럼 await할 수 없는 종료에서도
+  // keepalive 요청으로 서버 거래 취소를 최대한 전달합니다.
+  function cancelTradeOnPageExit() {
+    const leavingTradeId = activeTradeId;
+    if (!leavingTradeId || !tradeAccessToken) return;
+
+    try {
+      fetch(`${SUPABASE_URL}/rest/v1/rpc/trade_cancel`, {
+        method: 'POST',
+        keepalive: true,
+        headers: {
+          'apikey': SUPABASE_PUBLISHABLE_KEY,
+          'Authorization': `Bearer ${tradeAccessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ p_trade_id: leavingTradeId })
+      }).catch(() => {});
+    } catch (_) {}
   }
 
   async function getTradeUserId() {
@@ -27215,12 +27506,11 @@ function requestGachaDraw(count) {
             setTradeStatus('거래가 완료되어 인벤토리를 새로 불러왔습니다.', 'success');
           }
         } else if (activeTradeId === watchedTradeId) {
-          // 취소된 거래는 서버 목록에서 즉시 빠집니다. 상대가 취소한 경우 내 화면도 자동 종료합니다.
-          activeTradeId = null;
-          offerDraft = {};
-          unitPicker?.classList.add('hidden');
-          workspace?.classList.add('hidden');
-          setTradeStatus('상대방이 거래를 취소했습니다. 거래가 양쪽에서 자동 종료되었습니다.', 'error');
+          // 상대가 거래 화면에서 나가거나 취소하면 내 거래 화면도 완전히 종료합니다.
+          finishTradeExitToMenu();
+          setTimeout(() => {
+            alert('상대방이 거래에서 나가 거래가 자동으로 종료되었습니다.');
+          }, 60);
         }
       }
     } catch (error) {
@@ -27334,7 +27624,7 @@ function requestGachaDraw(count) {
   }, 8000);
 
   document.querySelector('#openTradeBtn')?.addEventListener('click', showTradeScreen);
-  document.querySelector('#tradeBackBtn')?.addEventListener('click', closeTradeScreen);
+  document.querySelector('#tradeBackBtn')?.addEventListener('click', () => void closeTradeScreen());
   document.querySelector('#tradeRequestBtn')?.addEventListener('click', createTradeRequest);
   document.querySelector('#tradeUsernameInput')?.addEventListener('keydown', event => { if (event.key === 'Enter') void createTradeRequest(); });
   document.querySelector('#tradeRefreshBtn')?.addEventListener('click', () => void refreshTradeRows(false));
@@ -27346,12 +27636,15 @@ function requestGachaDraw(count) {
 
   supabaseClient.auth.onAuthStateChange((_event, session) => {
     myUserId = session?.user?.id || null;
+    tradeAccessToken = session?.access_token || null;
     if (!session) {
       tradeRows = [];
       renderTradeBadge();
       stopTradePolling();
     }
   });
+
+  window.addEventListener('pagehide', cancelTradeOnPageExit);
 
   // 로그인 복구 직후 메뉴에 들어오면, 거래 해금 조건을 만족한 경우에만 요청 배지를 확인합니다.
   setTimeout(() => {
@@ -27617,7 +27910,7 @@ function requestGachaDraw(count) {
       try{return await rpc(name,args);}catch(e){
         lastError=e;
         const msg=String(e?.message||'');
-        if(!/function|schema cache|Could not find|PGRST202|does not exist/i.test(msg)) throw e;
+        if(!/function|schema cache|Could not find|PGRST202|does not exist/i.test(msgcd /workspaces/bidulgy.games.io throw e;
       }
     }
     throw lastError||new Error('사용 가능한 서버 함수를 찾지 못했습니다.');

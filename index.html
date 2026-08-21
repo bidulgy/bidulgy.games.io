@@ -3830,6 +3830,19 @@ body {
   --stage-accent: #a8e0b2;
 }
 
+
+.invasion-menu[data-stage-theme="sand"] {
+  --stage-sky-top: #25a7e8;
+  --stage-sky-bottom: #ffe4a8;
+  --stage-hill-back: #e3aa45;
+  --stage-hill-front: #bf7424;
+  --stage-ground-top: #f0bf58;
+  --stage-ground-bottom: #a95620;
+  --stage-tree-leaf-light: #a7bb43;
+  --stage-tree-leaf: #70852c;
+  --stage-tree-leaf-dark: #44591d;
+  --stage-accent: #fff5b8;
+}
 .invasion-menu[data-stage-theme="desert"] {
   --stage-sky-top: #55b8ef;
   --stage-sky-bottom: #ffd99b;
@@ -7854,7 +7867,7 @@ button {
 
   <script>
 console.log("[TRAIT BUILD] 2026-08-19-admin-gems-10m-v1");
-    window.BIDULGY_BUILD_VERSION = '2026-08-19-admin-fragment-fix-v2';
+    window.BIDULGY_BUILD_VERSION = '2026-08-21-stage4-desert-glitch-v1';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -8026,6 +8039,25 @@ const LLAMA_MENU_SVG = `
  * 스테이지 확장 설정
  * 새 스테이지를 만들 때 이 객체에 배경 테마, 등장 적, 웨이브 생성 함수를 추가합니다.
  */
+
+const SCORPION_MENU_SVG = `<svg viewBox="0 0 320 205" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="사막 전갈">
+  <defs>
+    <linearGradient id="scBody" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#69331b"/><stop offset=".48" stop-color="#2c160f"/><stop offset="1" stop-color="#b85822"/>
+    </linearGradient>
+    <radialGradient id="scGlow"><stop offset="0" stop-color="#f9ff9f"/><stop offset=".3" stop-color="#7cff3b"/><stop offset="1" stop-color="#2d7f19" stop-opacity="0"/></radialGradient>
+  </defs>
+  <ellipse cx="158" cy="179" rx="95" ry="14" fill="#4d2916" opacity=".3"/>
+  <path d="M100 115 C96 86 116 69 151 68 C190 67 214 87 208 117 C201 145 176 158 143 154 C115 151 103 137 100 115Z" fill="url(#scBody)" stroke="#160d09" stroke-width="5"/>
+  <path d="M119 80 L95 54 L78 58 L95 84" fill="#4a2315" stroke="#160d09" stroke-width="5"/>
+  <path d="M196 80 L220 54 L239 58 L219 87" fill="#4a2315" stroke="#160d09" stroke-width="5"/>
+  <path d="M102 106 L68 92 L50 101 L76 116 M104 126 L70 130 L54 145 L84 143 M202 105 L237 91 L257 102 L228 116 M201 128 L236 133 L251 149 L219 144" fill="none" stroke="#391b12" stroke-width="9" stroke-linecap="round"/>
+  <path d="M194 72 C230 57 245 34 230 19 C211 2 189 20 204 35 C215 47 240 36 248 23" fill="none" stroke="#542719" stroke-width="12" stroke-linecap="round"/>
+  <path d="M247 22 L264 11 L263 32 Z" fill="#78d54a" stroke="#18300e" stroke-width="3"/>
+  <circle cx="130" cy="105" r="5" fill="#f5e68a"/><circle cx="177" cy="105" r="5" fill="#f5e68a"/>
+  <circle cx="263" cy="20" r="25" fill="url(#scGlow)"/>
+</svg>`;
+
 const STAGE_CONFIG = Object.freeze({
   1: {
     id: 1,
@@ -8101,6 +8133,33 @@ const STAGE_CONFIG = Object.freeze({
       pathEdge: '#d7a267'
     },
     waveFactory: createStageThreeWaveQueue
+  },
+
+  4: {
+    id: 4,
+    theme: 'sand',
+    name: '사막',
+    description: '독전갈과 샌드웜이 모래 아래에서 습격합니다.\n50웨이브 선인장을 파괴하면 화면이 깨지며 웨이브 제한이 100까지 해방됩니다!',
+    menuSubtitle: 'DESERT GLITCH',
+    warningText: '독성 생물 반응 감지 · 사막 방어 준비',
+    menuEnemies: ['전갈', '독전갈', '샌드웜', '선인장', '인형 선인장', '해커 선인장'],
+    menuEnemyArt: () => SCORPION_MENU_SVG,
+    maxWave: 50,
+    extendedMaxWave: 100,
+    startingGold: 380,
+    baseHp: 2000,
+    stageBonus: 2200,
+    rewardMultiplier: 1,
+    available: true,
+    unlockRule: 'stage3Hard',
+    battlePalette: {
+      ground: '#e4a94c',
+      grassLight: '#f7d47d',
+      grassDark: '#a55a25',
+      path: '#b97336',
+      pathEdge: '#f4d18a'
+    },
+    waveFactory: createStageFourWaveQueue
   }
 });
 
@@ -8167,12 +8226,12 @@ function applyDifficultyPreview(difficultyKey = selectedDifficulty) {
     summary.textContent =
       `${difficulty.name} · 적 HP ×${difficulty.hpMultiplier} · ` +
       `웨이브 보상 ${Math.round(difficulty.waveReward * Number(stage.rewardMultiplier || 1)).toLocaleString()} · ` +
-      `50웨이브 클리어 보너스 ${stageBonus.toLocaleString()}`;
+      `${stage.extendedMaxWave ? '50웨이브 선인장 격파 → 100웨이브 해방 · ' : '50웨이브 클리어 보너스 '}${stageBonus.toLocaleString()}${stage.extendedMaxWave ? ' 보너스' : ''}`;
   }
 
   if (subtitle) {
     subtitle.textContent = isStageUnlocked(stage)
-      ? `${stage.name} · ${difficulty.name} · ${stage.maxWave}웨이브 방어전`
+      ? `${stage.name} · ${difficulty.name} · ${stage.extendedMaxWave ? '50 → 100 웨이브 확장전' : `${stage.maxWave}웨이브 방어전`}`
       : `${stage.name} · 🔒 ${stageUnlockText(stage)}`;
   }
 }
@@ -8215,12 +8274,16 @@ function isStageUnlocked(stageConfig) {
   if (stageConfig.unlockRule === 'stage2Hard') {
     return hasStageDifficultyClear(2, 'hard') || hasStageDifficultyClear(2, 'veryHard');
   }
+  if (stageConfig.unlockRule === 'stage3Hard') {
+    return hasStageDifficultyClear(3, 'hard') || hasStageDifficultyClear(3, 'veryHard');
+  }
   return Boolean(stageConfig.available);
 }
 
 function stageUnlockText(stageConfig) {
   if (stageConfig?.unlockRule === 'stage1Hard') return '1스테이지 어려움 이상 클리어 시 해금';
   if (stageConfig?.unlockRule === 'stage2Hard') return '2스테이지 어려움 이상 클리어 시 해금';
+  if (stageConfig?.unlockRule === 'stage3Hard') return '3스테이지 어려움 이상 클리어 시 해금';
   return '아직 준비 중';
 }
 
@@ -8258,13 +8321,13 @@ function applyStagePreview(stageId = selectedStage) {
   }
   if (startSubtitle) {
     startSubtitle.textContent = unlocked
-      ? `${stage.name} · ${stage.maxWave}웨이브 방어전`
+      ? `${stage.name} · ${stage.extendedMaxWave ? '50웨이브 선인장 격파 시 100웨이브 해방' : `${stage.maxWave}웨이브 방어전`}`
       : `${stage.name} · 🔒 ${stageUnlockText(stage)}`;
   }
   if (startButton) startButton.disabled = !unlocked;
   if (status) {
     status.textContent = unlocked
-      ? `스테이지 ${stage.id} 플레이 가능${stage.id === 2 ? ' · 소환석 보상 ×2.5' : stage.id === 3 ? ' · 웨이브 400 / 완주 4,000' : ''}`
+      ? `스테이지 ${stage.id} 플레이 가능${stage.id === 2 ? ' · 소환석 보상 ×2.5' : stage.id === 3 ? ' · 웨이브 400 / 완주 4,000' : stage.id === 4 ? ' · 선인장 격파 시 웨이브 100 해방' : ''}`
       : `🔒 스테이지 ${stage.id} 잠금 · ${stageUnlockText(stage)}`;
   }
 
@@ -13107,6 +13170,8 @@ function requestGachaDraw(count) {
         resultShown: false,
         finalBossDefeated: false,
         bossEscaped: false,
+        stage4GateOpened: false,
+        stage4CactusTransition: null,
         earnedWaveGems: 0,
         skipUses: 0,
         maxSkipUses: 3,
@@ -13331,6 +13396,76 @@ function requestGachaDraw(count) {
       return Array.from({ length: count }, () => makeStageThreeNormalSpec(wave));
     }
 
+
+    function makeStageFourScorpionSpec(wave, index = 0) {
+      const venom = wave >= 10 && (index % 3 === 0 || wave >= 22);
+      if (venom) {
+        return {
+          type:'normal', variant:'venomScorpion', name:'독전갈', icon:'🦂',
+          health:600, speed:Math.min(70,38+wave*.28), radius:22, reward:35+Math.floor(wave/5),
+          poisonInterval:5, poisonTimer:2.8 + (index%4)*.45,
+          poisonSlowMultiplier:4/3, poisonDuration:5
+        };
+      }
+      return {
+        type:'normal', variant:'scorpion', name:'전갈', icon:'🦂',
+        health:500, speed:Math.min(74,42+wave*.30), radius:21, reward:30+Math.floor(wave/5)
+      };
+    }
+
+    function makeStageFourCactusSpec(wave, index = 0) {
+      return {
+        type:'normal', variant:'cactus', name:'선인장', icon:'🌵',
+        health:800, speed:18, radius:23, reward:45+Math.floor(wave/6),
+        cactusJumpInterval:2, cactusJumpTimer:.75 + (index%5)*.18,
+        cactusJumpDistance:58
+      };
+    }
+
+    function createStageFourWaveQueue(wave) {
+      if (wave === 10) {
+        return [{
+          type:'venomScorpionBoss', variant:'venomScorpion', name:'독전갈 보스', icon:'🦂',
+          health:4000, speed:38, radius:38, reward:900,
+          poisonInterval:5, poisonTimer:2.2, poisonSlowMultiplier:2, poisonDuration:5
+        }];
+      }
+      if (wave === 30) {
+        return [{
+          type:'sandwormBoss', variant:'sandworm', name:'샌드웜', icon:'🪱',
+          health:5000, speed:0, radius:46, reward:1800,
+          sandBurrowWait:3, sandBurrowTimer:3, sandBurrowDuration:1.15,
+          sandBurrowDistance:185, sandHealRatio:.10
+        }];
+      }
+      if (wave === 50) {
+        return [{
+          type:'cactusGateBoss', variant:'cactus', name:'선인장', icon:'🌵',
+          health:100000, speed:0, radius:52, reward:5000,
+          staticCactus:true, spawnRandomVisible:true, cactusGateBoss:true
+        }];
+      }
+      if (wave === 70) {
+        return [{
+          type:'dollCactusBoss', variant:'dollCactus', name:'인형 선인장', icon:'🎭',
+          health:20000, speed:16, radius:45, reward:5000,
+          maskHp:20000, maskMaxHp:20000, cactusJumpInterval:2.4, cactusJumpTimer:1.2, cactusJumpDistance:46
+        }];
+      }
+      if (wave === 100) {
+        return [{
+          type:'hackerCactusBoss', variant:'hackerCactus', name:'해커 선인장', icon:'🌵',
+          health:30000, speed:17, radius:49, reward:9000,
+          cactusJumpInterval:2, cactusJumpTimer:1, cactusJumpDistance:52,
+          hackInterval:10, hackTimer:4.2, hackDuration:10
+        }];
+      }
+
+      const count = Math.min(28, 8 + Math.floor((wave-1)/2.6));
+      if (wave >= 51) return Array.from({length:count}, (_,i)=>makeStageFourCactusSpec(wave,i));
+      return Array.from({length:count}, (_,i)=>makeStageFourScorpionSpec(wave,i));
+    }
+
     function currentBattleThemeStage() {
       if (battle?.isInfinite) return Number(battle.infiniteThemeStage || infiniteThemeStageForWave(battle.wave || 1));
       return Number(battle?.stage || selectedStage);
@@ -13344,10 +13479,15 @@ function requestGachaDraw(count) {
       return currentBattleThemeStage() === 3;
     }
 
+    function isStageFourBattle() {
+      return currentBattleThemeStage() === 4;
+    }
+
     function stageEnemyLabel(stageId = null) {
       const id = stageId == null ? currentBattleThemeStage() : Number(stageId);
       if (id === 2) return '골렘';
       if (id === 3) return '라마';
+      if (id === 4) return '사막 괴물';
       return '비둘기';
     }
 
@@ -13581,6 +13721,12 @@ function requestGachaDraw(count) {
         if (wave === 15) { bossName = '해적 라마'; message = '해적 라마 등장! 공격의 50%를 잔상과 함께 회피합니다.'; }
         else if (wave === 35) { bossName = '오라마'; message = '오라마 등장! 3초마다 돌진하고 가까운 유닛 최대 3명에게 기절 침을 뱉습니다.'; }
         else if (wave === 50) { bossName = '치명적인 라마'; message = '최종 보스 치명적인 라마! 75% 회피 + 1초마다 2초 기절 침 + 3초마다 돌진을 사용합니다.'; }
+      } else if (battle.stage === 4) {
+        if (wave === 10) { bossName = '독전갈'; message = '독전갈 보스! 5초마다 무작위 유닛의 공격속도를 50% 낮춥니다.'; }
+        else if (wave === 30) { bossName = '샌드웜'; message = '샌드웜 등장! 3초 뒤 땅속으로 숨으며, 지하에서는 피해를 받지 않고 나올 때마다 최대 HP 10%를 회복합니다.'; }
+        else if (wave === 50) { bossName = '선인장'; message = '선인장 등장! 맵 어딘가에 고정 설치됩니다. 파괴하면 화면이 깨지고 웨이브 제한이 100으로 확장됩니다.'; }
+        else if (wave === 70) { bossName = '인형 선인장'; message = '인형 선인장 등장! HP 20,000의 선인장 탈을 파괴하면 시작점으로 도망쳐 사라집니다.'; }
+        else if (wave === 100) { bossName = '해커 선인장'; message = '최종 보스 해커 선인장! 10초마다 유닛 하나를 해킹해 그 유닛의 공격이 적을 회복시키게 만듭니다.'; }
       } else if (wave === 10) {
         bossName = '비둘기 브라더스';
         message = '비둘기 브라더스 5마리가 뭉쳐서 등장합니다!';
@@ -13623,6 +13769,11 @@ function requestGachaDraw(count) {
         const current = Number(battle.highestLaunchedWave || 0);
         const next = current + 1;
         if (current === 39 || next === 39) return false;
+      }
+      if (battle.stage === 4 && !battle.stage4GateOpened) {
+        const current = Number(battle.highestLaunchedWave || 0);
+        const next = current + 1;
+        if (current === 50 || next === 50 || battle.stage4CactusTransition) return false;
       }
       return Boolean(
         battle.highestLaunchedWave < battle.maxWave &&
@@ -13944,12 +14095,18 @@ function requestGachaDraw(count) {
       if (!spec) return;
 
       const maxHealth = spec.health;
+      const randomVisibleSpawn = spec.spawnRandomVisible
+        ? {
+            x: Math.max(150, Math.min(canvas.width - 150, 180 + Math.random() * Math.max(80, canvas.width - 360))),
+            y: Math.max(125, Math.min(canvas.height - 115, 125 + Math.random() * Math.max(80, canvas.height - 240)))
+          }
+        : null;
       battle.enemies.push({
         ...spec,
         id: spec.id || `enemy-${waveState.wave}-${waveState.spawned}-${Math.random().toString(36).slice(2, 9)}`,
         waveNumber: waveState.wave,
-        x: path[0].x,
-        y: path[0].y,
+        x: randomVisibleSpawn?.x ?? path[0].x,
+        y: randomVisibleSpawn?.y ?? path[0].y,
         targetIndex: 1,
         health: maxHealth,
         maxHealth,
@@ -13977,7 +14134,19 @@ function requestGachaDraw(count) {
         llamaDashTimer: Number(spec.llamaDashTimer || 0),
         llamaSpitAnim: 0,
         llamaDodgeAnim: 0,
-        evadeTextRemaining: 0
+        evadeTextRemaining: 0,
+        poisonTimer: Number(spec.poisonTimer || spec.poisonInterval || 0),
+        sandBurrowTimer: Number(spec.sandBurrowTimer || spec.sandBurrowWait || 0),
+        sandBurrowed: false,
+        sandBurrowRemaining: 0,
+        sandBurrowAnim: 0,
+        cactusJumpTimer: Number(spec.cactusJumpTimer || spec.cactusJumpInterval || 0),
+        cactusJumpAnim: 0,
+        hackTimer: Number(spec.hackTimer || spec.hackInterval || 0),
+        maskHp: Number(spec.maskHp || 0),
+        maskMaxHp: Number(spec.maskMaxHp || spec.maskHp || 0),
+        maskBroken: false,
+        fleeingToSpawn: false
       });
 
       waveState.spawned += 1;
@@ -14073,6 +14242,71 @@ function requestGachaDraw(count) {
       }
     }
 
+
+    function stage4PoisonRandomUnit(enemy) {
+      if (!battle?.placedUnits?.length || !enemy || enemy.dead) return 0;
+      const candidates = battle.placedUnits.filter(unit => !UNIT_DATA[unit.unitId]?.stunImmune || true);
+      if (!candidates.length) return 0;
+      const unit = candidates[Math.floor(Math.random()*candidates.length)];
+      const slowMult = Number(enemy.poisonSlowMultiplier || 4/3);
+      const duration = Number(enemy.poisonDuration || 5);
+      unit.attackSlowRemaining = Math.max(Number(unit.attackSlowRemaining||0), duration);
+      unit.attackSlowMultiplier = Math.max(Number(unit.attackSlowMultiplier||1), slowMult);
+      battle.shots.push({
+        x1:enemy.x, y1:enemy.y-enemy.radius*.2, x2:unit.x, y2:unit.y,
+        life:.62,maxLife:.62,effect:'desertPoison',color:'#78ff38',seed:Math.random()*1000
+      });
+      const pct = Math.round((1 - 1/slowMult) * 100);
+      setBattleMessage(`${enemy.name}의 독! ${UNIT_DATA[unit.unitId]?.name || '유닛'} 공격속도 ${pct}% 감소 (${duration}초)`);
+      return 1;
+    }
+
+    function stage4HackRandomUnit(enemy) {
+      if (!battle?.placedUnits?.length || !enemy || enemy.dead) return 0;
+      const unit = battle.placedUnits[Math.floor(Math.random()*battle.placedUnits.length)];
+      const duration = Number(enemy.hackDuration || 10);
+      unit.hackedRemaining = Math.max(Number(unit.hackedRemaining||0), duration);
+      unit.hackedByEnemyId = enemy.id;
+      battle.shots.push({
+        x1:enemy.x,y1:enemy.y,x2:unit.x,y2:unit.y,life:.9,maxLife:.9,
+        effect:'hackerLink',color:'#8cff45',seed:Math.random()*1000
+      });
+      setBattleMessage(`💻 해커 선인장이 ${UNIT_DATA[unit.unitId]?.name || '유닛'}을 ${duration}초 해킹했습니다! 이 유닛의 공격은 적 HP를 회복시킵니다.`);
+      return 1;
+    }
+
+    function retreatDollCactusToSpawn(enemy, dt) {
+      const goal = path[0];
+      const dx=goal.x-enemy.x, dy=goal.y-enemy.y, d=Math.hypot(dx,dy);
+      if (d <= 12) {
+        enemy.dead=true;
+        recordEnemyResolved(enemy,true);
+        battle.gold += Number(enemy.reward||0);
+        battle.kills += 1;
+        setBattleMessage('인형 선인장이 시작점까지 도망친 뒤 쓰러졌습니다!');
+        return;
+      }
+      const move=Math.min(d,260*dt);
+      enemy.x += dx/Math.max(.001,d)*move;
+      enemy.y += dy/Math.max(.001,d)*move;
+      enemy.heading=Math.atan2(dy,dx);
+    }
+
+    function startStage4CactusBreakCutscene(enemy) {
+      if (!battle || battle.stage !== 4 || battle.stage4GateOpened || battle.stage4CactusTransition) return;
+      battle.stage4GateOpened = true;
+      battle.maxWave = 100;
+      battle.autoWaveSkip = false;
+      battle.stage4CactusTransition = {
+        elapsed:0, duration:3.7,
+        x:Number(enemy?.x || canvas.width*.5),
+        y:Number(enemy?.y || canvas.height*.5),
+        seed:Math.random()*1000
+      };
+      setBattleMessage('🌵 선인장 파괴! 가시가 화면을 관통합니다… WAVE LIMIT 50 → 100');
+      updateWaveSkipUi();
+    }
+
     function updateEnemy(enemy, dt) {
       if (enemy.dead) return;
 
@@ -14107,6 +14341,69 @@ function requestGachaDraw(count) {
           battle.shots.push({x1:oldX,y1:oldY,x2:enemy.x,y2:enemy.y,life:.42,maxLife:.42,effect:'llamaDash',color:'#f3d19b',seed:Math.random()*1000});
           enemy.llamaDashAnim = .45;
           enemy.llamaDashTimer += Number(enemy.llamaDashInterval || 3);
+        }
+      }
+
+      if (isStageFourBattle()) {
+        enemy.cactusJumpAnim = Math.max(0, Number(enemy.cactusJumpAnim||0)-dt*2.5);
+        enemy.sandBurrowAnim = Math.max(0, Number(enemy.sandBurrowAnim||0)-dt*2.2);
+
+        if (enemy.fleeingToSpawn) {
+          retreatDollCactusToSpawn(enemy,dt);
+          return;
+        }
+
+        if (Number(enemy.poisonInterval||0) > 0) {
+          enemy.poisonTimer = Number(enemy.poisonTimer || enemy.poisonInterval) - dt;
+          if (enemy.poisonTimer <= 0) {
+            stage4PoisonRandomUnit(enemy);
+            enemy.poisonTimer += Number(enemy.poisonInterval||5);
+          }
+        }
+
+        if (enemy.type === 'hackerCactusBoss' && Number(enemy.hackInterval||0) > 0) {
+          enemy.hackTimer = Number(enemy.hackTimer || enemy.hackInterval) - dt;
+          if (enemy.hackTimer <= 0) {
+            stage4HackRandomUnit(enemy);
+            enemy.hackTimer += Number(enemy.hackInterval||10);
+          }
+        }
+
+        if (enemy.type === 'sandwormBoss') {
+          if (enemy.sandBurrowed) {
+            enemy.sandBurrowRemaining = Math.max(0, Number(enemy.sandBurrowRemaining||0)-dt);
+            advanceEnemyAlongPath(enemy, Number(enemy.sandBurrowDistance||185) / Math.max(.15,Number(enemy.sandBurrowDuration||1.15)) * dt);
+            enemy.sandBurrowAnim = .7;
+            if (enemy.sandBurrowRemaining <= 0) {
+              enemy.sandBurrowed=false;
+              enemy.health=Math.min(enemy.maxHealth, enemy.health + enemy.maxHealth*Number(enemy.sandHealRatio||.10));
+              enemy.sandBurrowTimer=Number(enemy.sandBurrowWait||3);
+              enemy.pulseKind='heal'; enemy.pulseEffect=.65;
+              setBattleMessage(`샌드웜이 지상으로 솟아오르며 최대 HP의 ${Math.round(Number(enemy.sandHealRatio||.10)*100)}%를 회복했습니다!`);
+            }
+            return;
+          }
+          enemy.sandBurrowTimer = Number(enemy.sandBurrowTimer||enemy.sandBurrowWait||3)-dt;
+          if (enemy.sandBurrowTimer <= 0) {
+            enemy.sandBurrowed=true;
+            enemy.sandBurrowRemaining=Number(enemy.sandBurrowDuration||1.15);
+            enemy.sandBurrowAnim=.8;
+            setBattleMessage('샌드웜이 땅속으로 파고들었습니다! 지하에서는 모든 피해에 면역입니다.');
+          }
+          return;
+        }
+
+        if (enemy.staticCactus) return;
+
+        if (Number(enemy.cactusJumpInterval||0) > 0) {
+          enemy.cactusJumpTimer = Number(enemy.cactusJumpTimer||enemy.cactusJumpInterval)-dt;
+          if (enemy.cactusJumpTimer <= 0) {
+            const ox=enemy.x,oy=enemy.y;
+            advanceEnemyAlongPath(enemy,Number(enemy.cactusJumpDistance||55));
+            enemy.cactusJumpAnim=.65;
+            enemy.cactusJumpTimer += Number(enemy.cactusJumpInterval||2);
+            battle.shots.push({x1:ox,y1:oy,x2:enemy.x,y2:enemy.y,life:.40,maxLife:.40,effect:'cactusJump',color:'#6ebf38',seed:Math.random()*1000});
+          }
         }
       }
 
@@ -14998,6 +15295,25 @@ function requestGachaDraw(count) {
 
     function applyDamageToEnemy(enemy, damage) {
       if (!enemy || enemy.dead || enemy.soilPileState || Number(enemy.reviveInvulnerableRemaining || 0) > 0) return false;
+      if (enemy.sandBurrowed) {
+        enemy.evadeTextRemaining = .28;
+        return false;
+      }
+      if (enemy.type === 'dollCactusBoss' && !enemy.maskBroken) {
+        const hit = Math.max(0, Number(damage||0));
+        enemy.maskHp = Math.max(0, Number(enemy.maskHp||enemy.maskMaxHp||20000) - hit);
+        enemy.health = Math.max(1, enemy.maskHp);
+        if (enemy.maskHp <= 0) {
+          enemy.maskBroken=true;
+          enemy.fleeingToSpawn=true;
+          enemy.health=1;
+          enemy.timeStunRemaining=0;
+          enemy.reviveInvulnerableRemaining=999;
+          setBattleMessage('🎭 인형 선인장의 탈이 깨졌습니다! 시작점으로 도망칩니다!');
+        }
+        return false;
+      }
+      if (enemy.type === 'dollCactusBoss' && enemy.maskBroken) return false;
 
       const evadeChance = Math.max(0, Math.min(.95, Number(enemy.evadeChance || 0)));
       if (evadeChance > 0 && Math.random() < evadeChance) {
@@ -15064,8 +15380,13 @@ function requestGachaDraw(count) {
 
       if ((battle.stage === 1 && enemy.type === 'awakenedKing') ||
           (battle.stage === 2 && enemy.type === 'crystalGolemBoss') ||
-          (battle.stage === 3 && enemy.type === 'deadlyLlamaBoss')) {
+          (battle.stage === 3 && enemy.type === 'deadlyLlamaBoss') ||
+          (battle.stage === 4 && enemy.type === 'hackerCactusBoss')) {
         battle.finalBossDefeated = true;
+      }
+
+      if (battle.stage === 4 && enemy.type === 'cactusGateBoss') {
+        startStage4CactusBreakCutscene(enemy);
       }
 
       if (enemy.type !== 'normal') {
@@ -16312,6 +16633,9 @@ function requestGachaDraw(count) {
       if (UNIT_DATA[placed.unitId]?.stunImmune) placed.stunRemaining = 0;
       else placed.stunRemaining = Math.max(0, (placed.stunRemaining || 0) - dt);
       placed.attackSlowRemaining = Math.max(0, (placed.attackSlowRemaining || 0) - dt);
+      placed.hackedRemaining = Math.max(0, Number(placed.hackedRemaining || 0) - dt);
+      if (placed.attackSlowRemaining <= 0) placed.attackSlowMultiplier = 1;
+      if (placed.hackedRemaining <= 0) placed.hackedByEnemyId = null;
       placed.cooldown -= dt;
       if (placed.unitId === 'cherrySamurai') updateCherrySamuraiBlossomAura(placed, dt);
       let animationSpeed = 5.5;
@@ -16359,7 +16683,23 @@ function requestGachaDraw(count) {
 
       if (placed.stunRemaining > 0 || placed.cooldown > 0) return;
 
-      const slowMultiplier = placed.attackSlowRemaining > 0 ? 1.5 : 1;
+      const slowMultiplier = placed.attackSlowRemaining > 0 ? Math.max(1,Number(placed.attackSlowMultiplier||1.5)) : 1;
+
+      if (placed.hackedRemaining > 0) {
+        const targetInfo = getClosestEnemyToUnit(placed, placed.range);
+        if (!targetInfo) return;
+        const target = targetInfo.enemy;
+        const healAmount = Math.max(1, Number(placed.damage || UNIT_DATA[placed.unitId]?.damage || 1));
+        const before = target.health;
+        target.health = Math.min(target.maxHealth, target.health + healAmount);
+        placed.angle = Math.atan2(target.y-placed.y,target.x-placed.x);
+        placed.cooldown = Math.max(.05,Number(placed.fireInterval||1) * slowMultiplier);
+        placed.attackAnimation = 1;
+        placed.attackCount = Number(placed.attackCount||0)+1;
+        battle.shots.push({x1:placed.x,y1:placed.y,x2:target.x,y2:target.y,life:.42,maxLife:.42,effect:'hackerHeal',color:'#8cff45',seed:Math.random()*1000});
+        setBattleMessage(`💻 해킹된 ${UNIT_DATA[placed.unitId]?.name || '유닛'}의 공격이 ${target.name}의 HP를 ${Math.round(target.health-before).toLocaleString()} 회복시켰습니다!`);
+        return;
+      }
 
       if (placed.unitId === 'royalGuardian') {
         const targetInfo = getClosestEnemyToUnit(placed, placed.range);
@@ -16745,6 +17085,19 @@ function requestGachaDraw(count) {
       );
       updateTraitShields(dt);
 
+      if (battle.stage4CactusTransition) {
+        battle.stage4CactusTransition.elapsed += dt;
+        if (battle.stage4CactusTransition.elapsed >= battle.stage4CactusTransition.duration) {
+          battle.stage4CactusTransition = null;
+          battle.wave = 50;
+          battle.waveDelay = 0;
+          if (!battle.launchedWaves[51]) launchWave(51);
+          setBattleMessage('⚠ WAVE LIMIT 확장 완료 · 최대 웨이브 100 · 51웨이브 시작!');
+        }
+        updateBattleUi();
+        return;
+      }
+
       if (battle.dirtConverge) {
         battle.dirtConverge.remaining = Math.max(0, battle.dirtConverge.remaining - dt);
         if (battle.dirtConverge.remaining <= 0) {
@@ -16803,7 +17156,11 @@ function requestGachaDraw(count) {
           } else if (battle.waveDelay >= .4) {
             endBattle(false, battle.stage === 2
               ? '크리스탈 골렘을 직접 처치해야 2스테이지를 클리어할 수 있습니다.'
-              : '각성한 킹 비둘기를 직접 처치해야 스테이지를 클리어할 수 있습니다.');
+              : battle.stage === 3
+                ? '치명적인 라마를 직접 처치해야 3스테이지를 클리어할 수 있습니다.'
+                : battle.stage === 4
+                  ? '해커 선인장을 직접 처치해야 4스테이지를 클리어할 수 있습니다.'
+                  : '각성한 킹 비둘기를 직접 처치해야 스테이지를 클리어할 수 있습니다.');
           }
         } else if (battle.waveDelay >= 1.4) {
           battle.gold += 80;
@@ -16836,6 +17193,33 @@ function requestGachaDraw(count) {
         }
         ctx.globalAlpha=.22; ctx.strokeStyle='#8da0b7';
         for(let i=0;i<16;i+=1){const y=18+i*34;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(130+(i%4)*90,y+10);ctx.stroke();ctx.beginPath();ctx.moveTo(canvas.width,y+4);ctx.lineTo(canvas.width-120-(i%5)*70,y+18);ctx.stroke();}
+        ctx.restore();
+        return;
+      }
+      if (visualStage === 4) {
+        const sky = ctx.createLinearGradient(0,0,0,canvas.height);
+        sky.addColorStop(0,'#37b5ef'); sky.addColorStop(.42,'#f8d58b'); sky.addColorStop(1,'#c36b2c');
+        ctx.fillStyle=sky;ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.save();
+        // 사구
+        for(let i=0;i<9;i++){
+          const x=(i*173-70)% (canvas.width+180);
+          const y=canvas.height*.32+(i%4)*62;
+          ctx.fillStyle=i%2?'rgba(238,176,74,.42)':'rgba(181,92,34,.30)';
+          ctx.beginPath();ctx.ellipse(x,y,155+(i%3)*42,33+(i%4)*8,-.08+(i%3)*.05,0,Math.PI*2);ctx.fill();
+        }
+        // 바람에 날리는 모래
+        ctx.globalAlpha=.23;ctx.strokeStyle='#fff0b0';ctx.lineWidth=2;
+        for(let i=0;i<22;i++){
+          const y=20+i*27,offset=(i*71)%180;
+          ctx.beginPath();ctx.moveTo(offset,y);ctx.bezierCurveTo(250,y-14,520,y+18,canvas.width,y-5);ctx.stroke();
+        }
+        // 드문 선인장 실루엣
+        ctx.globalAlpha=.20;ctx.fillStyle='#315326';
+        for(let i=0;i<8;i++){
+          const x=85+i*155,y=canvas.height-70-(i%3)*18;
+          ctx.fillRect(x,y-38,8,42);ctx.fillRect(x-11,y-25,12,6);ctx.fillRect(x-11,y-37,6,16);ctx.fillRect(x+7,y-18,13,6);ctx.fillRect(x+14,y-29,6,17);
+        }
         ctx.restore();
         return;
       }
@@ -18659,6 +19043,79 @@ function requestGachaDraw(count) {
       }
       ctx.restore();
     }
+
+    function drawCanvasScorpion(enemy,x,y,time){
+      const r=Number(enemy.radius||22), venom=enemy.variant==='venomScorpion'||enemy.type==='venomScorpionBoss';
+      const gait=Math.sin(time*.012+(enemy.wingPhase||0));
+      ctx.save();ctx.translate(x,y);ctx.rotate(Number(enemy.heading||0));
+      ctx.fillStyle='rgba(80,38,16,.26)';ctx.beginPath();ctx.ellipse(-3,r*.62,r*1.05,r*.25,0,0,Math.PI*2);ctx.fill();
+      // 다리
+      ctx.strokeStyle=venom?'#362414':'#442014';ctx.lineWidth=Math.max(3,r*.13);ctx.lineCap='round';
+      for(const side of [-1,1])for(let i=0;i<4;i++){const yy=side*(5+i*3.2);ctx.beginPath();ctx.moveTo(-4,yy);ctx.lineTo(-r*.72-i*1.4,yy+side*(7+Math.abs(gait)*2));ctx.lineTo(-r*1.05-i*2,yy+side*(12+i));ctx.stroke();}
+      // 몸통
+      const body=ctx.createRadialGradient(r*.2,-r*.2,1,0,0,r*1.2);
+      body.addColorStop(0,venom?'#8cff45':'#d67a32');body.addColorStop(.2,venom?'#4e7a27':'#8d431f');body.addColorStop(1,'#21100c');
+      ctx.fillStyle=body;ctx.strokeStyle='#140a08';ctx.lineWidth=2;
+      ctx.beginPath();ctx.ellipse(0,0,r*.82,r*.56,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+      ctx.beginPath();ctx.ellipse(r*.66,0,r*.48,r*.42,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+      // 집게
+      for(const side of [-1,1]){ctx.strokeStyle='#3d1b10';ctx.lineWidth=r*.18;ctx.beginPath();ctx.moveTo(r*.62,side*r*.28);ctx.lineTo(r*1.05,side*r*.62);ctx.stroke();ctx.fillStyle=venom?'#608e31':'#9e4922';ctx.beginPath();ctx.arc(r*1.17,side*r*.70,r*.22,0,Math.PI*2);ctx.fill();}
+      // 꼬리
+      ctx.strokeStyle=venom?'#587c2b':'#572514';ctx.lineWidth=r*.22;ctx.beginPath();ctx.moveTo(-r*.6,0);ctx.bezierCurveTo(-r*1.2,-r*.15,-r*1.05,-r*1.0,-r*.34,-r*1.15);ctx.stroke();
+      ctx.fillStyle=venom?'#a9ff54':'#8d3b20';ctx.beginPath();ctx.moveTo(-r*.28,-r*1.28);ctx.lineTo(r*.08,-r*1.05);ctx.lineTo(-r*.36,-r*.96);ctx.closePath();ctx.fill();
+      if(venom){ctx.shadowBlur=18;ctx.shadowColor='#7dff39';ctx.fillStyle='#b6ff70';ctx.beginPath();ctx.arc(-r*.20,-r*1.14,3.2,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;}
+      ctx.fillStyle='#ffe779';ctx.beginPath();ctx.arc(r*.82,-r*.13,2,0,Math.PI*2);ctx.arc(r*.82,r*.13,2,0,Math.PI*2);ctx.fill();
+      ctx.restore();
+    }
+
+    function drawCanvasSandworm(enemy,x,y,time){
+      const r=Number(enemy.radius||46);
+      ctx.save();ctx.translate(x,y);
+      if(enemy.sandBurrowed){
+        ctx.strokeStyle='rgba(255,224,145,.92)';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(0,8,r*1.15,r*.32,0,0,Math.PI*2);ctx.stroke();
+        ctx.strokeStyle='rgba(139,72,28,.55)';ctx.lineWidth=9;ctx.beginPath();ctx.arc(0,9,r*.62,0,Math.PI*2);ctx.stroke();
+        for(let i=0;i<10;i++){const a=time*.005+i*.63,rr=r*.7+(i%3)*8;ctx.fillStyle='rgba(238,184,82,.65)';ctx.beginPath();ctx.arc(Math.cos(a)*rr,9+Math.sin(a)*rr*.25,2+i%3,0,Math.PI*2);ctx.fill();}
+        ctx.restore();return;
+      }
+      const sway=Math.sin(time*.005)*.12;ctx.rotate(sway);
+      const grad=ctx.createLinearGradient(0,-r,0,r);grad.addColorStop(0,'#a85a2d');grad.addColorStop(.45,'#6c301d');grad.addColorStop(1,'#31150f');
+      ctx.fillStyle=grad;ctx.strokeStyle='#24110d';ctx.lineWidth=3;
+      ctx.beginPath();ctx.moveTo(-r*.72,r*.55);ctx.quadraticCurveTo(-r*.55,-r*.85,0,-r*1.15);ctx.quadraticCurveTo(r*.55,-r*.85,r*.72,r*.55);ctx.quadraticCurveTo(0,r*.95,-r*.72,r*.55);ctx.fill();ctx.stroke();
+      for(let i=0;i<6;i++){ctx.strokeStyle='rgba(255,196,111,.35)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,-r*.40+i*r*.24,r*(.48+i*.04),.20,Math.PI-.20);ctx.stroke();}
+      // 입
+      ctx.fillStyle='#080304';ctx.beginPath();ctx.ellipse(0,-r*.45,r*.34,r*.26,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#f0c27d';for(let i=0;i<8;i++){const a=i*Math.PI/4;ctx.beginPath();ctx.moveTo(Math.cos(a)*r*.33,-r*.45+Math.sin(a)*r*.25);ctx.lineTo(Math.cos(a)*r*.16,-r*.45+Math.sin(a)*r*.12);ctx.lineTo(Math.cos(a+.16)*r*.30,-r*.45+Math.sin(a+.16)*r*.22);ctx.fill();}
+      ctx.restore();
+    }
+
+    function drawCanvasCactus(enemy,x,y,time){
+      const r=Number(enemy.radius||24), boss=enemy.type!=='normal', hacker=enemy.type==='hackerCactusBoss', doll=enemy.type==='dollCactusBoss';
+      const jump=Math.max(0,Number(enemy.cactusJumpAnim||0));
+      ctx.save();ctx.translate(x,y-Math.sin(Math.min(1,jump)*Math.PI)*26);
+      if(enemy.fleeingToSpawn){ctx.rotate(Math.PI);}
+      ctx.fillStyle='rgba(73,48,21,.25)';ctx.beginPath();ctx.ellipse(0,r*.85,r*.72,r*.20,0,0,Math.PI*2);ctx.fill();
+      const body=ctx.createLinearGradient(-r,0,r,0);body.addColorStop(0,hacker?'#16382d':'#367c36');body.addColorStop(.5,hacker?'#39ff88':'#62a844');body.addColorStop(1,hacker?'#071b16':'#245b2c');
+      ctx.fillStyle=body;ctx.strokeStyle=hacker?'#7dffcf':'#163f22';ctx.lineWidth=boss?3:2;
+      ctx.beginPath();ctx.roundRect(-r*.33,-r*1.0,r*.66,r*1.75,r*.24);ctx.fill();ctx.stroke();
+      // arms
+      ctx.strokeStyle=body;ctx.lineWidth=r*.30;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-r*.22,-r*.2);ctx.lineTo(-r*.75,-r*.35);ctx.lineTo(-r*.78,-r*.72);ctx.moveTo(r*.22,r*.05);ctx.lineTo(r*.70,-r*.05);ctx.lineTo(r*.72,-r*.45);ctx.stroke();
+      // spikes
+      ctx.fillStyle='#f7e8b0';for(let i=0;i<10+(boss?6:0);i++){const a=i*2.3;const px=Math.sin(a)*r*.35,py=-r*.85+(i%(boss?8:6))*r*.24;ctx.fillRect(px-1,py,2,4);}
+      if(doll && !enemy.maskBroken){
+        // 선인장 인형 탈
+        ctx.fillStyle='#d7b17a';ctx.strokeStyle='#5e3f2a';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(-r*.60,-r*1.17,r*1.2,r*.90,10);ctx.fill();ctx.stroke();
+        ctx.fillStyle='#1a110d';ctx.beginPath();ctx.arc(-r*.20,-r*.80,4,0,Math.PI*2);ctx.arc(r*.20,-r*.80,4,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle='#8c613e';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(0,-r*.72);ctx.lineTo(0,-r*.42);ctx.stroke();
+        ctx.fillStyle='#fff3c0';ctx.font=`900 ${Math.max(9,r*.24)}px sans-serif`;ctx.textAlign='center';ctx.fillText('탈',0,-r*.34);
+      }else{
+        ctx.fillStyle=hacker?'#f33dff':'#ffe86d';ctx.beginPath();ctx.arc(-r*.13,-r*.55,3,0,Math.PI*2);ctx.arc(r*.13,-r*.55,3,0,Math.PI*2);ctx.fill();
+      }
+      if(hacker){
+        ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle='#7dffcf';ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.rotate(time*.002);ctx.beginPath();ctx.arc(0,-r*.25,r*1.15,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.font='900 9px monospace';ctx.fillStyle='#dd7dff';ctx.textAlign='center';ctx.fillText('0xC4CTUS',0,-r*1.35);ctx.restore();
+      }
+      ctx.restore();
+    }
+
     function drawEnemy(enemy, time) {
       const formation = enemy.type === 'brother'
         ? BROTHER_FORMATION[enemy.groupIndex] || { x: 0, y: 0 }
@@ -18697,8 +19154,12 @@ function requestGachaDraw(count) {
       }
 
       const isLlama = battle?.stage === 3 || enemy.variant === 'llama' || /Llama/i.test(enemy.type || '');
+      const isStage4Enemy = battle?.stage === 4 || ['scorpion','venomScorpion','sandworm','cactus','dollCactus','hackerCactus'].includes(enemy.variant);
       if (isGolem) drawCanvasGolem(enemy, drawX, drawY, time);
       else if (isLlama) drawCanvasLlama(enemy, drawX, drawY, time);
+      else if (isStage4Enemy && enemy.variant === 'sandworm') drawCanvasSandworm(enemy, drawX, drawY, time);
+      else if (isStage4Enemy && (enemy.variant === 'cactus' || enemy.variant === 'dollCactus' || enemy.variant === 'hackerCactus')) drawCanvasCactus(enemy, drawX, drawY, time);
+      else if (isStage4Enemy) drawCanvasScorpion(enemy, drawX, drawY, time);
       else { drawCanvasPigeon(enemy, drawX, drawY, time); drawKnightPigeonArmor(enemy, drawX, drawY, time); }
 
       if (enemy.timeFieldRemaining > 0) {
@@ -18848,7 +19309,17 @@ function requestGachaDraw(count) {
 
       ctx.fillStyle = '#202736';
       ctx.fillRect(drawX - barWidth / 2, barY, barWidth, barHeight);
-      ctx.fillStyle = enemy.type === 'deadlyLlamaBoss'
+      ctx.fillStyle = enemy.type === 'hackerCactusBoss'
+        ? '#c846ff'
+        : enemy.type === 'cactusGateBoss'
+          ? '#64d86b'
+          : enemy.type === 'dollCactusBoss'
+            ? '#d3a46f'
+            : enemy.type === 'sandwormBoss'
+              ? '#d98137'
+              : enemy.type === 'venomScorpionBoss'
+                ? '#89ff45'
+                : enemy.type === 'deadlyLlamaBoss'
         ? '#ff4545'
         : enemy.type === 'auraLlamaBoss'
           ? '#c084fc'
@@ -20317,13 +20788,16 @@ function requestGachaDraw(count) {
     function drawErrorEntityAuraArt(g, time, unit, quality = 1) {
       const t = time * .001;
       const seed = Number(unit.animationOffset || 0) * 7.31 + 2.17;
-      const hue = (t * 125 + seed * 47) % 360;
+      const hue = (t * 190 + seed * 47) % 360;
       const hue2 = (hue + 118) % 360;
       const hue3 = (hue + 238) % 360;
       const attack = Math.max(0, Math.min(1, Number(unit.attackAnimation || 0)));
       const pulse = .78 + Math.sin(t * 6.3 + seed) * .16;
+      const brightness = .82 + .18 * Math.sin(t * 8.7 + seed) + (Math.sin(t * 29.0 + seed) > .92 ? .42 : 0);
+      const glitchFlash = Math.max(0, Math.sin(t * 17.0 + seed) - .72) / .28;
 
       g.save();
+      g.filter = `brightness(${1.10 + brightness*.35}) saturate(${1.18 + glitchFlash*.55})`;
       g.globalCompositeOperation = 'lighter';
 
       // 색이 계속 순환하는 넓은 글리치 오라
@@ -20387,13 +20861,23 @@ function requestGachaDraw(count) {
         g.restore();
       }
 
+      if (glitchFlash > .02) {
+        g.save();
+        g.globalCompositeOperation='lighter';
+        g.translate(0,-20);
+        g.strokeStyle=`rgba(255,255,255,${.18+.44*glitchFlash})`;
+        g.lineWidth=4+glitchFlash*6;
+        g.shadowBlur=24; g.shadowColor='#fff';
+        g.beginPath(); g.moveTo(-90,0); g.lineTo(90,0); g.moveTo(0,-90); g.lineTo(0,90); g.stroke();
+        g.restore();
+      }
       g.restore();
     }
 
     function drawErrorEntityBodyArt(g, time, unit, quality = 1) {
       const t = time * .001;
       const seed = Number(unit.animationOffset || 0) * 8.17 + 1.41;
-      const hue = (t * 125 + seed * 47) % 360;
+      const hue = (t * 190 + seed * 47) % 360;
       const hue2 = (hue + 120) % 360;
       const attack = Math.max(0, Math.min(1, Number(unit.attackAnimation || 0)));
       const hover = Math.sin(t*2.85+seed)*2.2;
@@ -20961,6 +21445,17 @@ function requestGachaDraw(count) {
 
       drawStandingUnitBody(unit, time);
       drawAimedUnitWeapon(unit, data, time);
+      if (Number(unit.hackedRemaining||0) > 0) {
+        ctx.save();
+        ctx.globalCompositeOperation='lighter';
+        ctx.rotate(time*.003);
+        ctx.strokeStyle='rgba(120,255,65,.88)';ctx.lineWidth=2;ctx.setLineDash([6,4,2,5]);
+        ctx.beginPath();ctx.arc(0,0,39+Math.sin(time*.02)*3,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+        ctx.rotate(-time*.006);
+        ctx.strokeStyle='rgba(210,70,255,.66)';ctx.beginPath();ctx.rect(-30,-30,60,60);ctx.stroke();
+        ctx.font='900 10px monospace';ctx.fillStyle='#b8ff77';ctx.textAlign='center';ctx.fillText('HACKED',0,-45);
+        ctx.restore();
+      }
     }
 
     function drawRangeCircle(x, y, range, options = {}) {
@@ -22015,6 +22510,16 @@ function requestGachaDraw(count) {
           const sx=shot.x1+(shot.x2-shot.x1)*progress,sy=shot.y1+(shot.y2-shot.y1)*progress;
           ctx.strokeStyle=`rgba(177,243,107,${.45*p})`;ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.quadraticCurveTo((shot.x1+shot.x2)/2,Math.min(shot.y1,shot.y2)-28,sx,sy);ctx.stroke();
           const gg=ctx.createRadialGradient(sx,sy,1,sx,sy,9);gg.addColorStop(0,'rgba(245,255,210,.95)');gg.addColorStop(.35,'rgba(167,236,82,.9)');gg.addColorStop(1,'rgba(76,130,28,0)');ctx.fillStyle=gg;ctx.beginPath();ctx.arc(sx,sy,9,0,Math.PI*2);ctx.fill();ctx.restore();
+        } else if (shot.effect === 'desertPoison') {
+          ctx.save();ctx.globalCompositeOperation='lighter';
+          ctx.strokeStyle=`rgba(117,255,55,${.86*fade})`;ctx.lineWidth=5;ctx.setLineDash([7,5]);
+          ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.quadraticCurveTo((shot.x1+shot.x2)/2,Math.min(shot.y1,shot.y2)-55,shot.x2,shot.y2);ctx.stroke();ctx.setLineDash([]);
+          for(let i=0;i<8;i++){const tt=Math.max(0,progress-i*.035),px=shot.x1+(shot.x2-shot.x1)*tt,py=shot.y1+(shot.y2-shot.y1)*tt-Math.sin(tt*Math.PI)*45;ctx.fillStyle=`rgba(142,255,62,${.42*fade})`;ctx.beginPath();ctx.arc(px,py,3+(i%3),0,Math.PI*2);ctx.fill();}
+          ctx.restore();
+        } else if (shot.effect === 'cactusJump') {
+          ctx.save();ctx.strokeStyle=`rgba(239,202,118,${.65*fade})`;ctx.lineWidth=6;ctx.beginPath();ctx.ellipse(shot.x1,shot.y1+8,18+progress*24,6+progress*5,0,0,Math.PI*2);ctx.stroke();ctx.restore();
+        } else if (shot.effect === 'hackerLink' || shot.effect === 'hackerHeal') {
+          ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle=shot.effect==='hackerHeal'?`rgba(120,255,65,${.9*fade})`:`rgba(205,75,255,${.9*fade})`;ctx.lineWidth=4;ctx.setLineDash([8,4,2,5]);ctx.lineDashOffset=-progress*35;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.lineTo(shot.x2,shot.y2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
         } else if (shot.effect === 'llamaDash') {
           const p=Math.sin(progress*Math.PI);ctx.save();ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter';ctx.strokeStyle=`rgba(242,203,151,${.55*p})`;ctx.lineWidth=18;ctx.setLineDash([18,12]);ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.lineTo(shot.x2,shot.y2);ctx.stroke();ctx.setLineDash([]);for(let i=0;i<8;i++){const q=i/7,px=shot.x1+(shot.x2-shot.x1)*q,py=shot.y1+(shot.y2-shot.y1)*q;ctx.fillStyle=`rgba(220,170,105,${.35*p})`;ctx.beginPath();ctx.arc(px,py+10,3+(i%3),0,Math.PI*2);ctx.fill();}ctx.restore();
         } else if (shot.effect === 'phoenixBreath') {
@@ -22133,6 +22638,52 @@ function requestGachaDraw(count) {
       }
     }
 
+
+    function drawStage4CactusCutscene(time) {
+      const tr=battle?.stage4CactusTransition;
+      if(!tr) return;
+      const p=Math.max(0,Math.min(1,tr.elapsed/Math.max(.001,tr.duration)));
+      ctx.save();
+
+      // 선인장이 죽는 순간 중심에서 가시가 화면 끝까지 뻗음
+      const spikeP=Math.min(1,p/.24);
+      ctx.translate(tr.x,tr.y);
+      ctx.strokeStyle=`rgba(255,255,255,${Math.max(0,1-p*.7)})`;
+      ctx.shadowBlur=18;ctx.shadowColor='#fff';
+      for(let i=0;i<18;i++){
+        const a=tr.seed+i*Math.PI*2/18;
+        const len=(70+Math.max(canvas.width,canvas.height)*1.1)*spikeP*(.72+(i%4)*.10);
+        ctx.lineWidth=2+(i%3)*1.5;
+        ctx.beginPath();ctx.moveTo(Math.cos(a)*15,Math.sin(a)*15);ctx.lineTo(Math.cos(a)*len,Math.sin(a)*len);ctx.stroke();
+      }
+      ctx.setTransform(1,0,0,1,0,0);
+
+      // 금이 간 화면
+      const crackAlpha=Math.min(1,p/.30)*Math.max(0,1-(p-.70)/.30);
+      ctx.strokeStyle=`rgba(28,34,42,${.82*crackAlpha})`;ctx.shadowBlur=0;ctx.lineWidth=2;
+      for(let i=0;i<11;i++){
+        let x=canvas.width*.5,y=canvas.height*.5;
+        ctx.beginPath();ctx.moveTo(x,y);
+        const a=tr.seed*.3+i*Math.PI*2/11;
+        for(let j=1;j<=5;j++){const rr=j*85+(i%3)*17;x=canvas.width*.5+Math.cos(a+j*.08*(i%2?1:-1))*rr;y=canvas.height*.5+Math.sin(a+j*.08*(i%2?1:-1))*rr;ctx.lineTo(x,y);}
+        ctx.stroke();
+      }
+
+      // 백색 플래시 후 서서히 복구
+      let whiteAlpha;
+      if(p<.26) whiteAlpha=p/.26;
+      else if(p<.60) whiteAlpha=1;
+      else whiteAlpha=Math.max(0,1-(p-.60)/.40);
+      ctx.fillStyle=`rgba(255,255,255,${whiteAlpha})`;ctx.fillRect(0,0,canvas.width,canvas.height);
+
+      ctx.fillStyle=`rgba(0,0,0,${Math.max(0,(whiteAlpha-.35)*1.2)})`;
+      ctx.textAlign='center';ctx.font='900 44px monospace';
+      ctx.fillText('WAVE LIMIT // BROKEN',canvas.width/2,canvas.height*.43);
+      ctx.font='900 66px monospace';ctx.fillText('50  →  100',canvas.width/2,canvas.height*.56);
+      ctx.font='900 18px monospace';ctx.fillText('DESERT SYSTEM RESTORED',canvas.width/2,canvas.height*.64);
+      ctx.restore();
+    }
+
     function drawBattle(time) {
       drawBackground();
       drawPath();
@@ -22146,6 +22697,7 @@ function requestGachaDraw(count) {
       drawEdenMinions(time);
       battle.enemies.forEach(enemy => drawEnemy(enemy, time));
       drawShots();
+      drawStage4CactusCutscene(time);
 
       if (battle.ended) {
         ctx.fillStyle = 'rgba(0,0,0,.68)';
@@ -27571,7 +28123,8 @@ function requestGachaDraw(count) {
 
     if (completed) {
       waitingPanel?.classList.remove('hidden');
-      waitingPanel.innerHTML = '<strong class="trade-complete">✅ 거래가 완료되었습니다.</strong><small>양쪽 인벤토리에 서버에서 동시에 반영되었습니다.</small>';
+      waitingPanel.innerHTML = '<strong class="trade-complete">✅ 거래가 완료되었습니다.</strong><sm
+      ll>양쪽 인벤토리에 서버에서 동시에 반영되었습니다.</small>';
       return;
     } else if (waitingPanel) {
       waitingPanel.innerHTML = '<strong>상대방의 수락을 기다리는 중입니다.</strong><small>요청이 수락되면 유닛과 주사위를 선택할 수 있습니다.</small>';
@@ -28031,7 +28584,7 @@ function requestGachaDraw(count) {
         lastError=e;
         const msg=String(e?.message||'');
         if(!/function|schema cache|Could not find|PGRST202|does not exist/i.test(msg)) throw e;
-cd /workspaces/bidulgy.games.io      }
+      }
     }
     throw lastError||new Error('사용 가능한 서버 함수를 찾지 못했습니다.');
   }

@@ -6881,6 +6881,9 @@ button {
 .trade-unit-picker{margin-top:10px;padding:11px;border:1px solid rgba(118,224,255,.26);border-radius:14px;background:rgba(4,14,24,.94);box-shadow:0 18px 50px rgba(0,0,0,.35)}
 .trade-unit-picker-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:9px}.trade-unit-picker-head strong{font-size:13px}.trade-picker-close{width:34px;height:34px;padding:0;border-radius:10px;font-size:19px;line-height:1}
 .trade-unit-item .trade-quick-add{grid-column:1/-1;width:100%;min-height:32px;padding:5px 8px;font-weight:900}.trade-offer-remove{flex:0 0 auto;width:27px;height:27px;padding:0;border-radius:8px;font-size:14px;background:rgba(255,77,103,.18);border-color:rgba(255,77,103,.36)}
+.trade-inventory-section{margin-top:12px}.trade-inventory-section:first-child{margin-top:0}.trade-inventory-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.045);font-size:12px;font-weight:950}.trade-inventory-title small{font-size:10px;font-weight:700;color:var(--muted)}.trade-dice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.trade-dice-item{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center;padding:9px;border-radius:12px;background:linear-gradient(135deg,rgba(255,255,255,.055),rgba(255,255,255,.025));border:1px solid rgba(255,255,255,.09)}.trade-dice-icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:22px;font-weight:950;background:var(--trade-dice-color,#fff);color:var(--trade-dice-text,#111);box-shadow:0 0 18px var(--trade-dice-glow,rgba(255,255,255,.2))}.trade-dice-item .trade-stepper{grid-column:1/-1}.trade-dice-item .trade-quick-add{grid-column:1/-1;width:100%;min-height:32px;padding:5px 8px;font-weight:900}.trade-offer-chip.trade-dice-offer{border:1px solid rgba(101,205,255,.25);background:rgba(45,146,197,.10)}.trade-unavailable{opacity:.52;filter:saturate(.55)}.trade-inventory-note{margin:10px 0 0;font-size:10px;color:var(--muted);line-height:1.45}.trade-unit-grid.inventory-mode{display:block;max-height:52vh}.trade-unit-grid.inventory-mode .trade-unit-grid-inner{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media(max-width:520px){.trade-dice-grid,.trade-unit-grid.inventory-mode .trade-unit-grid-inner{grid-template-columns:1fr}}
+
 .trade-remote-cancel{padding:18px;text-align:center;border:1px solid rgba(255,86,107,.32);background:rgba(63,12,23,.55);border-radius:14px;color:#ffd4da}.trade-remote-cancel strong{display:block;font-size:16px;margin-bottom:5px}
 .admin-owned-unit-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 11px;margin:7px 0;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(255,255,255,.035)}
 .admin-owned-unit-main{min-width:0}.admin-owned-unit-main strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.admin-owned-unit-main small{display:block;margin-top:3px;color:#9aa8ba}.admin-remove-controls{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.admin-remove-controls input{width:76px;min-width:64px;padding:7px 8px}.admin-remove-controls button{padding:7px 9px;font-size:12px}.admin-remove-all{background:rgba(255,70,90,.18);border-color:rgba(255,70,90,.42)}
@@ -7572,7 +7575,7 @@ button {
 
         <div id="tradeWaitingPanel" class="trade-waiting-panel hidden">
           <strong>상대방의 수락을 기다리는 중입니다.</strong>
-          <small>요청이 수락되면 유닛을 선택할 수 있습니다.</small>
+          <small>요청이 수락되면 유닛과 주사위를 선택할 수 있습니다.</small>
         </div>
 
         <div id="tradeActivePanel" class="hidden">
@@ -7580,23 +7583,24 @@ button {
             <div class="trade-offer-column">
               <div class="trade-column-heading">
                 <strong>내 제안</strong>
-                <small>＋로 추가 · X로 선택창 닫기</small>
+                <small>＋를 누르면 내 인벤토리가 열립니다</small>
               </div>
               <div id="tradeMyOfferPreview" class="trade-my-offer-preview"></div>
-              <button id="tradeOpenUnitPickerBtn" class="trade-add-unit-button" type="button">＋ 유닛 추가</button>
+              <button id="tradeOpenUnitPickerBtn" class="trade-add-unit-button" type="button">＋ 내 인벤토리 열기</button>
               <div id="tradeUnitPicker" class="trade-unit-picker hidden">
                 <div class="trade-unit-picker-head">
-                  <strong>거래할 유닛 선택</strong>
-                  <button id="tradeCloseUnitPickerBtn" class="secondary trade-picker-close" type="button" aria-label="선택창 닫기">×</button>
+                  <strong>내 인벤토리 · 거래할 아이템 선택</strong>
+                  <button id="tradeCloseUnitPickerBtn" class="secondary trade-picker-close" type="button" aria-label="인벤토리 닫기">×</button>
                 </div>
-                <div id="tradeMyUnitGrid" class="trade-unit-grid"></div>
+                <div id="tradeMyUnitGrid" class="trade-unit-grid inventory-mode"></div>
+                <p class="trade-inventory-note">유닛과 주사위를 거래할 수 있습니다. 유닛 조각 거래는 나중에 추가됩니다.</p>
               </div>
               <button id="tradeSaveOfferBtn" class="trade-save-offer" type="button">내 제안 저장</button>
             </div>
 
             <div class="trade-offer-column trade-partner-offer-column">
               <div class="trade-column-heading">
-                <strong>상대가 줄 유닛</strong>
+                <strong>상대가 줄 아이템</strong>
                 <small id="tradePartnerConfirmText">상대 제안 확인 중</small>
               </div>
               <div id="tradePartnerOffer" class="trade-partner-offer"></div>
@@ -8572,7 +8576,7 @@ function applyStagePreview(stageId = selectedStage) {
       errorEntity: {
         id: 'errorEntity',
         name: 'ERROR',
-        icon: '⟁',
+        icon: '✦',
         rarity: 'ERROR',
         rarityKey: 'error',
         rarityClass: 'rarity-error',
@@ -20312,238 +20316,261 @@ function requestGachaDraw(count) {
 
     function drawErrorEntityAuraArt(g, time, unit, quality = 1) {
       const t = time * .001;
-      const seed = Number(unit.animationOffset || 0) * 9.17 + 4.04;
-      const attack = Number(unit.attackAnimation || 0);
-      const pulse = .72 + .28 * Math.sin(t * 5.7 + seed);
+      const seed = Number(unit.animationOffset || 0) * 7.31 + 2.17;
+      const hue = (t * 125 + seed * 47) % 360;
+      const hue2 = (hue + 118) % 360;
+      const hue3 = (hue + 238) % 360;
+      const attack = Math.max(0, Math.min(1, Number(unit.attackAnimation || 0)));
+      const pulse = .78 + Math.sin(t * 6.3 + seed) * .16;
 
       g.save();
-      g.translate(0, 9);
-      g.scale(1, .46);
+      g.globalCompositeOperation = 'lighter';
 
-      // 검은 보이드 디스크
-      const voidDisk = g.createRadialGradient(0,0,6,0,0,62);
-      voidDisk.addColorStop(0,'rgba(0,0,0,.82)');
-      voidDisk.addColorStop(.62,'rgba(0,4,2,.54)');
-      voidDisk.addColorStop(1,'rgba(0,0,0,0)');
-      g.fillStyle=voidDisk;
-      g.beginPath();g.arc(0,0,62,0,Math.PI*2);g.fill();
+      // 색이 계속 순환하는 넓은 글리치 오라
+      const aura = g.createRadialGradient(0,-17,4,0,-10,78);
+      aura.addColorStop(0, `hsla(${hue},100%,92%,.78)`);
+      aura.addColorStop(.18, `hsla(${hue2},100%,70%,.34)`);
+      aura.addColorStop(.48, `hsla(${hue3},100%,58%,.18)`);
+      aura.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = aura;
+      g.beginPath();
+      g.arc(0,-10,78 + attack*8,0,Math.PI*2);
+      g.fill();
 
-      // 깨진 육각형 ERROR 게이트
-      g.save();
-      g.rotate(t*.38);
-      const segments = quality > .65 ? 6 : 4;
-      for(let ring=0; ring<3; ring++){
-        const radius=43+ring*12;
-        g.strokeStyle = ring===1
-          ? `rgba(255,28,92,${.34 + attack*.16})`
-          : `rgba(0,255,112,${.40 - ring*.08 + pulse*.08})`;
-        g.lineWidth=ring===1?2.8:2.1;
-        g.setLineDash(ring===0?[20,5,3,10]:ring===1?[7,7,18,4]:[4,11]);
-        g.lineDashOffset=(ring%2?-1:1)*t*(28+ring*14);
+      // 솔스 RNG Glitch처럼 색 분리된 끊긴 다각형 고리
+      for (let ring = 0; ring < 3; ring++) {
+        g.save();
+        g.translate(0,-8);
+        g.rotate((ring%2 ? -1 : 1) * t * (.42 + ring*.16) + seed + ring*.7);
+        const r = 42 + ring*13;
+        g.strokeStyle = `hsla(${(hue + ring*105)%360},100%,72%,${.34-ring*.055})`;
+        g.lineWidth = 2.3 - ring*.35;
+        g.setLineDash(ring===0 ? [17,5,3,9] : ring===1 ? [6,8,21,5] : [4,12]);
+        g.lineDashOffset = t * (ring%2 ? 35 : -28);
         g.beginPath();
-        for(let i=0;i<=6;i++){
-          const a=i*Math.PI/3;
-          const x=Math.cos(a)*radius, y=Math.sin(a)*radius;
-          if(i===0)g.moveTo(x,y);else g.lineTo(x,y);
+        for (let i=0;i<=4;i++) {
+          const a = Math.PI/4 + i*Math.PI/2;
+          const x = Math.cos(a)*r;
+          const y = Math.sin(a)*r*.72;
+          if (i===0) g.moveTo(x,y); else g.lineTo(x,y);
         }
         g.stroke();
-      }
-      g.setLineDash([]);
-      g.restore();
-
-      // 네 방향의 끊긴 데이터 칼날
-      const shards = quality > .7 ? 12 : 7;
-      for(let i=0;i<shards;i++){
-        const a=t*(i%2?.7:-.55)+seed+i*Math.PI*2/shards;
-        const r=48+(i%4)*9;
-        g.save();
-        g.translate(Math.cos(a)*r,Math.sin(a)*r*.78);
-        g.rotate(a+.35);
-        g.shadowColor=i%3===0?'#ff1c5c':'#00ff70';
-        g.shadowBlur=quality> .65?10:4;
-        g.fillStyle=i%3===0?'rgba(255,18,83,.82)':'rgba(0,255,112,.72)';
-        g.beginPath();g.moveTo(-8,-2);g.lineTo(7,-1);g.lineTo(13,0);g.lineTo(7,2);g.lineTo(-8,1);g.closePath();g.fill();
+        g.setLineDash([]);
         g.restore();
       }
-      g.restore();
 
-      // 몸 주위를 가르는 수직 스캔/코드 파편
-      const motes=quality>.7?20:10;
-      for(let i=0;i<motes;i++){
-        const phase=seed+i*1.773;
-        const x=Math.sin(phase*1.9)*(25+(i%5)*9);
-        const y=28-((t*(24+(i%4)*5)+i*13)%88);
-        const magenta=i%6===0;
-        g.fillStyle=magenta?'rgba(255,33,96,.78)':`rgba(0,255,112,${.28+(i%4)*.10})`;
-        if(i%3===0)g.fillRect(x,y,1.5,11+(i%4)*4);
-        else g.fillRect(x,y,4+(i%3)*2,2);
+      // 화면 찢김 같은 수평 RGB/HSV 슬라이스
+      const slices = quality > .65 ? 12 : 7;
+      for (let i=0;i<slices;i++) {
+        const y = -58 + ((i*17 + t*(23+i%3*7) + seed*13) % 112);
+        const width = 15 + (i%5)*12;
+        const x = Math.sin(seed+i*2.11+t*2.7) * 42;
+        g.fillStyle = `hsla(${(hue+i*39)%360},100%,67%,${.18+(i%4)*.06})`;
+        g.fillRect(x-width*.5,y,width,1.5+(i%3)*.7);
       }
+
+      // 검은 찢김 파편
+      g.globalCompositeOperation = 'source-over';
+      const shards = quality > .7 ? 12 : 7;
+      for(let i=0;i<shards;i++){
+        const a=t*(i%2?.72:-.58)+seed+i*Math.PI*2/shards;
+        const r=49+(i%4)*7;
+        g.save();
+        g.translate(Math.cos(a)*r, -8 + Math.sin(a)*r*.62);
+        g.rotate(a+.25);
+        g.fillStyle='rgba(0,0,0,.88)';
+        g.strokeStyle=`hsla(${(hue+i*31)%360},100%,72%,.52)`;
+        g.lineWidth=.8;
+        g.beginPath();
+        g.moveTo(-8,-2);g.lineTo(8,-1);g.lineTo(14,0);g.lineTo(7,2);g.lineTo(-8,1);g.closePath();
+        g.fill();g.stroke();
+        g.restore();
+      }
+
       g.restore();
     }
 
     function drawErrorEntityBodyArt(g, time, unit, quality = 1) {
-      const t=time*.001;
-      const seed=Number(unit.animationOffset||0)*6.71+1.9;
-      const attack=Number(unit.attackAnimation||0);
-      const hover=Math.sin(t*3.4+seed)*2.2;
-      const glitchBurst=Math.sin(t*27+seed)>.91 ? (Math.sin(t*61)>0?4:-4) : 0;
+      const t = time * .001;
+      const seed = Number(unit.animationOffset || 0) * 8.17 + 1.41;
+      const hue = (t * 125 + seed * 47) % 360;
+      const hue2 = (hue + 120) % 360;
+      const attack = Math.max(0, Math.min(1, Number(unit.attackAnimation || 0)));
+      const hover = Math.sin(t*2.85+seed)*2.2;
+      const glitchX = Math.sin(t*31+seed)>.93 ? (Math.sin(t*71)>0?3.5:-3.5) : 0;
 
       g.save();
-      g.translate(glitchBurst,hover);
+      g.translate(glitchX, hover);
 
-      // 지면 그림자 + 데이터 균열
-      g.fillStyle='rgba(0,0,0,.60)';
-      g.beginPath();g.ellipse(0,26-hover,30,8,0,0,Math.PI*2);g.fill();
-      g.strokeStyle='rgba(0,255,112,.32)';g.lineWidth=1.2;
-      for(let i=0;i<4;i++){g.beginPath();g.moveTo(-8+i*5,22);g.lineTo(-17+i*9,29);g.stroke();}
-
-      // 뒤쪽 찢어진 데이터 망토: 검은 날개처럼 보이는 실루엣
+      // 바닥: 검은 원 + 색이 바뀌는 데이터 링
+      g.fillStyle='rgba(0,0,0,.62)';
+      g.beginPath();g.ellipse(0,28,31,8,0,0,Math.PI*2);g.fill();
       g.save();
-      g.globalAlpha=.92;
-      const cloak=g.createLinearGradient(0,-12,0,30);
-      cloak.addColorStop(0,'#09040a');cloak.addColorStop(.5,'#010102');cloak.addColorStop(1,'rgba(0,0,0,.15)');
-      g.fillStyle=cloak;
-      g.strokeStyle='rgba(0,255,112,.23)';
-      g.lineWidth=1;
-      g.beginPath();
-      g.moveTo(-10,-12);g.lineTo(-31,-3);g.lineTo(-22,4);g.lineTo(-36,12);g.lineTo(-18,13);g.lineTo(-28,27);g.lineTo(-5,18);
-      g.lineTo(0,13);
-      g.lineTo(6,19);g.lineTo(29,27);g.lineTo(19,13);g.lineTo(36,10);g.lineTo(22,3);g.lineTo(31,-5);g.lineTo(10,-12);
-      g.closePath();g.fill();g.stroke();
+      g.translate(0,25);
+      g.scale(1,.38);
+      g.rotate(t*.45);
+      g.strokeStyle=`hsla(${hue},100%,72%,.62)`;
+      g.lineWidth=2;
+      g.setLineDash([11,5,2,7]);
+      g.lineDashOffset=t*24;
+      g.beginPath();g.arc(0,0,33,0,Math.PI*2);g.stroke();
+      g.setLineDash([]);
       g.restore();
 
-      // 어깨에 떠 있는 두 개의 ERROR 핀
-      for(const side of [-1,1]){
-        const sx=side*(22+Math.sin(t*4+side)*1.5),sy=-8;
-        g.save();g.translate(sx,sy);g.rotate(side*(.28+Math.sin(t*3)*.05));
-        g.shadowColor=side<0?'#00ff70':'#ff1c5c';g.shadowBlur=12*quality;
-        g.fillStyle='#030304';g.strokeStyle=side<0?'#00ff70':'#ff346e';g.lineWidth=1.4;
-        g.beginPath();g.moveTo(-8,-5);g.lineTo(3,-8);g.lineTo(11,0);g.lineTo(3,8);g.lineTo(-8,5);g.lineTo(-3,0);g.closePath();g.fill();g.stroke();
+      // 하단 유리/크롬 케이스
+      g.save();
+      const shell = g.createLinearGradient(-25,-2,27,31);
+      shell.addColorStop(0,'rgba(255,255,255,.78)');
+      shell.addColorStop(.17,`hsla(${hue2},100%,86%,.64)`);
+      shell.addColorStop(.42,'rgba(20,23,33,.85)');
+      shell.addColorStop(.72,`hsla(${hue},100%,80%,.68)`);
+      shell.addColorStop(1,'rgba(255,255,255,.82)');
+      g.fillStyle=shell;
+      g.strokeStyle='rgba(255,255,255,.82)';
+      g.lineWidth=1.6;
+      g.beginPath();
+      g.moveTo(-21,23);g.lineTo(-17,-4);g.lineTo(-10,-11);g.lineTo(10,-11);g.lineTo(17,-4);g.lineTo(22,23);
+      g.quadraticCurveTo(0,34,-21,23);g.closePath();g.fill();g.stroke();
+
+      // 내부 검은 프레임
+      g.strokeStyle='rgba(0,0,0,.82)';
+      g.lineWidth=4;
+      g.beginPath();g.moveTo(-12,20);g.lineTo(-10,-3);g.lineTo(0,-9);g.lineTo(11,-3);g.lineTo(13,20);g.stroke();
+
+      // 작은 내부 4각 코어
+      g.save();
+      g.translate(0,7);
+      g.rotate(Math.sin(t*1.8)*.08);
+      g.shadowBlur=14;g.shadowColor=`hsl(${hue},100%,72%)`;
+      g.fillStyle='#030305';
+      g.beginPath();g.moveTo(0,-10);g.lineTo(7,0);g.lineTo(0,10);g.lineTo(-7,0);g.closePath();g.fill();
+      g.strokeStyle=`hsla(${hue},100%,82%,.92)`;g.lineWidth=1.6;g.stroke();
+      g.restore();
+
+      // 유리 케이스의 세로 글리치 반사
+      for(let i=0;i<6;i++){
+        const x=-15+i*6;
+        g.fillStyle=i%2?`hsla(${(hue+i*30)%360},100%,80%,.22)`:'rgba(255,255,255,.18)';
+        g.fillRect(x,-3,1.3,23-(i%3)*4);
+      }
+      g.restore();
+
+      // 위의 거대한 4각 별 — 참고 이미지 핵심 실루엣
+      g.save();
+      g.translate(0,-38);
+      const starScale = 1 + attack*.10 + Math.sin(t*5.1+seed)*.025;
+
+      // 색 분리 잔상
+      for (const ghost of [
+        {x:-3.2,y:1.2,h:hue,alpha:.28},
+        {x:3.2,y:-1.0,h:hue2,alpha:.25}
+      ]) {
+        g.save();
+        g.translate(ghost.x,ghost.y);
+        g.scale(starScale,starScale);
+        g.fillStyle=`hsla(${ghost.h},100%,68%,${ghost.alpha})`;
+        g.beginPath();
+        g.moveTo(0,-35);g.quadraticCurveTo(7,-8,35,0);g.quadraticCurveTo(7,8,0,35);g.quadraticCurveTo(-7,8,-35,0);g.quadraticCurveTo(-7,-8,0,-35);g.fill();
         g.restore();
       }
 
-      // 몸통: 날카로운 흑색 외골격
-      const armor=g.createLinearGradient(-18,-14,18,18);
-      armor.addColorStop(0,'#111217');armor.addColorStop(.28,'#030405');armor.addColorStop(.62,'#000');armor.addColorStop(1,'#171018');
-      g.fillStyle=armor;g.strokeStyle='rgba(133,255,175,.62)';g.lineWidth=1.3;
+      // 흰빛 외곽
+      g.save();
+      g.scale(starScale,starScale);
+      g.shadowColor='rgba(255,255,255,.96)';
+      g.shadowBlur=24 + attack*14;
+      const glow=g.createRadialGradient(0,0,1,0,0,38);
+      glow.addColorStop(0,'rgba(255,255,255,1)');
+      glow.addColorStop(.36,'rgba(255,255,255,.94)');
+      glow.addColorStop(.72,`hsla(${hue},100%,92%,.58)`);
+      glow.addColorStop(1,'rgba(255,255,255,0)');
+      g.fillStyle=glow;
       g.beginPath();
-      g.moveTo(-17,-13);g.lineTo(-8,-19);g.lineTo(9,-18);g.lineTo(18,-10);g.lineTo(15,14);g.lineTo(7,22);g.lineTo(-8,22);g.lineTo(-16,13);g.closePath();
-      g.fill();g.stroke();
+      g.moveTo(0,-38);g.quadraticCurveTo(8,-9,38,0);g.quadraticCurveTo(8,9,0,38);g.quadraticCurveTo(-8,9,-38,0);g.quadraticCurveTo(-8,-9,0,-38);g.fill();
 
-      // 가슴의 X-shaped corruption core
-      g.save();g.globalCompositeOperation='lighter';
-      g.shadowBlur=18+attack*12;g.shadowColor='#00ff70';
-      g.strokeStyle='#6aff9e';g.lineWidth=3.2;
-      g.beginPath();g.moveTo(-8,-8);g.lineTo(8,10);g.moveTo(8,-8);g.lineTo(-8,10);g.stroke();
-      g.shadowColor='#ff1c5c';g.shadowBlur=12;
-      g.strokeStyle='rgba(255,34,99,.80)';g.lineWidth=1.4;
-      g.beginPath();g.moveTo(-10,1);g.lineTo(10,1);g.stroke();
-      g.restore();
-
-      // 머리: 뿔 달린 비인간적 바이저
-      g.save();g.translate(0,-27);g.rotate(Math.sin(t*4.8+seed)*.025);
-      g.fillStyle='#020203';g.strokeStyle='rgba(0,255,112,.72)';g.lineWidth=1.4;
-      g.beginPath();
-      g.moveTo(-15,-6);g.lineTo(-8,-14);g.lineTo(0,-17);g.lineTo(9,-14);g.lineTo(16,-5);
-      g.lineTo(12,10);g.lineTo(0,14);g.lineTo(-12,10);g.closePath();g.fill();g.stroke();
-      // 길게 솟은 데이터 뿔
-      g.fillStyle='#050306';
-      g.beginPath();g.moveTo(-10,-12);g.lineTo(-22,-29);g.lineTo(-6,-18);g.closePath();g.fill();g.stroke();
-      g.beginPath();g.moveTo(10,-12);g.lineTo(22,-29);g.lineTo(6,-18);g.closePath();g.fill();g.stroke();
-      // 비대칭 듀얼 바이저
-      g.shadowBlur=13;g.shadowColor='#00ff70';g.fillStyle='#00ff70';g.fillRect(-10,-3,13,2.8);
-      g.shadowColor='#ff1c5c';g.fillStyle='#ff1c5c';g.fillRect(5,-3,6,2.8);
+      // 검은 중앙 별/공허
       g.shadowBlur=0;
-      // 턱 부분의 404 이빨
-      g.fillStyle='rgba(190,255,210,.75)';
-      for(let i=0;i<4;i++){g.beginPath();g.moveTo(-6+i*4,6);g.lineTo(-4+i*4,10);g.lineTo(-2+i*4,6);g.closePath();g.fill();}
+      g.fillStyle='#000';
+      g.beginPath();
+      g.moveTo(0,-17);g.quadraticCurveTo(4,-4,18,0);g.quadraticCurveTo(4,4,0,18);g.quadraticCurveTo(-4,4,-18,0);g.quadraticCurveTo(-4,-4,0,-17);g.fill();
+
+      // 중심의 아주 얇은 색상 테두리
+      g.strokeStyle=`hsla(${hue},100%,76%,.66)`;
+      g.lineWidth=1.1;
+      g.stroke();
       g.restore();
 
-      // 팔: 길고 날카로운 장갑 팔. 오른팔은 무기 방향으로 뻗음.
-      for(const side of [-1,1]){
-        const reach=side>0?attack*4:0;
-        const ex=side*(24+reach), ey=4+(side<0?4:-2);
-        g.strokeStyle='#09090c';g.lineWidth=9;g.lineCap='round';
-        g.beginPath();g.moveTo(side*14,-7);g.lineTo(ex,ey);g.stroke();
-        g.strokeStyle=side<0?'rgba(0,255,112,.62)':'rgba(255,34,99,.58)';g.lineWidth=1.6;
-        g.beginPath();g.moveTo(side*15,-8);g.lineTo(ex,ey);g.stroke();
-        g.fillStyle='#020203';g.beginPath();g.arc(ex,ey,5.2,0,Math.PI*2);g.fill();
+      // 순간적으로 픽셀 조각이 끊기는 글리치
+      if (quality>.55) {
+        const pixels = quality>.8 ? 13 : 7;
+        for(let i=0;i<pixels;i++){
+          const a=seed+i*1.77+t*(1.2+(i%3)*.18);
+          const rr=31+(i%5)*6;
+          const px=Math.cos(a)*rr, py=Math.sin(a)*rr*.75;
+          g.fillStyle=i%4===0?'rgba(0,0,0,.9)':`hsla(${(hue+i*41)%360},100%,72%,${.38+(i%3)*.1})`;
+          g.fillRect(px,py,2+(i%3)*2,1.5+(i%2)*2);
+        }
       }
+      g.restore();
 
-      // 하체는 다리가 아니라 픽셀 연기처럼 붕괴
-      for(let i=0;i<8;i++){
-        const side=i%2?-1:1;
-        const x=side*(4+(i%4)*4)+Math.sin(t*7+i)*2;
-        const y=17+(i%4)*5;
-        g.fillStyle=i%5===0?'rgba(255,28,92,.55)':`rgba(0,255,112,${.18+(i%3)*.10})`;
-        g.fillRect(x,y,3+(i%2)*2,5+(i%3)*3);
-      }
-
-      // 순간 글리치 복제 실루엣
-      if(quality>.65 && Math.sin(t*18+seed)>.72){
-        g.globalAlpha=.20;
-        g.strokeStyle=Math.sin(t*41)>0?'#00ff70':'#ff1c5c';
-        g.lineWidth=2;
-        g.strokeRect(-18+(Math.sin(t*41)>0?5:-5),-45,36,66);
-      }
+      // 큰 별 주변 사각 프레임 조각
+      g.save();
+      g.translate(0,-38);
+      g.rotate(t*.22);
+      g.strokeStyle=`hsla(${(hue+70)%360},100%,88%,.34)`;
+      g.lineWidth=1;
+      g.setLineDash([19,10,4,13]);
+      g.beginPath();g.rect(-45,-45,90,90);g.stroke();
+      g.setLineDash([]);
+      g.restore();
 
       g.restore();
     }
 
     function drawErrorEntityWeaponArt(g, unit, time, attack = 0) {
       const t=time*.001;
-      const pulse=.72+.28*Math.sin(t*10.5);
+      const seed=Number(unit.animationOffset||0)*5.91+3.7;
+      const hue=(t*125+seed*47)%360;
+      const hue2=(hue+120)%360;
+
+      // ERROR는 총을 들지 않고 본체 주위의 글리치 포트에서 탄환을 방출합니다.
       g.save();
-
-      // 손에 연결된 'NULL RAIL' 글리치 캐논
-      g.translate(-7,0);
-      g.shadowColor='#00ff70';g.shadowBlur=13+attack*16;
-      const gun=g.createLinearGradient(-10,-7,72,8);
-      gun.addColorStop(0,'#151118');gun.addColorStop(.25,'#030304');gun.addColorStop(.62,'#090a0c');gun.addColorStop(1,'#010102');
-      g.fillStyle=gun;g.strokeStyle='rgba(0,255,112,.82)';g.lineWidth=1.3;
-      g.beginPath();
-      g.moveTo(-10,-6);g.lineTo(15,-8);g.lineTo(27,-13);g.lineTo(57,-9);g.lineTo(70,-3);
-      g.lineTo(78,0);g.lineTo(69,4);g.lineTo(56,9);g.lineTo(26,11);g.lineTo(14,6);g.lineTo(-10,5);g.closePath();
-      g.fill();g.stroke();
-
-      // 붉은 경고 레일
-      g.shadowColor='#ff1c5c';g.shadowBlur=9;
-      g.strokeStyle='rgba(255,35,99,.92)';g.lineWidth=2.4;
-      g.beginPath();g.moveTo(9,-5);g.lineTo(55,-5);g.lineTo(69,-1);g.stroke();
-      g.shadowBlur=0;
-
-      // 상부 데이터 코어
-      g.fillStyle='#020202';g.strokeStyle='rgba(180,255,205,.72)';
-      g.beginPath();g.roundRect(17,-17,28,8,2);g.fill();g.stroke();
-      g.font='900 6px monospace';g.textAlign='center';g.fillStyle='#70ffa2';
-      g.fillText(Math.sin(t*12)>0?'NULL':'404',31,-11);
-
-      // 손잡이
-      g.fillStyle='#080509';g.beginPath();g.moveTo(6,5);g.lineTo(22,6);g.lineTo(17,19);g.lineTo(7,18);g.closePath();g.fill();
-      g.strokeStyle='rgba(255,42,101,.45)';g.stroke();
-
-      // 총구: 회전하는 육각 포털
-      g.translate(79,0);
+      g.translate(18, -18);
       g.globalCompositeOperation='lighter';
-      for(let ring=0;ring<3;ring++){
-        g.save();g.rotate(t*(ring%2?1.7:-1.25)+ring*.6);
-        g.strokeStyle=ring===1?'rgba(255,37,101,.80)':`rgba(0,255,112,${.72-ring*.12})`;
-        g.lineWidth=2.5-ring*.45;
-        g.beginPath();
-        const r=7+ring*4+attack*2;
-        for(let i=0;i<=6;i++){const a=i*Math.PI/3,x=Math.cos(a)*r,y=Math.sin(a)*r;if(i===0)g.moveTo(x,y);else g.lineTo(x,y);}
-        g.stroke();g.restore();
-      }
-      g.shadowBlur=20;g.shadowColor='#00ff70';g.fillStyle=`rgba(150,255,185,${.50+.28*attack})`;
-      g.beginPath();g.arc(0,0,3.5+attack*2.5,0,Math.PI*2);g.fill();
-      g.globalCompositeOperation='source-over';
 
-      // 총구 주위 검은 파편
-      for(let i=0;i<6;i++){
-        const a=t*2.4+i*Math.PI/3,rr=15+(i%2)*5;
-        g.save();g.translate(Math.cos(a)*rr,Math.sin(a)*rr);g.rotate(a);
-        g.fillStyle='#000';g.strokeStyle=i%2?'#ff1c5c':'#00ff70';g.lineWidth=.7;
-        g.fillRect(-3,-1.5,7+(i%3)*2,3);g.strokeRect(-3,-1.5,7+(i%3)*2,3);g.restore();
+      for(let ring=0;ring<2;ring++){
+        g.save();
+        g.rotate(t*(ring?1.9:-1.4)+ring*.8);
+        g.strokeStyle=`hsla(${ring?hue2:hue},100%,78%,${.45+attack*.2})`;
+        g.lineWidth=1.5+ring*.6;
+        g.setLineDash(ring?[5,5]:[12,4,2,5]);
+        g.lineDashOffset=t*(ring?30:-24);
+        g.beginPath();g.arc(0,0,12+ring*6+attack*2,0,Math.PI*2);g.stroke();
+        g.setLineDash([]);
+        g.restore();
+      }
+
+      const core=g.createRadialGradient(0,0,1,0,0,11+attack*4);
+      core.addColorStop(0,'#fff');
+      core.addColorStop(.24,`hsl(${hue},100%,82%)`);
+      core.addColorStop(.62,`hsla(${hue2},100%,60%,.42)`);
+      core.addColorStop(1,'rgba(255,255,255,0)');
+      g.fillStyle=core;g.beginPath();g.arc(0,0,11+attack*4,0,Math.PI*2);g.fill();
+
+      g.globalCompositeOperation='source-over';
+      g.fillStyle='#000';
+      g.beginPath();g.moveTo(0,-5);g.lineTo(5,0);g.lineTo(0,5);g.lineTo(-5,0);g.closePath();g.fill();
+
+      // 공격할 때 전방으로 짧게 찢어지는 데이터 선
+      if(attack>.05){
+        g.strokeStyle=`hsla(${hue},100%,82%,${.45+attack*.45})`;
+        g.lineWidth=2.2;
+        for(let i=0;i<4;i++){
+          g.beginPath();
+          g.moveTo(12+i*3,(i-1.5)*2.5);
+          g.lineTo(29+i*5,(i-1.5)*4);
+          g.stroke();
+        }
       }
       g.restore();
     }
@@ -20924,7 +20951,7 @@ function requestGachaDraw(count) {
       const data = UNIT_DATA[unit.unitId];
       if (unit.unitId === 'eclipse') drawEclipseGalaxyAuraArt(ctx, time, unit, 1);
       if (unit.unitId === 'eden') drawEdenAuraArt(ctx, time, unit, 1);
-      if (unit.unitId === 'errorEntity') drawErrorEntityAuraArt(ctx, time, unit, 1);
+      if (unit.unitId === 'errorEntity' && !unit._shadowCloneVisual) drawErrorEntityAuraArt(ctx, time, unit, 1);
       const auraPulse = .36 + Math.sin(time * .005 + unit.animationOffset) * .10;
       ctx.beginPath();
       ctx.arc(0, 2, 31, 0, Math.PI * 2);
@@ -21090,6 +21117,20 @@ function requestGachaDraw(count) {
       ctx.restore();
     }
 
+
+    function shadowCloneVisualOffset(unit, angle) {
+      // ERROR는 대형 별/프리즘 외형이므로 분신을 멀리 이동시키면
+      // 다른 위치에 설치된 유닛처럼 보입니다. 본체 바로 뒤에 겹쳐 보이도록 고정합니다.
+      if (String(unit?.unitId || '') === 'errorEntity') {
+        return { x: -11, y: 9, scale: .94 };
+      }
+      return {
+        x: -Math.cos(angle) * 27,
+        y: -Math.sin(angle) * 27 + 8,
+        scale: .97
+      };
+    }
+
     function drawPlacedUnit(unit, time) {
       ctx.save();
       const renderPos = unit.unitId === 'cherrySamurai' ? getSamuraiRenderPosition(unit, time) : { x: unit.x, y: unit.y };
@@ -21099,9 +21140,10 @@ function requestGachaDraw(count) {
       if (placedHasTrait(unit,'shadowClone')) {
         const a=Number.isFinite(Number(unit.shadowCloneAngle))?Number(unit.shadowCloneAngle):Number(unit.angle||0);
         const cloneUnit={...unit,angle:a,attackAnimation:Number(unit.shadowCloneAttackAnimation||0),attackMode:unit.shadowCloneAttackMode||unit.attackMode,_shadowCloneVisual:true};
+        const cloneOffset = shadowCloneVisualOffset(unit, a);
         ctx.save();
-        ctx.translate(-Math.cos(a)*27,-Math.sin(a)*27+8);
-        ctx.scale(.97,.97);
+        ctx.translate(cloneOffset.x, cloneOffset.y);
+        ctx.scale(cloneOffset.scale, cloneOffset.scale);
         ctx.globalAlpha=.48+Math.min(.18,Number(unit.shadowClonePulse||0)*.35);
         ctx.filter='grayscale(1) brightness(.08) contrast(2.4)';
         drawDetailedUnitSprite(cloneUnit,time);
@@ -26394,7 +26436,7 @@ function requestGachaDraw(count) {
       drawEclipseGalaxyAuraArt(mpCtx, time, unit, mpHighLoadFrame ? .72 : 1);
     }
     if (unit.unitId === 'eden') drawEdenAuraArt(mpCtx,time,unit,mpHighLoadFrame?.62:.9);
-    if (unit.unitId === 'errorEntity') drawErrorEntityAuraArt(mpCtx,time,unit,mpHighLoadFrame?.55:.86);
+    if (unit.unitId === 'errorEntity' && !unit._shadowCloneVisual) drawErrorEntityAuraArt(mpCtx,time,unit,mpHighLoadFrame?.55:.86);
 
     // 소유 플레이어를 알아보기 쉬운 외곽 링
     mpCtx.beginPath();
@@ -26415,7 +26457,7 @@ function requestGachaDraw(count) {
     if(placedHasTrait(unit,'shadowClone')){
       const a=Number.isFinite(Number(unit.shadowCloneAngle))?Number(unit.shadowCloneAngle):Number(unit.angle||0);
       const cloneUnit={...unit,angle:a,attackAnimation:Number(unit.shadowCloneAttackAnimation||0),attackMode:unit.shadowCloneAttackMode||unit.attackMode,_shadowCloneVisual:true};
-      mpCtx.save();mpCtx.translate(-Math.cos(a)*27,-Math.sin(a)*27+8);mpCtx.scale(.97,.97);mpCtx.globalAlpha=.46+Math.min(.18,Number(unit.shadowClonePulse||0)*.35);mpCtx.filter='grayscale(1) brightness(.08) contrast(2.4)';mpDetailStandingUnitBody(cloneUnit,time);mpDetailAimedUnitWeapon(cloneUnit,data,time);mpCtx.restore();
+      const cloneOffset=shadowCloneVisualOffset(unit,a);mpCtx.save();mpCtx.translate(cloneOffset.x,cloneOffset.y);mpCtx.scale(cloneOffset.scale,cloneOffset.scale);mpCtx.globalAlpha=.46+Math.min(.18,Number(unit.shadowClonePulse||0)*.35);mpCtx.filter='grayscale(1) brightness(.08) contrast(2.4)';mpDetailStandingUnitBody(cloneUnit,time);mpDetailAimedUnitWeapon(cloneUnit,data,time);mpCtx.restore();
     }
     mpDetailStandingUnitBody(unit, time);
     mpDetailAimedUnitWeapon(unit, data, time);
@@ -27185,6 +27227,60 @@ function requestGachaDraw(count) {
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const normalizeTradeUsername = value => String(value || '').trim().toLowerCase();
 
+  const DICE_OFFER_PREFIX = 'dice:';
+  const diceOfferKey = rarityKey => `${DICE_OFFER_PREFIX}${rarityKey}`;
+  const isDiceOfferKey = key => String(key || '').startsWith(DICE_OFFER_PREFIX);
+  const diceKeyFromOffer = key => isDiceOfferKey(key) ? String(key).slice(DICE_OFFER_PREFIX.length) : '';
+
+  function inventoryOwnedUnitIds() {
+    ensurePlayerData();
+    return Object.keys(player?.ownedUnits || {}).filter(id => {
+      const unit = UNIT_DATA[id];
+      const copies = Math.max(0, Math.floor(Number(player.ownedUnits?.[id]?.copies || 0)));
+      return unit && copies > 0;
+    });
+  }
+
+  function isTradeableUnitId(unitId) {
+    const unit = UNIT_DATA[unitId];
+    return Boolean(unit && unit.rarityKey !== 'admin' && !forbiddenUnitIds.has(unitId));
+  }
+
+  function maxTradeDraftAmount(itemKey) {
+    ensurePlayerData();
+    if (isDiceOfferKey(itemKey)) {
+      const rarityKey = diceKeyFromOffer(itemKey);
+      if (!DICE_DATA[rarityKey]) return 0;
+      return Math.min(999, Math.max(0, Math.floor(Number(player.diceInventory?.[rarityKey] || 0))));
+    }
+    if (!isTradeableUnitId(itemKey)) return 0;
+    return Math.min(999, Math.max(0, Math.floor(Number(player.ownedUnits?.[itemKey]?.copies || 0))));
+  }
+
+  function tradeOfferMeta(itemKey) {
+    if (isDiceOfferKey(itemKey)) {
+      const rarityKey = diceKeyFromOffer(itemKey);
+      const dice = DICE_DATA[rarityKey];
+      return {
+        kind: 'dice',
+        icon: '🎲',
+        name: dice?.name || rarityKey,
+        sub: dice ? `${dice.rarity} 주사위` : '주사위',
+        rarityClass: '',
+        dice
+      };
+    }
+    const unit = UNIT_DATA[itemKey];
+    return {
+      kind: 'unit',
+      icon: unit?.icon || '❔',
+      name: unit?.name || itemKey,
+      sub: unit?.rarity || '',
+      rarityClass: unit?.rarityClass || '',
+      unit
+    };
+  }
+
   function setTradeStatus(text, type = '') {
     if (!tradeStatus) return;
     tradeStatus.textContent = text || '';
@@ -27277,12 +27373,7 @@ function requestGachaDraw(count) {
   }
 
   function tradeableOwnedIds() {
-    ensurePlayerData();
-    return Object.keys(player?.ownedUnits || {}).filter(id => {
-      const unit = UNIT_DATA[id];
-      const copies = Math.max(0, Math.floor(Number(player.ownedUnits?.[id]?.copies || 0)));
-      return unit && copies > 0 && unit.rarityKey !== 'admin' && !forbiddenUnitIds.has(id);
-    });
+    return inventoryOwnedUnitIds().filter(isTradeableUnitId);
   }
 
   function offerCount(offer) {
@@ -27291,13 +27382,16 @@ function requestGachaDraw(count) {
 
   function offerHtml(offer) {
     const entries = Object.entries(offer || {}).filter(([, count]) => Number(count) > 0);
-    if (!entries.length) return '<div class="trade-empty">아직 제안한 유닛이 없습니다.</div>';
-    return entries.map(([unitId, count]) => {
-      const unit = UNIT_DATA[unitId];
-      const name = unit?.name || unitId;
-      const icon = unit?.icon || '❔';
-      const rarityClass = unit?.rarityClass || '';
-      return `<div class="trade-offer-chip"><span>${icon} ${esc(name)} <small class="${rarityClass}">${esc(unit?.rarity || '')}</small></span><strong>×${Math.max(1,Math.floor(Number(count||1)))}</strong></div>`;
+    if (!entries.length) return '<div class="trade-empty">아직 제안한 아이템이 없습니다.</div>';
+    return entries.map(([itemKey, count]) => {
+      const meta = tradeOfferMeta(itemKey);
+      const diceStyle = meta.dice
+        ? ` style="--trade-dice-color:${meta.dice.color};--trade-dice-text:${meta.dice.textColor};--trade-dice-glow:${meta.dice.glow}"`
+        : '';
+      const icon = meta.kind === 'dice'
+        ? `<span class="trade-dice-icon"${diceStyle}>🎲</span>`
+        : meta.icon;
+      return `<div class="trade-offer-chip ${meta.kind === 'dice' ? 'trade-dice-offer' : ''}"><span>${icon} ${esc(meta.name)} <small class="${meta.rarityClass}">${esc(meta.sub)}</small></span><strong>×${Math.max(1,Math.floor(Number(count||1)))}</strong></div>`;
     }).join('');
   }
 
@@ -27305,14 +27399,18 @@ function requestGachaDraw(count) {
     if (!myOfferPreview) return;
     const entries = Object.entries(offerDraft || {}).filter(([, count]) => Number(count) > 0);
     if (!entries.length) {
-      myOfferPreview.innerHTML = '<div class="trade-empty">＋ 버튼을 눌러 거래할 유닛을 추가하세요.</div>';
+      myOfferPreview.innerHTML = '<div class="trade-empty">＋ 버튼을 눌러 내 인벤토리에서 유닛이나 주사위를 추가하세요.</div>';
       return;
     }
-    myOfferPreview.innerHTML = entries.map(([unitId, count]) => {
-      const unit = UNIT_DATA[unitId];
-      const icon = unit?.icon || '❔';
-      const name = unit?.name || unitId;
-      return `<div class="trade-offer-chip"><span>${icon} ${esc(name)} <small class="${unit?.rarityClass || ''}">${esc(unit?.rarity || '')}</small></span><strong>×${Math.max(1,Math.floor(Number(count||1)))}</strong><button class="trade-offer-remove" type="button" data-trade-remove-offer="${esc(unitId)}" aria-label="제안에서 제거">×</button></div>`;
+    myOfferPreview.innerHTML = entries.map(([itemKey, count]) => {
+      const meta = tradeOfferMeta(itemKey);
+      const diceStyle = meta.dice
+        ? ` style="--trade-dice-color:${meta.dice.color};--trade-dice-text:${meta.dice.textColor};--trade-dice-glow:${meta.dice.glow}"`
+        : '';
+      const icon = meta.kind === 'dice'
+        ? `<span class="trade-dice-icon"${diceStyle}>🎲</span>`
+        : meta.icon;
+      return `<div class="trade-offer-chip ${meta.kind === 'dice' ? 'trade-dice-offer' : ''}"><span>${icon} ${esc(meta.name)} <small class="${meta.rarityClass}">${esc(meta.sub)}</small></span><strong>×${Math.max(1,Math.floor(Number(count||1)))}</strong><button class="trade-offer-remove" type="button" data-trade-remove-offer="${esc(itemKey)}" aria-label="제안에서 제거">×</button></div>`;
     }).join('');
     myOfferPreview.querySelectorAll('[data-trade-remove-offer]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -27395,27 +27493,49 @@ function requestGachaDraw(count) {
 
   function renderMyTradeUnits(row) {
     if (!myUnitGrid) return;
-    const ids = tradeableOwnedIds();
-    if (!ids.length) {
-      myUnitGrid.innerHTML = '<div class="trade-empty">거래 가능한 유닛이 없습니다.</div>';
-      return;
-    }
-    myUnitGrid.innerHTML = ids.map(unitId => {
-      const unit = UNIT_DATA[unitId];
-      const max = Math.max(0, Math.floor(Number(player.ownedUnits?.[unitId]?.copies || 0)));
-      const value = Math.min(max, Math.max(0, Math.floor(Number(offerDraft[unitId] || 0))));
-      return `<div class="trade-unit-item" data-trade-unit="${unitId}"><span class="trade-unit-icon">${unit.icon}</span><div class="trade-unit-info"><strong>${esc(unit.name)}</strong><small class="${unit.rarityClass}">${esc(unit.rarity)} · 보유 ×${max}</small></div><div class="trade-stepper"><button type="button" data-trade-minus="${unitId}" ${value<=0?'disabled':''}>−</button><output data-trade-count="${unitId}">${value}</output><button type="button" data-trade-plus="${unitId}" ${value>=max?'disabled':''}>＋</button></div><button class="secondary trade-quick-add" type="button" data-trade-quick-add="${unitId}" ${value>=max?'disabled':''}>＋ 1개 추가</button></div>`;
+    ensurePlayerData();
+
+    const unitIds = inventoryOwnedUnitIds();
+    const unitHtml = unitIds.length
+      ? unitIds.map(unitId => {
+          const unit = UNIT_DATA[unitId];
+          const max = maxTradeDraftAmount(unitId);
+          const owned = Math.max(0, Math.floor(Number(player.ownedUnits?.[unitId]?.copies || 0)));
+          const value = Math.min(max, Math.max(0, Math.floor(Number(offerDraft[unitId] || 0))));
+          const unavailable = max <= 0;
+          const reason = !isTradeableUnitId(unitId) ? '거래 불가' : `보유 ×${owned}`;
+          return `<div class="trade-unit-item ${unavailable ? 'trade-unavailable' : ''}" data-trade-unit="${unitId}"><span class="trade-unit-icon">${unit.icon}</span><div class="trade-unit-info"><strong>${esc(unit.name)}</strong><small class="${unit.rarityClass}">${esc(unit.rarity)} · ${reason}</small></div><div class="trade-stepper"><button type="button" data-trade-minus="${unitId}" ${value<=0?'disabled':''}>−</button><output data-trade-count="${unitId}">${value}</output><button type="button" data-trade-plus="${unitId}" ${value>=max?'disabled':''}>＋</button></div><button class="secondary trade-quick-add" type="button" data-trade-quick-add="${unitId}" ${value>=max?'disabled':''}>${unavailable?'거래할 수 없는 유닛':'＋ 1개 추가'}</button></div>`;
+        }).join('')
+      : '<div class="trade-empty">보유 유닛이 없습니다.</div>';
+
+    const diceHtml = Object.values(DICE_DATA).map(dice => {
+      const itemKey = diceOfferKey(dice.key);
+      const owned = Math.max(0, Math.floor(Number(player.diceInventory?.[dice.key] || 0)));
+      const max = maxTradeDraftAmount(itemKey);
+      const value = Math.min(max, Math.max(0, Math.floor(Number(offerDraft[itemKey] || 0))));
+      return `<div class="trade-dice-item ${owned<=0?'trade-unavailable':''}" style="--trade-dice-color:${dice.color};--trade-dice-text:${dice.textColor};--trade-dice-glow:${dice.glow}"><span class="trade-dice-icon">🎲</span><div class="trade-unit-info"><strong>${esc(dice.name)}</strong><small>${esc(dice.rarity)} · 보유 ×${owned}</small></div><div class="trade-stepper"><button type="button" data-trade-minus="${esc(itemKey)}" ${value<=0?'disabled':''}>−</button><output data-trade-count="${esc(itemKey)}">${value}</output><button type="button" data-trade-plus="${esc(itemKey)}" ${value>=max?'disabled':''}>＋</button></div><button class="secondary trade-quick-add" type="button" data-trade-quick-add="${esc(itemKey)}" ${value>=max?'disabled':''}>${owned>0?'＋ 1개 추가':'보유 없음'}</button></div>`;
     }).join('');
+
+    myUnitGrid.innerHTML = `
+      <section class="trade-inventory-section">
+        <div class="trade-inventory-title"><span>🧍 유닛</span><small>보유 유닛 전체</small></div>
+        <div class="trade-unit-grid-inner">${unitHtml}</div>
+      </section>
+      <section class="trade-inventory-section">
+        <div class="trade-inventory-title"><span>🎲 주사위</span><small>등급별 주사위 전체</small></div>
+        <div class="trade-dice-grid">${diceHtml}</div>
+      </section>
+    `;
 
     myUnitGrid.querySelectorAll('[data-trade-minus]').forEach(btn => btn.addEventListener('click', () => changeDraft(btn.dataset.tradeMinus, -1, row)));
     myUnitGrid.querySelectorAll('[data-trade-plus]').forEach(btn => btn.addEventListener('click', () => changeDraft(btn.dataset.tradePlus, 1, row)));
     myUnitGrid.querySelectorAll('[data-trade-quick-add]').forEach(btn => btn.addEventListener('click', () => changeDraft(btn.dataset.tradeQuickAdd, 1, row)));
   }
 
-  function changeDraft(unitId, delta, row) {
-    const max = Math.max(0, Math.floor(Number(player.ownedUnits?.[unitId]?.copies || 0)));
-    const next = Math.min(max, Math.max(0, Math.floor(Number(offerDraft[unitId] || 0)) + delta));
-    if (next > 0) offerDraft[unitId] = next; else delete offerDraft[unitId];
+  function changeDraft(itemKey, delta, row) {
+    const max = maxTradeDraftAmount(itemKey);
+    const next = Math.min(max, Math.max(0, Math.floor(Number(offerDraft[itemKey] || 0)) + delta));
+    if (next > 0) offerDraft[itemKey] = next; else delete offerDraft[itemKey];
     renderMyTradeUnits(row);
     renderDraftOfferPreview();
   }
@@ -27454,7 +27574,7 @@ function requestGachaDraw(count) {
       waitingPanel.innerHTML = '<strong class="trade-complete">✅ 거래가 완료되었습니다.</strong><small>양쪽 인벤토리에 서버에서 동시에 반영되었습니다.</small>';
       return;
     } else if (waitingPanel) {
-      waitingPanel.innerHTML = '<strong>상대방의 수락을 기다리는 중입니다.</strong><small>요청이 수락되면 유닛을 선택할 수 있습니다.</small>';
+      waitingPanel.innerHTML = '<strong>상대방의 수락을 기다리는 중입니다.</strong><small>요청이 수락되면 유닛과 주사위를 선택할 수 있습니다.</small>';
     }
     if (pending) return;
 
@@ -27911,7 +28031,7 @@ function requestGachaDraw(count) {
         lastError=e;
         const msg=String(e?.message||'');
         if(!/function|schema cache|Could not find|PGRST202|does not exist/i.test(msg)) throw e;
-      }
+cd /workspaces/bidulgy.games.io      }
     }
     throw lastError||new Error('사용 가능한 서버 함수를 찾지 못했습니다.');
   }

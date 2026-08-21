@@ -27910,7 +27910,7 @@ function requestGachaDraw(count) {
       try{return await rpc(name,args);}catch(e){
         lastError=e;
         const msg=String(e?.message||'');
-        if(!/function|schema cache|Could not find|PGRST202|does not exist/i.test(msgcd /workspaces/bidulgy.games.io throw e;
+        if(!/function|schema cache|Could not find|PGRST202|does not exist/i.test(msg)) throw e;
       }
     }
     throw lastError||new Error('사용 가능한 서버 함수를 찾지 못했습니다.');

@@ -8040,22 +8040,83 @@ const LLAMA_MENU_SVG = `
  * 새 스테이지를 만들 때 이 객체에 배경 테마, 등장 적, 웨이브 생성 함수를 추가합니다.
  */
 
-const SCORPION_MENU_SVG = `<svg viewBox="0 0 320 205" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="사막 전갈">
+const SCORPION_MENU_SVG = `<svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="사막 전갈">
   <defs>
-    <linearGradient id="scBody" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#69331b"/><stop offset=".48" stop-color="#2c160f"/><stop offset="1" stop-color="#b85822"/>
+    <linearGradient id="scArm" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#df7b35"/><stop offset=".42" stop-color="#87401f"/><stop offset="1" stop-color="#27120c"/>
     </linearGradient>
-    <radialGradient id="scGlow"><stop offset="0" stop-color="#f9ff9f"/><stop offset=".3" stop-color="#7cff3b"/><stop offset="1" stop-color="#2d7f19" stop-opacity="0"/></radialGradient>
+    <linearGradient id="scVenom" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d7ff7c"/><stop offset=".42" stop-color="#718e38"/><stop offset="1" stop-color="#263118"/>
+    </linearGradient>
+    <radialGradient id="scShell" cx=".58" cy=".24" r=".88">
+      <stop offset="0" stop-color="#f19a4d"/><stop offset=".30" stop-color="#a94d23"/><stop offset=".72" stop-color="#542217"/><stop offset="1" stop-color="#1c0c09"/>
+    </radialGradient>
+    <radialGradient id="toxicGlow">
+      <stop offset="0" stop-color="#e2ff9b" stop-opacity=".95"/><stop offset=".28" stop-color="#79ff3e" stop-opacity=".45"/><stop offset="1" stop-color="#79ff3e" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softGlow"><feGaussianBlur stdDeviation="6"/></filter>
   </defs>
-  <ellipse cx="158" cy="179" rx="95" ry="14" fill="#4d2916" opacity=".3"/>
-  <path d="M100 115 C96 86 116 69 151 68 C190 67 214 87 208 117 C201 145 176 158 143 154 C115 151 103 137 100 115Z" fill="url(#scBody)" stroke="#160d09" stroke-width="5"/>
-  <path d="M119 80 L95 54 L78 58 L95 84" fill="#4a2315" stroke="#160d09" stroke-width="5"/>
-  <path d="M196 80 L220 54 L239 58 L219 87" fill="#4a2315" stroke="#160d09" stroke-width="5"/>
-  <path d="M102 106 L68 92 L50 101 L76 116 M104 126 L70 130 L54 145 L84 143 M202 105 L237 91 L257 102 L228 116 M201 128 L236 133 L251 149 L219 144" fill="none" stroke="#391b12" stroke-width="9" stroke-linecap="round"/>
-  <path d="M194 72 C230 57 245 34 230 19 C211 2 189 20 204 35 C215 47 240 36 248 23" fill="none" stroke="#542719" stroke-width="12" stroke-linecap="round"/>
-  <path d="M247 22 L264 11 L263 32 Z" fill="#78d54a" stroke="#18300e" stroke-width="3"/>
-  <circle cx="130" cy="105" r="5" fill="#f5e68a"/><circle cx="177" cy="105" r="5" fill="#f5e68a"/>
-  <circle cx="263" cy="20" r="25" fill="url(#scGlow)"/>
+
+  <ellipse cx="176" cy="190" rx="112" ry="17" fill="#4f2715" opacity=".28"/>
+
+  <!-- 독기 -->
+  <circle cx="97" cy="55" r="42" fill="url(#toxicGlow)" opacity=".35" filter="url(#softGlow)"/>
+
+  <!-- 꼬리 마디 -->
+  <g stroke="#1d0d08" stroke-width="4">
+    <ellipse cx="112" cy="112" rx="22" ry="15" transform="rotate(-22 112 112)" fill="url(#scVenom)"/>
+    <ellipse cx="88" cy="94" rx="21" ry="14" transform="rotate(-38 88 94)" fill="url(#scVenom)"/>
+    <ellipse cx="75" cy="69" rx="19" ry="13" transform="rotate(-66 75 69)" fill="url(#scVenom)"/>
+    <ellipse cx="80" cy="43" rx="17" ry="12" transform="rotate(-103 80 43)" fill="url(#scVenom)"/>
+    <ellipse cx="98" cy="27" rx="16" ry="11" transform="rotate(-142 98 27)" fill="url(#scVenom)"/>
+  </g>
+  <path d="M108 24 L137 15 L120 39 Z" fill="#b9ff64" stroke="#1b250f" stroke-width="3"/>
+
+  <!-- 다리 -->
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g stroke="#24100b" stroke-width="11">
+      <path d="M142 132 L105 152 L72 170"/><path d="M150 142 L116 171 L88 193"/>
+      <path d="M180 146 L158 177 L146 200"/><path d="M195 144 L196 177 L207 198"/>
+      <path d="M143 119 L105 108 L73 94"/><path d="M157 111 L126 86 L103 66"/>
+      <path d="M190 111 L211 84 L238 65"/><path d="M202 120 L235 104 L270 96"/>
+    </g>
+    <g stroke="#8e4422" stroke-width="6">
+      <path d="M142 132 L105 152 L72 170"/><path d="M150 142 L116 171 L88 193"/>
+      <path d="M180 146 L158 177 L146 200"/><path d="M195 144 L196 177 L207 198"/>
+      <path d="M143 119 L105 108 L73 94"/><path d="M157 111 L126 86 L103 66"/>
+      <path d="M190 111 L211 84 L238 65"/><path d="M202 120 L235 104 L270 96"/>
+    </g>
+  </g>
+
+  <!-- 몸통 -->
+  <ellipse cx="171" cy="128" rx="62" ry="42" fill="url(#scShell)" stroke="#1c0c08" stroke-width="5"/>
+  <ellipse cx="214" cy="122" rx="45" ry="35" fill="url(#scShell)" stroke="#1c0c08" stroke-width="5"/>
+  <g fill="none" stroke="#3a1710" stroke-width="3" opacity=".65">
+    <path d="M126 115 Q169 134 206 111"/><path d="M126 132 Q166 151 204 129"/>
+  </g>
+
+  <!-- 집게 팔 -->
+  <g stroke="#24100b" stroke-width="13" stroke-linecap="round">
+    <path d="M220 113 L258 83"/><path d="M221 133 L264 160"/>
+  </g>
+  <g stroke="#974622" stroke-width="7" stroke-linecap="round">
+    <path d="M220 113 L258 83"/><path d="M221 133 L264 160"/>
+  </g>
+
+  <!-- 집게 -->
+  <g fill="url(#scArm)" stroke="#1b0b07" stroke-width="4">
+    <path d="M258 83 C272 55 310 52 326 69 C301 67 286 76 273 92 C296 85 315 91 328 105 C296 109 272 104 258 83Z"/>
+    <path d="M264 160 C283 137 316 137 333 154 C309 151 292 159 278 172 C303 169 323 177 335 191 C302 195 278 185 264 160Z"/>
+  </g>
+
+  <!-- 눈 -->
+  <g fill="#ffe46d">
+    <circle cx="237" cy="112" r="4"/><circle cx="237" cy="132" r="4"/>
+    <circle cx="222" cy="106" r="3"/><circle cx="222" cy="138" r="3"/>
+  </g>
+  <g fill="#aaff56" opacity=".85">
+    <path d="M147 111 C164 101 183 103 198 114"/><path d="M142 132 C160 122 179 124 196 136"/>
+  </g>
 </svg>`;
 
 const STAGE_CONFIG = Object.freeze({
@@ -19045,26 +19106,309 @@ function requestGachaDraw(count) {
     }
 
     function drawCanvasScorpion(enemy,x,y,time){
-      const r=Number(enemy.radius||22), venom=enemy.variant==='venomScorpion'||enemy.type==='venomScorpionBoss';
-      const gait=Math.sin(time*.012+(enemy.wingPhase||0));
-      ctx.save();ctx.translate(x,y);ctx.rotate(Number(enemy.heading||0));
-      ctx.fillStyle='rgba(80,38,16,.26)';ctx.beginPath();ctx.ellipse(-3,r*.62,r*1.05,r*.25,0,0,Math.PI*2);ctx.fill();
-      // 다리
-      ctx.strokeStyle=venom?'#362414':'#442014';ctx.lineWidth=Math.max(3,r*.13);ctx.lineCap='round';
-      for(const side of [-1,1])for(let i=0;i<4;i++){const yy=side*(5+i*3.2);ctx.beginPath();ctx.moveTo(-4,yy);ctx.lineTo(-r*.72-i*1.4,yy+side*(7+Math.abs(gait)*2));ctx.lineTo(-r*1.05-i*2,yy+side*(12+i));ctx.stroke();}
-      // 몸통
-      const body=ctx.createRadialGradient(r*.2,-r*.2,1,0,0,r*1.2);
-      body.addColorStop(0,venom?'#8cff45':'#d67a32');body.addColorStop(.2,venom?'#4e7a27':'#8d431f');body.addColorStop(1,'#21100c');
-      ctx.fillStyle=body;ctx.strokeStyle='#140a08';ctx.lineWidth=2;
-      ctx.beginPath();ctx.ellipse(0,0,r*.82,r*.56,0,0,Math.PI*2);ctx.fill();ctx.stroke();
-      ctx.beginPath();ctx.ellipse(r*.66,0,r*.48,r*.42,0,0,Math.PI*2);ctx.fill();ctx.stroke();
-      // 집게
-      for(const side of [-1,1]){ctx.strokeStyle='#3d1b10';ctx.lineWidth=r*.18;ctx.beginPath();ctx.moveTo(r*.62,side*r*.28);ctx.lineTo(r*1.05,side*r*.62);ctx.stroke();ctx.fillStyle=venom?'#608e31':'#9e4922';ctx.beginPath();ctx.arc(r*1.17,side*r*.70,r*.22,0,Math.PI*2);ctx.fill();}
-      // 꼬리
-      ctx.strokeStyle=venom?'#587c2b':'#572514';ctx.lineWidth=r*.22;ctx.beginPath();ctx.moveTo(-r*.6,0);ctx.bezierCurveTo(-r*1.2,-r*.15,-r*1.05,-r*1.0,-r*.34,-r*1.15);ctx.stroke();
-      ctx.fillStyle=venom?'#a9ff54':'#8d3b20';ctx.beginPath();ctx.moveTo(-r*.28,-r*1.28);ctx.lineTo(r*.08,-r*1.05);ctx.lineTo(-r*.36,-r*.96);ctx.closePath();ctx.fill();
-      if(venom){ctx.shadowBlur=18;ctx.shadowColor='#7dff39';ctx.fillStyle='#b6ff70';ctx.beginPath();ctx.arc(-r*.20,-r*1.14,3.2,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;}
-      ctx.fillStyle='#ffe779';ctx.beginPath();ctx.arc(r*.82,-r*.13,2,0,Math.PI*2);ctx.arc(r*.82,r*.13,2,0,Math.PI*2);ctx.fill();
+      const r = Number(enemy.radius || 22);
+      const venom = enemy.variant === 'venomScorpion' || enemy.type === 'venomScorpionBoss';
+      const boss = enemy.type === 'venomScorpionBoss';
+      const phase = Number(enemy.wingPhase || enemy.id?.length || 0);
+      const walk = Math.sin(time * .0105 + phase);
+      const breathe = 1 + Math.sin(time * .0046 + phase) * .018;
+      const tailPulse = .72 + .28 * Math.sin(time * .0088 + phase);
+      const scale = boss ? 1.09 : 1;
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(Number(enemy.heading || 0));
+      ctx.scale(scale, scale);
+
+      // 모래 위에 붙는 진한 그림자
+      ctx.save();
+      ctx.translate(-r * .08, r * .72);
+      ctx.scale(1, .34);
+      const shadow = ctx.createRadialGradient(0,0,2,0,0,r*1.55);
+      shadow.addColorStop(0,'rgba(28,13,5,.48)');
+      shadow.addColorStop(.65,'rgba(65,29,9,.23)');
+      shadow.addColorStop(1,'rgba(65,29,9,0)');
+      ctx.fillStyle = shadow;
+      ctx.beginPath();
+      ctx.arc(0,0,r*1.55,0,Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+
+      // 독전갈은 몸 전체 주위에 약한 독기
+      if (venom) {
+        ctx.save();
+        ctx.globalCompositeOperation='lighter';
+        const toxic = ctx.createRadialGradient(-r*.16,-r*.10,2,-r*.16,-r*.10,r*1.55);
+        toxic.addColorStop(0,`rgba(178,255,92,${.16 + tailPulse*.08})`);
+        toxic.addColorStop(.5,`rgba(85,220,48,${.08 + tailPulse*.06})`);
+        toxic.addColorStop(1,'rgba(80,255,60,0)');
+        ctx.fillStyle=toxic;
+        ctx.beginPath();ctx.arc(-r*.10,-r*.05,r*1.55,0,Math.PI*2);ctx.fill();
+        ctx.restore();
+      }
+
+      // 8개의 관절형 다리. 바깥 관절이 걷는 방향에 따라 교차 움직임.
+      ctx.lineCap='round';
+      ctx.lineJoin='round';
+      for (const side of [-1,1]) {
+        for (let i=0;i<4;i++) {
+          const alternating = Math.sin(time*.011 + phase + i*Math.PI + (side<0 ? .7 : 0));
+          const rootX = -r*.38 + i*r*.22;
+          const rootY = side * (r*.30 + i*r*.055);
+          const kneeX = rootX - r*(.55 + i*.07);
+          const kneeY = side * (r*(.58 + i*.13) + alternating*r*.07);
+          const footX = kneeX - r*(.34 + i*.05);
+          const footY = side * (r*(.86 + i*.15) - alternating*r*.05);
+
+          ctx.strokeStyle = '#1b0c08';
+          ctx.lineWidth = Math.max(4.2,r*.17);
+          ctx.beginPath();ctx.moveTo(rootX,rootY);ctx.lineTo(kneeX,kneeY);ctx.lineTo(footX,footY);ctx.stroke();
+
+          ctx.strokeStyle = venom ? '#50652a' : '#6f3018';
+          ctx.lineWidth = Math.max(2.4,r*.095);
+          ctx.beginPath();ctx.moveTo(rootX,rootY);ctx.lineTo(kneeX,kneeY);ctx.lineTo(footX,footY);ctx.stroke();
+
+          // 각 다리 관절의 밝은 갑각
+          ctx.fillStyle = venom ? '#799847' : '#a24e25';
+          ctx.strokeStyle = '#1d0d08';
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();ctx.arc(kneeX,kneeY,r*.10,0,Math.PI*2);ctx.fill();ctx.stroke();
+
+          // 발 끝
+          ctx.strokeStyle = '#160906';
+          ctx.lineWidth = Math.max(2,r*.07);
+          ctx.beginPath();
+          ctx.moveTo(footX,footY);
+          ctx.lineTo(footX-r*.16,footY+side*r*.045);
+          ctx.stroke();
+        }
+      }
+
+      // 꼬리: 6개의 실제 갑각 마디가 위로 말려 올라감.
+      const tailPts = [
+        [-r*.63,-r*.02],
+        [-r*.92,-r*.20],
+        [-r*1.08,-r*.48],
+        [-r*1.03,-r*.78],
+        [-r*.82,-r*1.02],
+        [-r*.53,-r*1.17],
+        [-r*.24,-r*1.12]
+      ];
+      for (let i=0;i<tailPts.length-1;i++) {
+        const a=tailPts[i], b=tailPts[i+1];
+        const mx=(a[0]+b[0])/2, my=(a[1]+b[1])/2;
+        const ang=Math.atan2(b[1]-a[1],b[0]-a[0]);
+        const segW=r*(.38-i*.025), segH=r*.25;
+        ctx.save();
+        ctx.translate(mx,my);
+        ctx.rotate(ang);
+        const segGrad=ctx.createLinearGradient(0,-segH,0,segH);
+        segGrad.addColorStop(0,venom?'#91ad4f':'#bf622e');
+        segGrad.addColorStop(.50,venom?'#50682d':'#76341c');
+        segGrad.addColorStop(1,'#25100b');
+        ctx.fillStyle=segGrad;
+        ctx.strokeStyle='#190b07';
+        ctx.lineWidth=1.8;
+        ctx.beginPath();
+        ctx.roundRect(-segW*.55,-segH*.5,segW,segH,segH*.35);
+        ctx.fill();ctx.stroke();
+        ctx.restore();
+      }
+
+      // 독침: 금속성/유리질 형태
+      {
+        const tip=tailPts[tailPts.length-1];
+        ctx.save();
+        ctx.translate(tip[0],tip[1]);
+        ctx.rotate(-.22);
+        if(venom){
+          ctx.shadowColor='#9aff52';
+          ctx.shadowBlur=boss?24:15;
+        }
+        const sting=ctx.createLinearGradient(-r*.2,-r*.25,r*.35,r*.28);
+        sting.addColorStop(0,venom?'#e2ffa1':'#efae62');
+        sting.addColorStop(.42,venom?'#8dff45':'#b65727');
+        sting.addColorStop(1,'#281009');
+        ctx.fillStyle=sting;
+        ctx.strokeStyle='#1a0a06';ctx.lineWidth=1.8;
+        ctx.beginPath();
+        ctx.moveTo(-r*.12,-r*.18);
+        ctx.lineTo(r*.46,-r*.07);
+        ctx.lineTo(r*.18,r*.14);
+        ctx.lineTo(-r*.10,r*.12);
+        ctx.closePath();ctx.fill();ctx.stroke();
+        if(venom){
+          ctx.fillStyle=`rgba(194,255,102,${.65+.3*tailPulse})`;
+          ctx.beginPath();ctx.arc(r*.41,-r*.06,r*.07,0,Math.PI*2);ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      // 몸통 아래 갑각
+      ctx.save();
+      ctx.scale(breathe,breathe);
+      const abdomen = ctx.createRadialGradient(r*.15,-r*.30,2,-r*.12,-r*.02,r*1.25);
+      abdomen.addColorStop(0,venom?'#a6c65b':'#dc7b39');
+      abdomen.addColorStop(.22,venom?'#637c36':'#9a4823');
+      abdomen.addColorStop(.68,venom?'#354521':'#532316');
+      abdomen.addColorStop(1,'#180b08');
+      ctx.fillStyle=abdomen;
+      ctx.strokeStyle='#160907';
+      ctx.lineWidth=2.6;
+      ctx.beginPath();
+      ctx.ellipse(-r*.18,0,r*.78,r*.57,0,0,Math.PI*2);
+      ctx.fill();ctx.stroke();
+
+      // 몸통의 갑옷 판 4개
+      for(let i=0;i<4;i++){
+        const px=-r*.60+i*r*.29;
+        ctx.fillStyle=i%2
+          ? (venom?'rgba(113,144,62,.66)':'rgba(155,70,31,.70)')
+          : (venom?'rgba(157,190,83,.65)':'rgba(205,103,45,.66)');
+        ctx.strokeStyle='rgba(20,9,6,.78)';
+        ctx.lineWidth=1.1;
+        ctx.beginPath();
+        ctx.ellipse(px,-r*.02,r*.22,r*.43,0,0,Math.PI*2);
+        ctx.fill();ctx.stroke();
+      }
+
+      // 머리/앞가슴판
+      const headGrad=ctx.createLinearGradient(r*.12,-r*.42,r*.92,r*.42);
+      headGrad.addColorStop(0,venom?'#a9cf61':'#e38942');
+      headGrad.addColorStop(.45,venom?'#587230':'#8a3d20');
+      headGrad.addColorStop(1,'#28110b');
+      ctx.fillStyle=headGrad;
+      ctx.strokeStyle='#160907';
+      ctx.lineWidth=2.4;
+      ctx.beginPath();
+      ctx.moveTo(r*.22,-r*.47);
+      ctx.lineTo(r*.78,-r*.39);
+      ctx.lineTo(r*.99,-r*.15);
+      ctx.lineTo(r*.92,r*.25);
+      ctx.lineTo(r*.61,r*.47);
+      ctx.lineTo(r*.19,r*.38);
+      ctx.closePath();
+      ctx.fill();ctx.stroke();
+
+      // 머리 앞쪽 뿔/갑각
+      for(const side of [-1,1]){
+        ctx.fillStyle=venom?'#718e40':'#a54c25';
+        ctx.strokeStyle='#170a07';
+        ctx.lineWidth=1.4;
+        ctx.beginPath();
+        ctx.moveTo(r*.73,side*r*.29);
+        ctx.lineTo(r*1.03,side*r*.38);
+        ctx.lineTo(r*.86,side*r*.12);
+        ctx.closePath();ctx.fill();ctx.stroke();
+      }
+
+      // 집게 팔 + 집게 두 갈래
+      for(const side of [-1,1]){
+        const open=.22+.07*Math.sin(time*.006+phase+side);
+        const armY=side*r*.36;
+        ctx.strokeStyle='#1a0b07';
+        ctx.lineWidth=r*.24;
+        ctx.beginPath();ctx.moveTo(r*.49,armY);ctx.lineTo(r*.90,side*r*.63);ctx.stroke();
+        ctx.strokeStyle=venom?'#5d7336':'#8f3f20';
+        ctx.lineWidth=r*.15;
+        ctx.beginPath();ctx.moveTo(r*.49,armY);ctx.lineTo(r*.90,side*r*.63);ctx.stroke();
+
+        ctx.save();
+        ctx.translate(r*1.07,side*r*.72);
+        ctx.rotate(side*(.08+walk*.02));
+
+        const clawGrad=ctx.createLinearGradient(-r*.18,-r*.25,r*.40,r*.25);
+        clawGrad.addColorStop(0,venom?'#9bb95b':'#d67533');
+        clawGrad.addColorStop(.55,venom?'#536b31':'#7e351c');
+        clawGrad.addColorStop(1,'#24100a');
+        ctx.fillStyle=clawGrad;
+        ctx.strokeStyle='#150806';ctx.lineWidth=1.7;
+
+        ctx.beginPath();
+        ctx.moveTo(-r*.18,0);
+        ctx.quadraticCurveTo(r*.05,-r*.34,r*.42,-r*(.27+open));
+        ctx.quadraticCurveTo(r*.25,-r*.02,r*.02,r*.07);
+        ctx.closePath();ctx.fill();ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(-r*.18,0);
+        ctx.quadraticCurveTo(r*.05,r*.34,r*.42,r*(.27+open));
+        ctx.quadraticCurveTo(r*.24,r*.03,r*.02,-r*.07);
+        ctx.closePath();ctx.fill();ctx.stroke();
+
+        // 집게 톱니
+        ctx.fillStyle='#e9c27e';
+        for(let k=0;k<3;k++){
+          ctx.beginPath();
+          ctx.moveTo(r*(.10+k*.07),-r*.055);
+          ctx.lineTo(r*(.14+k*.07),0);
+          ctx.lineTo(r*(.10+k*.07),r*.055);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      // 눈 4개
+      ctx.shadowBlur=venom?10:5;
+      ctx.shadowColor=venom?'#baff62':'#ffcf57';
+      ctx.fillStyle=venom?'#c9ff74':'#ffd86a';
+      const eyes=[
+        [r*.70,-r*.17,2.5],[r*.70,r*.17,2.5],
+        [r*.55,-r*.29,1.8],[r*.55,r*.29,1.8]
+      ];
+      eyes.forEach(([ex,ey,er])=>{ctx.beginPath();ctx.arc(ex,ey,er,0,Math.PI*2);ctx.fill();});
+      ctx.shadowBlur=0;
+
+      // 독전갈 갑각의 발광 독맥
+      if(venom){
+        ctx.save();
+        ctx.globalCompositeOperation='lighter';
+        ctx.strokeStyle=`rgba(173,255,87,${.32+.28*tailPulse})`;
+        ctx.lineWidth=Math.max(1.4,r*.055);
+        ctx.shadowColor='#8dff45';ctx.shadowBlur=8;
+        ctx.beginPath();
+        ctx.moveTo(-r*.58,-r*.12);
+        ctx.bezierCurveTo(-r*.20,-r*.30,r*.02,r*.24,r*.38,-r*.05);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(-r*.46,r*.22);
+        ctx.bezierCurveTo(-r*.12,r*.02,r*.12,r*.35,r*.45,r*.18);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // 보스는 등 갑각에 뾰족한 왕관형 가시 추가
+      if(boss){
+        ctx.fillStyle='#c4e76d';
+        ctx.strokeStyle='#223015';
+        ctx.lineWidth=1.5;
+        for(let i=0;i<5;i++){
+          const sx=-r*.47+i*r*.24;
+          ctx.beginPath();
+          ctx.moveTo(sx-r*.10,-r*.42);
+          ctx.lineTo(sx,-r*(.77+(i%2)*.10));
+          ctx.lineTo(sx+r*.10,-r*.42);
+          ctx.closePath();ctx.fill();ctx.stroke();
+        }
+      }
+
+      ctx.restore();
+
+      // 공중에 뜨는 독 입자
+      if(venom){
+        ctx.save();
+        ctx.globalCompositeOperation='lighter';
+        for(let i=0;i<(boss?11:6);i++){
+          const a=time*.0018+i*1.73+phase;
+          const rr=r*(.85+(i%4)*.18);
+          const px=-r*.10+Math.cos(a)*rr;
+          const py=-r*.28+Math.sin(a*1.27)*r*.62;
+          ctx.fillStyle=`rgba(167,255,79,${.18+(i%3)*.08})`;
+          ctx.beginPath();ctx.arc(px,py,1.5+(i%3)*.65,0,Math.PI*2);ctx.fill();
+        }
+        ctx.restore();
+      }
+
       ctx.restore();
     }
 
@@ -28123,7 +28467,7 @@ function requestGachaDraw(count) {
 
     if (completed) {
       waitingPanel?.classList.remove('hidden');
-      waitingPanel.innerHTML = '<strong class="trade-complete">✅ 거래가 완료되었습니다.</strong><smcd /workspaces/bidulgy.games.ioll>양쪽 인벤토리에 서버에서 동시에 반영되었습니다.</small>';
+      waitingPanel.innerHTML = '<strong class="trade-complete">✅ 거래가 완료되었습니다.</strong><small>양쪽 인벤토리에 서버에서 동시에 반영되었습니다.</small>';
       return;
     } else if (waitingPanel) {
       waitingPanel.innerHTML = '<strong>상대방의 수락을 기다리는 중입니다.</strong><small>요청이 수락되면 유닛과 주사위를 선택할 수 있습니다.</small>';

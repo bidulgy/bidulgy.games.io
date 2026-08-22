@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="ko">
 <head>
+  <!-- PERF-V2 2026-08-22: memoized HUD, in-place hot arrays, squared targeting, WSS retained, full visual detail retained -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
   <meta name="theme-color" content="#10223a" />
@@ -12285,7 +12286,9 @@ function requestGachaDraw(count) {
     }
 
     const canvas = document.querySelector('#gameCanvas');
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { desynchronized: true });
+    ctx.imageSmoothingEnabled = true;
+    try { ctx.imageSmoothingQuality = 'high'; } catch (_) {}
 
     const path = [
       { x: -35, y: 304 },
@@ -12315,6 +12318,33 @@ function requestGachaDraw(count) {
     let animationId = null;
     let previousTime = 0;
     let deferredInstallPrompt = null;
+    // 고정 배경/길은 매 프레임 다시 그리지 않고 완성된 픽셀을 캐시합니다.
+    // 비주얼 품질은 그대로 유지하면서 그라디언트·수십 개의 장식 path 비용을 제거합니다.
+    const battleStaticLayerCache = new Map();
+
+    // 전투 HUD는 캔버스와 달리 DOM이므로 매 프레임 같은 값을 다시 쓰지 않습니다.
+    // 값이 실제로 바뀔 때만 text/class/disabled를 갱신해 레이아웃·스타일 재계산을 줄입니다.
+    const battleUiMemo = Object.create(null);
+    const battleUiRefs = {
+      stage: document.querySelector('#battleStage'),
+      difficulty: document.querySelector('#battleDifficulty'),
+      waveMax: document.querySelector('#battleWaveMaxLabel'),
+      gold: document.querySelector('#battleGold'),
+      lives: document.querySelector('#battleLives'),
+      wave: document.querySelector('#battleWave'),
+      kills: document.querySelector('#battleKills'),
+      skipButton: document.querySelector('#skipWaveBtn'),
+      skipRemaining: document.querySelector('#skipWaveRemaining'),
+      autoButton: document.querySelector('#autoSkipBtn')
+    };
+
+    function setBattleUiText(key, element, value) {
+      if (!element) return;
+      const text = String(value ?? '');
+      if (battleUiMemo[key] === text) return;
+      battleUiMemo[key] = text;
+      element.textContent = text;
+    }
 
     const orientationGuard = document.querySelector('#orientationGuard');
     const orientationGuardTitle = document.querySelector('#orientationGuardTitle');
@@ -13889,41 +13919,74 @@ function requestGachaDraw(count) {
     }
 
     function updateWaveSkipUi() {
-      const skipButton = document.querySelector('#skipWaveBtn');
-      const remaining = document.querySelector('#skipWaveRemaining');
-      const autoButton = document.querySelector('#autoSkipBtn');
+      const skipButton = battleUiRefs.skipButton;
+      const remaining = battleUiRefs.skipRemaining;
+      const autoButton = battleUiRefs.autoButton;
       if (!skipButton || !remaining || !autoButton) return;
 
       const usesLeft = battle
         ? Math.max(0, battle.maxSkipUses - battle.skipUses)
         : 0;
+      const remainingText = battle?.isInfinite ? `${usesLeft} / 5` : String(usesLeft);
+      setBattleUiText('skipRemaining', remaining, remainingText);
 
-      remaining.textContent = battle?.isInfinite ? `${usesLeft} / 5` : usesLeft;
-      skipButton.disabled = !canSkipWave();
-      if (battle?.isInfinite) {
-        const transitionLocked = isInfiniteMapTransitionSkipLocked();
-        skipButton.childNodes[0].nodeValue = transitionLocked ? '맵 전환 중 ' : '웨이브 +1 ';
-        skipButton.title = transitionLocked
-          ? `${battle.highestLaunchedWave}웨이브를 직접 클리어하면 다음 맵에서 다시 스킵할 수 있습니다.`
-          : '클릭 1회마다 다음 웨이브를 1개 추가합니다. 연속 최대 5회.';
-        autoButton.classList.remove('hidden');
-        const autoActive = Boolean(battle?.autoWaveSkip);
+      const skipDisabled = !canSkipWave();
+      if (battleUiMemo.skipDisabled !== skipDisabled) {
+        battleUiMemo.skipDisabled = skipDisabled;
+        skipButton.disabled = skipDisabled;
+      }
+
+      const autoActive = Boolean(battle?.autoWaveSkip);
+      if (battleUiMemo.autoActive !== autoActive) {
+        battleUiMemo.autoActive = autoActive;
         autoButton.classList.toggle('auto-active', autoActive);
         autoButton.setAttribute('aria-pressed', String(autoActive));
         autoButton.textContent = autoActive ? '자동 스킵 ON' : '자동 스킵 OFF';
-        autoButton.disabled = !battle || battle.ended;
-        autoButton.title = transitionLocked
+      }
+      if (battleUiMemo.autoHidden !== false) {
+        battleUiMemo.autoHidden = false;
+        autoButton.classList.remove('hidden');
+      }
+
+      if (battle?.isInfinite) {
+        const transitionLocked = isInfiniteMapTransitionSkipLocked();
+        const skipLabel = transitionLocked ? '맵 전환 중 ' : '웨이브 +1 ';
+        if (battleUiMemo.skipLabel !== skipLabel) {
+          battleUiMemo.skipLabel = skipLabel;
+          if (skipButton.childNodes[0]) skipButton.childNodes[0].nodeValue = skipLabel;
+        }
+        const skipTitle = transitionLocked
+          ? `${battle.highestLaunchedWave}웨이브를 직접 클리어하면 다음 맵에서 다시 스킵할 수 있습니다.`
+          : '클릭 1회마다 다음 웨이브를 1개 추가합니다. 연속 최대 5회.';
+        if (battleUiMemo.skipTitle !== skipTitle) {
+          battleUiMemo.skipTitle = skipTitle;
+          skipButton.title = skipTitle;
+        }
+        const autoDisabled = !battle || battle.ended;
+        if (battleUiMemo.autoDisabled !== autoDisabled) {
+          battleUiMemo.autoDisabled = autoDisabled;
+          autoButton.disabled = autoDisabled;
+        }
+        const autoTitle = transitionLocked
           ? '맵 전환 경계에서는 자동 스킵이 잠시 멈춥니다. 다음 맵이 시작되면 자동으로 다시 이어집니다.'
           : '자동으로 다음 웨이브를 하나씩 추가합니다. 연속 스킵은 최대 5회입니다.';
+        if (battleUiMemo.autoTitle !== autoTitle) {
+          battleUiMemo.autoTitle = autoTitle;
+          autoButton.title = autoTitle;
+        }
         return;
       }
-      skipButton.childNodes[0].nodeValue = '웨이브 스킵 ';
-      autoButton.classList.remove('hidden');
-      const autoActive = Boolean(battle?.autoWaveSkip);
-      autoButton.classList.toggle('auto-active', autoActive);
-      autoButton.setAttribute('aria-pressed', String(autoActive));
-      autoButton.textContent = autoActive ? '자동 스킵 ON' : '자동 스킵 OFF';
-      autoButton.disabled = !battle || battle.ended || battle.highestLaunchedWave >= battle.maxWave;
+
+      const skipLabel = '웨이브 스킵 ';
+      if (battleUiMemo.skipLabel !== skipLabel) {
+        battleUiMemo.skipLabel = skipLabel;
+        if (skipButton.childNodes[0]) skipButton.childNodes[0].nodeValue = skipLabel;
+      }
+      const autoDisabled = !battle || battle.ended || battle.highestLaunchedWave >= battle.maxWave;
+      if (battleUiMemo.autoDisabled !== autoDisabled) {
+        battleUiMemo.autoDisabled = autoDisabled;
+        autoButton.disabled = autoDisabled;
+      }
     }
 
     function renderBattleDeck() {
@@ -13966,18 +14029,17 @@ function requestGachaDraw(count) {
     }
 
     function updateBattleUi() {
-      document.querySelector('#battleStage').textContent = battle.isInfinite ? '∞' : battle.stage;
-      const difficultyElement = document.querySelector('#battleDifficulty');
-      if (difficultyElement) {
-        difficultyElement.textContent = battle.isInfinite ? '개인 무한' : (battle.difficulty?.name || '보통');
-      }
-      const waveMaxLabel=document.querySelector('#battleWaveMaxLabel');
-      if(waveMaxLabel) waveMaxLabel.textContent=battle.isInfinite?' / ∞':` / ${battle.maxWave}`;
-      document.querySelector('#battleGold').textContent = battle.gold;
-      document.querySelector('#battleLives').textContent =
-        `${Math.max(0, Math.ceil(battle.lives))} / ${battle.baseMaxHp || BASE_MAX_HP}`;
-      document.querySelector('#battleWave').textContent = battle.wave;
-      document.querySelector('#battleKills').textContent = battle.kills;
+      if (!battle) return;
+      setBattleUiText('stage', battleUiRefs.stage, battle.isInfinite ? '∞' : battle.stage);
+      setBattleUiText('difficulty', battleUiRefs.difficulty,
+        battle.isInfinite ? '개인 무한' : (battle.difficulty?.name || '보통'));
+      setBattleUiText('waveMax', battleUiRefs.waveMax,
+        battle.isInfinite ? ' / ∞' : ` / ${battle.maxWave}`);
+      setBattleUiText('gold', battleUiRefs.gold, battle.gold);
+      setBattleUiText('lives', battleUiRefs.lives,
+        `${Math.max(0, Math.ceil(battle.lives))} / ${battle.baseMaxHp || BASE_MAX_HP}`);
+      setBattleUiText('wave', battleUiRefs.wave, battle.wave);
+      setBattleUiText('kills', battleUiRefs.kills, battle.kills);
       updateWaveSkipUi();
     }
 
@@ -14003,9 +14065,11 @@ function requestGachaDraw(count) {
     }
 
     function refreshErrorLiveCodes() {
-      document.querySelectorAll('.error-live-code').forEach(el => {
-        el.textContent = makeErrorLiveCode();
-      });
+      if (document.hidden) return;
+      const nodes = document.getElementsByClassName('error-live-code');
+      for (let i = 0; i < nodes.length; i += 1) {
+        nodes[i].textContent = makeErrorLiveCode();
+      }
     }
 
     setInterval(refreshErrorLiveCodes, 45);
@@ -14203,6 +14267,10 @@ function requestGachaDraw(count) {
         sandBurrowAnim: 0,
         cactusJumpTimer: Number(spec.cactusJumpTimer || spec.cactusJumpInterval || 0),
         cactusJumpAnim: 0,
+        cactusJumpRemaining: 0,
+        cactusJumpProgress: 0,
+        cactusJumpDuration: Number(spec.cactusJumpDuration || .62),
+        cactusJumping: false,
         hackTimer: Number(spec.hackTimer || spec.hackInterval || 0),
         maskHp: Number(spec.maskHp || 0),
         maskMaxHp: Number(spec.maskMaxHp || spec.maskHp || 0),
@@ -14457,13 +14525,59 @@ function requestGachaDraw(count) {
         if (enemy.staticCactus) return;
 
         if (Number(enemy.cactusJumpInterval||0) > 0) {
-          enemy.cactusJumpTimer = Number(enemy.cactusJumpTimer||enemy.cactusJumpInterval)-dt;
-          if (enemy.cactusJumpTimer <= 0) {
-            const ox=enemy.x,oy=enemy.y;
-            advanceEnemyAlongPath(enemy,Number(enemy.cactusJumpDistance||55));
-            enemy.cactusJumpAnim=.65;
-            enemy.cactusJumpTimer += Number(enemy.cactusJumpInterval||2);
-            battle.shots.push({x1:ox,y1:oy,x2:enemy.x,y2:enemy.y,life:.40,maxLife:.40,effect:'cactusJump',color:'#6ebf38',seed:Math.random()*1000});
+          // 선인장은 착지 후 순간이동하는 것이 아니라,
+          // 점프하는 동안 실제 좌표가 전진하며 포물선으로 날아갑니다.
+          if (enemy.cactusJumping) {
+            const duration = Math.max(.28, Number(enemy.cactusJumpDuration || .62));
+            const remainingBefore = Math.max(0, Number(enemy.cactusJumpRemaining || 0));
+            const step = Math.min(dt, remainingBefore);
+            const jumpSpeed = Number(enemy.cactusJumpDistance || 55) / duration;
+
+            // 이동 방향을 바라보며 점프
+            const nextTarget = path[enemy.targetIndex];
+            if (nextTarget) {
+              const dx = nextTarget.x - enemy.x;
+              const dy = nextTarget.y - enemy.y;
+              enemy.heading = Math.atan2(dy, dx);
+            }
+
+            advanceEnemyAlongPath(enemy, jumpSpeed * step);
+
+            enemy.cactusJumpRemaining = Math.max(0, remainingBefore - dt);
+            enemy.cactusJumpProgress = Math.max(
+              0,
+              Math.min(1, 1 - enemy.cactusJumpRemaining / duration)
+            );
+            enemy.cactusJumpAnim = 1;
+
+            if (enemy.cactusJumpRemaining <= 0) {
+              enemy.cactusJumping = false;
+              enemy.cactusJumpProgress = 0;
+              enemy.cactusJumpAnim = 0;
+
+              // 착지 모래먼지
+              battle.shots.push({
+                x1:enemy.x,y1:enemy.y,x2:enemy.x,y2:enemy.y,
+                life:.46,maxLife:.46,effect:'cactusJump',color:'#e8bf69',
+                seed:Math.random()*1000
+              });
+            }
+          } else {
+            enemy.cactusJumpTimer = Number(enemy.cactusJumpTimer||enemy.cactusJumpInterval)-dt;
+            if (enemy.cactusJumpTimer <= 0) {
+              enemy.cactusJumping = true;
+              enemy.cactusJumpRemaining = Math.max(.28, Number(enemy.cactusJumpDuration || .62));
+              enemy.cactusJumpProgress = 0;
+              enemy.cactusJumpAnim = 1;
+              enemy.cactusJumpTimer += Number(enemy.cactusJumpInterval||2);
+
+              // 도약 순간 모래먼지
+              battle.shots.push({
+                x1:enemy.x,y1:enemy.y,x2:enemy.x,y2:enemy.y,
+                life:.38,maxLife:.38,effect:'cactusJump',color:'#e8bf69',
+                seed:Math.random()*1000
+              });
+            }
           }
         }
       }
@@ -14565,6 +14679,10 @@ function requestGachaDraw(count) {
 
       if (timeStunned || timeFieldFrozen || iceFrozen) return;
       if (enemyBlockedByTraitShield(enemy)) return;
+
+      // 선인장이 공중에 있는 동안에는 위의 점프 이동만 사용합니다.
+      // 따라서 착지 지점으로 순간이동하거나 일반 걷기 이동이 중복되지 않습니다.
+      if (enemy.cactusJumping) return;
 
       const target = path[enemy.targetIndex];
 
@@ -16108,19 +16226,27 @@ function requestGachaDraw(count) {
 
     function updateEclipseEffects(dt) {
       battle.eclipseBursts ||= [];
-      battle.eclipseBursts.forEach(effect => { effect.life -= dt; });
-      battle.eclipseBursts = battle.eclipseBursts.filter(effect => effect.life > 0);
+      let burstWrite = 0;
+      for (let i = 0; i < battle.eclipseBursts.length; i += 1) {
+        const effect = battle.eclipseBursts[i];
+        effect.life -= dt;
+        if (effect.life > 0) battle.eclipseBursts[burstWrite++] = effect;
+      }
+      battle.eclipseBursts.length = burstWrite;
 
       battle.blackHoles ||= [];
-      const remaining = [];
-      for (const hole of battle.blackHoles) {
+      let holeWrite = 0;
+      for (let i = 0; i < battle.blackHoles.length; i += 1) {
+        const hole = battle.blackHoles[i];
         hole.remaining -= dt;
+        const radiusSq = hole.radius * hole.radius;
         for (const enemy of battle.enemies) {
           if (enemy.dead) continue;
           const dx = hole.x - enemy.x;
           const dy = hole.y - enemy.y;
-          const distance = Math.hypot(dx, dy);
-          if (distance <= 0.001 || distance > hole.radius) continue;
+          const distanceSq = dx * dx + dy * dy;
+          if (distanceSq <= 0.000001 || distanceSq > radiusSq) continue;
+          const distance = Math.sqrt(distanceSq);
           const pull = (78 + (1 - distance / hole.radius) * 92) * dt;
           const step = Math.min(distance, pull);
           enemy.x += dx / distance * step;
@@ -16128,13 +16254,15 @@ function requestGachaDraw(count) {
         }
 
         if (hole.remaining > 0) {
-          remaining.push(hole);
+          battle.blackHoles[holeWrite++] = hole;
           continue;
         }
 
         for (const enemy of battle.enemies) {
           if (enemy.dead) continue;
-          if (Math.hypot(enemy.x - hole.x, enemy.y - hole.y) > hole.radius) continue;
+          const dx = enemy.x - hole.x;
+          const dy = enemy.y - hole.y;
+          if (dx * dx + dy * dy > radiusSq) continue;
           const killed = applyDamageToEnemy(enemy, hole.damage);
           if (killed) triggerEclipseGrowth(hole.owner, enemy);
         }
@@ -16146,23 +16274,34 @@ function requestGachaDraw(count) {
           explosion: true
         });
       }
-      battle.blackHoles = remaining;
+      battle.blackHoles.length = holeWrite;
     }
 
     function getFrontmostEnemyInRange(placed, maxRange) {
-      const candidates = battle.enemies.filter(enemy =>
-        !enemy.dead && !enemy.soilPileState && Math.hypot(enemy.x - placed.x, enemy.y - placed.y) <= maxRange
-      );
-      candidates.sort((a, b) => {
-        const progress = Number(b.targetIndex || 0) - Number(a.targetIndex || 0);
-        if (progress !== 0) return progress;
-        const aNext = path[Math.min(path.length - 1, Number(a.targetIndex || 0))] || a;
-        const bNext = path[Math.min(path.length - 1, Number(b.targetIndex || 0))] || b;
-        const aRemain = Math.hypot((aNext.x ?? a.x) - a.x, (aNext.y ?? a.y) - a.y);
-        const bRemain = Math.hypot((bNext.x ?? b.x) - b.x, (bNext.y ?? b.y) - b.y);
-        return aRemain - bRemain;
-      });
-      return candidates[0] || null;
+      const rangeSq = maxRange * maxRange;
+      let best = null;
+      let bestProgress = -Infinity;
+      let bestRemainSq = Infinity;
+
+      for (const enemy of battle.enemies) {
+        if (enemy.dead || enemy.soilPileState) continue;
+        const dx = enemy.x - placed.x;
+        const dy = enemy.y - placed.y;
+        if (dx * dx + dy * dy > rangeSq) continue;
+
+        const progress = Number(enemy.targetIndex || 0);
+        const next = path[Math.min(path.length - 1, progress)] || enemy;
+        const rx = (next.x ?? enemy.x) - enemy.x;
+        const ry = (next.y ?? enemy.y) - enemy.y;
+        const remainSq = rx * rx + ry * ry;
+
+        if (progress > bestProgress || (progress === bestProgress && remainSq < bestRemainSq)) {
+          best = enemy;
+          bestProgress = progress;
+          bestRemainSq = remainSq;
+        }
+      }
+      return best;
     }
 
     function damageEnemiesAlongSamuraiLine(x1, y1, x2, y2, width, damage) {
@@ -16176,7 +16315,10 @@ function requestGachaDraw(count) {
         const t = Math.max(0, Math.min(1, ((enemy.x - x1) * dx + (enemy.y - y1) * dy) / lenSq));
         const px = x1 + dx * t;
         const py = y1 + dy * t;
-        if (Math.hypot(enemy.x - px, enemy.y - py) > halfWidth + Number(enemy.radius || 0) * .35) return;
+        const hitRadius = halfWidth + Number(enemy.radius || 0) * .35;
+        const ex = enemy.x - px;
+        const ey = enemy.y - py;
+        if (ex * ex + ey * ey > hitRadius * hitRadius) return;
         applyDamageToEnemy(enemy, damage);
         hits += 1;
       });
@@ -17187,8 +17329,20 @@ function requestGachaDraw(count) {
       updatePoseidonWaveHits(dt);
       battle.shots.forEach(shot => shot.life -= dt);
 
-      battle.enemies = battle.enemies.filter(enemy => !enemy.dead);
-      battle.shots = battle.shots.filter(shot => shot.life > 0);
+      // 매 프레임 filter()로 새 배열을 만들지 않고 제자리 압축하여 GC 끊김을 줄입니다.
+      let enemyWrite = 0;
+      for (let i = 0; i < battle.enemies.length; i += 1) {
+        const enemy = battle.enemies[i];
+        if (!enemy.dead) battle.enemies[enemyWrite++] = enemy;
+      }
+      battle.enemies.length = enemyWrite;
+
+      let shotWrite = 0;
+      for (let i = 0; i < battle.shots.length; i += 1) {
+        const shot = battle.shots[i];
+        if (shot.life > 0) battle.shots[shotWrite++] = shot;
+      }
+      battle.shots.length = shotWrite;
 
       completeResolvedWaves();
       if (battle.ended) {
@@ -17206,9 +17360,15 @@ function requestGachaDraw(count) {
         battle.autoSkipTimer = Math.min(battle.autoSkipTimer, .35);
       }
 
-      const unresolvedWaves = battle.activeWaves.filter(item => !item.completed);
+      let hasUnresolvedWave = false;
+      for (let i = 0; i < battle.activeWaves.length; i += 1) {
+        if (!battle.activeWaves[i].completed) {
+          hasUnresolvedWave = true;
+          break;
+        }
+      }
 
-      if (unresolvedWaves.length === 0) {
+      if (!hasUnresolvedWave) {
         battle.waveDelay += dt;
 
         if (battle.highestLaunchedWave >= battle.maxWave) {
@@ -17351,6 +17511,42 @@ function requestGachaDraw(count) {
       ctx.lineWidth = 4;
       ctx.strokeStyle = palette.pathEdge;
       ctx.stroke();
+    }
+
+    function drawBattleStaticBase() {
+      if (!battle) return;
+      const visualStage = battle?.isInfinite ? Number(battle.infiniteThemeStage || 1) : Number(battle?.stage || 1);
+      const palette = battle?.stageConfig?.battlePalette || STAGE_CONFIG[visualStage]?.battlePalette || STAGE_CONFIG[1].battlePalette;
+      const cacheKey = [
+        visualStage,
+        canvas.width,
+        canvas.height,
+        palette?.ground || '',
+        palette?.path || '',
+        palette?.pathEdge || ''
+      ].join('|');
+
+      const cached = battleStaticLayerCache.get(cacheKey);
+      if (cached) {
+        ctx.drawImage(cached, 0, 0);
+        return;
+      }
+
+      // 첫 프레임은 기존 고품질 렌더러를 그대로 사용하고 결과만 복사합니다.
+      drawBackground();
+      drawPath();
+      const layer = document.createElement('canvas');
+      layer.width = canvas.width;
+      layer.height = canvas.height;
+      const layerCtx = layer.getContext('2d', { alpha: false });
+      layerCtx.imageSmoothingEnabled = true;
+      try { layerCtx.imageSmoothingQuality = 'high'; } catch (_) {}
+      layerCtx.drawImage(canvas, 0, 0);
+      battleStaticLayerCache.set(cacheKey, layer);
+      if (battleStaticLayerCache.size > 8) {
+        const oldestKey = battleStaticLayerCache.keys().next().value;
+        battleStaticLayerCache.delete(oldestKey);
+      }
     }
 
     function drawBaseCastle(time) {
@@ -19434,10 +19630,27 @@ function requestGachaDraw(count) {
 
     function drawCanvasCactus(enemy,x,y,time){
       const r=Number(enemy.radius||24), boss=enemy.type!=='normal', hacker=enemy.type==='hackerCactusBoss', doll=enemy.type==='dollCactusBoss';
-      const jump=Math.max(0,Number(enemy.cactusJumpAnim||0));
-      ctx.save();ctx.translate(x,y-Math.sin(Math.min(1,jump)*Math.PI)*26);
+      const jumpP = enemy.cactusJumping
+        ? Math.max(0,Math.min(1,Number(enemy.cactusJumpProgress||0)))
+        : 0;
+      const jumpLift = Math.sin(jumpP*Math.PI) * (boss ? 34 : 29);
+      const air = Math.sin(jumpP*Math.PI);
+
+      ctx.save();
+      ctx.translate(x,y);
+
+      // 그림자는 지면에 남아 있고 공중에 뜰수록 작고 흐려집니다.
+      ctx.fillStyle=`rgba(73,48,21,${.25-air*.13})`;
+      ctx.beginPath();
+      ctx.ellipse(0,r*.85,r*(.72-air*.18),r*(.20-air*.07),0,0,Math.PI*2);
+      ctx.fill();
+
+      // 선인장 본체가 실제 이동 좌표를 따라 앞으로 날아가며 포물선으로 뜹니다.
+      ctx.translate(0,-jumpLift);
+      if (enemy.cactusJumping) {
+        ctx.rotate(-.10*Math.sin(jumpP*Math.PI));
+      }
       if(enemy.fleeingToSpawn){ctx.rotate(Math.PI);}
-      ctx.fillStyle='rgba(73,48,21,.25)';ctx.beginPath();ctx.ellipse(0,r*.85,r*.72,r*.20,0,0,Math.PI*2);ctx.fill();
       const body=ctx.createLinearGradient(-r,0,r,0);body.addColorStop(0,hacker?'#16382d':'#367c36');body.addColorStop(.5,hacker?'#39ff88':'#62a844');body.addColorStop(1,hacker?'#071b16':'#245b2c');
       ctx.fillStyle=body;ctx.strokeStyle=hacker?'#7dffcf':'#163f22';ctx.lineWidth=boss?3:2;
       ctx.beginPath();ctx.roundRect(-r*.33,-r*1.0,r*.66,r*1.75,r*.24);ctx.fill();ctx.stroke();
@@ -22861,7 +23074,26 @@ function requestGachaDraw(count) {
           for(let i=0;i<8;i++){const tt=Math.max(0,progress-i*.035),px=shot.x1+(shot.x2-shot.x1)*tt,py=shot.y1+(shot.y2-shot.y1)*tt-Math.sin(tt*Math.PI)*45;ctx.fillStyle=`rgba(142,255,62,${.42*fade})`;ctx.beginPath();ctx.arc(px,py,3+(i%3),0,Math.PI*2);ctx.fill();}
           ctx.restore();
         } else if (shot.effect === 'cactusJump') {
-          ctx.save();ctx.strokeStyle=`rgba(239,202,118,${.65*fade})`;ctx.lineWidth=6;ctx.beginPath();ctx.ellipse(shot.x1,shot.y1+8,18+progress*24,6+progress*5,0,0,Math.PI*2);ctx.stroke();ctx.restore();
+          ctx.save();
+          ctx.strokeStyle=`rgba(239,202,118,${.68*fade})`;
+          ctx.lineWidth=5.5;
+          ctx.beginPath();
+          ctx.ellipse(shot.x1,shot.y1+9,15+progress*30,5+progress*7,0,0,Math.PI*2);
+          ctx.stroke();
+          for(let i=0;i<7;i++){
+            const a=(i/7)*Math.PI*2+Number(shot.seed||0);
+            const rr=(8+progress*24)*(0.55+(i%3)*.18);
+            ctx.fillStyle=`rgba(224,169,77,${.30*fade})`;
+            ctx.beginPath();
+            ctx.arc(
+              shot.x1+Math.cos(a)*rr,
+              shot.y1+7+Math.sin(a)*rr*.30,
+              1.5+(i%3),
+              0,Math.PI*2
+            );
+            ctx.fill();
+          }
+          ctx.restore();
         } else if (shot.effect === 'hackerLink' || shot.effect === 'hackerHeal') {
           ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle=shot.effect==='hackerHeal'?`rgba(120,255,65,${.9*fade})`:`rgba(205,75,255,${.9*fade})`;ctx.lineWidth=4;ctx.setLineDash([8,4,2,5]);ctx.lineDashOffset=-progress*35;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.lineTo(shot.x2,shot.y2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
         } else if (shot.effect === 'llamaDash') {
@@ -23029,8 +23261,7 @@ function requestGachaDraw(count) {
     }
 
     function drawBattle(time) {
-      drawBackground();
-      drawPath();
+      drawBattleStaticBase();
       drawStageTwoDirtAndEffects(time);
       drawBaseCastle(time);
       drawEclipseEffects(time);
@@ -23556,9 +23787,9 @@ function requestGachaDraw(count) {
 <script id="multiplayerGameScript">
 (() => {
   const mpCanvas = document.querySelector('#mpCanvas');
-  const mpCtx = mpCanvas.getContext('2d');
+  const mpCtx = mpCanvas.getContext('2d', { desynchronized: true });
   mpCtx.imageSmoothingEnabled = true;
-  try { mpCtx.imageSmoothingQuality = 'medium'; } catch (_) {}
+  try { mpCtx.imageSmoothingQuality = 'high'; } catch (_) {}
 
   let mpModeChoice = 'coop';
   let mpRoom = null;
@@ -23594,11 +23825,21 @@ function requestGachaDraw(count) {
   let mpBroadcastBusy = false;
   let mpHighLoadFrame = false;
   let mpBackgroundCache = null;
-  const MP_HUD_REFRESH_MS = 180;
+  let mpSocket = null;
+  let mpSocketJoined = false;
+  let mpSocketRoomId = null;
+  let mpSocketReconnectTimer = null;
+  let mpSocketPingTimer = null;
+  let mpSocketIntentionalClose = false;
+  let mpSocketLatencyMs = null;
+  let mpLastSocketStateAt = 0;
+  const MP_WS_URL = 'wss://52.79.66.64.sslip.io';
+  const MP_HUD_REFRESH_MS = 220;
   const MP_REWARD_CHECK_MS = 1000;
-  const MP_GUEST_PREDICTION_MS = 140;
-  const MP_BROADCAST_MS = 100;
-  const MP_DB_PUBLISH_MS = 900;
+  const MP_GUEST_PREDICTION_MS = 110;
+  const MP_WS_STATE_MS = 66; // 약 15Hz: 지연은 낮추고 전체 상태 JSON 과부하는 방지
+  const MP_BROADCAST_MS = 120; // AWS 장애 때만 쓰는 Supabase Realtime 폴백
+  const MP_DB_PUBLISH_MS = 1500; // DB는 재접속 복구용 스냅샷
 
   const MP_WIDTH = 1000;
   const MP_HEIGHT = 600;
@@ -23649,6 +23890,163 @@ function requestGachaDraw(count) {
       try { return JSON.parse(value); } catch (_) { return null; }
     }
     return typeof value === 'object' ? value : null;
+  }
+
+
+  function mpSocketIsReady() {
+    return Boolean(mpSocket && mpSocket.readyState === WebSocket.OPEN && mpSocketJoined && mpSocketRoomId === mpRoom?.id);
+  }
+
+  function mpSocketSend(message) {
+    if (!mpSocketIsReady()) return false;
+    try {
+      mpSocket.send(JSON.stringify(message));
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function mpDisconnectAwsSocket(intentional = true) {
+    mpSocketIntentionalClose = intentional;
+    clearTimeout(mpSocketReconnectTimer);
+    clearInterval(mpSocketPingTimer);
+    mpSocketReconnectTimer = null;
+    mpSocketPingTimer = null;
+    mpSocketJoined = false;
+    mpSocketRoomId = null;
+    const socket = mpSocket;
+    mpSocket = null;
+    if (socket) {
+      try { socket.close(1000, intentional ? 'client_leave' : 'reconnect'); } catch (_) {}
+    }
+  }
+
+  function mpScheduleAwsReconnect() {
+    if (mpSocketIntentionalClose || !mpRoom?.id || !mpBattleEntered && mpRoom?.status === 'finished') return;
+    clearTimeout(mpSocketReconnectTimer);
+    mpSocketReconnectTimer = setTimeout(() => {
+      if (mpRoom?.id) void mpConnectAwsSocket(mpRoom);
+    }, 900);
+  }
+
+  function mpHandleAwsCommand(message) {
+    if (mpRole !== 'host' || !message || message.type !== 'command') return;
+    const role = message.fromRole === 'guest' ? 'guest' : message.fromRole === 'host' ? 'host' : null;
+    if (!role || role === 'host') return;
+    const commandType = String(message.commandType || '');
+    const payload = message.payload || {};
+    if (commandType === 'place') mpProcessPlace(role, payload);
+    if (commandType === 'upgrade_money_tree') mpProcessMoneyTreeUpgrade(role, payload);
+    if (commandType === 'upgrade_unit') mpProcessUpgradeUnit(role, payload);
+    if (commandType === 'sell_unit') mpProcessSellUnit(role, payload);
+  }
+
+  async function mpConnectAwsSocket(room = mpRoom) {
+    if (!room?.id) return false;
+    try {
+      await mpEnsureUser();
+    } catch (_) {
+      return false;
+    }
+
+    if (mpSocket && mpSocketRoomId === room.id && (mpSocket.readyState === WebSocket.OPEN || mpSocket.readyState === WebSocket.CONNECTING)) {
+      return true;
+    }
+
+    mpDisconnectAwsSocket(false);
+    mpSocketIntentionalClose = false;
+    mpSocketRoomId = room.id;
+
+    const socket = new WebSocket(MP_WS_URL);
+    mpSocket = socket;
+
+    socket.addEventListener('open', () => {
+      if (socket !== mpSocket) return;
+      try {
+        socket.send(JSON.stringify({
+          type: 'join',
+          roomId: room.id,
+          accessToken: mpAccessToken
+        }));
+      } catch (_) {}
+    });
+
+    socket.addEventListener('message', event => {
+      if (socket !== mpSocket) return;
+      let message = null;
+      try { message = JSON.parse(event.data); } catch (_) { return; }
+      if (!message || typeof message !== 'object') return;
+
+      if (message.type === 'joined') {
+        mpSocketJoined = true;
+        mpSocketRoomId = room.id;
+        mpSocketIntentionalClose = false;
+        clearInterval(mpSocketPingTimer);
+        mpSocketPingTimer = setInterval(() => {
+          if (!mpSocketIsReady()) return;
+          const sentAt = Date.now();
+          mpSocketSend({ type: 'client_ping', sentAt });
+        }, 10000);
+        if (!mpBattleEntered) mpSetStatus('AWS 서울 실시간 서버 연결 완료 · 상대와 동기화 중...', 'good');
+        return;
+      }
+
+      if (message.type === 'state') {
+        mpLastSocketStateAt = performance.now();
+        mpHandleBroadcastState(message);
+        return;
+      }
+
+      if (message.type === 'command') {
+        mpHandleAwsCommand(message);
+        return;
+      }
+
+      if (message.type === 'client_pong') {
+        const sentAt = Number(message.sentAt || 0);
+        if (sentAt) mpSocketLatencyMs = Math.max(0, Date.now() - sentAt);
+        return;
+      }
+
+      if (message.type === 'player_left') {
+        if (mpRoom?.mode === 'coop') {
+          mpEndCoopForEveryone('상대방이 협동방을 나가 방이 종료되었습니다.');
+        } else {
+          mpSetMessage('상대 연결이 종료되었습니다. 서버의 경기 종료 처리를 확인 중입니다.');
+        }
+        return;
+      }
+
+      if (message.type === 'error') {
+        console.warn('AWS 온라인 서버:', message.message || message.code || '오류');
+      }
+    });
+
+    socket.addEventListener('close', () => {
+      if (socket !== mpSocket) return;
+      mpSocketJoined = false;
+      mpSocket = null;
+      if (!mpSocketIntentionalClose && mpRoom?.id) {
+        mpSetMessage('AWS 실시간 연결을 복구 중입니다. Supabase 폴백으로 계속 동기화합니다.');
+        mpScheduleAwsReconnect();
+      }
+    });
+
+    socket.addEventListener('error', () => {
+      // close 이벤트에서 자동 재접속하며, 그동안 기존 Supabase 폴백이 작동합니다.
+    });
+
+    return true;
+  }
+
+  function mpSendAwsCommand(commandType, payload = {}) {
+    return mpSocketSend({
+      type: 'command',
+      commandType,
+      payload,
+      sentAt: Date.now()
+    });
   }
 
 
@@ -24090,6 +24488,7 @@ function requestGachaDraw(count) {
   }
 
   function mpCleanupConnection(resetRoom = true) {
+    mpDisconnectAwsSocket(true);
     clearInterval(mpRoomPollTimer);
     clearInterval(mpCommandPollTimer);
     mpRoomPollTimer = null;
@@ -24159,7 +24558,12 @@ function requestGachaDraw(count) {
     const roomId = mpRoom?.id;
     const roomMode = mpRoom?.mode;
 
-    // 협동방은 상대방에게 먼저 즉시 퇴장 신호를 보냅니다.
+    // AWS WebSocket으로 먼저 즉시 퇴장 신호를 보냅니다.
+    if (roomId && mpSocketIsReady()) {
+      mpSocketSend({ type: 'leave', roomId, sentAt: Date.now() });
+    }
+
+    // AWS 연결이 없을 때도 동작하도록 Supabase Broadcast를 폴백으로 유지합니다.
     if (roomId && roomMode === 'coop' && mpChannel) {
       try {
         await mpChannel.send({
@@ -24188,7 +24592,10 @@ function requestGachaDraw(count) {
     const roomId = mpRoom?.id;
     if (!roomId || mpRoom?.mode !== 'coop' || !mpAccessToken) return;
 
-    // 새로고침/탭 닫기에서도 상대방 화면이 즉시 종료되도록 Broadcast를 먼저 보냅니다.
+    // 새로고침/탭 닫기에서도 AWS 연결이 살아 있다면 즉시 퇴장 신호를 보냅니다.
+    try { mpSocketSend({ type: 'leave', roomId, sentAt: Date.now() }); } catch (_) {}
+
+    // Supabase Broadcast도 폴백으로 함께 보냅니다.
     try {
       mpChannel?.send({
         type: 'broadcast',
@@ -24258,6 +24665,9 @@ function requestGachaDraw(count) {
       )
       .subscribe();
 
+    // 방 생성/참가와 복구 DB는 Supabase, 실시간 전투 상태/명령은 서울 AWS WSS를 우선 사용합니다.
+    void mpConnectAwsSocket(room);
+
     clearInterval(mpRoomPollTimer);
     mpRoomPollTimer = setInterval(async () => {
       if (!mpRoom?.id) return;
@@ -24273,7 +24683,7 @@ function requestGachaDraw(count) {
         // DELETE Realtime 이벤트를 놓쳐도 방이 사라졌다면 둘 다 즉시 종료합니다.
         mpEndCoopForEveryone('상대방이 협동방을 나가 방이 종료되었습니다.');
       }
-    }, 1000);
+    }, 1500);
 
     if (room.status === 'playing') await mpHandleRoomUpdate(room);
   }
@@ -24675,6 +25085,10 @@ function requestGachaDraw(count) {
       mpProcessMoneyTreeUpgrade('host', { unitId: unit.id });
       return true;
     }
+    if (mpSendAwsCommand('upgrade_money_tree', { unitId: unit.id })) {
+      mpSetMessage('서울 서버로 돈나무 업그레이드 요청을 보냈습니다.');
+      return true;
+    }
     const { error } = await supabaseClient.from('multiplayer_commands').insert({
       room_id: mpRoom.id,
       sender_id: mpUserId,
@@ -24765,6 +25179,10 @@ function requestGachaDraw(count) {
     if (mpRole === 'host') {
       if (commandType === 'upgrade_unit') mpProcessUpgradeUnit('host', { unitId });
       if (commandType === 'sell_unit') mpProcessSellUnit('host', { unitId });
+      return;
+    }
+    if (mpSendAwsCommand(commandType, { unitId })) {
+      mpSetMessage(commandType === 'sell_unit' ? '서울 서버로 판매 요청을 보냈습니다.' : '서울 서버로 업그레이드 요청을 보냈습니다.');
       return;
     }
     const { error } = await supabaseClient.from('multiplayer_commands').insert({
@@ -24860,6 +25278,10 @@ function requestGachaDraw(count) {
     }
 
     mpSetMessage('방장에게 배치 요청을 보내는 중...');
+    if (mpSendAwsCommand('place', { unitId: mpSelectedUnitId, x: point.x, y: point.y, traits:selectedTraits })) {
+      mpSetMessage('서울 서버로 배치 요청을 보냈습니다.');
+      return;
+    }
     const { error } = await supabaseClient
       .from('multiplayer_commands')
       .insert({
@@ -24877,11 +25299,13 @@ function requestGachaDraw(count) {
 
   function mpStartCommandPolling() {
     clearInterval(mpCommandPollTimer);
-    mpCommandPollTimer = setInterval(mpPollCommands, 180);
+    mpCommandPollTimer = setInterval(mpPollCommands, 900);
   }
 
   async function mpPollCommands() {
     if (!mpRoom?.id || mpRole !== 'host' || !mpBattleEntered) return;
+    // AWS가 정상일 때는 180ms DB 폴링을 없애 CPU/네트워크 부하를 줄입니다.
+    if (mpSocketIsReady()) return;
     const { data, error } = await supabaseClient
       .from('multiplayer_commands')
       .select('id,sender_id,command_type,payload')
@@ -25230,9 +25654,23 @@ function requestGachaDraw(count) {
   }
 
   function mpFrontmostEnemyInUnitRange(targetState, unit, range = unit.range, excludeId = null) {
-    return [...(targetState.enemies||[])]
-      .filter(enemy => !enemy.dead && enemy.id !== excludeId && Number(enemy.soilPileUntil||0)<=Date.now() && Number(enemy.reviveInvulnerableUntil||0)<=Date.now() && Math.hypot(enemy.x-unit.x,enemy.y-unit.y)<=range)
-      .sort((a,b)=>Number(b.x||0)-Number(a.x||0))[0] || null;
+    const enemies = targetState.enemies || [];
+    const now = Date.now();
+    const rangeSq = Number(range || 0) * Number(range || 0);
+    let best = null;
+    let bestX = -Infinity;
+    for (const enemy of enemies) {
+      if (enemy.dead || enemy.id === excludeId || Number(enemy.soilPileUntil || 0) > now || Number(enemy.reviveInvulnerableUntil || 0) > now) continue;
+      const dx = enemy.x - unit.x;
+      const dy = enemy.y - unit.y;
+      if (dx * dx + dy * dy > rangeSq) continue;
+      const x = Number(enemy.x || 0);
+      if (x > bestX) {
+        bestX = x;
+        best = enemy;
+      }
+    }
+    return best;
   }
 
   function mpTriggerPoseidonWave(targetState, sideKey, unit) {
@@ -25466,16 +25904,25 @@ function requestGachaDraw(count) {
       enemy.x += enemy.speed * mpEnemyStatusSpeedMultiplier(enemy) * dt;
       if (enemy.x >= MP_BASE_X - 18) mpDamageBase(target, enemy, sideKey);
     }
-    target.enemies = target.enemies.filter(enemy => !enemy.dead);
+    let enemyWrite = 0;
+    for (let i = 0; i < target.enemies.length; i += 1) {
+      const enemy = target.enemies[i];
+      if (!enemy.dead) target.enemies[enemyWrite++] = enemy;
+    }
+    target.enemies.length = enemyWrite;
   }
 
   function mpFindTarget(unit, enemies) {
     let target = null;
     let bestX = -Infinity;
+    const now = Date.now();
+    const range = Number(unit.range || 0);
+    const rangeSq = range * range;
     for (const enemy of enemies) {
-      if (enemy.dead || Number(enemy.soilPileUntil || 0) > Date.now() || Number(enemy.reviveInvulnerableUntil || 0) > Date.now()) continue;
-      const d = Math.hypot(enemy.x - unit.x, enemy.y - unit.y);
-      if (d <= unit.range && enemy.x > bestX) {
+      if (enemy.dead || Number(enemy.soilPileUntil || 0) > now || Number(enemy.reviveInvulnerableUntil || 0) > now) continue;
+      const dx = enemy.x - unit.x;
+      const dy = enemy.y - unit.y;
+      if (dx * dx + dy * dy <= rangeSq && enemy.x > bestX) {
         target = enemy;
         bestX = enemy.x;
       }
@@ -26314,7 +26761,14 @@ function requestGachaDraw(count) {
   }
 
   function mpUpdateFx(dt) {
-    mpState.fx = (mpState.fx || []).map(fx => ({ ...fx, ttl: fx.ttl - dt })).filter(fx => fx.ttl > 0);
+    const fxList = mpState.fx || (mpState.fx = []);
+    let write = 0;
+    for (let i = 0; i < fxList.length; i += 1) {
+      const fx = fxList[i];
+      fx.ttl -= dt;
+      if (fx.ttl > 0) fxList[write++] = fx;
+    }
+    fxList.length = write;
   }
 
   function mpCheckDefeat() {
@@ -26375,8 +26829,19 @@ function requestGachaDraw(count) {
     const now = performance.now();
     const realtimeState = mpBuildRealtimeState();
 
-    // 10Hz Broadcast: DB를 거치지 않고 상대 화면에 즉시 전달합니다.
-    if (mpChannel && (force || now - mpLastBroadcastAt >= MP_BROADCAST_MS) && !mpBroadcastBusy) {
+    // 서울 AWS WSS를 우선 사용합니다. 약 15Hz로 전체 상태를 전달해 10Hz Realtime보다 움직임을 부드럽게 합니다.
+    if (mpSocketIsReady() && (force || now - mpLastBroadcastAt >= MP_WS_STATE_MS)) {
+      if (mpSocketSend({
+        type: 'state',
+        state: realtimeState,
+        status,
+        winnerId,
+        sentAt: Date.now()
+      })) {
+        mpLastBroadcastAt = now;
+      }
+    } else if (mpChannel && (force || now - mpLastBroadcastAt >= MP_BROADCAST_MS) && !mpBroadcastBusy) {
+      // AWS 장애 시에만 기존 Supabase Realtime으로 자동 폴백합니다.
       mpLastBroadcastAt = now;
       mpBroadcastBusy = true;
       void mpChannel.send({
@@ -27070,11 +27535,11 @@ function requestGachaDraw(count) {
           mpCtx.fill();
         };
   
-        if (id === 'poseidon') { drawPoseidonPremiumBodyArt(mpCtx, time, unit, mpHighLoadFrame ? .62 : .92); return; }
-        if (id === 'phoenix') { drawPhoenixPremiumBodyArt(mpCtx, time, unit, mpHighLoadFrame ? .60 : .90); return; }
-        if (id === 'iceQueen') { drawIceQueenPremiumBodyArt(mpCtx, time, unit, mpHighLoadFrame ? .60 : .90); return; }
-        if (id === 'eden') { drawEdenPremiumBodyArt(mpCtx, time, unit, mpHighLoadFrame ? .62 : .92); return; }
-        if (id === 'errorEntity') { drawErrorEntityBodyArt(mpCtx, time, unit, mpHighLoadFrame ? .60 : .90); return; }
+        if (id === 'poseidon') { drawPoseidonPremiumBodyArt(mpCtx, time, unit, mpHighLoadFrame ? .62 : 1); return; }
+        if (id === 'phoenix') { drawPhoenixPremiumBodyArt(mpCtx, time, unit, mpHighLoadFrame ? .60 : 1); return; }
+        if (id === 'iceQueen') { drawIceQueenPremiumBodyArt(mpCtx, time, unit, mpHighLoadFrame ? .60 : 1); return; }
+        if (id === 'eden') { drawEdenPremiumBodyArt(mpCtx, time, unit, mpHighLoadFrame ? .62 : 1); return; }
+        if (id === 'errorEntity') { drawErrorEntityBodyArt(mpCtx, time, unit, mpHighLoadFrame ? .60 : 1); return; }
 
         if (id === 'starterArcher') {
           drawBoots('#493326', 7);
@@ -27331,8 +27796,8 @@ function requestGachaDraw(count) {
     if (unit.unitId === 'eclipse') {
       drawEclipseGalaxyAuraArt(mpCtx, time, unit, mpHighLoadFrame ? .72 : 1);
     }
-    if (unit.unitId === 'eden') drawEdenAuraArt(mpCtx,time,unit,mpHighLoadFrame?.62:.9);
-    if (unit.unitId === 'errorEntity' && !unit._shadowCloneVisual) drawErrorEntityAuraArt(mpCtx,time,unit,mpHighLoadFrame?.55:.86);
+    if (unit.unitId === 'eden') drawEdenAuraArt(mpCtx,time,unit,mpHighLoadFrame?.62:1);
+    if (unit.unitId === 'errorEntity' && !unit._shadowCloneVisual) drawErrorEntityAuraArt(mpCtx,time,unit,mpHighLoadFrame?.55:1);
 
     // 소유 플레이어를 알아보기 쉬운 외곽 링
     mpCtx.beginPath();
@@ -27993,7 +28458,8 @@ function requestGachaDraw(count) {
       edenMinions = side?.edenMinions || [];
     }
 
-    mpHighLoadFrame = enemies.length > 9 || units.length > 10 || (mpState.fx?.length || 0) > 36;
+    // 성능은 배경 캐시·네트워크/DOM 최적화로 확보하고, 전투가 복잡해져도 유닛/이펙트 디테일은 낮추지 않습니다.
+    mpHighLoadFrame = false;
 
     const selectedPlaced = units.find(unit => unit.id === mpSelectedPlacedUnitId);
     if (selectedPlaced && Number(selectedPlaced.range || 0) > 0) {

@@ -12317,6 +12317,17 @@ function requestGachaDraw(count) {
     let battle = null;
     let animationId = null;
     let previousTime = 0;
+    // 120/144Hz 모니터에서도 전투 전체를 120~144회 다시 계산/렌더하지 않습니다.
+    // 화면 품질은 그대로 60fps로 유지하면서 CPU/GPU 사용량을 크게 낮춥니다.
+    const BATTLE_FRAME_MS = 1000 / 60;
+    let battleFrameAccumulator = 0;
+    let battleLastUiRefreshAt = 0;
+
+    // 적이 많아지는 후반/4스테이지용 공간 그리드.
+    // 모든 유닛이 매 공격마다 전체 적 배열을 훑는 O(유닛×적) 비용을 줄입니다.
+    const BATTLE_ENEMY_GRID_CELL = 128;
+    const battleEnemyGrid = new Map();
+    const battleEnemyGridUsedKeys = [];
     let deferredInstallPrompt = null;
     // 고정 배경/길은 매 프레임 다시 그리지 않고 완성된 픽셀을 캐시합니다.
     // 비주얼 품질은 그대로 유지하면서 그라디언트·수십 개의 장식 path 비용을 제거합니다.
@@ -12556,6 +12567,11 @@ function requestGachaDraw(count) {
     let attackSfxWindowCount = 0;
     const attackSfxLastByUnit = new Map();
 
+    // 그림자분신술은 본체 공격을 그대로 한 번 더 계산하지만, 같은 효과음을 또 합성하거나
+    // HUD/메시지 DOM을 갱신할 필요는 없습니다. 공격 판정과 모든 시각 이펙트는 그대로 유지합니다.
+    let shadowCloneReplayDepth = 0;
+    function isShadowCloneReplayActive() { return shadowCloneReplayDepth > 0; }
+
     function getAttackSfxNoiseBuffer(audio) {
       if (attackSfxNoiseBuffer && attackSfxNoiseBuffer.sampleRate === audio.sampleRate) return attackSfxNoiseBuffer;
       const length = Math.max(1, Math.floor(audio.sampleRate * .55));
@@ -12644,6 +12660,9 @@ function requestGachaDraw(count) {
     }
 
     function playUnitAttackSound(unitId, options = {}) {
+      // 분신 공격에서는 본체와 동일한 WebAudio 노드를 또 만들지 않습니다.
+      // 시각 이펙트/데미지는 그대로이며 공격 순간의 오디오 GC 스파이크만 제거합니다.
+      if (isShadowCloneReplayActive()) return;
       const data = UNIT_DATA?.[unitId];
       if (!data || unitId === 'moneyTree') return;
       const audio = ensureBattleAudio();
@@ -13199,7 +13218,7 @@ function requestGachaDraw(count) {
       document.querySelector('#stageMapInfoPanel')?.classList.add('hidden');
       document.querySelector('#stageMapInfoBtn')?.setAttribute('aria-expanded','false');
       renderSelectedPanel(); updateOrientationGuard(); launchWave(1); updateBattleUi();
-      previousTime=performance.now(); cancelAnimationFrame(animationId); animationId=requestAnimationFrame(gameLoop);
+      previousTime=performance.now(); battleFrameAccumulator=0; battleLastUiRefreshAt=0; cancelAnimationFrame(animationId); animationId=requestAnimationFrame(gameLoop);
     }
 
     function createBattle() {
@@ -13288,6 +13307,8 @@ function requestGachaDraw(count) {
       updateBattleUi();
 
       previousTime = performance.now();
+      battleFrameAccumulator = 0;
+      battleLastUiRefreshAt = 0;
       cancelAnimationFrame(animationId);
       animationId = requestAnimationFrame(gameLoop);
     }
@@ -13748,6 +13769,24 @@ function requestGachaDraw(count) {
       return targets.length;
     }
 
+    const MAX_ACTIVE_PATH_ENEMIES = 20;
+
+    function isPathEnemyForSpawnCap(enemy) {
+      if (!enemy || enemy.dead) return false;
+      // 4스테이지 50웨이브의 고정 선인장은 길 위를 이동하는 적이 아니므로 제외합니다.
+      if (enemy.staticCactus && enemy.spawnRandomVisible) return false;
+      return true;
+    }
+
+    function getActivePathEnemyCount() {
+      if (!battle?.enemies?.length) return 0;
+      let count = 0;
+      for (let i = 0; i < battle.enemies.length; i += 1) {
+        if (isPathEnemyForSpawnCap(battle.enemies[i])) count += 1;
+      }
+      return count;
+    }
+
     function getWaveState(waveNumber) {
       return battle?.activeWaves.find(item => item.wave === waveNumber) || null;
     }
@@ -13779,7 +13818,8 @@ function requestGachaDraw(count) {
         escaped: 0,
         spawnTimer: 0,
         completed: false,
-        cleared: false
+        cleared: false,
+        isSkip: Boolean(options.isSkip)
       };
 
       battle.activeWaves.push(waveState);
@@ -13895,8 +13935,12 @@ function requestGachaDraw(count) {
       const launched = launchWave(nextWave, { isSkip: true });
 
       if (launched) {
+        const activePathEnemies = getActivePathEnemyCount();
+        const waitingNote = activePathEnemies >= MAX_ACTIVE_PATH_ENEMIES
+          ? ` 현재 길에 적이 ${MAX_ACTIVE_PATH_ENEMIES}마리라 새 적은 대기열에서 보류됩니다.`
+          : ` 길 위 적은 최대 ${MAX_ACTIVE_PATH_ENEMIES}마리까지만 등장하고 초과분은 자동 대기합니다.`;
         setBattleMessage(
-          `${isAutomatic ? '자동 ' : ''}웨이브 스킵! ${nextWave}웨이브의 적이 현재 적과 함께 등장합니다.`
+          `${isAutomatic ? '자동 ' : ''}웨이브 스킵! ${nextWave}웨이브가 대기열에 추가되었습니다.${waitingNote}`
         );
       }
 
@@ -14028,8 +14072,11 @@ function requestGachaDraw(count) {
       });
     }
 
-    function updateBattleUi() {
+    function updateBattleUi(force = false) {
       if (!battle) return;
+      const uiNow = performance.now();
+      if (!force && uiNow - battleLastUiRefreshAt < 90) return;
+      battleLastUiRefreshAt = uiNow;
       setBattleUiText('stage', battleUiRefs.stage, battle.isInfinite ? '∞' : battle.stage);
       setBattleUiText('difficulty', battleUiRefs.difficulty,
         battle.isInfinite ? '개인 무한' : (battle.difficulty?.name || '보통'));
@@ -14044,6 +14091,7 @@ function requestGachaDraw(count) {
     }
 
     function setBattleMessage(text) {
+      if (isShadowCloneReplayActive()) return;
       // 하단의 상시 메시지 박스는 제거했습니다. 보스 경고 등 전용 UI만 사용합니다.
       const el = document.querySelector('#battleMessage');
       if (el) el.textContent = text;
@@ -14815,18 +14863,58 @@ function requestGachaDraw(count) {
       return multiplier;
     }
 
+    function rebuildBattleEnemyGrid() {
+      for (let i = 0; i < battleEnemyGridUsedKeys.length; i += 1) {
+        const bucket = battleEnemyGrid.get(battleEnemyGridUsedKeys[i]);
+        if (bucket) bucket.length = 0;
+      }
+      battleEnemyGridUsedKeys.length = 0;
+      if (!battle?.enemies?.length) return;
+
+      for (let i = 0; i < battle.enemies.length; i += 1) {
+        const enemy = battle.enemies[i];
+        if (!enemy || enemy.dead) continue;
+        const cx = Math.floor(Number(enemy.x || 0) / BATTLE_ENEMY_GRID_CELL);
+        const cy = Math.floor(Number(enemy.y || 0) / BATTLE_ENEMY_GRID_CELL);
+        const key = cx + cy * 64;
+        let bucket = battleEnemyGrid.get(key);
+        if (!bucket) {
+          bucket = [];
+          battleEnemyGrid.set(key, bucket);
+        }
+        if (bucket.length === 0) battleEnemyGridUsedKeys.push(key);
+        bucket.push(enemy);
+      }
+    }
+
+    function forEachBattleEnemyNear(x, y, range, callback) {
+      const minX = Math.floor((x - range) / BATTLE_ENEMY_GRID_CELL);
+      const maxX = Math.floor((x + range) / BATTLE_ENEMY_GRID_CELL);
+      const minY = Math.floor((y - range) / BATTLE_ENEMY_GRID_CELL);
+      const maxY = Math.floor((y + range) / BATTLE_ENEMY_GRID_CELL);
+      for (let cy = minY; cy <= maxY; cy += 1) {
+        for (let cx = minX; cx <= maxX; cx += 1) {
+          const bucket = battleEnemyGrid.get(cx + cy * 64);
+          if (!bucket?.length) continue;
+          for (let i = 0; i < bucket.length; i += 1) callback(bucket[i]);
+        }
+      }
+    }
+
     function getFrontmostEnemyFromPoint(x, y, range) {
       let best = null;
       let bestProgress = -Infinity;
-      for (const enemy of battle?.enemies || []) {
-        if (enemy.dead || enemy.soilPileState || Number(enemy.reviveInvulnerableRemaining || 0) > 0) continue;
-        if (Math.hypot(enemy.x - x, enemy.y - y) > range) continue;
+      const rangeSq = range * range;
+      forEachBattleEnemyNear(x, y, range, enemy => {
+        if (enemy.dead || enemy.soilPileState || Number(enemy.reviveInvulnerableRemaining || 0) > 0) return;
+        const dx = enemy.x - x, dy = enemy.y - y;
+        if (dx * dx + dy * dy > rangeSq) return;
         const progress = Number(enemy.targetIndex || 0);
         if (progress > bestProgress) {
           best = enemy;
           bestProgress = progress;
         }
-      }
+      });
       return best;
     }
 
@@ -15601,8 +15689,7 @@ function requestGachaDraw(count) {
     function isEnemyInsideCone(enemy, placed, facingAngle, range, halfAngle) {
       const dx = enemy.x - placed.x;
       const dy = enemy.y - placed.y;
-      const distance = Math.hypot(dx, dy);
-      if (distance > range) return false;
+      if (dx * dx + dy * dy > range * range) return false;
 
       const enemyAngle = Math.atan2(dy, dx);
       return Math.abs(normalizeBattleAngle(enemyAngle - facingAngle)) <= halfAngle;
@@ -15661,6 +15748,7 @@ function requestGachaDraw(count) {
         const delayedBefore=(battle.delayedAttacks||[]).length;
         source._shadowEchoExecuting=true;
         source.cooldown=0;
+        shadowCloneReplayDepth += 1;
         try{
           updatePlacedUnitCore(source,0);
           source.shadowCloneAttackAnimation=Math.max(1,Number(source.attackAnimation||1));
@@ -15669,6 +15757,7 @@ function requestGachaDraw(count) {
           source.shadowClonePulse=.42;
           for(let i=delayedBefore;i<(battle.delayedAttacks||[]).length;i++) battle.delayedAttacks[i].shadowClone=true;
         }finally{
+          shadowCloneReplayDepth = Math.max(0, shadowCloneReplayDepth - 1);
           source._shadowEchoExecuting=false;
           source.cooldown=oldCooldown;
           source.attackAnimation=oldAnimation;
@@ -16283,11 +16372,11 @@ function requestGachaDraw(count) {
       let bestProgress = -Infinity;
       let bestRemainSq = Infinity;
 
-      for (const enemy of battle.enemies) {
-        if (enemy.dead || enemy.soilPileState) continue;
+      forEachBattleEnemyNear(placed.x, placed.y, maxRange, enemy => {
+        if (enemy.dead || enemy.soilPileState) return;
         const dx = enemy.x - placed.x;
         const dy = enemy.y - placed.y;
-        if (dx * dx + dy * dy > rangeSq) continue;
+        if (dx * dx + dy * dy > rangeSq) return;
 
         const progress = Number(enemy.targetIndex || 0);
         const next = path[Math.min(path.length - 1, progress)] || enemy;
@@ -16300,7 +16389,7 @@ function requestGachaDraw(count) {
           bestProgress = progress;
           bestRemainSq = remainSq;
         }
-      }
+      });
       return best;
     }
 
@@ -16763,15 +16852,22 @@ function requestGachaDraw(count) {
     }
 
     function getErrorVolleyTargets(placed, primaryTarget, count = 5) {
-      const valid = battle.enemies
-        .filter(enemy => !enemy.dead && !enemy.soilPileState && Number(enemy.reviveInvulnerableRemaining || 0) <= 0)
-        .filter(enemy => Math.hypot(enemy.x - placed.x, enemy.y - placed.y) <= Number(placed.range || UNIT_DATA.errorEntity.range || 360));
+      const range = Number(placed.range || UNIT_DATA.errorEntity.range || 360);
+      const rangeSq = range * range;
+      const valid = [];
+      forEachBattleEnemyNear(placed.x, placed.y, range, enemy => {
+        if (enemy.dead || enemy.soilPileState || Number(enemy.reviveInvulnerableRemaining || 0) > 0) return;
+        const dx = enemy.x - placed.x, dy = enemy.y - placed.y;
+        if (dx * dx + dy * dy > rangeSq) return;
+        enemy._perfDistSq = dx * dx + dy * dy;
+        valid.push(enemy);
+      });
       valid.sort((a, b) => {
         if (a === primaryTarget) return -1;
         if (b === primaryTarget) return 1;
         const pa = Number(a.targetIndex || 0), pb = Number(b.targetIndex || 0);
         if (pb !== pa) return pb - pa;
-        return Math.hypot(a.x - placed.x, a.y - placed.y) - Math.hypot(b.x - placed.x, b.y - placed.y);
+        return Number(a._perfDistSq || 0) - Number(b._perfDistSq || 0);
       });
       const unique = valid.slice(0, Math.max(1, Math.min(Number(count || 5), valid.length)));
       if (!unique.length && primaryTarget && !primaryTarget.dead) unique.push(primaryTarget);
@@ -16781,14 +16877,16 @@ function requestGachaDraw(count) {
     function applyErrorPacketSplash(placed, impactX, impactY, damage) {
       const data = UNIT_DATA.errorEntity;
       const radius = Number(data.errorPacketSplashRadius || 58);
+      const radiusSq = radius * radius;
       let hitCount = 0;
-      for (const enemy of [...battle.enemies]) {
-        if (enemy.dead || enemy.soilPileState || Number(enemy.reviveInvulnerableRemaining || 0) > 0) continue;
-        if (Math.hypot(enemy.x - impactX, enemy.y - impactY) > radius) continue;
+      forEachBattleEnemyNear(impactX, impactY, radius, enemy => {
+        if (enemy.dead || enemy.soilPileState || Number(enemy.reviveInvulnerableRemaining || 0) > 0) return;
+        const dx = enemy.x - impactX, dy = enemy.y - impactY;
+        if (dx * dx + dy * dy > radiusSq) return;
         const killed = applyDamageToEnemy(enemy, damage);
         hitCount += 1;
         if (!killed && !enemy.dead) applyErrorCorruptionStack(enemy);
-      }
+      });
       return hitCount;
     }
 
@@ -16946,18 +17044,7 @@ function requestGachaDraw(count) {
         return;
       }
 
-      let target = null;
-      let bestProgress = -1;
-
-      for (const enemy of battle.enemies) {
-        if (enemy.dead || enemy.soilPileState) continue;
-        const distance = Math.hypot(enemy.x - placed.x, enemy.y - placed.y);
-        if (distance <= placed.range && enemy.targetIndex > bestProgress) {
-          target = enemy;
-          bestProgress = enemy.targetIndex;
-        }
-      }
-
+      const target = getFrontmostEnemyInRange(placed, placed.range);
       if (!target) return;
 
       if (placed.unitId !== 'eclipse') playUnitAttackSound(placed.unitId);
@@ -17309,19 +17396,36 @@ function requestGachaDraw(count) {
         }
       }
 
-      battle.activeWaves.forEach(waveState => {
-        if (waveState.completed || waveState.spawned >= waveState.total) return;
+      // 스킵으로 여러 웨이브가 겹쳐도 길 위에는 최대 20마리만 유지합니다.
+      // 20마리가 차면 다음 웨이브 자체는 정상적으로 스킵/예약되지만, 적 소환만 대기합니다.
+      // 적이 처치되거나 탈출해서 빈 자리가 생기면 오래 기다린 웨이브부터 즉시 그 자리를 채웁니다.
+      let pathSpawnSlots = Math.max(0, MAX_ACTIVE_PATH_ENEMIES - getActivePathEnemyCount());
+      for (let waveIndex = 0; waveIndex < battle.activeWaves.length; waveIndex += 1) {
+        const waveState = battle.activeWaves[waveIndex];
+        if (waveState.completed || waveState.spawned >= waveState.total) continue;
 
         waveState.spawnTimer -= dt;
-        if (waveState.spawnTimer <= 0) {
-          spawnEnemyFromWave(waveState);
-          waveState.spawnTimer = battle.stage === 2
-            ? (waveState.wave === 39 ? .34 : .70)
-            : (waveState.wave === 10 ? .12 : .78);
+        if (waveState.spawnTimer > 0) continue;
+
+        const nextSpec = waveState.queue[waveState.spawned];
+        if (!nextSpec) continue;
+        const isPathSpawn = !(nextSpec.staticCactus && nextSpec.spawnRandomVisible);
+
+        if (isPathSpawn && pathSpawnSlots <= 0) {
+          // 타이머를 0에 고정해서 슬롯이 생기는 즉시 소환되도록 대기합니다.
+          waveState.spawnTimer = 0;
+          continue;
         }
-      });
+
+        spawnEnemyFromWave(waveState);
+        if (isPathSpawn) pathSpawnSlots -= 1;
+        waveState.spawnTimer = battle.stage === 2
+          ? (waveState.wave === 39 ? .34 : .70)
+          : (waveState.wave === 10 ? .12 : .78);
+      }
 
       battle.enemies.forEach(enemy => updateEnemy(enemy, dt));
+      rebuildBattleEnemyGrid();
       battle.placedUnits.forEach(unit => updatePlacedUnit(unit, dt));
       updateEdenMinions(dt);
       updateDelayedAttacks(dt);
@@ -20417,13 +20521,14 @@ function requestGachaDraw(count) {
       // 일반 베기는 벚꽃 사무라이와 같은 전체 검 스윙을 사용하므로
       // 이클립스 자체의 작은 흔들림은 회전참에서만 유지합니다.
       const swing = unit?.attackMode === 'eclipseSpin' && attack > 0 ? Math.sin((1 - Math.min(1, attack)) * Math.PI) : 0;
-      const hues = [348 + Math.sin(t*.9)*9, 5 + Math.cos(t*.77)*8];
+      const hues = [348 + Math.sin(t*.9)*9];
 
-      for (let bladeIndex = 0; bladeIndex < 2; bladeIndex += 1) {
-        const side = bladeIndex === 0 ? -1 : 1;
+      // 실제 들고 있는 검은 한 자루. 에너지 잔광/스킬 이펙트는 그대로 유지합니다.
+      for (let bladeIndex = 0; bladeIndex < 1; bladeIndex += 1) {
+        const side = 0;
         g.save();
-        g.translate(-5, side * 9);
-        g.rotate(side * (.08 + swing * .22));
+        g.translate(-5, 0);
+        g.rotate(swing * .22);
 
         const edgeColor = `hsl(${hues[bladeIndex]} 100% 62%)`;
         g.shadowColor = edgeColor;
@@ -20507,12 +20612,12 @@ function requestGachaDraw(count) {
           skin: shadow ? '#000' : '#e8b991', edge: shadow ? '#000' : '#fff0a0'
         },
         cherrySamurai: {
-          grips:[[-8,-7],[-8,7]], shoulders:[[-19,-5],[-19,7]],
+          grips:[[-8,0]], shoulders:[[-19,2]],
           sleeve: shadow ? '#000' : '#442438', armor: shadow ? '#000' : '#8b3f66',
           skin: shadow ? '#000' : '#edb895', edge: shadow ? '#000' : '#ffc0dd'
         },
         eclipse: {
-          grips:[[-11,-9],[-11,9]], shoulders:[[-21,-6],[-21,7]],
+          grips:[[-11,0]], shoulders:[[-21,1]],
           sleeve: '#030104', armor: '#250711',
           skin: '#090206', edge: shadow ? '#000' : '#ff446a'
         }
@@ -21791,14 +21896,35 @@ function requestGachaDraw(count) {
       const attack = Math.max(0, Math.min(1, Number(attackValue || 0)));
       if (attack <= 0) return 0;
       const p = 1 - attack;
-      // 벚꽃 사무라이 근접 베기와 완전히 같은: 짧은 백스윙 → 가속 → 180° 베기 → 감속.
-      if (p < .16) {
-        const w = p / .16;
-        return -1.34 - (w * w * (3 - 2 * w)) * .22;
+      // 검이 적 반대쪽을 오래 가리키지 않도록 타깃 방향을 중심으로 한 자연스러운 베기.
+      // 짧은 백스윙 → 몸을 싣는 가속 → 적 방향 통과 → 짧은 팔로스루.
+      if (p < .14) {
+        const w = p / .14;
+        const e = w * w * (3 - 2 * w);
+        return -.72 - e * .12;
       }
-      const w = (p - .16) / .84;
-      const eased = w * w * (3 - 2 * w);
-      return -1.56 + eased * 3.12;
+      const w = (p - .14) / .86;
+      const e = w * w * (3 - 2 * w);
+      return -.84 + e * 1.68;
+    }
+
+    function swordBodyAttackPose(unit) {
+      const id = String(unit?.unitId || '');
+      if (!isSwordHoldingUnit(unit)) return {active:false,dx:0,dy:0,bodyTilt:0};
+      const attack = Math.max(0, Math.min(1, Number(unit?.attackAnimation || 0)));
+      if (attack <= .001) return {active:false,dx:0,dy:0,bodyTilt:0};
+      const p = 1 - attack;
+      const angle = Number.isFinite(Number(unit?.angle)) ? Number(unit.angle) : 0;
+      const strike = Math.sin(Math.max(0, Math.min(1, p)) * Math.PI);
+      const settle = Math.sin(Math.max(0, Math.min(1, p)) * Math.PI * 2);
+      let lunge = (id === 'cherrySamurai' ? 11 : id === 'eclipse' ? 10 : id === 'royalGuardian' ? 8 : 7) * strike;
+      if (id === 'eclipse' && unit?.attackMode === 'eclipseSpin') lunge *= .35;
+      if (id === 'royalGuardian' && unit?.attackMode === 'rangedSmash') lunge *= .55;
+      const dx = Math.cos(angle) * lunge;
+      const dy = Math.sin(angle) * lunge + Math.abs(strike) * 1.3;
+      const facingSign = Math.cos(angle) < 0 ? -1 : 1;
+      const bodyTilt = settle * .075 * facingSign;
+      return {active:true,dx,dy,bodyTilt};
     }
 
     function drawAimedUnitWeapon(unit, data, time) {
@@ -21819,7 +21945,7 @@ function requestGachaDraw(count) {
       } else if (unit.unitId === 'royalGuardian' && attack > 0 && unit.attackMode === 'rangedSmash') {
         const motionProgress = 1 - attack;
         weaponRecoil = 0;
-        weaponAngle += -1.48 + motionProgress * 1.72;
+        weaponAngle += -.78 + motionProgress * 1.10;
       }
 
       if (unit.unitId === 'cherrySamurai') {
@@ -21833,7 +21959,7 @@ function requestGachaDraw(count) {
           if (unit.attackMode === 'sakuraMelee') {
             weaponAngle += cherrySamuraiMeleeSwingOffset(attack);
           } else if (unit.attackMode === 'sakuraWave') {
-            weaponAngle += -1.42 + motionProgress * 2.84;
+            weaponAngle += -.72 + motionProgress * 1.50;
           } else if (unit.attackMode === 'sakuraIssen') {
             weaponAngle += .78;
           } else if (unit.attackMode === 'sakuraUltimate') {
@@ -21889,7 +22015,7 @@ function requestGachaDraw(count) {
         const bloomCast = unit.samuraiBloomCast;
         const bloomActive = bloomCast && time >= Number(bloomCast.startAt || 0) && time <= Number(bloomCast.endAt || 0);
         const bloomProgress = bloomActive ? Math.max(0, Math.min(1, (time - bloomCast.startAt) / Math.max(1, bloomCast.endAt - bloomCast.startAt))) : 0;
-        for (const offset of [-7, 7]) {
+        for (const offset of [0]) {
           ctx.save(); ctx.translate(0, offset);
           ctx.shadowBlur = bloomActive ? 30 : (13 + attack * 10); ctx.shadowColor = bloomActive ? '#ff4fa5' : '#ff9bca';
           const steel = ctx.createLinearGradient(-6,0,63,0);
@@ -21990,9 +22116,11 @@ function requestGachaDraw(count) {
 
     function drawDetailedUnitSprite(unit, time) {
       const data = UNIT_DATA[unit.unitId];
-      if (unit.unitId === 'eclipse') drawEclipseGalaxyAuraArt(ctx, time, unit, 1);
-      if (unit.unitId === 'eden') drawEdenAuraArt(ctx, time, unit, 1);
-      if (unit.unitId === 'errorEntity' && !unit._shadowCloneVisual) drawErrorEntityAuraArt(ctx, time, unit, 1);
+      // 분신은 최종적으로 완전 검정 실루엣이 되므로, 내부에서 사라지는 고비용 컬러 aura를
+      // 미리 계산하지 않습니다. 분신의 실제 공격 이펙트는 별도로 모두 유지됩니다.
+      if (!unit._shadowCloneVisual && unit.unitId === 'eclipse') drawEclipseGalaxyAuraArt(ctx, time, unit, 1);
+      if (!unit._shadowCloneVisual && unit.unitId === 'eden') drawEdenAuraArt(ctx, time, unit, 1);
+      if (!unit._shadowCloneVisual && unit.unitId === 'errorEntity') drawErrorEntityAuraArt(ctx, time, unit, 1);
       const auraPulse = .36 + Math.sin(time * .005 + unit.animationOffset) * .10;
       ctx.beginPath();
       ctx.arc(0, 2, 31, 0, Math.PI * 2);
@@ -22000,8 +22128,21 @@ function requestGachaDraw(count) {
       ctx.lineWidth = unit.unitId === 'eclipse' ? 3.6 : (unit.unitId === 'errorEntity' ? 3.4 : (unit.unitId === 'eden' ? 3.2 : (unit.unitId === 'skyDragonKnight' || unit.unitId === 'astralChronomancer' || unit.unitId === 'poseidon' || unit.unitId === 'phoenix' ? 3 : 1.5)));
       ctx.stroke();
 
-      drawStandingUnitBody(unit, time);
-      drawAimedUnitWeapon(unit, data, time);
+      const swordPose = swordBodyAttackPose(unit);
+      if (swordPose.active) {
+        ctx.save();
+        ctx.translate(swordPose.dx, swordPose.dy);
+        ctx.save();
+        ctx.rotate(swordPose.bodyTilt);
+        drawStandingUnitBody(unit, time);
+        ctx.restore();
+        // 검은 항상 실제 타깃 각도를 기준으로 유지하고, 몸만 체중 이동/기울기를 줍니다.
+        drawAimedUnitWeapon(unit, data, time);
+        ctx.restore();
+      } else {
+        drawStandingUnitBody(unit, time);
+        drawAimedUnitWeapon(unit, data, time);
+      }
       if (Number(unit.hackedRemaining||0) > 0) {
         ctx.save();
         ctx.globalCompositeOperation='lighter';
@@ -22170,6 +22311,29 @@ function requestGachaDraw(count) {
     }
 
 
+    function getShadowCloneVisualProxy(unit, angle) {
+      // 매 프레임 {...unit}으로 큰 객체를 복제하면 공격이 몰릴 때 GC가 발생합니다.
+      // 원본 유닛을 prototype으로 쓰는 비열거 프록시 하나를 재사용해 동일한 그림을 그립니다.
+      let proxy = unit?._shadowCloneRenderProxy;
+      if (!proxy || Object.getPrototypeOf(proxy) !== unit) {
+        proxy = Object.create(unit || null);
+        if (unit) {
+          try {
+            Object.defineProperty(unit, '_shadowCloneRenderProxy', {
+              value: proxy, writable: true, configurable: true, enumerable: false
+            });
+          } catch (_) {
+            unit._shadowCloneRenderProxy = proxy;
+          }
+        }
+      }
+      proxy.angle = Number.isFinite(Number(angle)) ? Number(angle) : Number(unit?.angle || 0);
+      proxy.attackAnimation = Number(unit?.shadowCloneAttackAnimation || 0);
+      proxy.attackMode = unit?.shadowCloneAttackMode || unit?.attackMode;
+      proxy._shadowCloneVisual = true;
+      return proxy;
+    }
+
     function shadowCloneVisualOffset(unit, angle) {
       // ERROR는 대형 별/프리즘 외형이므로 분신을 멀리 이동시키면
       // 다른 위치에 설치된 유닛처럼 보입니다. 본체 바로 뒤에 겹쳐 보이도록 고정합니다.
@@ -22191,7 +22355,7 @@ function requestGachaDraw(count) {
 
       if (placedHasTrait(unit,'shadowClone')) {
         const a=Number.isFinite(Number(unit.shadowCloneAngle))?Number(unit.shadowCloneAngle):Number(unit.angle||0);
-        const cloneUnit={...unit,angle:a,attackAnimation:Number(unit.shadowCloneAttackAnimation||0),attackMode:unit.shadowCloneAttackMode||unit.attackMode,_shadowCloneVisual:true};
+        const cloneUnit=getShadowCloneVisualProxy(unit,a);
         const cloneOffset = shadowCloneVisualOffset(unit, a);
         ctx.save();
         ctx.translate(cloneOffset.x, cloneOffset.y);
@@ -22624,7 +22788,6 @@ function requestGachaDraw(count) {
           const radius = Number(shot.radius || 120);
           const half = ((Number(shot.coneAngle || 180) * Math.PI / 180) / 2);
           const totalArc = half * 2;
-          // 0~78% 동안 시작점→끝점으로 칼끝이 이동하고, 뒤쪽 검흔은 순서대로 사라집니다.
           const motion = Math.max(0, Math.min(1, progress / .78));
           const eased = motion * motion * (3 - 2 * motion);
           const headAngle = -half + totalArc * eased;
@@ -22641,39 +22804,36 @@ function requestGachaDraw(count) {
             : slashTheme === 'royal' ? '#ffe36e'
             : slashTheme === 'eclipse' ? '#ff385d'
             : '#ff86bd';
-          ctx.save(); ctx.translate(shot.x1, shot.y1); ctx.rotate(shot.angle);
-          ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter'; ctx.lineCap='round';
-          for (let bladeIndex = 0; bladeIndex < 2; bladeIndex++) {
-            const bladeRadius = radius * (bladeIndex === 0 ? .78 : .90);
-            const segments = 20;
-            for (let seg = 0; seg < segments; seg++) {
-              const t0 = seg / segments, t1 = (seg + 1) / segments;
-              const a0 = tailAngle + (headAngle - tailAngle) * t0;
-              const a1 = tailAngle + (headAngle - tailAngle) * t1;
-              const headWeight = .14 + t1 * .86;
-              const alpha = vanish * headWeight;
-              ctx.shadowBlur = 12 + 22 * headWeight; ctx.shadowColor = '#ffffff';
-              ctx.strokeStyle = `rgba(255,255,255,${.93 * alpha})`;
-              ctx.lineWidth = 5.0 + 4.5 * headWeight;
-              ctx.beginPath(); ctx.arc(0, 0, bladeRadius, a0, a1); ctx.stroke();
-              ctx.shadowBlur = 8; ctx.shadowColor = slashGlow;
-              ctx.strokeStyle = `rgba(${slashOuterRgb[0]},${slashOuterRgb[1]},${slashOuterRgb[2]},${.52 * alpha})`;
-              ctx.lineWidth = 10 + 5 * headWeight;
-              ctx.beginPath(); ctx.arc(0, 0, bladeRadius + 2, a0, a1); ctx.stroke();
+          ctx.save();ctx.translate(shot.x1,shot.y1);ctx.rotate(shot.angle);ctx.lineCap='round';
+          ctx.globalCompositeOperation=shot.shadowClone?'source-over':'lighter';
+          // 예전에는 프레임마다 2×20조각×2회 = 최대 80번 stroke 했습니다.
+          // 같은 두 겹의 검흔을 연속 Path로 한 번씩 그려 픽셀 수/이펙트 범위는 유지하고 드로우콜만 줄입니다.
+          for(let bladeIndex=0;bladeIndex<2;bladeIndex+=1){
+            const bladeRadius=radius*(bladeIndex===0?.78:.90);
+            if(shot.shadowClone){
+              ctx.shadowBlur=0;ctx.strokeStyle=`rgba(0,0,0,${.96*vanish})`;ctx.lineWidth=bladeIndex===0?15:11;
+              ctx.beginPath();ctx.arc(0,0,bladeRadius,tailAngle,headAngle);ctx.stroke();
+              ctx.strokeStyle=`rgba(0,0,0,${vanish})`;ctx.lineWidth=bladeIndex===0?6:4;
+              ctx.beginPath();ctx.arc(0,0,bladeRadius,tailAngle,headAngle);ctx.stroke();
+            }else{
+              ctx.shadowColor=slashGlow;ctx.shadowBlur=20;ctx.strokeStyle=`rgba(${slashOuterRgb[0]},${slashOuterRgb[1]},${slashOuterRgb[2]},${.44*vanish})`;ctx.lineWidth=bladeIndex===0?16:13;
+              ctx.beginPath();ctx.arc(0,0,bladeRadius+2,tailAngle,headAngle);ctx.stroke();
+              ctx.shadowColor='#fff';ctx.shadowBlur=14;ctx.strokeStyle=`rgba(255,255,255,${.92*vanish})`;ctx.lineWidth=bladeIndex===0?7.5:6;
+              ctx.beginPath();ctx.arc(0,0,bladeRadius,tailAngle,headAngle);ctx.stroke();
+              ctx.shadowBlur=0;ctx.strokeStyle=`rgba(${slashOuterRgb[0]},${slashOuterRgb[1]},${slashOuterRgb[2]},${.76*vanish})`;ctx.lineWidth=2.6;
+              ctx.beginPath();ctx.arc(0,0,bladeRadius,tailAngle,headAngle);ctx.stroke();
             }
-            // 현재 칼끝 위치를 날카로운 빛으로 표시해 실제 휘두르는 방향이 보이게 합니다.
-            const hx = Math.cos(headAngle) * bladeRadius, hy = Math.sin(headAngle) * bladeRadius;
-            ctx.shadowBlur=24;ctx.shadowColor='#ffffff';ctx.fillStyle=`rgba(255,255,255,${.92*vanish})`;
-            ctx.beginPath();ctx.ellipse(hx,hy,3.2,11,headAngle,0,Math.PI*2);ctx.fill();
+            const hx=Math.cos(headAngle)*bladeRadius,hy=Math.sin(headAngle)*bladeRadius;
+            ctx.shadowBlur=shot.shadowClone?0:20;ctx.shadowColor=shot.shadowClone?'#000':'#fff';ctx.fillStyle=shot.shadowClone?`rgba(0,0,0,${.98*vanish})`:`rgba(255,255,255,${.94*vanish})`;
+            ctx.beginPath();ctx.ellipse(hx,hy,3.0,10.5,headAngle,0,Math.PI*2);ctx.fill();
           }
+          ctx.shadowBlur=0;
           if (slashTheme === 'sakura') {
             const petalCount = 15;
             for (let i=0;i<petalCount;i++) {
-              const local = (i+.5)/petalCount;
-              const a = tailAngle + (headAngle-tailAngle)*local;
-              const d = radius*(.55 + (i%5)*.075);
+              const local=(i+.5)/petalCount,a=tailAngle+(headAngle-tailAngle)*local,d=radius*(.55+(i%5)*.075);
               ctx.save();ctx.translate(Math.cos(a)*d,Math.sin(a)*d);ctx.rotate(a+progress*5+i*.8);
-              ctx.fillStyle=`rgba(255,164,210,${vanish*(.30+local*.55)})`;
+              ctx.fillStyle=shot.shadowClone?`rgba(0,0,0,${vanish*(.42+local*.45)})`:`rgba(255,164,210,${vanish*(.30+local*.55)})`;
               ctx.beginPath();ctx.ellipse(0,0,2.2,5.5,.2,0,Math.PI*2);ctx.fill();ctx.restore();
             }
           }
@@ -23289,14 +23449,39 @@ function requestGachaDraw(count) {
     function gameLoop(time) {
       if (!battle) return;
 
-      const dt = Math.min((time - previousTime) / 1000, 0.05);
+      if (!previousTime) previousTime = time;
+      const elapsedMs = Math.min(50, Math.max(0, time - previousTime));
       previousTime = time;
+      battleFrameAccumulator += elapsedMs;
 
-      updateBattle(dt);
+      // 60Hz보다 빠른 디스플레이에서 불필요한 중복 프레임을 건너뜁니다.
+      if (battleFrameAccumulator + 0.05 < BATTLE_FRAME_MS) {
+        animationId = requestAnimationFrame(gameLoop);
+        return;
+      }
+
+      // 고정 60Hz 시뮬레이션. 순간 프레임 드롭 때도 최대 2회만 따라잡아 spiral-of-death를 막습니다.
+      let steps = 0;
+      while (battleFrameAccumulator >= BATTLE_FRAME_MS && steps < 2) {
+        updateBattle(BATTLE_FRAME_MS / 1000);
+        battleFrameAccumulator -= BATTLE_FRAME_MS;
+        steps += 1;
+        if (!battle || battle.ended) break;
+      }
+      if (battleFrameAccumulator > BATTLE_FRAME_MS * 2) battleFrameAccumulator = BATTLE_FRAME_MS;
+
       drawBattle(time);
-
       animationId = requestAnimationFrame(gameLoop);
     }
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        previousTime = performance.now();
+        battleFrameAccumulator = 0;
+        mpPreviousTime = performance.now();
+        mpFrameAccumulator = 0;
+      }
+    });
 
     function endBattle(victory, failureReason = '') {
       if (!battle || battle.ended) return;
@@ -23803,6 +23988,8 @@ function requestGachaDraw(count) {
   let mpHostRuntime = null;
   let mpAnimationId = null;
   let mpPreviousTime = 0;
+  const MP_FRAME_MS = 1000 / 60;
+  let mpFrameAccumulator = 0;
   let mpLastPublishAt = 0;
   let mpPublishBusy = false;
   let mpSelectedUnitId = null;
@@ -23857,6 +24044,7 @@ function requestGachaDraw(count) {
   }
 
   function mpSetMessage(text) {
+    if (isShadowCloneReplayActive()) return;
     mpLocalMessage = text || '';
     const el = document.querySelector('#mpMessage');
     if (el) el.textContent = mpLocalMessage;
@@ -24803,6 +24991,7 @@ function requestGachaDraw(count) {
     }
 
     mpPreviousTime = performance.now();
+    mpFrameAccumulator = 0;
     cancelAnimationFrame(mpAnimationId);
     mpAnimationId = requestAnimationFrame(mpFrame);
   }
@@ -25229,7 +25418,7 @@ function requestGachaDraw(count) {
     panel.innerHTML = `<div class="selected-panel-header"><h3>${data.icon||''} ${data.name||unit.unitId}</h3><button id="mpCloseUnitInfoBtn" class="close-battle-info-button" type="button">×</button></div>${stats}<div class="unit-skill-note"><strong>능력 요약</strong><p>${summary}</p></div>${controls}`;
     panel.querySelector('#mpCloseUnitInfoBtn')?.addEventListener('click',()=>{mpSelectedPlacedUnitId=null;mpRenderSelectedUnitPanel();});
     panel.querySelector('#mpUpgradeUnitBtn')?.addEventListener('click',()=>void mpSendUnitAction('upgrade_unit',unit.id));
-    panel.querySelector('#mpSellUnitBtn')?.addEventListener('click',()=>{if(confirm(`${data.name}을 판매하시겠습니까?`))void mpSendUnitAction('sell_unit',unit.id);});
+    panel.querySelector('#mpSellUnitBtn')?.addEventListener('click',()=>void mpSendUnitAction('sell_unit',unit.id));
   }
 
   function mpProcessPlace(role, payload) {
@@ -25979,14 +26168,26 @@ function requestGachaDraw(count) {
     return durations[kind] || .28;
   }
 
+  const mpFxPool = [];
   function mpPushFx(x1, y1, x2, y2, color, size = 3, sideKey = null, kind = 'line', extras = {}) {
     mpState.fx ||= [];
     const duration = mpFxDuration(kind);
-    mpState.fx.push({
+    const fx = mpFxPool.pop() || {};
+    // 이전 이펙트의 옵션이 남지 않도록 재사용 객체만 정리합니다.
+    for (const key in fx) delete fx[key];
+    Object.assign(fx, {
       id: mpMakeId('fx'), x1, y1, x2, y2, color, size, sideKey, kind,
-      ttl: duration, maxTtl: duration, seed: Math.random() * 1000, ...extras
-    });
-    if (mpState.fx.length > 64) mpState.fx.splice(0, mpState.fx.length - 64);
+      ttl: duration, maxTtl: duration, seed: Math.random() * 1000
+    }, extras);
+    mpState.fx.push(fx);
+    if (mpState.fx.length > 64) {
+      const removeCount = mpState.fx.length - 64;
+      for (let i=0;i<removeCount;i+=1) {
+        const oldFx=mpState.fx[i];
+        if(oldFx && mpFxPool.length<128) mpFxPool.push(oldFx);
+      }
+      mpState.fx.splice(0, removeCount);
+    }
   }
 
   function mpAttackEffectKind(unitId) {
@@ -26686,6 +26887,7 @@ function requestGachaDraw(count) {
         const oldCooldown=Number(source.cooldown||0),oldAnimation=Number(source.attackAnimation||0),oldMode=source.attackMode,oldAngle=Number(source.angle||0);
         const fxBefore=(mpState.fx||[]).length, delayedBefore=mpState.delayedAttacks.length;
         source._shadowEchoExecuting=true;
+        shadowCloneReplayDepth += 1;
         try{
           mpPerformUnitAttackCore(targetState,attack.sideKey,source,target);
           source.shadowCloneAttackAnimation=Math.max(1,Number(source.attackAnimation||1));
@@ -26695,6 +26897,7 @@ function requestGachaDraw(count) {
           for(let i=fxBefore;i<(mpState.fx||[]).length;i++) mpState.fx[i].shadowClone=true;
           for(let i=delayedBefore;i<mpState.delayedAttacks.length;i++) mpState.delayedAttacks[i].shadowClone=true;
         }finally{
+          shadowCloneReplayDepth = Math.max(0, shadowCloneReplayDepth - 1);
           source._shadowEchoExecuting=false;source.cooldown=oldCooldown;source.attackAnimation=oldAnimation;source.attackMode=oldMode;source.angle=oldAngle;
         }
         continue;
@@ -26767,6 +26970,7 @@ function requestGachaDraw(count) {
       const fx = fxList[i];
       fx.ttl -= dt;
       if (fx.ttl > 0) fxList[write++] = fx;
+      else if (mpFxPool.length < 128) mpFxPool.push(fx);
     }
     fxList.length = write;
   }
@@ -26827,10 +27031,16 @@ function requestGachaDraw(count) {
   async function mpPublishState(force = false, status = 'playing', winnerId = null) {
     if (!mpRoom?.id || mpRole !== 'host' || !mpState) return;
     const now = performance.now();
+    const socketReady = mpSocketIsReady();
+    const needsRealtime = force || now - mpLastBroadcastAt >= (socketReady ? MP_WS_STATE_MS : MP_BROADCAST_MS);
+    const needsDb = force || now - mpLastDbPublishAt >= MP_DB_PUBLISH_MS;
+    // 예전에는 rAF(최대 144Hz)마다 큰 상태 객체를 먼저 만들고 나서 전송 주기를 검사했습니다.
+    // 실제 전송/저장이 필요한 프레임에서만 상태를 직렬화합니다.
+    if (!needsRealtime && !needsDb) return;
     const realtimeState = mpBuildRealtimeState();
 
-    // 서울 AWS WSS를 우선 사용합니다. 약 15Hz로 전체 상태를 전달해 10Hz Realtime보다 움직임을 부드럽게 합니다.
-    if (mpSocketIsReady() && (force || now - mpLastBroadcastAt >= MP_WS_STATE_MS)) {
+    // 서울 AWS WSS를 우선 사용합니다. 약 15Hz로 전체 상태를 전달합니다.
+    if (socketReady && (force || now - mpLastBroadcastAt >= MP_WS_STATE_MS)) {
       if (mpSocketSend({
         type: 'state',
         state: realtimeState,
@@ -26984,8 +27194,16 @@ function requestGachaDraw(count) {
 
   function mpFrame(time) {
     if (!mpBattleEntered || !mpState) return;
-    const dt = mpPreviousTime ? Math.min(.05, Math.max(0, (time - mpPreviousTime) / 1000)) : 0;
+    if (!mpPreviousTime) mpPreviousTime = time;
+    const elapsedMs = Math.min(50, Math.max(0, time - mpPreviousTime));
     mpPreviousTime = time;
+    mpFrameAccumulator += elapsedMs;
+    if (mpFrameAccumulator + 0.05 < MP_FRAME_MS) {
+      mpAnimationId = requestAnimationFrame(mpFrame);
+      return;
+    }
+    const dt = Math.min(.05, mpFrameAccumulator / 1000);
+    mpFrameAccumulator %= MP_FRAME_MS;
 
     if (mpRole === 'host') {
       mpStepHost(dt);
@@ -27686,11 +27904,11 @@ function requestGachaDraw(count) {
         } else if (unit.unitId === 'royalGuardian' && attack > 0 && unit.attackMode === 'rangedSmash') {
           const motionProgress = 1 - attack;
           weaponRecoil = 0;
-          weaponAngle += -1.48 + motionProgress * 1.72;
+          weaponAngle += -.78 + motionProgress * 1.10;
         }
 
         if (unit.unitId === 'cherrySamurai') {
-          weaponRecoil=0;const wallNow=Date.now(),bloom=unit.samuraiBloomCast,bloomActive=bloom&&wallNow>=Number(bloom.startAt||0)&&wallNow<=Number(bloom.endAt||0);if(bloomActive){weaponAngle=-Math.PI/2;}else if(attack>0){const p=1-attack;if(unit.attackMode==='sakuraMelee')weaponAngle+=cherrySamuraiMeleeSwingOffset(attack);else if(unit.attackMode==='sakuraWave')weaponAngle+=-1.42+p*2.84;else if(unit.attackMode==='sakuraIssen')weaponAngle+=.78;else if(unit.attackMode==='sakuraUltimate')weaponAngle+=Math.sin(p*Math.PI*4)*.85;}
+          weaponRecoil=0;const wallNow=Date.now(),bloom=unit.samuraiBloomCast,bloomActive=bloom&&wallNow>=Number(bloom.startAt||0)&&wallNow<=Number(bloom.endAt||0);if(bloomActive){weaponAngle=-Math.PI/2;}else if(attack>0){const p=1-attack;if(unit.attackMode==='sakuraMelee')weaponAngle+=cherrySamuraiMeleeSwingOffset(attack);else if(unit.attackMode==='sakuraWave')weaponAngle+=-.72+p*1.50;else if(unit.attackMode==='sakuraIssen')weaponAngle+=.78;else if(unit.attackMode==='sakuraUltimate')weaponAngle+=Math.sin(p*Math.PI*4)*.85;}
         }
   
         mpCtx.save();
@@ -27742,9 +27960,9 @@ function requestGachaDraw(count) {
           drawErrorEntityWeaponArt(mpCtx, unit, time, attack);
         } else if (unit.unitId === 'cherrySamurai') {
           const wallNow=Date.now(),bloom=unit.samuraiBloomCast,bloomActive=bloom&&wallNow>=Number(bloom.startAt||0)&&wallNow<=Number(bloom.endAt||0),bp=bloomActive?Math.max(0,Math.min(1,(wallNow-bloom.startAt)/Math.max(1,bloom.endAt-bloom.startAt))):0;
-          for(const offset of [-7,7]){mpCtx.save();mpCtx.translate(0,offset);mpCtx.shadowBlur=bloomActive?(mpHighLoadFrame?18:30):(mpHighLoadFrame?8:13);mpCtx.shadowColor=bloomActive?'#ff4fa5':'#ff9bca';const steel=mpCtx.createLinearGradient(-6,0,63,0);steel.addColorStop(0,bloomActive?'#5b123a':'#23151e');steel.addColorStop(.18,bloomActive?'#ff5eaf':'#987286');steel.addColorStop(.48,'#fffdfd');steel.addColorStop(.72,bloomActive?'#ffaad4':'#dff7ff');steel.addColorStop(1,bloomActive?'#ff3f9d':'#ffb8d8');mpCtx.fillStyle=steel;mpCtx.strokeStyle=bloomActive?'#fff4fb':'#fff2fa';mpCtx.lineWidth=bloomActive?2.2:1.2;mpCtx.beginPath();mpCtx.moveTo(-2,-2.7);mpCtx.lineTo(48,-2.2);mpCtx.quadraticCurveTo(58,-1,66,0);mpCtx.quadraticCurveTo(57,2,48,2.6);mpCtx.lineTo(-2,3);mpCtx.closePath();mpCtx.fill();mpCtx.stroke();mpCtx.shadowBlur=0;mpCtx.fillStyle='#3a2030';mpCtx.fillRect(-11,-4,11,8);mpCtx.fillStyle='#ff8fc8';mpCtx.fillRect(-14,-7,3,14);if(bloomActive&&!mpHighLoadFrame){for(let i=0;i<10;i++){const a=wallNow*.010+i*Math.PI*2/10,px=34+Math.cos(a)*(15+bp*7),py=Math.sin(a)*(8+bp*4);mpCtx.save();mpCtx.translate(px,py);mpCtx.rotate(a+wallNow*.004);mpCtx.fillStyle=`rgba(255,${118+(i%3)*26},${187+(i%2)*28},${.62+bp*.28})`;mpCtx.beginPath();mpCtx.ellipse(0,0,2.4,5.4,.2,0,Math.PI*2);mpCtx.fill();mpCtx.restore();}}mpCtx.restore();}
+          for(const offset of [0]){mpCtx.save();mpCtx.translate(0,offset);mpCtx.shadowBlur=bloomActive?(mpHighLoadFrame?18:30):(mpHighLoadFrame?8:13);mpCtx.shadowColor=bloomActive?'#ff4fa5':'#ff9bca';const steel=mpCtx.createLinearGradient(-6,0,63,0);steel.addColorStop(0,bloomActive?'#5b123a':'#23151e');steel.addColorStop(.18,bloomActive?'#ff5eaf':'#987286');steel.addColorStop(.48,'#fffdfd');steel.addColorStop(.72,bloomActive?'#ffaad4':'#dff7ff');steel.addColorStop(1,bloomActive?'#ff3f9d':'#ffb8d8');mpCtx.fillStyle=steel;mpCtx.strokeStyle=bloomActive?'#fff4fb':'#fff2fa';mpCtx.lineWidth=bloomActive?2.2:1.2;mpCtx.beginPath();mpCtx.moveTo(-2,-2.7);mpCtx.lineTo(48,-2.2);mpCtx.quadraticCurveTo(58,-1,66,0);mpCtx.quadraticCurveTo(57,2,48,2.6);mpCtx.lineTo(-2,3);mpCtx.closePath();mpCtx.fill();mpCtx.stroke();mpCtx.shadowBlur=0;mpCtx.fillStyle='#3a2030';mpCtx.fillRect(-11,-4,11,8);mpCtx.fillStyle='#ff8fc8';mpCtx.fillRect(-14,-7,3,14);if(bloomActive&&!mpHighLoadFrame){for(let i=0;i<10;i++){const a=wallNow*.010+i*Math.PI*2/10,px=34+Math.cos(a)*(15+bp*7),py=Math.sin(a)*(8+bp*4);mpCtx.save();mpCtx.translate(px,py);mpCtx.rotate(a+wallNow*.004);mpCtx.fillStyle=`rgba(255,${118+(i%3)*26},${187+(i%2)*28},${.62+bp*.28})`;mpCtx.beginPath();mpCtx.ellipse(0,0,2.4,5.4,.2,0,Math.PI*2);mpCtx.fill();mpCtx.restore();}}mpCtx.restore();}
         } else if (unit.unitId === 'eclipse') {
-          drawEclipseTwinBladesArt(mpCtx, time, unit, attack, mpHighLoadFrame ? .72 : 1);
+          drawEclipseTwinBladesArt(mpCtx, time, unit, attack, 1);
         } else if (unit.unitId === 'skyDragonKnight') {
           // 황금 신화창: 이중 자루, 용날개 가드, 보석과 다층 창날
           const shaft = mpCtx.createLinearGradient(-5,0,58,0); shaft.addColorStop(0,'#6a3c00'); shaft.addColorStop(.38,'#d99a16'); shaft.addColorStop(.68,'#fff2a6'); shaft.addColorStop(1,'#b86a00');
@@ -27817,11 +28035,22 @@ function requestGachaDraw(count) {
     if (unit.unitId === 'cherrySamurai') mpCtx.rotate(mpSamuraiRenderRotation(unit, Date.now()));
     if(placedHasTrait(unit,'shadowClone')){
       const a=Number.isFinite(Number(unit.shadowCloneAngle))?Number(unit.shadowCloneAngle):Number(unit.angle||0);
-      const cloneUnit={...unit,angle:a,attackAnimation:Number(unit.shadowCloneAttackAnimation||0),attackMode:unit.shadowCloneAttackMode||unit.attackMode,_shadowCloneVisual:true};
-      const cloneOffset=shadowCloneVisualOffset(unit,a);mpCtx.save();mpCtx.translate(cloneOffset.x,cloneOffset.y);mpCtx.scale(cloneOffset.scale,cloneOffset.scale);mpCtx.globalAlpha=.46+Math.min(.18,Number(unit.shadowClonePulse||0)*.35);mpCtx.filter='grayscale(1) brightness(.08) contrast(2.4)';mpDetailStandingUnitBody(cloneUnit,time);mpDetailAimedUnitWeapon(cloneUnit,data,time);mpCtx.restore();
+      const cloneUnit=getShadowCloneVisualProxy(unit,a);
+      const cloneOffset=shadowCloneVisualOffset(unit,a);mpCtx.save();mpCtx.translate(cloneOffset.x,cloneOffset.y);mpCtx.scale(cloneOffset.scale,cloneOffset.scale);mpCtx.globalAlpha=.46+Math.min(.18,Number(unit.shadowClonePulse||0)*.35);mpCtx.filter='grayscale(1) brightness(.08) contrast(2.4)';
+      const clonePose=swordBodyAttackPose(cloneUnit);
+      if(clonePose.active){mpCtx.translate(clonePose.dx,clonePose.dy);mpCtx.save();mpCtx.rotate(clonePose.bodyTilt);mpDetailStandingUnitBody(cloneUnit,time);mpCtx.restore();mpDetailAimedUnitWeapon(cloneUnit,data,time);}
+      else {mpDetailStandingUnitBody(cloneUnit,time);mpDetailAimedUnitWeapon(cloneUnit,data,time);}
+      mpCtx.restore();
     }
-    mpDetailStandingUnitBody(unit, time);
-    mpDetailAimedUnitWeapon(unit, data, time);
+    const swordPose=swordBodyAttackPose(unit);
+    if(swordPose.active){
+      mpCtx.save();mpCtx.translate(swordPose.dx,swordPose.dy);
+      mpCtx.save();mpCtx.rotate(swordPose.bodyTilt);mpDetailStandingUnitBody(unit,time);mpCtx.restore();
+      mpDetailAimedUnitWeapon(unit,data,time);mpCtx.restore();
+    } else {
+      mpDetailStandingUnitBody(unit, time);
+      mpDetailAimedUnitWeapon(unit, data, time);
+    }
 
     if (unit.unitId === 'astralChronomancer' && Array.isArray(unit.chronoOrbitingShots)) {
       const count = unit.chronoOrbitingShots.length;
@@ -28303,11 +28532,25 @@ function requestGachaDraw(count) {
         mpCtx.fillStyle=g;mpCtx.beginPath();mpCtx.moveTo(0,0);mpCtx.arc(0,0,radius,-half,half);mpCtx.closePath();mpCtx.fill();
         for(let i=0;i<3;i+=1){mpCtx.strokeStyle=`rgba(255,239,130,${pulse*(.9-i*.2)})`;mpCtx.lineWidth=7-i*1.7;mpCtx.beginPath();mpCtx.arc(0,0,radius*(.62+i*.15),-half,half);mpCtx.stroke();}mpCtx.strokeStyle=`rgba(255,255,245,${.95*pulse})`;mpCtx.lineWidth=3;mpCtx.beginPath();mpCtx.arc(0,0,radius*(.82+progress*.08),-half*.96,half*.96);mpCtx.stroke();
       } else if (fx.kind === 'sakuraMelee') {
-        const radius=Number(fx.radius||120),half=((Number(fx.coneAngle||180)*Math.PI/180)/2),total=half*2,motion=Math.max(0,Math.min(1,progress/.78)),eased=motion*motion*(3-2*motion),head=-half+total*eased;let span=total*Math.min(.62,Math.max(.08,motion*.90));if(progress>.70)span*=Math.max(0,1-(progress-.70)/.30);const tail=Math.max(-half,head-span),vanish=progress<.72?1:Math.max(0,1-(progress-.72)/.28);
+        const radius=Number(fx.radius||120),half=((Number(fx.coneAngle||180)*Math.PI/180)/2),total=half*2,motion=Math.max(0,Math.min(1,progress/.78)),eased=motion*motion*(3-2*motion),head=-half+total*eased;
+        let span=total*Math.min(.62,Math.max(.08,motion*.90));if(progress>.70)span*=Math.max(0,1-(progress-.70)/.30);
+        const tail=Math.max(-half,head-span),vanish=progress<.72?1:Math.max(0,1-(progress-.72)/.28);
         const slashTheme=String(fx.slashTheme||'sakura'),slashOuter=slashTheme==='steel'?[150,202,245]:slashTheme==='royal'?[255,204,55]:slashTheme==='eclipse'?[255,52,88]:[255,120,185],slashGlow=slashTheme==='steel'?'#c9e9ff':slashTheme==='royal'?'#ffe36e':slashTheme==='eclipse'?'#ff385d':'#ff86bd';
         mpCtx.translate(fx.x1,y1);mpCtx.rotate(fx.angle||angle);mpCtx.globalCompositeOperation=fx.shadowClone?'source-over':'lighter';mpCtx.lineCap='round';
-        for(let b=0;b<2;b++){const rr=radius*(b===0?.78:.90),segs=mpHighLoadFrame?10:18;for(let seg=0;seg<segs;seg++){const t0=seg/segs,t1=(seg+1)/segs,a0=tail+(head-tail)*t0,a1=tail+(head-tail)*t1,w=.14+t1*.86,alpha=vanish*w;mpCtx.shadowBlur=mpHighLoadFrame?10:12+20*w;mpCtx.shadowColor='#fff';mpCtx.strokeStyle=`rgba(255,255,255,${.93*alpha})`;mpCtx.lineWidth=5+4.5*w;mpCtx.beginPath();mpCtx.arc(0,0,rr,a0,a1);mpCtx.stroke();mpCtx.shadowBlur=7;mpCtx.shadowColor=slashGlow;mpCtx.strokeStyle=`rgba(${slashOuter[0]},${slashOuter[1]},${slashOuter[2]},${.50*alpha})`;mpCtx.lineWidth=10+5*w;mpCtx.beginPath();mpCtx.arc(0,0,rr+2,a0,a1);mpCtx.stroke();}const hx=Math.cos(head)*rr,hy=Math.sin(head)*rr;mpCtx.shadowBlur=20;mpCtx.shadowColor='#fff';mpCtx.fillStyle=`rgba(255,255,255,${.9*vanish})`;mpCtx.beginPath();mpCtx.ellipse(hx,hy,3,10,head,0,Math.PI*2);mpCtx.fill();}
-        if(slashTheme==='sakura'&&!mpHighLoadFrame){for(let i=0;i<12;i++){const local=(i+.5)/12,a=tail+(head-tail)*local,d=radius*(.55+(i%4)*.09);mpCtx.save();mpCtx.translate(Math.cos(a)*d,Math.sin(a)*d);mpCtx.rotate(a+progress*5+i*.8);mpCtx.fillStyle=`rgba(255,164,210,${vanish*(.3+local*.5)})`;mpCtx.beginPath();mpCtx.ellipse(0,0,2.1,5.2,.2,0,Math.PI*2);mpCtx.fill();mpCtx.restore();}}
+        for(let b=0;b<2;b++){
+          const rr=radius*(b===0?.78:.90);
+          if(fx.shadowClone){
+            mpCtx.shadowBlur=0;mpCtx.strokeStyle=`rgba(0,0,0,${.96*vanish})`;mpCtx.lineWidth=b===0?15:11;mpCtx.beginPath();mpCtx.arc(0,0,rr,tail,head);mpCtx.stroke();
+            mpCtx.strokeStyle=`rgba(0,0,0,${vanish})`;mpCtx.lineWidth=b===0?6:4;mpCtx.beginPath();mpCtx.arc(0,0,rr,tail,head);mpCtx.stroke();
+          }else{
+            mpCtx.shadowColor=slashGlow;mpCtx.shadowBlur=20;mpCtx.strokeStyle=`rgba(${slashOuter[0]},${slashOuter[1]},${slashOuter[2]},${.44*vanish})`;mpCtx.lineWidth=b===0?16:13;mpCtx.beginPath();mpCtx.arc(0,0,rr+2,tail,head);mpCtx.stroke();
+            mpCtx.shadowColor='#fff';mpCtx.shadowBlur=14;mpCtx.strokeStyle=`rgba(255,255,255,${.92*vanish})`;mpCtx.lineWidth=b===0?7.5:6;mpCtx.beginPath();mpCtx.arc(0,0,rr,tail,head);mpCtx.stroke();
+            mpCtx.shadowBlur=0;mpCtx.strokeStyle=`rgba(${slashOuter[0]},${slashOuter[1]},${slashOuter[2]},${.76*vanish})`;mpCtx.lineWidth=2.6;mpCtx.beginPath();mpCtx.arc(0,0,rr,tail,head);mpCtx.stroke();
+          }
+          const hx=Math.cos(head)*rr,hy=Math.sin(head)*rr;mpCtx.shadowBlur=fx.shadowClone?0:20;mpCtx.shadowColor=fx.shadowClone?'#000':'#fff';mpCtx.fillStyle=fx.shadowClone?`rgba(0,0,0,${.98*vanish})`:`rgba(255,255,255,${.94*vanish})`;mpCtx.beginPath();mpCtx.ellipse(hx,hy,3,10.5,head,0,Math.PI*2);mpCtx.fill();
+        }
+        mpCtx.shadowBlur=0;
+        if(slashTheme==='sakura'){const pc=15;for(let i=0;i<pc;i++){const local=(i+.5)/pc,a=tail+(head-tail)*local,d=radius*(.55+(i%5)*.075);mpCtx.save();mpCtx.translate(Math.cos(a)*d,Math.sin(a)*d);mpCtx.rotate(a+progress*5+i*.8);mpCtx.fillStyle=fx.shadowClone?`rgba(0,0,0,${vanish*(.42+local*.45)})`:`rgba(255,164,210,${vanish*(.30+local*.55)})`;mpCtx.beginPath();mpCtx.ellipse(0,0,2.2,5.5,.2,0,Math.PI*2);mpCtx.fill();mpCtx.restore();}}
       } else if (fx.kind === 'sakuraWave') {
         const tail=84,tx=x-ux*tail,ty=y-uy*tail;mpCtx.save();mpCtx.translate(x,y);mpCtx.rotate(angle);mpCtx.globalCompositeOperation=fx.shadowClone?'source-over':'lighter';mpCtx.shadowBlur=mpHighLoadFrame?18:32;mpCtx.shadowColor='#e9fbff';const blade=mpCtx.createLinearGradient(-78,0,38,0);blade.addColorStop(0,'rgba(150,225,255,0)');blade.addColorStop(.35,`rgba(185,240,255,${.34*fade})`);blade.addColorStop(.68,`rgba(225,249,255,${.84*fade})`);blade.addColorStop(.88,`rgba(255,225,244,${.92*fade})`);blade.addColorStop(1,`rgba(255,255,255,${fade})`);mpCtx.fillStyle=blade;mpCtx.beginPath();mpCtx.moveTo(-72,-3);mpCtx.quadraticCurveTo(-8,-31,38,-2);mpCtx.quadraticCurveTo(11,6,-72,5);mpCtx.closePath();mpCtx.fill();mpCtx.strokeStyle=`rgba(255,255,255,${fade})`;mpCtx.lineWidth=3.1;mpCtx.beginPath();mpCtx.moveTo(-58,-2);mpCtx.quadraticCurveTo(2,-24,36,-1);mpCtx.stroke();mpCtx.restore();mpCtx.strokeStyle=`rgba(205,243,255,${.30*fade})`;mpCtx.lineWidth=13;mpCtx.beginPath();mpCtx.moveTo(tx,ty);mpCtx.lineTo(x,y);mpCtx.stroke();mpCtx.strokeStyle=`rgba(255,145,201,${.28*fade})`;mpCtx.lineWidth=7;mpCtx.beginPath();mpCtx.moveTo(tx-ny*5,ty+nx*5);mpCtx.lineTo(x-ny*2,y+nx*2);mpCtx.stroke();for(let i=0;i<(mpHighLoadFrame?6:12);i++){const back=12+i*7,side=Math.sin(fx.seed+i*2.1)*14;mpCtx.save();mpCtx.translate(x-ux*back+nx*side,y-uy*back+ny*side);mpCtx.rotate(angle+i*.85+progress*2);mpCtx.fillStyle=`rgba(255,170,214,${fade*(.86-i*.045)})`;mpCtx.beginPath();mpCtx.ellipse(0,0,2.2,5.3,0,0,Math.PI*2);mpCtx.fill();mpCtx.restore();}
       } else if (fx.kind === 'sakuraIssen' || fx.kind === 'sakuraUltimateCut') {

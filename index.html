@@ -4593,6 +4593,107 @@ body {
   .stage-choice-row{flex-direction:column}.limited-event-stage-card{flex-basis:auto;width:100%}
   .rainbow-event-grid{grid-template-columns:1fr}.rainbow-event-dialog{padding:18px}
 }
+
+
+/* ===== 무지개 저편 UX / 안정성 / 성능 V4 ===== */
+.rarity-legendary{
+  color:#facc15!important;
+  text-shadow:0 0 8px rgba(250,204,21,.55),0 0 16px rgba(255,235,110,.22);
+}
+@keyframes rainbowDiceFlow{
+  0%{background-position:0% 50%;filter:saturate(1.1) brightness(1.03)}
+  50%{background-position:100% 50%;filter:saturate(1.32) brightness(1.10)}
+  100%{background-position:0% 50%;filter:saturate(1.1) brightness(1.03)}
+}
+@keyframes rainbowDiceGlow{
+  0%,100%{box-shadow:0 0 18px rgba(255,92,164,.42),inset 0 0 18px rgba(255,255,255,.16)}
+  33%{box-shadow:0 0 24px rgba(85,226,255,.48),inset 0 0 20px rgba(255,255,255,.20)}
+  66%{box-shadow:0 0 24px rgba(183,104,255,.48),inset 0 0 20px rgba(255,255,255,.20)}
+}
+.rainbow-dice-card{
+  position:relative;overflow:hidden;
+  border-color:rgba(255,255,255,.68)!important;
+  background:linear-gradient(115deg,rgba(255,83,151,.22),rgba(255,215,77,.20),rgba(74,234,163,.19),rgba(81,183,255,.21),rgba(182,87,255,.22),rgba(255,83,151,.22))!important;
+  background-size:350% 350%!important;
+  animation:rainbowDiceFlow 4.2s linear infinite,rainbowDiceGlow 2.6s ease-in-out infinite;
+}
+.rainbow-dice-card::before{
+  content:'';position:absolute;inset:-45%;pointer-events:none;
+  background:conic-gradient(from 0deg,transparent,rgba(255,255,255,.24),transparent 17%,rgba(255,255,255,.08),transparent 45%);
+  animation:rainbowEventCardSweep 5s linear infinite;
+}
+.rainbow-dice-card>*{position:relative;z-index:1}
+.rainbow-dice-card .mini-die,.rainbow-item-die{
+  background:linear-gradient(135deg,#ff5f9f,#ffd85f,#68ef9c,#69caff,#ba79ff,#ff5f9f)!important;
+  background-size:320% 320%!important;
+  animation:rainbowDiceFlow 2.25s linear infinite,rainbowDiceGlow 1.9s ease-in-out infinite;
+  border-color:#fff!important;
+}
+.rainbow-dice-card .mini-die span,.rainbow-item-die span{background:#fff!important;box-shadow:0 0 5px rgba(255,255,255,.9)}
+.rainbow-dice-resource{
+  background-size:300% 300%!important;
+  animation:rainbowDiceFlow 3.8s linear infinite,rainbowDiceGlow 2.8s ease-in-out infinite;
+}
+
+.rainbow-event-loading{
+  position:fixed;z-index:20000;inset:0;display:grid;place-items:center;overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 45%,rgba(255,255,255,.12),transparent 24%),
+    linear-gradient(180deg,#182658 0%,#56418a 48%,#1a1738 100%);
+  transition:opacity .55s ease,visibility .55s ease;
+}
+.rainbow-event-loading.hidden{display:none}
+.rainbow-loading-sky{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.rainbow-loading-arc{
+  position:absolute;left:50%;top:52%;width:min(900px,120vw);height:min(450px,60vw);transform:translate(-50%,-50%);
+  border-radius:50% 50% 0 0/100% 100% 0 0;
+  background:radial-gradient(ellipse at 50% 100%,transparent 0 45%,#ff5b96 45.5% 49%,#ffcd55 49.3% 52.8%,#69e995 53.1% 56.6%,#67c8ff 56.9% 60.4%,#b479ff 60.7% 64.2%,transparent 64.6%);
+  filter:drop-shadow(0 0 26px rgba(255,255,255,.28));opacity:.92;
+  animation:rainbowLoadingBreathe 2.4s ease-in-out infinite alternate;
+}
+@keyframes rainbowLoadingBreathe{to{transform:translate(-50%,-52%) scale(1.025);filter:drop-shadow(0 0 38px rgba(255,255,255,.4))}}
+.rainbow-loading-cloud{position:absolute;width:180px;height:70px;border-radius:99px;background:rgba(255,255,255,.74);filter:blur(.1px);box-shadow:70px 18px 0 12px rgba(255,255,255,.64),-65px 20px 0 4px rgba(255,255,255,.62)}
+.rainbow-loading-cloud.c1{left:8%;top:24%;animation:rainbowCloud 6s ease-in-out infinite alternate}.rainbow-loading-cloud.c2{right:11%;top:31%;transform:scale(.72);animation:rainbowCloud 7.5s ease-in-out infinite alternate-reverse}
+@keyframes rainbowCloud{to{translate:34px 7px}}
+.rainbow-loading-copy{position:relative;z-index:3;text-align:center;color:#fff;text-shadow:0 3px 18px rgba(0,0,0,.45)}
+.rainbow-loading-copy .die{font-size:64px;display:block;animation:rainbowPrismFloat .7s ease-in-out infinite alternate;filter:drop-shadow(0 0 20px white)}
+.rainbow-loading-copy b{display:block;margin-top:12px;font-size:clamp(24px,5vw,44px);letter-spacing:.08em}.rainbow-loading-copy small{display:block;margin-top:7px;letter-spacing:.24em;color:#e8eaff}
+.rainbow-loading-bar{width:min(360px,72vw);height:8px;margin:20px auto 0;border-radius:99px;background:rgba(255,255,255,.16);overflow:hidden;border:1px solid rgba(255,255,255,.32)}
+.rainbow-loading-bar i{display:block;width:38%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#ff6ca8,#ffe262,#6ef2a6,#6dd0ff,#c27dff);animation:rainbowLoadBar 1.05s ease-in-out infinite}
+@keyframes rainbowLoadBar{0%{transform:translateX(-120%)}100%{transform:translateX(340%)}}
+
+.rainbow-event-world-preview{
+  position:relative;z-index:1;min-height:280px;margin:8px 0 16px;border:1px solid rgba(255,255,255,.3);border-radius:22px;overflow:hidden;
+  background:linear-gradient(180deg,#51bfe8 0 42%,#8ee5c9 42% 58%,#58477e 58% 100%);
+  box-shadow:inset 0 0 80px rgba(255,255,255,.15),0 18px 44px rgba(0,0,0,.22);
+}
+.rainbow-event-world-preview::before{
+  content:'';position:absolute;left:50%;top:52%;width:88%;height:76%;transform:translate(-50%,-50%);
+  border-radius:50% 50% 0 0/100% 100% 0 0;
+  background:radial-gradient(ellipse at 50% 100%,transparent 0 42%,#ff5b96 42.5% 46%,#ffcf5d 46.3% 50%,#6eea9e 50.3% 54%,#68caff 54.3% 58%,#b47bff 58.3% 62%,transparent 62.4%);
+  filter:drop-shadow(0 0 18px rgba(255,255,255,.32));animation:rainbowLoadingBreathe 3s ease-in-out infinite alternate;
+}
+.rainbow-event-world-preview::after{content:'';position:absolute;left:0;right:0;bottom:0;height:43%;background:repeating-linear-gradient(105deg,rgba(255,255,255,.05) 0 8px,transparent 9px 28px),linear-gradient(150deg,#7d64a1,#4a3d72);clip-path:polygon(0 42%,20% 20%,38% 44%,57% 12%,72% 40%,100% 7%,100% 100%,0 100%)}
+.rainbow-world-badge{position:absolute;z-index:3;left:16px;top:14px;padding:8px 12px;border-radius:999px;background:rgba(17,18,52,.78);border:1px solid rgba(255,255,255,.48);color:#fff;font-weight:950;letter-spacing:.12em;box-shadow:0 5px 20px rgba(0,0,0,.24)}
+.rainbow-world-title{position:absolute;z-index:3;left:50%;bottom:22px;transform:translateX(-50%);width:90%;text-align:center;color:#fff;text-shadow:0 3px 12px rgba(0,0,0,.75)}
+.rainbow-world-title strong{display:block;font-size:clamp(23px,5vw,38px)}.rainbow-world-title small{display:block;margin-top:5px;letter-spacing:.14em}
+.rainbow-world-spark{position:absolute;z-index:2;width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 14px #fff;animation:rainbowSparkFloat 2.4s ease-in-out infinite alternate}
+.rainbow-world-spark.s1{left:18%;top:30%}.rainbow-world-spark.s2{left:73%;top:23%;animation-delay:-.8s}.rainbow-world-spark.s3{left:83%;top:52%;animation-delay:-1.4s}.rainbow-world-spark.s4{left:32%;top:18%;animation-delay:-.4s}
+@keyframes rainbowSparkFloat{to{transform:translateY(-12px) scale(1.6);opacity:.45}}
+
+.rainbow-item-roll-card{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;padding:14px;border-radius:16px;border:1px solid rgba(255,255,255,.45);margin-bottom:12px}
+.rainbow-item-roll-card .rainbow-item-die{width:58px;height:58px;border-radius:14px;display:grid;place-items:center;font-size:31px;border:2px solid white}
+.rainbow-item-roll-controls{grid-column:1/-1;display:grid;grid-template-columns:minmax(85px,120px) 1fr;gap:8px}.rainbow-item-roll-controls input{min-width:0}.rainbow-item-roll-controls button{min-width:0}
+@media(max-width:520px){.rainbow-item-roll-controls{grid-template-columns:1fr}.rainbow-event-world-preview{min-height:235px}}
+
+
+.rainbow-dice-cutscene .dice-face,.rainbow-dice-cutscene .multi-dice-cube .dice-face{
+  background:linear-gradient(135deg,#ff5f9f,#ffd85f,#68ef9c,#69caff,#ba79ff,#ff5f9f)!important;
+  background-size:350% 350%!important;animation:rainbowDiceFlow 2.1s linear infinite;
+  border-color:rgba(255,255,255,.82)!important;box-shadow:inset 0 0 28px rgba(255,255,255,.22),0 0 18px rgba(255,255,255,.18)!important;
+}
+.rainbow-dice-cutscene .batch-reward-die{background:linear-gradient(135deg,#ff5f9f,#ffd85f,#68ef9c,#69caff,#ba79ff)!important;background-size:300% 300%!important;animation:rainbowDiceFlow 2s linear infinite!important}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style id="multiplayerStyles">
@@ -7179,7 +7280,7 @@ button {
     </div>
     <button id="openRainbowEventBtn" class="limited-event-stage-card" type="button" data-lock-label="🔒 Lv.5 필요">
       <span class="event-icon">🌈</span>
-      <span class="event-copy"><b>LIMITED EVENT</b><strong>무지개 저편</strong><small>Lv.5+ · 무한 · 난이도 없음</small></span>
+      <span class="event-copy"><b>🌈 한정 스테이지</b><strong>무지개 저편</strong><small>Lv.5+ · 무한 · 난이도 없음</small></span>
     </button>
     </div>
 
@@ -7319,19 +7420,21 @@ button {
     <button id="closeRainbowEventBtn" class="secondary rainbow-event-close" type="button" aria-label="닫기">×</button>
     <div class="rainbow-event-hero">
       <div class="rainbow-event-prism">🌈🎲</div>
-      <small>LIMITED EVENT · LEVEL 5+</small>
+      <small>LIMITED STAGE · LEVEL 5+</small>
       <h2 id="rainbowEventTitle">무지개 저편</h2>
-      <p>난이도 선택 없는 무한 스테이지 · 무지개 주사위 한정 드롭</p>
+      <p>난이도 선택 없음 · 무한 웨이브</p>
     </div>
-    <div class="rainbow-event-grid">
-      <div class="rainbow-event-info"><strong>🛡️ 무지개 병사 · HP 500</strong><small>기본 주사위 드롭 5% · 10웨이브마다 +1%p · 100% 초과분은 추가 드롭 확률로 누적</small></div>
-      <div class="rainbow-event-info"><strong>🦄 W25 · 유니콘</strong><small>HP 20,000 · 5초마다 아군 2명에게 무지개 표식 → 3초 뒤 즉사 · 처치 시 50%로 주사위 5~10개</small></div>
-      <div class="rainbow-event-info"><strong>🌈 W50 · 무지개 근위대 대장</strong><small>HP 30,000 · 8초마다 기지에 창 500 피해 · 5초마다 2초간 받는 피해 1/2 · 45%로 10~20개</small></div>
-      <div class="rainbow-event-info"><strong>💎 W75 · 무지개 저편 FEVER</strong><small>30초간 광석 생성 · 처음 5개, 이후 초당 1개, 맵 최대 7개 · 광석 HP 3,000 · 5%로 주사위 3~5개</small></div>
-      <div class="rainbow-event-info"><strong>🌈💠 무지개의 조각 · 0.01%</strong><small>무지개 주사위에서만 나오는 한정 아이템 · 유닛 대신 아이템 인벤토리에 영구 보관됩니다.</small></div>
+    <div class="rainbow-event-world-preview" aria-label="무지개 저편 한정 스테이지 미리보기">
+      <span class="rainbow-world-badge">🌈 한정 스테이지</span>
+      <i class="rainbow-world-spark s1"></i><i class="rainbow-world-spark s2"></i><i class="rainbow-world-spark s3"></i><i class="rainbow-world-spark s4"></i>
+      <div class="rainbow-world-title"><strong>무지개 저편</strong><small>BEYOND THE RAINBOW · INFINITE</small></div>
     </div>
-    <button id="startRainbowEventBtn" class="rainbow-event-start" type="button">🌈 무지개 저편 시작 · 무한 웨이브</button>
+    <button id="startRainbowEventBtn" class="rainbow-event-start" type="button">🌈 무지개 저편 입장</button>
   </div>
+</div>
+<div id="rainbowEventLoading" class="rainbow-event-loading hidden" aria-live="polite" aria-label="무지개 저편 로딩 중">
+  <div class="rainbow-loading-sky"><div class="rainbow-loading-arc"></div><div class="rainbow-loading-cloud c1"></div><div class="rainbow-loading-cloud c2"></div></div>
+  <div class="rainbow-loading-copy"><span class="die">🌈🎲</span><b>무지개 저편으로 이동 중</b><small>LIMITED STAGE LOADING</small><div class="rainbow-loading-bar"><i></i></div></div>
 </div>
 
 <div id="socialOverlay" class="social-overlay hidden" role="dialog" aria-modal="true">
@@ -7602,6 +7705,12 @@ button {
     </div>
 
     <div id="inventoryDicePanel" class="inventory-panel hidden">
+      <div id="adminInventoryDiceTool" class="admin-action-box hidden" style="margin-bottom:14px;">
+        <strong>🛠️ 관리자 주사위 꺼내기</strong>
+        <p class="muted" style="margin:6px 0 10px;">관리자 전용 · 선택한 주사위를 자기 계정에 서버 저장 후 1개 지급합니다.</p>
+        <div class="admin-action-row"><select id="adminInventoryDiceSelect" style="flex:1;"></select><button id="adminInventoryDiceTakeBtn" type="button">1개 꺼내기</button></div>
+        <p id="adminInventoryDiceStatus" class="muted" style="margin:8px 0 0;"></p>
+      </div>
       <div id="diceInventoryGrid" class="dice-inventory-grid"></div>
     </div>
 
@@ -9963,7 +10072,7 @@ function populateAdminUnitSelect() {
   select.innerHTML = '';
 
   // 자주 지급하는 특수 유닛을 맨 위에 표시합니다.
-  const priorityUnitIds = ['moneyTree', 'eclipse'];
+  const priorityUnitIds = ['rainbowBeyond','rainbowUnicornUnit','rainbowLight','rainbowMage','rainbowSoldier','moneyTree','eclipse'];
   const units = Object.values(UNIT_DATA).sort((a, b) => {
     const aPriority = priorityUnitIds.indexOf(a.id);
     const bPriority = priorityUnitIds.indexOf(b.id);
@@ -10033,12 +10142,24 @@ function populateAdminInventoryUnitSelect() {
   });
 }
 
+function populateAdminInventoryDiceSelect() {
+  const select = document.querySelector('#adminInventoryDiceSelect');
+  if (!select) return;
+  select.innerHTML='';
+  const diceList=Object.values(DICE_DATA).sort((a,b)=>(a.key==='rainbow'?-1:b.key==='rainbow'?1:0));
+  diceList.forEach(dice=>{
+    const option=document.createElement('option');option.value=dice.key;option.textContent=`🎲 ${dice.name}`;select.appendChild(option);
+  });
+}
+
 async function refreshAdminInventoryUnitTool(force = false) {
   const tool = document.querySelector('#adminInventoryUnitTool');
-  if (!tool) return false;
+  const diceTool = document.querySelector('#adminInventoryDiceTool');
+  if (!tool && !diceTool) return false;
   const allowed = await refreshAdminAccess(force);
-  tool.classList.toggle('hidden', !allowed);
-  if (allowed) populateAdminInventoryUnitSelect();
+  tool?.classList.toggle('hidden', !allowed);
+  diceTool?.classList.toggle('hidden', !allowed);
+  if (allowed) { populateAdminInventoryUnitSelect(); populateAdminInventoryDiceSelect(); }
   return allowed;
 }
 
@@ -10633,6 +10754,27 @@ async function takeAdminInventoryUnit() {
   }
 }
 
+async function takeAdminInventoryDice() {
+  const status=document.querySelector('#adminInventoryDiceStatus');
+  const button=document.querySelector('#adminInventoryDiceTakeBtn');
+  const rarityKey=document.querySelector('#adminInventoryDiceSelect')?.value;
+  const dice=DICE_DATA[rarityKey];
+  if(!dice)return;
+  const allowed=await refreshAdminAccess(true);
+  if(!allowed){if(status)status.textContent='관리자 권한을 확인할 수 없습니다.';return;}
+  button.disabled=true;if(status)status.textContent=`${dice.name} 서버 지급 중...`;
+  try{
+    const {data:{user},error:userError}=await supabaseClient.auth.getUser();
+    if(userError||!user)throw userError||new Error('로그인이 필요합니다.');
+    const {error}=await supabaseClient.rpc('admin_grant_dice',{p_user_id:user.id,p_rarity:rarityKey,p_count:1,p_reason:'관리자 인벤토리 주사위 직접 꺼내기'});
+    if(error)throw error;
+    await syncServerDiceInventory();
+    if(status)status.textContent=`🎲 ${dice.name} 1개를 서버에 저장했습니다.`;
+    if(activeInventoryTab==='dice')renderInventory();
+  }catch(error){console.error('관리자 주사위 직접 지급 실패:',error);if(status)status.textContent=`지급 실패: ${error.message}`;}
+  finally{button.disabled=false;}
+}
+
 async function loadAdminRooms() {
   const list = document.querySelector('#adminRoomList');
   if (!list) return;
@@ -11092,8 +11234,8 @@ async function logout() {
           if (synced && activeInventoryTab === 'dice') renderInventory();
         });
       } else if (tab === 'items') {
-        void syncServerItemInventory().then(synced => {
-          if (synced && activeInventoryTab === 'items') renderInventory();
+        void Promise.all([syncServerItemInventory(), syncServerDiceInventory()]).then(() => {
+          if (activeInventoryTab === 'items') renderInventory();
         });
       }
     }
@@ -11192,9 +11334,23 @@ async function logout() {
         const eventItemGrid = document.querySelector('#eventItemInventoryGrid');
         const rainbowFragments = Math.max(0, Math.floor(Number(player.itemInventory?.rainbowFragment || 0)));
         if (eventItemGrid) {
-          eventItemGrid.innerHTML = rainbowFragments > 0
+          const rainbowDiceAmount = Math.max(0, Math.floor(Number(player.diceInventory?.rainbow || 0)));
+          const fragmentMarkup = rainbowFragments > 0
             ? `<div class="fragment-card" style="background:linear-gradient(135deg,rgba(255,102,170,.18),rgba(255,225,96,.14),rgba(80,220,255,.16),rgba(175,100,255,.18));border-color:rgba(255,255,255,.28);"><div class="fragment-icon">🌈💠</div><h4>무지개의 조각</h4><div class="fragment-count">${rainbowFragments.toLocaleString()}개</div><small class="rarity-galaxy">무지개 주사위 0.01%</small></div>`
-            : '<div class="card"><p class="muted">아직 보유한 한정 아이템이 없습니다. 무지개 주사위에서 0.01% 확률로 <strong>무지개의 조각</strong>을 획득할 수 있습니다.</p></div>';
+            : '<div class="card"><p class="muted">아직 보유한 한정 아이템이 없습니다.</p></div>';
+          const rainbowDiceMarkup = `<div class="rainbow-item-roll-card rainbow-dice-card"><div class="rainbow-item-die">🎲</div><div><strong>무지개 주사위</strong><div class="dice-count">×${rainbowDiceAmount.toLocaleString()}</div><small class="muted">아이템 칸에서도 바로 굴릴 수 있습니다.</small></div><div class="rainbow-item-roll-controls"><input id="rainbowItemRollCount" type="number" inputmode="numeric" min="${rainbowDiceAmount>0?1:0}" max="${rainbowDiceAmount}" value="${rainbowDiceAmount>0?1:0}" ${rainbowDiceAmount<=0?'disabled':''}><button id="rainbowItemRollBtn" type="button" ${rainbowDiceAmount<=0?'disabled':''}>🌈🎲 선택한 개수 굴리기</button></div></div>`;
+          eventItemGrid.innerHTML = rainbowDiceMarkup + fragmentMarkup;
+          const rainbowItemRollBtn = eventItemGrid.querySelector('#rainbowItemRollBtn');
+          const rainbowItemRollCount = eventItemGrid.querySelector('#rainbowItemRollCount');
+          rainbowItemRollBtn?.addEventListener('click', () => {
+            const max = Math.max(0, Math.floor(Number(player.diceInventory?.rainbow || 0)));
+            const count = Math.min(max, Math.max(1, Math.floor(Number(rainbowItemRollCount?.value || 1))));
+            if (max > 0) rollDice('rainbow', count);
+          });
+          rainbowItemRollCount?.addEventListener('change', () => {
+            const max = Math.max(0, Math.floor(Number(player.diceInventory?.rainbow || 0)));
+            rainbowItemRollCount.value = String(max > 0 ? Math.min(max, Math.max(1, Math.floor(Number(rainbowItemRollCount.value || 1)))) : 0);
+          });
         }
         const fragmentGrid = document.querySelector('#fragmentInventoryGrid');
         const entries = Object.keys(UNIT_DATA).map(id => ({id, unit:UNIT_DATA[id], fragments:Math.max(0,Math.floor(Number(player.ownedUnits?.[id]?.fragments||0)))})).filter(x=>x.fragments>0);
@@ -11209,7 +11365,8 @@ async function logout() {
 
           return `
             <article
-              class="dice-card"
+              class="dice-card ${dice.key === 'rainbow' ? 'rainbow-dice-card' : ''}"
+              data-dice-key="${dice.key}"
               style="
                 --dice-color:${dice.color};
                 --dice-glow:${dice.glow};
@@ -11517,6 +11674,7 @@ async function logout() {
       overlay.style.setProperty('--scene-color', dice.color);
       overlay.style.setProperty('--scene-glow', dice.glow);
       overlay.style.setProperty('--scene-text', dice.textColor);
+      overlay.classList.toggle('rainbow-dice-cutscene', dice.key === 'rainbow');
     }
 
     function createParticleMarkup(count = 30) {
@@ -11568,7 +11726,9 @@ async function logout() {
     }
 
     function closeCutscene() {
-      document.querySelector('#cutsceneOverlay').classList.add('hidden');
+      const cutsceneOverlay = document.querySelector('#cutsceneOverlay');
+      cutsceneOverlay.classList.add('hidden');
+      cutsceneOverlay.classList.remove('rainbow-dice-cutscene');
       document.querySelector('#cutsceneContent').innerHTML = '';
       cutsceneRunning = false;
       resetGachaConfirmation();
@@ -13483,17 +13643,29 @@ function requestGachaDraw(count) {
     }
 
 
+    let rainbowEventLoadingBusy = false;
     function closeRainbowEventModal() { document.querySelector('#rainbowEventModal')?.classList.add('hidden'); }
+    function hideRainbowEventLoading(){ document.querySelector('#rainbowEventLoading')?.classList.add('hidden'); rainbowEventLoadingBusy=false; }
     function openRainbowEventModal() {
       const access = getGameFeatureAccess('rainbowEvent');
       const modal = document.querySelector('#rainbowEventModal');
+      const loading = document.querySelector('#rainbowEventLoading');
       const start = document.querySelector('#startRainbowEventBtn');
-      if (!modal) return;
-      modal.classList.remove('hidden');
+      if (!modal || rainbowEventLoadingBusy) return;
       if (start) {
         start.disabled = !access.allowed;
-        start.textContent = access.allowed ? '🌈 무지개 저편 시작 · 무한 웨이브' : `🔒 Lv.5부터 입장 가능 · 현재 Lv.${access.level}`;
+        start.textContent = access.allowed ? '🌈 무지개 저편 입장' : `🔒 Lv.5부터 입장 가능 · 현재 Lv.${access.level}`;
       }
+      // 한정 이벤트 카드를 누르면 바로 전투로 가지 않고, 전용 로딩 → 무지개 맵 로비 순서로 이동합니다.
+      rainbowEventLoadingBusy = true;
+      loading?.classList.remove('hidden');
+      closeRainbowEventModal();
+      if (typeof prewarmRainbowEventSprites === 'function') prewarmRainbowEventSprites();
+      window.setTimeout(() => {
+        loading?.classList.add('hidden');
+        rainbowEventLoadingBusy = false;
+        modal.classList.remove('hidden');
+      }, 1450);
     }
 
     function createRainbowEventBattle() {
@@ -13513,7 +13685,7 @@ function requestGachaDraw(count) {
         activeWaves:[], launchedWaves:{}, enemies:[], placedUnits:[], shots:[], delayedAttacks:[], blackHoles:[], eclipseBursts:[], edenMinions:[], dirtPiles:[], dirtConverge:null,
         selectedDeployUnitId:deck[0], selectedPlacedUnit:null, ended:false, resultShown:false, finalBossDefeated:false, bossEscaped:false,
         earnedWaveGems:0, skipUses:0, maxSkipUses:5, autoWaveSkip:false, autoSkipTimer:.8,
-        eventDiceCollected:0, rainbowDiceDrops:[], rainbowBaseSpears:[], rainbowAllyOres:[], rainbowMapBuffRemaining:0,
+        eventDiceCollected:0, rainbowDiceDrops:[], rainbowBaseSpears:[], rainbowAllyOres:[], rainbowMapBuffRemaining:0, rainbowBossRolls:{},
         placementPreview:{active:false,x:0,y:0,valid:false,pointerType:'mouse'}
       };
       renderBattleDeck(); showScreen('battle'); updateStageMapInfo();
@@ -13880,14 +14052,23 @@ function requestGachaDraw(count) {
     }
 
 
+    const RAINBOW_BOSS_PROBABILITIES = Object.freeze({ unicorn: 1/3, captain: 1/3, fever: 1/3 });
+    function rainbowBossTypeForWave(wave){
+      if (!battle?.rainbowBossRolls) battle.rainbowBossRolls = {};
+      if (battle.rainbowBossRolls[wave]) return battle.rainbowBossRolls[wave];
+      const r=Math.random();
+      const pick = r < RAINBOW_BOSS_PROBABILITIES.unicorn ? 'unicorn' : (r < RAINBOW_BOSS_PROBABILITIES.unicorn + RAINBOW_BOSS_PROBABILITIES.captain ? 'captain' : 'fever');
+      battle.rainbowBossRolls[wave]=pick;
+      return pick;
+    }
     function createRainbowEventWaveQueue(wave) {
-      const cycle = ((Math.floor(wave / 25) - 1) % 3 + 3) % 3;
       if (wave > 0 && wave % 25 === 0) {
-        if (cycle === 0) return [{
+        const pick=rainbowBossTypeForWave(wave);
+        if (pick === 'unicorn') return [{
           type:'rainbowUnicornBoss', variant:'rainbowUnicorn', name:'유니콘', icon:'🦄', health:20000,
           speed:42, radius:43, reward:1200, rainbowDoomInterval:5, rainbowDoomTimer:3.5, rainbowDoomCount:2, rainbowDoomDelay:3
         }];
-        if (cycle === 1) return [{
+        if (pick === 'captain') return [{
           type:'rainbowGuardCaptainBoss', variant:'rainbowGuardCaptain', name:'무지개 근위대 대장', icon:'🌈', health:30000,
           speed:38, radius:46, reward:1800, rainbowSpearInterval:8, rainbowSpearTimer:5, rainbowGuardInterval:5, rainbowGuardTimer:3, rainbowGuardDuration:2
         }];
@@ -14046,8 +14227,8 @@ function requestGachaDraw(count) {
       const body = document.querySelector('#stageMapInfoBody');
       if (!title || !body || !battle) return;
       if (battle.isRainbowEvent) {
-        title.textContent = '🌈 한정 이벤트 · 무지개 저편';
-        body.innerHTML = `<p>Lv.5 이상 · 난이도 없음 · 무한 웨이브</p><p>무지개 병사 HP 500 · 주사위 드롭 5%에서 시작, 10웨이브마다 +1%p</p><p>25웨이브마다 유니콘 → 근위대 대장 → 30초 FEVER가 순환합니다.</p><p>이벤트 중 획득한 무지개 주사위는 서버 인벤토리에 즉시 저장됩니다.</p><p>웨이브 클리어 소환석도 개인 무한모드와 같은 성장식으로 지급됩니다.</p>`;
+        title.textContent = '🌈 한정 스테이지 · 무지개 저편';
+        body.innerHTML = `<p>Lv.5 이상 · 난이도 없음 · 무한 웨이브</p><p>25웨이브마다 세 종류의 한정 보스 중 하나가 확률적으로 등장합니다.</p>`;
       } else if (battle.isInfinite) {
         const themeStage = Number(battle.infiniteThemeStage || infiniteThemeStageForWave(battle.wave || 1));
         const theme = STAGE_CONFIG[themeStage] || STAGE_CONFIG[1];
@@ -14140,6 +14321,7 @@ function requestGachaDraw(count) {
 
       if (battle.isInfinite) applyInfiniteThemeForWave(wave);
       const queue = createWaveQueue(wave);
+      scheduleEnemySpritePrewarm(queue);
       const waveState = {
         wave,
         queue,
@@ -14170,10 +14352,10 @@ function requestGachaDraw(count) {
           message=`무한모드 WAVE ${wave} · ${themeName} · ${bossName} 등장! 일반 적 HP ${infiniteBaseHp(wave).toLocaleString()}`;
         } else message=`무한모드 WAVE ${wave} · ${themeName} · ${stageEnemyLabel()} HP ${infiniteBaseHp(wave).toLocaleString()}`;
       } else if (battle.isRainbowEvent) {
-        const bossCycle = wave % 25 === 0 ? ((Math.floor(wave/25)-1)%3+3)%3 : -1;
-        if (bossCycle === 0) { bossName='유니콘'; message=`🌈 WAVE ${wave} · 유니콘 등장! 5초마다 아군 2명이 무지개 표식 후 3초 뒤 사라집니다.`; }
-        else if (bossCycle === 1) { bossName='무지개 근위대 대장'; message=`🌈 WAVE ${wave} · 근위대 대장! 8초마다 기지에 500 피해 창을 던지고 5초마다 2초간 피해를 절반만 받습니다.`; }
-        else if (bossCycle === 2) { bossName='무지개 저편 FEVER'; message=`🌈 WAVE ${wave} · 30초 FEVER! 무지개 광석을 파괴해 한정 주사위를 노리세요.`; }
+        const rainbowBoss = wave % 25 === 0 ? queue.find(spec => spec.type !== 'normal') : null;
+        if (rainbowBoss?.type === 'rainbowUnicornBoss') { bossName='유니콘'; message=`🌈 WAVE ${wave} · 유니콘 등장!`; }
+        else if (rainbowBoss?.type === 'rainbowGuardCaptainBoss') { bossName='무지개 근위대 대장'; message=`🌈 WAVE ${wave} · 무지개 근위대 대장 등장!`; }
+        else if (rainbowBoss?.type === 'rainbowFeverCore') { bossName='무지개 저편 FEVER'; message=`🌈 WAVE ${wave} · 무지개 저편 FEVER!`; }
         else message=`🌈 무지개 저편 WAVE ${wave} · 병사 주사위 드롭 확률 ${5+Math.floor(wave/10)}%`;
       } else if (battle.stage === 2) {
         if (wave === 10) { bossName = '보석이 박힌 골렘'; message = '보석 골렘 등장! 10초마다 최대체력 50%의 보호막을 만듭니다.'; }
@@ -16427,7 +16609,7 @@ function requestGachaDraw(count) {
       const halfAngle = ((data.coneAngle || 120) * Math.PI / 180) / 2;
 
       placed.angle = targetAngle;
-      placed.cooldown = placed.fireInterval * slowMultiplier * rainbowSpeedMultiplier * rainbowHasteMultiplier;
+      placed.cooldown = placed.fireInterval * slowMultiplier;
       placed.attackAnimation = 1;
       placed.attackCount = Number(placed.attackCount || 0) + 1;
       if (placedHasTrait(placed,'royalShield') && placed.attackCount % 20 === 0) summonRoyalTraitShield(placed);
@@ -17344,7 +17526,7 @@ function requestGachaDraw(count) {
       const volleyTargets = getErrorVolleyTargets(placed, target, volleyCount);
       const angle = Math.atan2(target.y - placed.y, target.x - placed.x);
       placed.angle = angle;
-      placed.cooldown = placed.fireInterval * slowMultiplier * rainbowHasteMultiplier;
+      placed.cooldown = placed.fireInterval * slowMultiplier;
       placed.attackAnimation = 1;
       placed.attackMode = 'errorCut';
       placed.attackCount = Number(placed.attackCount || 0) + 1;
@@ -17553,7 +17735,7 @@ function requestGachaDraw(count) {
       if (placed.unitId !== 'eclipse') playUnitAttackSound(placed.unitId);
       const targetAngle = Math.atan2(target.y - placed.y, target.x - placed.x);
       placed.angle = targetAngle;
-      placed.cooldown = placed.fireInterval * slowMultiplier;
+      placed.cooldown = placed.fireInterval * slowMultiplier * rainbowHasteMultiplier;
       placed.attackAnimation = 1;
       placed.attackMode = 'normal';
       placed.attackCount = Number(placed.attackCount || 0) + 1;
@@ -17993,7 +18175,15 @@ function requestGachaDraw(count) {
 
       battle.enemies.forEach(enemy => updateEnemy(enemy, dt));
       rebuildBattleEnemyGrid();
-      battle.placedUnits.forEach(unit => updatePlacedUnit(unit, dt));
+      for (let unitIndex=0; unitIndex<battle.placedUnits.length; unitIndex+=1) {
+        const unit=battle.placedUnits[unitIndex];
+        try { updatePlacedUnit(unit, dt); }
+        catch (error) {
+          if (!unit._runtimeErrorLogged) { console.error(`유닛 업데이트 오류 · ${unit.unitId}`, error); unit._runtimeErrorLogged=true; }
+          unit.cooldown=Math.max(.25,Number(unit.cooldown||0));
+          unit.attackAnimation=0;
+        }
+      }
       updateEdenMinions(dt);
       updateDelayedAttacks(dt);
       updateEclipseEffects(dt);
@@ -20401,6 +20591,7 @@ function requestGachaDraw(count) {
     function getEnemySprite(enemy, time) {
       const theme = currentBattleThemeStage();
       if (enemySpriteCacheTheme !== theme) {
+        for (const cached of enemySpriteCache.values()) { try { cached.bitmap?.close?.(); } catch (_) {} }
         enemySpriteCache.clear();
         enemySpriteCacheTheme = theme;
       }
@@ -20415,11 +20606,13 @@ function requestGachaDraw(count) {
       const { surface, g } = enemySpriteCanvas(logicalSize, logicalSize);
       const proxy = enemySpriteProxy(enemy, kind, data.facing);
       renderEnemySpriteBase(g, proxy, kind, half, half, data.info.renderTime);
-      sprite = { surface, logicalSize, half, kind };
+      let bitmap=null;
+      try { if (typeof surface.transferToImageBitmap === 'function') bitmap=surface.transferToImageBitmap(); } catch (_) { bitmap=null; }
+      sprite = { source: bitmap || surface, bitmap, surface: bitmap ? null : surface, logicalSize, half, kind };
       enemySpriteCache.set(data.key, sprite);
       if (enemySpriteCache.size > ENEMY_SPRITE_CACHE_LIMIT) {
         const oldest = enemySpriteCache.keys().next().value;
-        if (oldest != null) enemySpriteCache.delete(oldest);
+        if (oldest != null) { const oldSprite=enemySpriteCache.get(oldest); try { oldSprite?.bitmap?.close?.(); } catch (_) {} enemySpriteCache.delete(oldest); }
       }
       return sprite;
     }
@@ -20430,11 +20623,51 @@ function requestGachaDraw(count) {
       ctx.translate(drawX, drawY);
       // 비둘기와 전갈은 진행 방향으로 몸 전체가 회전하는 디자인입니다.
       if (sprite.kind === 'pigeon' || sprite.kind === 'scorpion' || (sprite.kind === 'rainbow' && !enemy.rainbowOre && enemy.type!=='rainbowFeverCore')) ctx.rotate(Number(enemy.heading || 0));
-      ctx.drawImage(sprite.surface, -sprite.half, -sprite.half, sprite.logicalSize, sprite.logicalSize);
+      ctx.drawImage(sprite.source, -sprite.half, -sprite.half, sprite.logicalSize, sprite.logicalSize);
       ctx.restore();
     }
 
+
+    let enemyPrewarmToken=0;
+    function scheduleEnemySpritePrewarm(queue){
+      if (!Array.isArray(queue) || !queue.length || !battle) return;
+      const token=++enemyPrewarmToken;
+      const unique=[];const seen=new Set();
+      for(const spec of queue){const k=`${spec.type||'normal'}|${spec.variant||''}|${spec.radius||22}|${spec.speed||50}`;if(seen.has(k))continue;seen.add(k);unique.push(spec);}
+      const tasks=[];
+      for(const spec of unique){for(let frame=0;frame<ENEMY_SPRITE_FRAMES;frame+=1)tasks.push({spec,frame});}
+      let index=0;
+      const run=(deadline)=>{
+        if(token!==enemyPrewarmToken||!battle)return;
+        let budget=0;
+        while(index<tasks.length && budget<4 && (!deadline || deadline.timeRemaining()>2)){
+          const {spec,frame}=tasks[index++];
+          const fake={...spec,maxHealth:spec.health||1,health:spec.health||1,targetIndex:1,x:0,y:0,heading:0,wingPhase:0};
+          // 24개 애니메이션 프레임을 실제 전투 전에 캐시에 천천히 채웁니다.
+          const syntheticTime=frame*(1000/24)*6;
+          try{getEnemySprite(fake,syntheticTime);}catch(_){}
+          budget+=1;
+        }
+        if(index<tasks.length){
+          if(typeof requestIdleCallback==='function')requestIdleCallback(run,{timeout:120});
+          else setTimeout(()=>run(null),16);
+        }
+      };
+      if(typeof requestIdleCallback==='function')requestIdleCallback(run,{timeout:80});else setTimeout(()=>run(null),0);
+    }
+    function prewarmRainbowEventSprites(){
+      const specs=[
+        {type:'normal',variant:'rainbowSoldierEnemy',radius:23,speed:52,health:500},
+        {type:'rainbowUnicornBoss',variant:'rainbowUnicorn',radius:43,speed:42,health:20000},
+        {type:'rainbowGuardCaptainBoss',variant:'rainbowGuardCaptain',radius:46,speed:38,health:30000},
+        {type:'rainbowOre',variant:'rainbowOre',radius:26,speed:0,health:3000,rainbowOre:true}
+      ];
+      scheduleEnemySpritePrewarm(specs);
+    }
+
 function drawEnemy(enemy, time) {
+      const cullMargin=Math.max(90,Number(enemy.radius||22)*4);
+      if (enemy.x < -cullMargin || enemy.y < -cullMargin || enemy.x > canvas.width+cullMargin || enemy.y > canvas.height+cullMargin) return;
       const formation = enemy.type === 'brother'
         ? BROTHER_FORMATION[enemy.groupIndex] || { x: 0, y: 0 }
         : { x: 0, y: 0 };
@@ -24256,14 +24489,37 @@ function drawEnemy(enemy, time) {
       if(Number(battle.rainbowMapBuffRemaining||0)>0){const a=Math.min(.34,.16+Number(battle.rainbowMapBuffRemaining)/5*.12);const rg=ctx.createLinearGradient(0,0,canvas.width,0);rg.addColorStop(0,`rgba(255,80,150,${a})`);rg.addColorStop(.25,`rgba(255,220,80,${a})`);rg.addColorStop(.5,`rgba(80,255,170,${a})`);rg.addColorStop(.75,`rgba(80,170,255,${a})`);rg.addColorStop(1,`rgba(190,90,255,${a})`);ctx.fillStyle=rg;ctx.fillRect(0,0,canvas.width,canvas.height);ctx.save();ctx.font='900 24px Arial';ctx.textAlign='center';ctx.fillStyle='rgba(255,255,255,.9)';ctx.shadowBlur=12;ctx.shadowColor='#fff';ctx.fillText(`RAINBOW WORLD · ${Number(battle.rainbowMapBuffRemaining).toFixed(1)}s`,canvas.width/2,46);ctx.restore();}
     }
 
+    function drawRainbowEventMapDecor(time){
+      if(!battle?.isRainbowEvent)return;
+      ctx.save();
+      // 멀리 떠 있는 무지개: 단순한 다중 arc만 사용해 프레임 비용을 매우 낮게 유지합니다.
+      const cx=canvas.width*.72, cy=canvas.height*.24, baseR=Math.min(canvas.width,canvas.height)*.28;
+      const colors=['#ff5f96','#ffd45c','#6eea9b','#68caff','#b47cff'];
+      ctx.globalAlpha=.58;
+      for(let i=0;i<colors.length;i++){
+        ctx.strokeStyle=colors[i];ctx.lineWidth=10;ctx.beginPath();ctx.arc(cx,cy,baseR-i*11,Math.PI*1.05,Math.PI*1.94);ctx.stroke();
+      }
+      ctx.globalAlpha=.5+.15*Math.sin(time*.0017);
+      ctx.fillStyle='#fff';
+      for(let i=0;i<8;i++){const a=i*2.399+time*.00015,r=80+(i%4)*44;ctx.beginPath();ctx.arc(cx+Math.cos(a)*r,cy+Math.sin(a)*r*.45,2+(i%3),0,Math.PI*2);ctx.fill();}
+      ctx.restore();
+    }
+
     function drawBattle(time) {
       drawBattleStaticBase();
+      drawRainbowEventMapDecor(time);
       drawStageTwoDirtAndEffects(time);
       drawBaseCastle(time);
       drawEclipseEffects(time);
       drawSelectedPlacedUnitRange();
       drawPlacementPreview(time);
-      battle.placedUnits.forEach(unit => drawPlacedUnit(unit, time));
+      for (let unitIndex=0; unitIndex<battle.placedUnits.length; unitIndex+=1) {
+        const unit=battle.placedUnits[unitIndex];
+        try { drawPlacedUnit(unit, time); }
+        catch (error) {
+          if (!unit._drawErrorLogged) { console.error(`유닛 렌더링 오류 · ${unit.unitId}`, error); unit._drawErrorLogged=true; }
+        }
+      }
       drawTraitShields();
       drawEdenMinions(time);
       battle.enemies.forEach(enemy => drawEnemy(enemy, time));
@@ -24663,6 +24919,7 @@ function drawEnemy(enemy, time) {
     document.querySelector('#adminFragmentGrantBtn')?.addEventListener('click', grantAdminFragments);
     document.querySelector('#adminDiceGrantBtn').addEventListener('click', grantAdminDice);
     document.querySelector('#adminInventoryUnitTakeBtn').addEventListener('click', takeAdminInventoryUnit);
+    document.querySelector('#adminInventoryDiceTakeBtn')?.addEventListener('click', takeAdminInventoryDice);
     document.querySelector('#adminRefreshRoomsBtn').addEventListener('click', loadAdminRooms);
     document.querySelector('#adminRefreshLogsBtn').addEventListener('click', loadAdminLogs);
     document.querySelector('#openGachaBtn').addEventListener('click', openGacha);
@@ -24679,7 +24936,7 @@ function drawEnemy(enemy, time) {
         if (synced && activeInventoryTab === 'dice') renderInventory();
       });
     });
-    document.querySelector('#inventoryItemsTab')?.addEventListener('click', () => { activeInventoryTab='items'; renderInventory(); void syncServerItemInventory().then(ok=>{if(ok&&activeInventoryTab==='items')renderInventory();}); });
+    document.querySelector('#inventoryItemsTab')?.addEventListener('click', () => { activeInventoryTab='items'; renderInventory(); void Promise.all([syncServerItemInventory(),syncServerDiceInventory()]).then(()=>{if(activeInventoryTab==='items')renderInventory();}); });
     document.querySelector('#openTraitsBtn')?.addEventListener('click', openTraitsScreen);
     document.querySelector('#startBattleBtn').addEventListener('click', createBattle);
     document.querySelector('#openInfiniteBtn')?.addEventListener('click', createInfiniteBattle);

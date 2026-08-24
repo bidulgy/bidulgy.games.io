@@ -7520,6 +7520,17 @@ button {
             </div>
 
             <div class="admin-action-box">
+              <strong>🚫 계정 / 소환석 강제 관리</strong>
+              <input id="adminModerationReasonInput" type="text" maxlength="120" placeholder="사유" value="관리자 계정/재화 관리" />
+              <div class="admin-action-row">
+                <button id="adminZeroGemsBtn" class="danger" type="button">소환석 전부 0</button>
+                <button id="adminBanUserBtn" class="danger" type="button">유저 밴</button>
+                <button id="adminUnbanUserBtn" class="secondary" type="button">밴 해제</button>
+              </div>
+              <span class="muted">밴은 Supabase Auth 계정 로그인/세션 갱신을 차단합니다.</span>
+            </div>
+
+            <div class="admin-action-box">
               <strong>🧩 유닛 지급</strong>
               <select id="adminUnitSelect"></select>
               <input id="adminUnitCountInput" type="number" inputmode="numeric" min="1" max="100" step="1" value="1" />
@@ -7572,6 +7583,22 @@ button {
             <button id="adminRefreshRoomsBtn" class="secondary" type="button">새로고침</button>
           </div>
           <div id="adminRoomList" class="admin-room-list"></div>
+        </div>
+
+        <div class="admin-card">
+          <div class="between">
+            <h3>⚠️ ERROR 유닛 보유 계정</h3>
+            <button id="adminRefreshErrorHoldersBtn" class="secondary" type="button">조회</button>
+          </div>
+          <div id="adminErrorHolderList" class="admin-search-results"><span class="muted">조회 버튼을 누르면 ERROR 보유 계정만 표시됩니다.</span></div>
+        </div>
+
+        <div class="admin-card" style="border-color:rgba(255,70,90,.45);">
+          <h3>☢️ 서버 전체 재화/아이템 초기화</h3>
+          <p class="muted" style="display:block!important;">모든 유저의 소환석, 모든 주사위, 모든 아이템 수량을 서버에서 0으로 만듭니다. 유닛/조각은 삭제하지 않습니다.</p>
+          <input id="adminGlobalResetConfirmInput" type="text" maxlength="20" placeholder="RESET_ALL 입력" autocomplete="off" />
+          <input id="adminGlobalResetReasonInput" type="text" maxlength="120" value="관리자 전체 재화/아이템 초기화" />
+          <button id="adminGlobalResetBtn" class="admin-danger-button" type="button">모든 유저 재화/아이템 0으로 초기화</button>
         </div>
 
         <div class="admin-card">
@@ -10253,6 +10280,7 @@ function renderAdminPlayer(data) {
     <div class="admin-summary-tile"><span>서버 지갑</span><strong>${data.hasWallet ? '있음' : '없음'}</strong></div>
     <div class="admin-summary-tile"><span>가입</span><strong style="font-size:11px;">${adminEscapeHtml(formatAdminDate(data.createdAt))}</strong></div>
     <div class="admin-summary-tile"><span>최근 로그인</span><strong style="font-size:11px;">${adminEscapeHtml(formatAdminDate(data.lastSignInAt))}</strong></div>
+    <div class="admin-summary-tile"><span>계정 상태</span><strong style="${data.banned ? 'color:#ff7f8d' : 'color:#75eba5'}">${data.banned ? 'BANNED' : '정상'}</strong></div>
   `;
 
   const ownedUnits = data.ownedUnits && typeof data.ownedUnits === 'object'
@@ -10353,6 +10381,114 @@ async function loadAdminPlayer(userId = adminSelectedUserId) {
 
   renderAdminPlayer(data || {});
   setAdminStatus(`${data?.username || '유저'} 정보를 불러왔습니다.`, 'good');
+}
+
+
+async function loadAdminErrorHolders() {
+  const list = document.querySelector('#adminErrorHolderList');
+  if (!list) return;
+  list.innerHTML = '<span class="muted">ERROR 보유 계정을 서버에서 조회 중...</span>';
+  try {
+    const { data, error } = await supabaseClient.rpc('admin_list_error_holders');
+    if (error) throw error;
+    const rows = Array.isArray(data) ? data : [];
+    if (!rows.length) {
+      list.innerHTML = '<span class="muted">현재 ERROR 유닛을 보유한 계정이 없습니다.</span>';
+      return;
+    }
+    list.innerHTML = rows.map(row => `
+      <button class="admin-search-result" type="button" data-error-holder-id="${adminEscapeHtml(row.userId)}">
+        <strong>⚠️ ${adminEscapeHtml(row.username || '플레이어')}</strong>
+        <small>ERROR ×${Math.max(1,Number(row.copies||1))} · Lv.${Math.max(1,Number(row.level||1))}</small>
+      </button>
+    `).join('');
+    list.querySelectorAll('[data-error-holder-id]').forEach(button => {
+      button.addEventListener('click', () => loadAdminPlayer(button.dataset.errorHolderId));
+    });
+  } catch (error) {
+    console.error('ERROR 보유 계정 조회 실패:', error);
+    list.innerHTML = `<span class="muted" style="color:#ff9ca7;">조회 실패: ${adminEscapeHtml(error.message || String(error))}</span>`;
+  }
+}
+
+async function setAdminUserBan(banned) {
+  if (!adminSelectedUserId) {
+    setAdminStatus('먼저 관리할 유저를 선택하세요.', 'error');
+    return;
+  }
+  const reason = document.querySelector('#adminModerationReasonInput')?.value?.trim() || '관리자 계정 제재';
+  const label = banned ? '밴' : '밴 해제';
+  if (!confirm(`${adminSelectedUsernameValue} 계정을 ${label}하시겠습니까?`)) return;
+  try {
+    const { data, error } = await supabaseClient.rpc('admin_set_user_ban', {
+      p_user_id: adminSelectedUserId,
+      p_banned: Boolean(banned),
+      p_reason: reason
+    });
+    if (error) throw error;
+    setAdminStatus(`${adminSelectedUsernameValue} · ${banned ? '밴 완료' : '밴 해제 완료'}`, 'good');
+    await loadAdminPlayer(adminSelectedUserId);
+    await loadAdminLogs();
+  } catch (error) {
+    console.error('관리자 밴 변경 실패:', error);
+    setAdminStatus(`계정 ${label} 실패: ${error.message}`, 'error');
+  }
+}
+
+async function zeroAdminUserGems() {
+  if (!adminSelectedUserId) {
+    setAdminStatus('먼저 관리할 유저를 선택하세요.', 'error');
+    return;
+  }
+  const reason = document.querySelector('#adminModerationReasonInput')?.value?.trim() || '관리자 소환석 전량 회수';
+  if (!confirm(`${adminSelectedUsernameValue}의 서버 소환석을 전부 0으로 만드시겠습니까?`)) return;
+  try {
+    const { data, error } = await supabaseClient.rpc('admin_zero_user_gems', {
+      p_user_id: adminSelectedUserId,
+      p_reason: reason
+    });
+    if (error) throw error;
+    setAdminStatus(`소환석 전량 회수 완료 · ${Number(data?.before||0).toLocaleString()} → 0`, 'good');
+    await loadAdminPlayer(adminSelectedUserId);
+    await loadAdminLogs();
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (user?.id === adminSelectedUserId) await syncServerWallet();
+  } catch (error) {
+    console.error('관리자 소환석 전량 회수 실패:', error);
+    setAdminStatus(`소환석 초기화 실패: ${error.message}`, 'error');
+  }
+}
+
+async function resetAllServerCurrencyItems() {
+  const confirmInput = document.querySelector('#adminGlobalResetConfirmInput');
+  const confirmText = String(confirmInput?.value || '').trim();
+  const reason = document.querySelector('#adminGlobalResetReasonInput')?.value?.trim() || '관리자 전체 재화/아이템 초기화';
+  if (confirmText !== 'RESET_ALL') {
+    setAdminStatus('전체 초기화하려면 RESET_ALL을 정확히 입력하세요.', 'error');
+    return;
+  }
+  if (!confirm('모든 유저의 소환석 + 모든 주사위 + 모든 아이템 수량을 0으로 만듭니다.\n이 작업은 전체 서버에 적용됩니다. 계속하시겠습니까?')) return;
+  if (!confirm('마지막 확인입니다. 유닛/조각은 유지되지만 모든 재화와 아이템은 0이 됩니다. 실행하시겠습니까?')) return;
+  const button = document.querySelector('#adminGlobalResetBtn');
+  if (button) button.disabled = true;
+  try {
+    const { data, error } = await supabaseClient.rpc('admin_reset_all_currency_items_v1', {
+      p_confirm: 'RESET_ALL',
+      p_reason: reason
+    });
+    if (error) throw error;
+    if (confirmInput) confirmInput.value = '';
+    setAdminStatus(`전체 초기화 완료 · 지갑 ${Number(data?.walletRows||0)} · 주사위 ${Number(data?.diceRows||0)} · 아이템 ${Number(data?.itemRows||0)} 행 초기화`, 'good');
+    await loadAdminLogs();
+    if (adminSelectedUserId) await loadAdminPlayer(adminSelectedUserId);
+    await Promise.allSettled([syncServerWallet(), syncServerDiceInventory(), syncServerItemInventory()]);
+    renderInventory();
+  } catch (error) {
+    console.error('전체 재화/아이템 초기화 실패:', error);
+    setAdminStatus(`전체 초기화 실패: ${error.message}`, 'error');
+  } finally {
+    if (button) button.disabled = false;
+  }
 }
 
 async function applyAdminGemAdjustment() {
@@ -14052,6 +14188,12 @@ function requestGachaDraw(count) {
     }
 
 
+    const RAINBOW_EVENT_HP_MULTIPLIER = 4;
+    const RAINBOW_EVENT_DASH_INTERVAL = 3;
+    const RAINBOW_EVENT_DASH_DISTANCE = 92;
+    const RAINBOW_BOSS_STUN_INTERVAL = 2;
+    const RAINBOW_BOSS_STUN_DURATION = 2;
+    const RAINBOW_BOSS_INITIAL_STUN_DURATION = 3;
     const RAINBOW_BOSS_PROBABILITIES = Object.freeze({ unicorn: 1/3, captain: 1/3, fever: 1/3 });
     function rainbowBossTypeForWave(wave){
       if (!battle?.rainbowBossRolls) battle.rainbowBossRolls = {};
@@ -14063,24 +14205,37 @@ function requestGachaDraw(count) {
     }
     function createRainbowEventWaveQueue(wave) {
       if (wave > 0 && wave % 25 === 0) {
+        const commonBoss = {
+          rainbowEventBoss:true,
+          rainbowBossStunInterval:RAINBOW_BOSS_STUN_INTERVAL,
+          rainbowBossStunTimer:RAINBOW_BOSS_STUN_INTERVAL,
+          rainbowDashInterval:RAINBOW_EVENT_DASH_INTERVAL,
+          rainbowDashTimer:RAINBOW_EVENT_DASH_INTERVAL,
+          rainbowDashDistance:RAINBOW_EVENT_DASH_DISTANCE
+        };
         const pick=rainbowBossTypeForWave(wave);
         if (pick === 'unicorn') return [{
-          type:'rainbowUnicornBoss', variant:'rainbowUnicorn', name:'유니콘', icon:'🦄', health:20000,
+          ...commonBoss,
+          type:'rainbowUnicornBoss', variant:'rainbowUnicorn', name:'유니콘', icon:'🦄', health:20000*RAINBOW_EVENT_HP_MULTIPLIER,
           speed:42, radius:43, reward:1200, rainbowDoomInterval:5, rainbowDoomTimer:3.5, rainbowDoomCount:2, rainbowDoomDelay:3
         }];
         if (pick === 'captain') return [{
-          type:'rainbowGuardCaptainBoss', variant:'rainbowGuardCaptain', name:'무지개 근위대 대장', icon:'🌈', health:30000,
+          ...commonBoss,
+          type:'rainbowGuardCaptainBoss', variant:'rainbowGuardCaptain', name:'무지개 근위대 대장', icon:'🌈', health:30000*RAINBOW_EVENT_HP_MULTIPLIER,
           speed:38, radius:46, reward:1800, rainbowSpearInterval:8, rainbowSpearTimer:5, rainbowGuardInterval:5, rainbowGuardTimer:3, rainbowGuardDuration:2
         }];
         return [{
+          ...commonBoss,
           type:'rainbowFeverCore', variant:'rainbowFeverCore', name:'무지개 저편 FEVER', icon:'💎', health:999999999,
-          speed:0, radius:1, reward:0, staticRainbowObject:true, spawnOffMap:true, rainbowFeverDuration:30
+          speed:0, radius:1, reward:0, staticRainbowObject:true, spawnOffMap:true, rainbowFeverDuration:30,
+          rainbowDashInterval:0, rainbowDashTimer:0, rainbowDashDistance:0
         }];
       }
       const count = Math.min(20, 7 + Math.floor((wave - 1) / 3));
       return Array.from({length:count}, (_,i)=>({
-        type:'normal', variant:'rainbowSoldierEnemy', name:'무지개 병사', icon:'🌈', health:500,
-        speed:Math.min(82,48+wave*.18), radius:23, reward:25+Math.floor(wave/8), rainbowSoldier:true, formationSeed:i
+        type:'normal', variant:'rainbowSoldierEnemy', name:'무지개 병사', icon:'🌈', health:500*RAINBOW_EVENT_HP_MULTIPLIER,
+        speed:Math.min(82,48+wave*.18), radius:23, reward:25+Math.floor(wave/8), rainbowSoldier:true, formationSeed:i,
+        rainbowDashInterval:RAINBOW_EVENT_DASH_INTERVAL, rainbowDashTimer:RAINBOW_EVENT_DASH_INTERVAL, rainbowDashDistance:RAINBOW_EVENT_DASH_DISTANCE
       }));
     }
 
@@ -14801,7 +14956,7 @@ function requestGachaDraw(count) {
             y: Math.max(125, Math.min(canvas.height - 115, 125 + Math.random() * Math.max(80, canvas.height - 240)))
           }
         : null;
-      battle.enemies.push({
+      const spawnedEnemy = {
         ...spec,
         id: spec.id || `enemy-${waveState.wave}-${waveState.spawned}-${Math.random().toString(36).slice(2, 9)}`,
         waveNumber: waveState.wave,
@@ -14859,8 +15014,20 @@ function requestGachaDraw(count) {
         rainbowFeverSpawnTimer:1,
         rainbowFeverStarted:false,
         rainbowExecutionRemaining:0,
-        rainbowExecutionMax:0
-      });
+        rainbowExecutionMax:0,
+        rainbowBossStunTimer:Number(spec.rainbowBossStunTimer || spec.rainbowBossStunInterval || 0),
+        rainbowDashTimer:Number(spec.rainbowDashTimer || spec.rainbowDashInterval || 0),
+        rainbowDashAnim:0,
+        rainbowSpawnOriginX: randomVisibleSpawn?.x ?? path[0].x,
+        rainbowSpawnOriginY: randomVisibleSpawn?.y ?? path[0].y,
+        rainbowSpawnVisualReady: Boolean(spec.spawnOffMap || spec.spawnRandomVisible)
+      };
+      battle.enemies.push(spawnedEnemy);
+
+      if (battle?.isRainbowEvent && isRainbowEventBossEnemy(spawnedEnemy)) {
+        spawnedEnemy.rainbowInitialBossStunApplied = true;
+        applyRainbowBossForcedStun(spawnedEnemy, RAINBOW_BOSS_INITIAL_STUN_DURATION, true);
+      }
 
       waveState.spawned += 1;
     }
@@ -15046,14 +15213,81 @@ function requestGachaDraw(count) {
       const y=Math.max(90,Math.min(canvas.height-90,90+Math.random()*(canvas.height-180)));
       const ore={
         id:`rainbow-ore-${Date.now()}-${Math.random().toString(36).slice(2,7)}`, type:'rainbowOre',variant:'rainbowOre',name:'무지개 광석',icon:'💎',
-        waveNumber, x,y,targetIndex:1,health:3000,maxHealth:3000,speed:0,radius:27,reward:0,dead:false,resolvedRecorded:true,
+        waveNumber, x,y,targetIndex:1,health:3000*RAINBOW_EVENT_HP_MULTIPLIER,maxHealth:3000*RAINBOW_EVENT_HP_MULTIPLIER,speed:0,radius:27,reward:0,dead:false,resolvedRecorded:true,
         rainbowOre:true,staticRainbowObject:true,pulseEffect:0,pulseKind:'',heading:0,timeStunRemaining:0,reviveInvulnerableRemaining:0
       };
       battle.enemies.push(ore); return ore;
     }
 
+
+    function isRainbowEventBossEnemy(enemy) {
+      return Boolean(enemy && (
+        enemy.rainbowEventBoss ||
+        enemy.type === 'rainbowUnicornBoss' ||
+        enemy.type === 'rainbowGuardCaptainBoss' ||
+        enemy.type === 'rainbowFeverCore'
+      ));
+    }
+
+    function applyRainbowBossForcedStun(enemy, seconds, initial = false) {
+      if (!battle?.isRainbowEvent || !isRainbowEventBossEnemy(enemy)) return 0;
+      const duration = Math.max(.1, Number(seconds || 0));
+      let affected = 0;
+      for (const unit of battle.placedUnits || []) {
+        unit.rainbowBossStunRemaining = Math.max(Number(unit.rainbowBossStunRemaining || 0), duration);
+        unit.rainbowBossStunSource = enemy.id || enemy.type || 'rainbowBoss';
+        affected += 1;
+      }
+      if (affected) {
+        enemy.pulseKind = 'rainbowStun';
+        enemy.pulseEffect = .65;
+        setBattleMessage(initial
+          ? `🌈 ${enemy.name} 등장! 기절 면역을 무시하고 모든 아군을 ${duration.toFixed(0)}초 기절시켰습니다!`
+          : `🌈 ${enemy.name}의 무지개 압박! 모든 아군이 ${duration.toFixed(0)}초 기절했습니다!`);
+      }
+      return affected;
+    }
+
+    function updateRainbowEventDash(enemy, dt) {
+      if (!battle?.isRainbowEvent || !enemy || enemy.dead || enemy.rainbowOre || enemy.staticRainbowObject || enemy.type === 'rainbowFeverCore') return;
+      const interval = Math.max(.25, Number(enemy.rainbowDashInterval || RAINBOW_EVENT_DASH_INTERVAL));
+      enemy.rainbowDashTimer = Number.isFinite(enemy.rainbowDashTimer) ? enemy.rainbowDashTimer - dt : interval;
+      enemy.rainbowDashAnim = Math.max(0, Number(enemy.rainbowDashAnim || 0) - dt * 3.5);
+      if (enemy.rainbowDashTimer > 0) return;
+      const oldX = Number(enemy.x || 0), oldY = Number(enemy.y || 0);
+      const dashDistance = Math.max(20, Number(enemy.rainbowDashDistance || RAINBOW_EVENT_DASH_DISTANCE));
+      advanceEnemyAlongPath(enemy, dashDistance);
+      enemy.rainbowDashTimer += interval;
+      enemy.rainbowDashAnim = 1;
+      enemy.pulseKind = 'rainbowDash';
+      enemy.pulseEffect = Math.max(Number(enemy.pulseEffect || 0), .35);
+      const target = path[enemy.targetIndex];
+      if (target) enemy.heading = Math.atan2(target.y - enemy.y, target.x - enemy.x);
+      battle.shots.push({
+        x1:oldX,y1:oldY,x2:enemy.x,y2:enemy.y,
+        life:.28,maxLife:.28,effect:'rainbowSlash',color:'#ff8fd0',
+        angle:Math.atan2(enemy.y-oldY,enemy.x-oldX),radius:Math.max(55,dashDistance),coneAngle:20,seed:Math.random()*1000
+      });
+    }
+
     function updateRainbowEventEnemy(enemy,dt) {
       if(!battle?.isRainbowEvent) return false;
+
+      if (isRainbowEventBossEnemy(enemy)) {
+        if (!enemy.rainbowInitialBossStunApplied) {
+          enemy.rainbowInitialBossStunApplied = true;
+          applyRainbowBossForcedStun(enemy, RAINBOW_BOSS_INITIAL_STUN_DURATION, true);
+        }
+        const stunInterval = Math.max(.25, Number(enemy.rainbowBossStunInterval || RAINBOW_BOSS_STUN_INTERVAL));
+        enemy.rainbowBossStunTimer = Number.isFinite(enemy.rainbowBossStunTimer) ? enemy.rainbowBossStunTimer - dt : stunInterval;
+        if (enemy.rainbowBossStunTimer <= 0) {
+          applyRainbowBossForcedStun(enemy, RAINBOW_BOSS_STUN_DURATION, false);
+          enemy.rainbowBossStunTimer += stunInterval;
+        }
+      }
+
+      updateRainbowEventDash(enemy, dt);
+
       if(enemy.type==='rainbowUnicornBoss') {
         enemy.rainbowDoomTimer=Number(enemy.rainbowDoomTimer||enemy.rainbowDoomInterval||5)-dt;
         if(enemy.rainbowDoomTimer<=0){markRainbowDoomOnAllies(enemy);enemy.rainbowDoomTimer+=Number(enemy.rainbowDoomInterval||5);}
@@ -17608,12 +17842,20 @@ function requestGachaDraw(count) {
     }
 
     function updatePlacedUnitCore(placed, dt) {
+      placed.rainbowBossStunRemaining = Math.max(0, Number(placed.rainbowBossStunRemaining || 0) - dt);
       if (UNIT_DATA[placed.unitId]?.stunImmune) placed.stunRemaining = 0;
       else placed.stunRemaining = Math.max(0, (placed.stunRemaining || 0) - dt);
       placed.attackSlowRemaining = Math.max(0, (placed.attackSlowRemaining || 0) - dt);
       placed.hackedRemaining = Math.max(0, Number(placed.hackedRemaining || 0) - dt);
       if (placed.attackSlowRemaining <= 0) placed.attackSlowMultiplier = 1;
       if (placed.hackedRemaining <= 0) placed.hackedByEnemyId = null;
+
+      // 무지개 이벤트 보스의 강제 기절은 일반 '기절 면역'을 관통합니다.
+      if (placed.rainbowBossStunRemaining > 0) {
+        placed.attackAnimation = Math.max(0, Number(placed.attackAnimation || 0) - dt * 4);
+        return;
+      }
+
       if (updateRainbowUnitSpecials(placed,dt)) return;
       placed.cooldown -= dt;
       if (placed.unitId === 'cherrySamurai') updateCherrySamuraiBlossomAura(placed, dt);
@@ -17724,9 +17966,39 @@ function requestGachaDraw(count) {
       }
 
       if (placed.unitId === 'rainbowBeyond') {
-        const target=getFrontmostEnemyInRange(placed,placed.range);if(!target)return;placed.angle=Math.atan2(target.y-placed.y,target.x-placed.x);placed.cooldown=placed.fireInterval*slowMultiplier;placed.attackAnimation=1;placed.attackMode='rainbowSlash';placed.attackCount=Number(placed.attackCount||0)+1;
-        const dmg=Number(placed.damage||20000);const half=Math.PI/2;for(const enemy of battle.enemies){if(enemy.dead||enemy.type==='rainbowFeverCore')continue;if(isEnemyInsideCone(enemy,placed,placed.angle,placed.range,half))applyTraitDamage(placed,enemy,dmg);}
-        battle.shots.push({x1:placed.x,y1:placed.y,x2:placed.x+Math.cos(placed.angle)*placed.range,y2:placed.y+Math.sin(placed.angle)*placed.range,life:.5,maxLife:.5,effect:'rainbowSlash',color:'#ff8fd0',angle:placed.angle,radius:placed.range,coneAngle:180,seed:Math.random()*1000});return;
+        const fallbackInfo = getClosestEnemyToUnit(placed, placed.range);
+        const target = getFrontmostEnemyInRange(placed, placed.range) || fallbackInfo?.enemy;
+        if (!target) return;
+
+        placed.angle = Math.atan2(target.y-placed.y,target.x-placed.x);
+        placed.cooldown = Math.max(.015, Number(placed.fireInterval||.5) * slowMultiplier);
+        placed.attackAnimation = 1;
+        placed.attackMode = 'rainbowSlash';
+        placed.attackCount = Number(placed.attackCount||0)+1;
+
+        const dmg = Math.max(1, Number(placed.damage||UNIT_DATA.rainbowBeyond.damage||20000));
+        const half = Math.PI/2;
+        let hitCount = 0;
+        for (const enemy of battle.enemies) {
+          if (enemy.dead || enemy.type==='rainbowFeverCore' || enemy.rainbowOre) continue;
+          if (isEnemyInsideCone(enemy,placed,placed.angle,placed.range,half)) {
+            applyTraitDamage(placed,enemy,dmg);
+            hitCount += 1;
+          }
+        }
+        // 경계각/좌표 오차로 타깃이 콘 판정에서 빠져도 최소한 바라본 적은 반드시 타격합니다.
+        if (hitCount === 0 && !target.dead && target.type !== 'rainbowFeverCore' && !target.rainbowOre) {
+          applyTraitDamage(placed,target,dmg);
+        }
+
+        battle.shots.push({
+          x1:placed.x,y1:placed.y,
+          x2:placed.x+Math.cos(placed.angle)*placed.range,
+          y2:placed.y+Math.sin(placed.angle)*placed.range,
+          life:.5,maxLife:.5,effect:'rainbowSlash',color:'#ff8fd0',
+          angle:placed.angle,radius:placed.range,coneAngle:180,seed:Math.random()*1000
+        });
+        return;
       }
 
       const target = getFrontmostEnemyInRange(placed, placed.range);
@@ -17970,15 +18242,12 @@ function requestGachaDraw(count) {
       if (battle?.isRainbowEvent) {
         waveState.rewardGranted = true;
         battle.skipUses = 0;
-        const waveGemReward = infiniteWaveGemReward(waveState.wave);
-        battle.earnedWaveGems += waveGemReward;
-        player.gems += waveGemReward;
+        // 한정 이벤트에서는 소환석을 지급하지 않습니다. 보상은 이벤트 주사위/아이템과 EXP만 사용합니다.
         if (!waveState.profileExpGranted) {
           waveState.profileExpGranted = true;
           if (typeof awardPlayerExp === 'function') awardPlayerExp(infiniteWaveExp(waveState.wave), `무지개 저편 웨이브 ${waveState.wave}`);
         }
-        setBattleMessage(`🌈 무지개 저편 WAVE ${waveState.wave} 클리어 · 소환석 +${waveGemReward.toLocaleString()} · 이벤트 주사위 ${Number(battle.eventDiceCollected||0)}개 획득`);
-        void claimInfiniteWaveServerReward(waveState.wave);
+        setBattleMessage(`🌈 무지개 저편 WAVE ${waveState.wave} 클리어 · 소환석 보상 없음 · 이벤트 주사위 ${Number(battle.eventDiceCollected||0)}개 획득`);
         updateWaveSkipUi();
         return;
       }
@@ -20666,6 +20935,14 @@ function requestGachaDraw(count) {
     }
 
 function drawEnemy(enemy, time) {
+      // 무지개 병사의 긴 창이 몸보다 먼저 화면 안쪽에 보이던 스폰 지점 잔상 방지.
+      if (battle?.isRainbowEvent && !enemy.rainbowOre && enemy.type !== 'rainbowFeverCore' && !enemy.rainbowSpawnVisualReady) {
+        const sx = Number(enemy.rainbowSpawnOriginX ?? path?.[0]?.x ?? enemy.x);
+        const sy = Number(enemy.rainbowSpawnOriginY ?? path?.[0]?.y ?? enemy.y);
+        const moved = Math.hypot(Number(enemy.x||0)-sx, Number(enemy.y||0)-sy);
+        if (moved < 52) return;
+        enemy.rainbowSpawnVisualReady = true;
+      }
       const cullMargin=Math.max(90,Number(enemy.radius||22)*4);
       if (enemy.x < -cullMargin || enemy.y < -cullMargin || enemy.x > canvas.width+cullMargin || enemy.y > canvas.height+cullMargin) return;
       const formation = enemy.type === 'brother'
@@ -22627,6 +22904,94 @@ function drawEnemy(enemy, time) {
         g.fillStyle='#fffaff';g.shadowBlur=12;g.shadowColor='#ffbff0';g.beginPath();g.ellipse(0,3,20,12,0,0,Math.PI*2);g.fill();g.beginPath();g.ellipse(15,-10,10,12,-.25,0,Math.PI*2);g.fill();
         const grad=g.createLinearGradient(-25,-25,25,20);grad.addColorStop(0,'#ff6fa8');grad.addColorStop(.25,'#ffd95b');grad.addColorStop(.5,'#69ef9b');grad.addColorStop(.75,'#67c8ff');grad.addColorStop(1,'#b77cff');g.strokeStyle=grad;g.lineWidth=6;g.beginPath();g.moveTo(-13,-4);g.quadraticCurveTo(-27,-18,-17,10);g.stroke();g.strokeStyle='#ffe77c';g.lineWidth=4;g.beginPath();g.moveTo(19,-20);g.lineTo(31,-36);g.stroke();g.restore();return;
       }
+      if(id==='rainbowBeyond'){
+        const attack=Math.max(0,Math.min(1,Number(unit.attackAnimation||0)));
+        const hue=(time*.11+Number(unit.animationOffset||0)*77)%360;
+        g.save();
+        g.globalCompositeOperation='lighter';
+
+        // 뒤쪽 프리즘 날개
+        for(const side of [-1,1]){
+          const wing=g.createLinearGradient(0,-18,side*42,20);
+          wing.addColorStop(0,'rgba(255,255,255,.92)');
+          wing.addColorStop(.28,`hsla(${(hue+side*45+360)%360},100%,72%,.78)`);
+          wing.addColorStop(1,`hsla(${(hue+170+side*30+360)%360},100%,62%,.08)`);
+          g.fillStyle=wing;
+          g.beginPath();
+          g.moveTo(side*8,-9);
+          g.quadraticCurveTo(side*31,-27,side*43,-8);
+          g.quadraticCurveTo(side*27,0,side*47,18);
+          g.quadraticCurveTo(side*22,13,side*11,8);
+          g.closePath();g.fill();
+        }
+
+        // 회전하는 무지개 궤도
+        for(let ring=0;ring<3;ring++){
+          g.save();
+          g.rotate(time*(ring%2?-.0018:.0014)+ring*1.7);
+          g.strokeStyle=`hsla(${(hue+ring*110)%360},100%,75%,${.38+attack*.20})`;
+          g.lineWidth=2.2+ring*.5;
+          g.setLineDash(ring===1?[7,5]:[]);
+          g.beginPath();g.ellipse(0,-3,31+ring*6,14+ring*4,ring*.35,0,Math.PI*2);g.stroke();
+          g.setLineDash([]);g.restore();
+        }
+        g.restore();
+
+        // 왕관/후광
+        g.save();
+        g.translate(0,-39);
+        g.rotate(-time*.0011);
+        g.shadowBlur=16+attack*10;g.shadowColor='#fff';
+        for(let i=0;i<8;i++){
+          const a=i*Math.PI/4;
+          g.strokeStyle=`hsl(${(hue+i*44)%360},100%,78%)`;
+          g.lineWidth=2.3;
+          g.beginPath();g.moveTo(Math.cos(a)*12,Math.sin(a)*12);g.lineTo(Math.cos(a)*23,Math.sin(a)*23);g.stroke();
+        }
+        g.strokeStyle='rgba(255,255,255,.88)';g.lineWidth=2;g.beginPath();g.arc(0,0,15,0,Math.PI*2);g.stroke();
+        g.restore();
+
+        // 본체: 검은 우주핵 + 프리즘 갑옷
+        const core=g.createRadialGradient(-4,-9,2,0,-2,27);
+        core.addColorStop(0,'#ffffff');core.addColorStop(.16,`hsl(${hue},100%,82%)`);
+        core.addColorStop(.48,'#432b73');core.addColorStop(1,'#10091d');
+        g.shadowBlur=18;g.shadowColor=`hsl(${hue},100%,70%)`;
+        g.fillStyle=core;g.strokeStyle='rgba(255,255,255,.92)';g.lineWidth=2;
+        g.beginPath();g.moveTo(-17,17);g.lineTo(-18,-8);g.lineTo(-9,-21);g.lineTo(9,-21);g.lineTo(18,-8);g.lineTo(17,17);g.lineTo(0,24);g.closePath();g.fill();g.stroke();
+
+        // 가슴 프리즘
+        const prism=g.createLinearGradient(-8,-10,8,10);
+        prism.addColorStop(0,'#ff6fa8');prism.addColorStop(.25,'#ffd95b');prism.addColorStop(.5,'#69ef9b');prism.addColorStop(.75,'#67c8ff');prism.addColorStop(1,'#b77cff');
+        g.fillStyle=prism;g.beginPath();g.moveTo(0,-12);g.lineTo(9,-3);g.lineTo(0,9);g.lineTo(-9,-3);g.closePath();g.fill();
+        g.strokeStyle='#fff';g.lineWidth=1.2;g.stroke();
+
+        // 머리와 발광 눈
+        g.fillStyle='#171025';g.beginPath();g.arc(0,-24,11,0,Math.PI*2);g.fill();
+        g.fillStyle='#fff';g.shadowBlur=10;g.shadowColor='#fff';
+        g.beginPath();g.arc(-4,-25,1.8,0,Math.PI*2);g.arc(4,-25,1.8,0,Math.PI*2);g.fill();
+
+        // 한 자루의 프리즘 검. 공격 중 팔/검이 적 방향으로 크게 스윙.
+        const swing=(-.95 + attack*1.75);
+        g.save();g.translate(11,-2);g.rotate(swing);
+        g.strokeStyle='#33224f';g.lineWidth=6;g.lineCap='round';
+        g.beginPath();g.moveTo(0,0);g.lineTo(13,8);g.stroke(); // 팔
+        g.fillStyle='#fff';g.beginPath();g.arc(14,8,3.2,0,Math.PI*2);g.fill();
+        const blade=g.createLinearGradient(14,8,57,0);
+        blade.addColorStop(0,'#fff');blade.addColorStop(.25,`hsl(${hue},100%,78%)`);blade.addColorStop(.7,`hsl(${(hue+120)%360},100%,68%)`);blade.addColorStop(1,'#fff');
+        g.strokeStyle=blade;g.shadowBlur=15+attack*8;g.shadowColor=`hsl(${hue},100%,72%)`;g.lineWidth=5;
+        g.beginPath();g.moveTo(15,8);g.lineTo(55,0);g.stroke();
+        g.fillStyle='#fff';g.beginPath();g.moveTo(62,-1);g.lineTo(52,-5);g.lineTo(54,4);g.closePath();g.fill();
+        g.restore();
+
+        // 공격 순간 전방 광휘
+        if(attack>.05){
+          g.save();g.globalCompositeOperation='lighter';g.globalAlpha=.35+attack*.5;
+          g.strokeStyle=`hsl(${hue},100%,82%)`;g.lineWidth=3+attack*4;
+          g.beginPath();g.arc(10,-2,31+attack*9,-1.1,.95);g.stroke();g.restore();
+        }
+        g.restore();return;
+      }
+
       const armor=g.createLinearGradient(-20,-20,20,20);armor.addColorStop(0,'#ff6fa8');armor.addColorStop(.25,'#ffd95b');armor.addColorStop(.5,'#69ef9b');armor.addColorStop(.75,'#67c8ff');armor.addColorStop(1,'#b77cff');
       if(id==='rainbowMage'){
         g.fillStyle=armor;g.beginPath();g.moveTo(-20,20);g.lineTo(-12,-10);g.lineTo(12,-10);g.lineTo(20,20);g.closePath();g.fill();g.fillStyle='#f7dbb8';g.beginPath();g.arc(0,-15,8,0,Math.PI*2);g.fill();g.fillStyle='#6b3bb2';g.beginPath();g.moveTo(-15,-17);g.lineTo(0,-38);g.lineTo(17,-15);g.closePath();g.fill();
@@ -24915,6 +25280,11 @@ function drawEnemy(enemy, time) {
     });
     document.querySelector('#adminRefreshPlayerBtn').addEventListener('click', () => loadAdminPlayer());
     document.querySelector('#adminGemApplyBtn').addEventListener('click', applyAdminGemAdjustment);
+    document.querySelector('#adminZeroGemsBtn')?.addEventListener('click', zeroAdminUserGems);
+    document.querySelector('#adminBanUserBtn')?.addEventListener('click', () => setAdminUserBan(true));
+    document.querySelector('#adminUnbanUserBtn')?.addEventListener('click', () => setAdminUserBan(false));
+    document.querySelector('#adminRefreshErrorHoldersBtn')?.addEventListener('click', loadAdminErrorHolders);
+    document.querySelector('#adminGlobalResetBtn')?.addEventListener('click', resetAllServerCurrencyItems);
     document.querySelector('#adminUnitGrantBtn').addEventListener('click', grantAdminUnit);
     document.querySelector('#adminFragmentGrantBtn')?.addEventListener('click', grantAdminFragments);
     document.querySelector('#adminDiceGrantBtn').addEventListener('click', grantAdminDice);

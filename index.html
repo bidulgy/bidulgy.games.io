@@ -15427,8 +15427,8 @@ function requestGachaDraw(count) {
       if (target) enemy.heading = Math.atan2(target.y - enemy.y, target.x - enemy.x);
       battle.shots.push({
         x1:oldX,y1:oldY,x2:enemy.x,y2:enemy.y,
-        life:.28,maxLife:.28,effect:'rainbowSlash',color:'#ff8fd0',
-        angle:Math.atan2(enemy.y-oldY,enemy.x-oldX),radius:Math.max(55,dashDistance),coneAngle:20,seed:Math.random()*1000
+        life:.22,maxLife:.22,effect:'rainbowSlash',color:'#ff8fd0',
+        angle:Math.atan2(enemy.y-oldY,enemy.x-oldX),radius:Math.max(55,dashDistance),visualRadius:Math.min(72,Math.max(46,dashDistance*.58)),coneAngle:20,seed:Math.random()*1000
       });
     }
 
@@ -18157,8 +18157,9 @@ function requestGachaDraw(count) {
         }
 
         let slashFx=battle.shots.find(shot=>shot.effect==='rainbowSlash'&&shot.sourceUnitId===placed.id&&shot.life>0);
-        if(slashFx){slashFx.x1=placed.x;slashFx.y1=placed.y;slashFx.x2=placed.x+Math.cos(placed.angle)*placed.range;slashFx.y2=placed.y+Math.sin(placed.angle)*placed.range;slashFx.life=.5;slashFx.maxLife=.5;slashFx.angle=placed.angle;slashFx.radius=placed.range;slashFx.seed=Math.random()*1000;}
-        else battle.shots.push({x1:placed.x,y1:placed.y,x2:placed.x+Math.cos(placed.angle)*placed.range,y2:placed.y+Math.sin(placed.angle)*placed.range,life:.5,maxLife:.5,effect:'rainbowSlash',color:'#ff8fd0',sourceUnitId:placed.id,angle:placed.angle,radius:placed.range,coneAngle:180,seed:Math.random()*1000});
+        const rainbowSlashVisualRadius = Math.min(118, Math.max(82, Number(placed.range || 240) * .49));
+        if(slashFx){slashFx.x1=placed.x;slashFx.y1=placed.y;slashFx.x2=placed.x+Math.cos(placed.angle)*placed.range;slashFx.y2=placed.y+Math.sin(placed.angle)*placed.range;slashFx.life=.38;slashFx.maxLife=.38;slashFx.angle=placed.angle;slashFx.radius=placed.range;slashFx.visualRadius=rainbowSlashVisualRadius;slashFx.coneAngle=180;slashFx.seed=Math.random()*1000;}
+        else battle.shots.push({x1:placed.x,y1:placed.y,x2:placed.x+Math.cos(placed.angle)*placed.range,y2:placed.y+Math.sin(placed.angle)*placed.range,life:.38,maxLife:.38,effect:'rainbowSlash',color:'#ff8fd0',sourceUnitId:placed.id,angle:placed.angle,radius:placed.range,visualRadius:rainbowSlashVisualRadius,coneAngle:180,seed:Math.random()*1000});
         return;
       }
 
@@ -24291,7 +24292,35 @@ function drawEnemy(enemy, time) {
           for(let i=0;i<5;i+=1){const a=shot.seed+i*2.4+progress*10;ctx.fillStyle=`rgba(170,255,207,${.75*fade})`;ctx.beginPath();ctx.ellipse(x-ux*(10+i*7)+nx*Math.sin(a)*8,y-uy*(10+i*7)+ny*Math.sin(a)*8,4,1.7,a,0,Math.PI*2);ctx.fill();}
           ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.fillStyle='#d7ffe8';ctx.beginPath();ctx.moveTo(12,0);ctx.lineTo(-5,-7);ctx.lineTo(-1,0);ctx.lineTo(-5,7);ctx.closePath();ctx.fill();ctx.restore();
         } else if (shot.effect === 'rainbowSlash') {
-          const pulse=Math.sin(progress*Math.PI),radius=Number(shot.radius||240),half=Math.PI/2;ctx.save();ctx.translate(shot.x1,shot.y1);ctx.rotate(Number(shot.angle||0));ctx.globalCompositeOperation='lighter';for(let i=0;i<5;i++){ctx.strokeStyle=`hsla(${(time*.18+i*62)%360},100%,72%,${(.55-i*.07)*fade})`;ctx.lineWidth=13-i*2;ctx.beginPath();ctx.arc(0,0,radius*(.72+.05*i),-half,half);ctx.stroke();}ctx.fillStyle=`rgba(255,255,255,${.10*pulse})`;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,radius,-half,half);ctx.closePath();ctx.fill();ctx.restore();
+          // 무지개 저편의 실제 공격 범위와 화면 이펙트 크기를 분리합니다.
+          // 예전에는 radius 전체(최대 240)를 반원으로 채워 맵을 덮는 것처럼 보였습니다.
+          const pulse = Math.sin(progress * Math.PI);
+          const gameplayRadius = Math.max(1, Number(shot.radius || 240));
+          const visualRadius = Math.max(42, Math.min(gameplayRadius, Number(shot.visualRadius || Math.min(118, gameplayRadius * .52))));
+          const coneDeg = Math.max(8, Math.min(180, Number(shot.coneAngle || 180)));
+          const half = (coneDeg * Math.PI / 180) / 2;
+          const sweep = Math.max(.10, Math.min(half, half * (.76 + .18 * pulse)));
+          ctx.save();
+          ctx.translate(shot.x1, shot.y1);
+          ctx.rotate(Number(shot.angle || 0));
+          ctx.globalCompositeOperation = 'lighter';
+          // 넓은 반투명 반원 채우기를 제거하고 검날처럼 얇은 호만 남깁니다.
+          for (let i = 0; i < 4; i += 1) {
+            const rr = visualRadius * (.66 + i * .095);
+            const a = Math.max(.16, (.76 - i * .12) * fade);
+            ctx.strokeStyle = `hsla(${(time * .18 + i * 68) % 360},100%,72%,${a})`;
+            ctx.lineWidth = Math.max(2.2, 8.5 - i * 1.65);
+            ctx.beginPath();
+            ctx.arc(0, 0, rr, -sweep, sweep);
+            ctx.stroke();
+          }
+          // 검끝 중심의 짧은 흰색 코어 잔광.
+          ctx.strokeStyle = `rgba(255,255,255,${.82 * fade})`;
+          ctx.lineWidth = 2.2;
+          ctx.beginPath();
+          ctx.arc(0, 0, visualRadius * .92, -sweep * .92, sweep * .92);
+          ctx.stroke();
+          ctx.restore();
         } else if (shot.effect === 'steelSlash') {
           const pulse=Math.sin(progress*Math.PI);
           if (shot.radius) {

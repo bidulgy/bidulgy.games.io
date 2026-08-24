@@ -4694,6 +4694,7 @@ body {
 }
 .rainbow-dice-cutscene .batch-reward-die{background:linear-gradient(135deg,#ff5f9f,#ffd85f,#68ef9c,#69caff,#ba79ff)!important;background-size:300% 300%!important;animation:rainbowDiceFlow 2s linear infinite!important}
 
+.mailbox-dialog{width:min(760px,96vw)}.mail-compose{display:grid;gap:8px;padding:12px;border:1px solid rgba(255,255,255,.13);border-radius:16px;background:rgba(255,255,255,.04)}.mail-compose textarea{resize:vertical;min-height:86px}.mail-gift-row{display:grid;grid-template-columns:1fr 1fr 110px;gap:7px}.mail-list{display:grid;gap:9px}.mail-card{padding:12px;border:1px solid rgba(255,255,255,.13);border-radius:15px;background:rgba(255,255,255,.045)}.mail-card.unread{border-color:rgba(106,211,255,.55)}.mail-card-head{display:flex;justify-content:space-between;gap:10px}.mail-card-head small{color:#91a8c2}.mail-card p{white-space:pre-wrap;line-height:1.48}.mail-gift{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px;border-radius:11px;background:rgba(255,216,90,.08)}.mail-system{color:#ffd86a}.mailbox-dialog input,.mailbox-dialog textarea,.mailbox-dialog select{width:100%;box-sizing:border-box}#adminRefreshErrorHoldersBtn{pointer-events:auto!important;position:relative!important;z-index:30!important}@media(max-width:620px){.mail-gift-row{grid-template-columns:1fr}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style id="multiplayerStyles">
@@ -7393,6 +7394,8 @@ button {
         <span id="tradeMenuBadge" class="trade-menu-badge hidden">0</span>
       </button>
 
+      <button id="openMailboxBtn" class="defense-menu-card" type="button"><span class="defense-card-icon">📬</span><strong>우편함</strong><small>편지 · 선물 · 관리자 알림</small><span id="mailUnreadBadge" class="trade-menu-badge hidden">0</span></button>
+
       <button id="adminPanelBtn" class="defense-menu-card admin-panel-button hidden" type="button">
         <span class="defense-card-icon">🛠️</span>
         <strong>관리자 패널</strong>
@@ -7588,17 +7591,35 @@ button {
         <div class="admin-card">
           <div class="between">
             <h3>⚠️ ERROR 유닛 보유 계정</h3>
-            <button id="adminRefreshErrorHoldersBtn" class="secondary" type="button">조회</button>
+            <button id="adminRefreshErrorHoldersBtn" class="secondary" type="button" style="position:relative;z-index:20;pointer-events:auto;cursor:pointer;">조회</button>
           </div>
           <div id="adminErrorHolderList" class="admin-search-results"><span class="muted">조회 버튼을 누르면 ERROR 보유 계정만 표시됩니다.</span></div>
         </div>
 
+        <div class="admin-card" style="border-color:rgba(255,196,78,.42);">
+          <h3>💎 서버 전체 소환석만 초기화</h3>
+          <p class="muted" style="display:block!important;">모든 유저의 <b>소환석만 0</b>으로 만듭니다. 주사위, 아이템, 유닛, 조각은 그대로 유지됩니다.</p>
+          <input id="adminGlobalGemsResetConfirmInput" type="text" maxlength="20" placeholder="RESET_GEMS 입력" autocomplete="off" />
+          <input id="adminGlobalGemsResetReasonInput" type="text" maxlength="120" value="관리자 서버 전체 소환석 초기화" />
+          <button id="adminGlobalGemsResetBtn" class="danger" type="button">모든 유저 소환석만 0으로</button>
+        </div>
+
+        <div class="admin-card" style="border-color:rgba(141,110,255,.42);">
+          <h3>🧰 특정 아이템 서버 전체 삭제</h3>
+          <p class="muted" style="display:block!important;">아이템 종류를 하나 선택해서 <b>그 아이템만 모든 유저에게서 0</b>으로 만듭니다. 다른 아이템과 재화는 유지됩니다.</p>
+          <select id="adminGlobalItemResetSelect"><option value="">아이템 목록 불러오는 중...</option></select>
+          <div id="adminGlobalItemResetInfo" class="muted" style="margin:7px 0 2px;font-size:12px;">서버 아이템 종류를 확인 중입니다.</div>
+          <input id="adminGlobalItemResetConfirmInput" type="text" maxlength="20" placeholder="RESET_ITEM 입력" autocomplete="off" />
+          <input id="adminGlobalItemResetReasonInput" type="text" maxlength="120" value="관리자 특정 아이템 서버 전체 삭제" />
+          <button id="adminGlobalItemResetBtn" class="danger" type="button">선택한 아이템만 모든 유저에게서 삭제</button>
+        </div>
+
         <div class="admin-card" style="border-color:rgba(255,70,90,.45);">
-          <h3>☢️ 서버 전체 재화/아이템 초기화</h3>
-          <p class="muted" style="display:block!important;">모든 유저의 소환석, 모든 주사위, 모든 아이템 수량을 서버에서 0으로 만듭니다. 유닛/조각은 삭제하지 않습니다.</p>
+          <h3>☢️ 서버 전체 재화/주사위/아이템 초기화</h3>
+          <p class="muted" style="display:block!important;">모든 유저의 소환석, 모든 주사위, 모든 아이템 수량을 서버에서 0으로 만듭니다. 유닛/조각은 삭제하지 않습니다. 필요한 경우 위의 선택 초기화를 우선 사용하세요.</p>
           <input id="adminGlobalResetConfirmInput" type="text" maxlength="20" placeholder="RESET_ALL 입력" autocomplete="off" />
           <input id="adminGlobalResetReasonInput" type="text" maxlength="120" value="관리자 전체 재화/아이템 초기화" />
-          <button id="adminGlobalResetBtn" class="admin-danger-button" type="button">모든 유저 재화/아이템 0으로 초기화</button>
+          <button id="adminGlobalResetBtn" class="admin-danger-button" type="button">모든 유저 재화/주사위/아이템 0으로 초기화</button>
         </div>
 
         <div class="admin-card">
@@ -7696,7 +7717,9 @@ button {
     </div>
   </section>
 
-  <section id="collectionScreen" class="screen hidden inventory-screen">
+  <div id="mailboxOverlay" class="social-overlay hidden"><div class="social-dialog mailbox-dialog"><button id="mailboxCloseBtn" class="social-close" type="button">×</button><h2>📬 우편함</h2><div class="mail-compose"><strong>편지 보내기</strong><input id="mailRecipientInput" maxlength="40" placeholder="받는 플레이어 아이디"><textarea id="mailMessageInput" maxlength="500" rows="4" placeholder="메시지 (최대 500자)"></textarea><div class="mail-gift-row"><select id="mailGiftKindSelect"><option value="">선물 없음</option><option value="gems">💎 소환석</option><option value="dice">🎲 주사위</option><option value="item">🎁 아이템</option></select><select id="mailGiftKeySelect" disabled><option value="">종류 선택</option></select><input id="mailGiftAmountInput" type="number" min="1" max="1000000" value="1" disabled></div><button id="mailSendBtn" type="button">편지 보내기</button><div id="mailStatus" class="social-status"></div></div><div class="social-section-title"><strong>받은 편지</strong><button id="mailRefreshBtn" class="secondary" type="button">새로고침</button></div><div id="mailList" class="mail-list"><div class="social-empty">우편함을 불러오는 중...</div></div></div></div>
+
+<section id="collectionScreen" class="screen hidden inventory-screen">
     <div class="between">
       <div>
         <span class="section-kicker">COMMAND STORAGE</span>
@@ -10080,6 +10103,7 @@ async function refreshAdminAccess(force = false) {
     adminAccessRetryTimer = setTimeout(() => {
       adminAccessRetryTimer = null;
       void refreshAdminAccess(true);
+      if (currentUsername) void loadMailbox();
     }, 1500);
 
     return localCandidate;
@@ -10203,7 +10227,9 @@ async function openAdminPanel() {
   setAdminStatus('서버에서 관리자 권한이 확인되었습니다.', 'good');
   await Promise.all([
     loadAdminRooms(),
-    loadAdminLogs()
+    loadAdminLogs(),
+    loadAdminGlobalItemTypes(),
+    loadAdminErrorHolders()
   ]);
 }
 
@@ -10384,6 +10410,17 @@ async function loadAdminPlayer(userId = adminSelectedUserId) {
 }
 
 
+let mailboxCache=[];
+function setMailStatus(message,type=''){const el=document.querySelector('#mailStatus');if(el){el.textContent=message||'';el.className=`social-status ${type||''}`;}}
+function mailGiftLabel(m){if(!m?.giftKind||Number(m.giftAmount||0)<=0)return '';if(m.giftKind==='gems')return `💎 소환석 ${Number(m.giftAmount).toLocaleString()}개`;if(m.giftKind==='dice')return `🎲 ${m.giftKey} 주사위 ${Number(m.giftAmount).toLocaleString()}개`;return `🎁 ${m.giftKey==='rainbowFragment'?'무지개의 조각':m.giftKey} ${Number(m.giftAmount).toLocaleString()}개`;}
+function updateMailGiftOptions(){const kind=document.querySelector('#mailGiftKindSelect')?.value||'',key=document.querySelector('#mailGiftKeySelect'),amt=document.querySelector('#mailGiftAmountInput');if(!key||!amt)return;if(!kind){key.innerHTML='<option value="">종류 선택</option>';key.disabled=true;amt.disabled=true;return;}amt.disabled=false;if(kind==='gems'){key.innerHTML='<option value="gems">소환석</option>';key.disabled=true;}else if(kind==='dice'){key.disabled=false;key.innerHTML=Object.values(DICE_DATA).map(d=>`<option value="${d.key}">${d.rarity} (${Number(player.diceInventory?.[d.key]||0).toLocaleString()}개)</option>`).join('');}else{key.disabled=false;const items=player.itemInventory||{};const keys=Object.keys(items);key.innerHTML=(keys.length?keys:['rainbowFragment']).map(k=>`<option value="${k}">${k==='rainbowFragment'?'무지개의 조각':k} (${Number(items[k]||0).toLocaleString()}개)</option>`).join('');}}
+function updateMailUnreadBadge(){const b=document.querySelector('#mailUnreadBadge');if(!b)return;const n=mailboxCache.filter(m=>!m.isRead).length;b.textContent=n;b.classList.toggle('hidden',n<=0);}
+function renderMailbox(){const list=document.querySelector('#mailList');if(!list)return;if(!mailboxCache.length){list.innerHTML='<div class="social-empty">받은 편지가 없습니다.</div>';return;}list.innerHTML=mailboxCache.map(m=>{const gift=mailGiftLabel(m);return `<div class="mail-card ${m.isRead?'':'unread'}" data-mail-id="${m.id}"><div class="mail-card-head"><strong class="${m.systemMail?'mail-system':''}">${m.systemMail?'🛠️ ':''}${adminEscapeHtml(m.senderName||'SYSTEM')}</strong><small>${adminEscapeHtml(formatAdminDate(m.createdAt))}</small></div><p>${adminEscapeHtml(m.message||'')}</p>${gift?`<div class="mail-gift"><span>${adminEscapeHtml(gift)}</span><button data-mail-claim="${m.id}" ${m.giftClaimed?'disabled':''}>${m.giftClaimed?'수령 완료':'선물 받기'}</button></div>`:''}</div>`}).join('');list.querySelectorAll('.mail-card').forEach(c=>c.addEventListener('click',e=>{if(e.target.closest('[data-mail-claim]'))return;const id=c.dataset.mailId;void supabaseClient.rpc('mark_mail_read_v1',{p_mail_id:id});const m=mailboxCache.find(x=>x.id===id);if(m)m.isRead=true;c.classList.remove('unread');updateMailUnreadBadge();}));list.querySelectorAll('[data-mail-claim]').forEach(btn=>btn.addEventListener('click',async()=>{btn.disabled=true;try{const {error}=await supabaseClient.rpc('claim_mail_gift_v1',{p_mail_id:btn.dataset.mailClaim});if(error)throw error;setMailStatus('선물을 받았습니다.','good');await Promise.all([syncServerDiceInventory(),syncServerItemInventory()]);await loadMailbox();renderMenu();}catch(e){setMailStatus(`선물 수령 실패: ${e.message}`,'error');btn.disabled=false;}}));}
+async function loadMailbox(){try{const {data,error}=await supabaseClient.rpc('list_my_mail_v1');if(error)throw error;mailboxCache=Array.isArray(data)?data:[];renderMailbox();updateMailUnreadBadge();}catch(e){console.warn('우편함 조회 실패',e);}}
+async function openMailbox(){document.querySelector('#mailboxOverlay')?.classList.remove('hidden');await Promise.all([syncServerDiceInventory(),syncServerItemInventory()]);updateMailGiftOptions();await loadMailbox();}
+function closeMailbox(){document.querySelector('#mailboxOverlay')?.classList.add('hidden');}
+async function sendMailboxLetter(){const r=document.querySelector('#mailRecipientInput')?.value?.trim()||'',m=document.querySelector('#mailMessageInput')?.value?.trim()||'',k=document.querySelector('#mailGiftKindSelect')?.value||'',key=document.querySelector('#mailGiftKeySelect')?.value||'',a=Math.max(0,Math.floor(Number(document.querySelector('#mailGiftAmountInput')?.value||0)));if(!r||!m){setMailStatus('받는 사람과 메시지를 입력하세요.','error');return;}const b=document.querySelector('#mailSendBtn');if(b)b.disabled=true;try{const {data,error}=await supabaseClient.rpc('send_player_mail_v1',{p_recipient_username:r,p_message:m,p_gift_kind:k||null,p_gift_key:k?key:null,p_gift_amount:k?a:0});if(error)throw error;setMailStatus(`${data?.recipient||r}에게 보냈습니다.`,'good');document.querySelector('#mailMessageInput').value='';await Promise.all([syncServerDiceInventory(),syncServerItemInventory()]);renderMenu();}catch(e){setMailStatus(`전송 실패: ${e.message}`,'error');}finally{if(b)b.disabled=false;}}
+
 async function loadAdminErrorHolders() {
   const list = document.querySelector('#adminErrorHolderList');
   if (!list) return;
@@ -10456,6 +10493,130 @@ async function zeroAdminUserGems() {
   } catch (error) {
     console.error('관리자 소환석 전량 회수 실패:', error);
     setAdminStatus(`소환석 초기화 실패: ${error.message}`, 'error');
+  }
+}
+
+function getAdminItemDisplayName(itemKey) {
+  const names = {
+    rainbowFragment: '🌈💠 무지개의 조각'
+  };
+  return names[itemKey] || `📦 ${itemKey}`;
+}
+
+async function loadAdminGlobalItemTypes() {
+  const select = document.querySelector('#adminGlobalItemResetSelect');
+  const info = document.querySelector('#adminGlobalItemResetInfo');
+  if (!select) return;
+  select.disabled = true;
+  select.innerHTML = '<option value="">아이템 목록 불러오는 중...</option>';
+  if (info) info.textContent = '서버 아이템 종류를 확인 중입니다.';
+  try {
+    const { data, error } = await supabaseClient.rpc('admin_list_item_types_v1');
+    if (error) throw error;
+    const rows = Array.isArray(data) ? data : [];
+    select.innerHTML = '';
+    if (!rows.length) {
+      select.innerHTML = '<option value="">등록된 아이템 없음</option>';
+      if (info) info.textContent = '현재 서버에 등록된 아이템 종류가 없습니다.';
+      return;
+    }
+    rows.forEach(row => {
+      const itemKey = String(row?.itemKey || '').trim();
+      if (!itemKey) return;
+      const option = document.createElement('option');
+      option.value = itemKey;
+      const total = Math.max(0, Math.floor(Number(row?.totalAmount || 0)));
+      const holders = Math.max(0, Math.floor(Number(row?.holderCount || 0)));
+      option.textContent = `${getAdminItemDisplayName(itemKey)} · 서버 총 ${total.toLocaleString()}개 · ${holders.toLocaleString()}명 보유`;
+      option.dataset.totalAmount = String(total);
+      option.dataset.holderCount = String(holders);
+      select.appendChild(option);
+    });
+    select.disabled = !select.options.length;
+    const updateInfo = () => {
+      const option = select.selectedOptions?.[0];
+      if (!option?.value) {
+        if (info) info.textContent = '삭제할 아이템을 선택하세요.';
+        return;
+      }
+      if (info) info.textContent = `${getAdminItemDisplayName(option.value)}만 전체 서버에서 0으로 만듭니다. 다른 아이템은 유지됩니다.`;
+    };
+    select.onchange = updateInfo;
+    updateInfo();
+  } catch (error) {
+    console.error('관리자 아이템 종류 조회 실패:', error);
+    select.innerHTML = '<option value="">목록 조회 실패</option>';
+    if (info) info.textContent = `아이템 목록 조회 실패: ${error.message || error}`;
+  } finally {
+    if (select.options.length && select.options[0]?.value) select.disabled = false;
+  }
+}
+
+async function resetAllServerGemsOnly() {
+  const confirmInput = document.querySelector('#adminGlobalGemsResetConfirmInput');
+  const confirmText = String(confirmInput?.value || '').trim();
+  const reason = document.querySelector('#adminGlobalGemsResetReasonInput')?.value?.trim() || '관리자 서버 전체 소환석 초기화';
+  if (confirmText !== 'RESET_GEMS') {
+    setAdminStatus('소환석만 전체 초기화하려면 RESET_GEMS를 정확히 입력하세요.', 'error');
+    return;
+  }
+  if (!confirm('모든 유저의 소환석만 0으로 만듭니다.\n주사위·아이템·유닛·조각은 유지됩니다. 실행하시겠습니까?')) return;
+  const button = document.querySelector('#adminGlobalGemsResetBtn');
+  if (button) button.disabled = true;
+  try {
+    const { data, error } = await supabaseClient.rpc('admin_reset_all_gems_v1', {
+      p_confirm: 'RESET_GEMS',
+      p_reason: reason
+    });
+    if (error) throw error;
+    if (confirmInput) confirmInput.value = '';
+    setAdminStatus(`서버 전체 소환석 초기화 완료 · 지갑 ${Number(data?.walletRows||0).toLocaleString()}개 계정 반영`, 'good');
+    await loadAdminLogs();
+    if (adminSelectedUserId) await loadAdminPlayer(adminSelectedUserId);
+    await syncServerWallet();
+  } catch (error) {
+    console.error('서버 전체 소환석 초기화 실패:', error);
+    setAdminStatus(`소환석 전체 초기화 실패: ${error.message}`, 'error');
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
+async function resetSpecificServerItem() {
+  const select = document.querySelector('#adminGlobalItemResetSelect');
+  const itemKey = String(select?.value || '').trim();
+  const confirmInput = document.querySelector('#adminGlobalItemResetConfirmInput');
+  const confirmText = String(confirmInput?.value || '').trim();
+  const reason = document.querySelector('#adminGlobalItemResetReasonInput')?.value?.trim() || '관리자 특정 아이템 서버 전체 삭제';
+  if (!itemKey) {
+    setAdminStatus('삭제할 아이템 종류를 먼저 선택하세요.', 'error');
+    return;
+  }
+  if (confirmText !== 'RESET_ITEM') {
+    setAdminStatus('특정 아이템 전체 삭제를 하려면 RESET_ITEM을 정확히 입력하세요.', 'error');
+    return;
+  }
+  const label = getAdminItemDisplayName(itemKey);
+  if (!confirm(`${label}만 모든 유저에게서 0으로 만듭니다.\n다른 아이템과 재화는 유지됩니다. 실행하시겠습니까?`)) return;
+  const button = document.querySelector('#adminGlobalItemResetBtn');
+  if (button) button.disabled = true;
+  try {
+    const { data, error } = await supabaseClient.rpc('admin_reset_item_for_all_v1', {
+      p_item_key: itemKey,
+      p_confirm: 'RESET_ITEM',
+      p_reason: reason
+    });
+    if (error) throw error;
+    if (confirmInput) confirmInput.value = '';
+    setAdminStatus(`${label} 전체 삭제 완료 · 기존 총 ${Number(data?.beforeTotal||0).toLocaleString()}개 → 0`, 'good');
+    await Promise.all([loadAdminLogs(), loadAdminGlobalItemTypes()]);
+    await syncServerItemInventory();
+    if (activeInventoryTab === 'items') renderInventory();
+  } catch (error) {
+    console.error('특정 아이템 서버 전체 삭제 실패:', error);
+    setAdminStatus(`특정 아이템 삭제 실패: ${error.message}`, 'error');
+  } finally {
+    if (button) button.disabled = false;
   }
 }
 
@@ -15249,7 +15410,8 @@ function requestGachaDraw(count) {
     }
 
     function updateRainbowEventDash(enemy, dt) {
-      if (!battle?.isRainbowEvent || !enemy || enemy.dead || enemy.rainbowOre || enemy.staticRainbowObject || enemy.type === 'rainbowFeverCore') return;
+      // 무지개 저편에서는 일반 병사가 아니라 25웨이브 보스만 돌진합니다.
+      if (!battle?.isRainbowEvent || !enemy || enemy.dead || !isRainbowEventBossEnemy(enemy) || enemy.rainbowOre || enemy.staticRainbowObject || enemy.type === 'rainbowFeverCore') return;
       const interval = Math.max(.25, Number(enemy.rainbowDashInterval || RAINBOW_EVENT_DASH_INTERVAL));
       enemy.rainbowDashTimer = Number.isFinite(enemy.rainbowDashTimer) ? enemy.rainbowDashTimer - dt : interval;
       enemy.rainbowDashAnim = Math.max(0, Number(enemy.rainbowDashAnim || 0) - dt * 3.5);
@@ -17827,10 +17989,13 @@ function requestGachaDraw(count) {
     }
 
     function updateRainbowBeyondUnit(placed,dt){
-      placed.rainbowOreTimer=Number.isFinite(placed.rainbowOreTimer)?placed.rainbowOreTimer-dt:Number(UNIT_DATA.rainbowBeyond.rainbowOreInterval||.5);
-      if(placed.rainbowOreTimer<=0){spawnRainbowAllyOre(placed);placed.rainbowOreTimer+=Number(UNIT_DATA.rainbowBeyond.rainbowOreInterval||.5);}
-      placed.rainbowBuffTimer=Number.isFinite(placed.rainbowBuffTimer)?placed.rainbowBuffTimer-dt:Number(UNIT_DATA.rainbowBeyond.rainbowMapBuffEvery||20);
-      if(placed.rainbowBuffTimer<=0){battle.rainbowMapBuffRemaining=Math.max(Number(battle.rainbowMapBuffRemaining||0),Number(UNIT_DATA.rainbowBeyond.rainbowMapBuffDuration||5));placed.rainbowBuffTimer+=Number(UNIT_DATA.rainbowBeyond.rainbowMapBuffEvery||20);setBattleMessage('🌈 무지개 저편! 5초 동안 모든 아군 공격력·공격속도 ×4!');}
+      if (!battle || placed.rainbowBossStunRemaining > 0 || placed.stunRemaining > 0) return;
+      const oreInterval=Math.max(.08,Number(UNIT_DATA.rainbowBeyond.rainbowOreInterval||.5));
+      placed.rainbowOreTimer=Number.isFinite(placed.rainbowOreTimer)?placed.rainbowOreTimer-dt:oreInterval;
+      if(placed.rainbowOreTimer<=0){spawnRainbowAllyOre(placed);placed.rainbowOreTimer=oreInterval;}
+      const buffEvery=Math.max(1,Number(UNIT_DATA.rainbowBeyond.rainbowMapBuffEvery||20));
+      placed.rainbowBuffTimer=Number.isFinite(placed.rainbowBuffTimer)?placed.rainbowBuffTimer-dt:buffEvery;
+      if(placed.rainbowBuffTimer<=0){battle.rainbowMapBuffRemaining=Math.max(Number(battle.rainbowMapBuffRemaining||0),Number(UNIT_DATA.rainbowBeyond.rainbowMapBuffDuration||5));placed.rainbowBuffTimer=buffEvery;setBattleMessage('🌈 무지개 저편! 5초 동안 모든 아군 공격력·공격속도 ×4!');}
     }
 
     function updateRainbowUnitSpecials(placed,dt){
@@ -17991,13 +18156,9 @@ function requestGachaDraw(count) {
           applyTraitDamage(placed,target,dmg);
         }
 
-        battle.shots.push({
-          x1:placed.x,y1:placed.y,
-          x2:placed.x+Math.cos(placed.angle)*placed.range,
-          y2:placed.y+Math.sin(placed.angle)*placed.range,
-          life:.5,maxLife:.5,effect:'rainbowSlash',color:'#ff8fd0',
-          angle:placed.angle,radius:placed.range,coneAngle:180,seed:Math.random()*1000
-        });
+        let slashFx=battle.shots.find(shot=>shot.effect==='rainbowSlash'&&shot.sourceUnitId===placed.id&&shot.life>0);
+        if(slashFx){slashFx.x1=placed.x;slashFx.y1=placed.y;slashFx.x2=placed.x+Math.cos(placed.angle)*placed.range;slashFx.y2=placed.y+Math.sin(placed.angle)*placed.range;slashFx.life=.5;slashFx.maxLife=.5;slashFx.angle=placed.angle;slashFx.radius=placed.range;slashFx.seed=Math.random()*1000;}
+        else battle.shots.push({x1:placed.x,y1:placed.y,x2:placed.x+Math.cos(placed.angle)*placed.range,y2:placed.y+Math.sin(placed.angle)*placed.range,life:.5,maxLife:.5,effect:'rainbowSlash',color:'#ff8fd0',sourceUnitId:placed.id,angle:placed.angle,radius:placed.range,coneAngle:180,seed:Math.random()*1000});
         return;
       }
 
@@ -18329,7 +18490,11 @@ function requestGachaDraw(count) {
       placed.shadowCloneAttackAnimation=Math.max(0,Number(placed.shadowCloneAttackAnimation||0)-dt*7.5);
       placed.shadowClonePulse=Math.max(0,Number(placed.shadowClonePulse||0)-dt);
       const before=Number(placed.attackCount||0);
-      updatePlacedUnitCore(placed,dt);
+      try { updatePlacedUnitCore(placed,dt); }
+      catch (error) {
+        if (!placed._runtimeErrorLogged) { console.error(`유닛 업데이트 오류 · ${placed.unitId}`, error); placed._runtimeErrorLogged=true; setBattleMessage(`⚠ ${UNIT_DATA[placed.unitId]?.name || placed.unitId} 처리 오류를 복구했습니다. 전투는 계속됩니다.`); }
+        placed.cooldown=Math.max(.12,Number(placed.fireInterval||.5)); return;
+      }
       const after=Number(placed.attackCount||0);
       if(after>before && placed.unitId!=='moneyTree' && placedHasTrait(placed,'shadowClone') && !placed._shadowEchoExecuting){
         scheduleDelayedAttack({kind:'shadowCloneReplay',timer:.10,sourceId:placed.id,shadowClone:true});
@@ -24921,14 +25086,15 @@ function drawEnemy(enemy, time) {
       // 고정 60Hz 시뮬레이션. 순간 프레임 드롭 때도 최대 2회만 따라잡아 spiral-of-death를 막습니다.
       let steps = 0;
       while (battleFrameAccumulator >= BATTLE_FRAME_MS && steps < 2) {
-        updateBattle(BATTLE_FRAME_MS / 1000);
+        try { updateBattle(BATTLE_FRAME_MS / 1000); }
+        catch (error) { console.error('전투 업데이트 오류 자동 복구:',error); battle.runtimeErrorCount=Number(battle.runtimeErrorCount||0)+1; if(battle.runtimeErrorCount<=3)setBattleMessage('⚠ 전투 처리 오류를 자동 복구했습니다. 게임은 계속됩니다.'); }
         battleFrameAccumulator -= BATTLE_FRAME_MS;
         steps += 1;
         if (!battle || battle.ended) break;
       }
       if (battleFrameAccumulator > BATTLE_FRAME_MS * 2) battleFrameAccumulator = BATTLE_FRAME_MS;
 
-      drawBattle(time);
+      try { drawBattle(time); } catch(error) { console.error('전투 렌더 오류 자동 복구:',error); battle.renderErrorCount=Number(battle.renderErrorCount||0)+1; }
       animationId = requestAnimationFrame(gameLoop);
     }
 
@@ -25283,7 +25449,14 @@ function drawEnemy(enemy, time) {
     document.querySelector('#adminZeroGemsBtn')?.addEventListener('click', zeroAdminUserGems);
     document.querySelector('#adminBanUserBtn')?.addEventListener('click', () => setAdminUserBan(true));
     document.querySelector('#adminUnbanUserBtn')?.addEventListener('click', () => setAdminUserBan(false));
-    document.querySelector('#adminRefreshErrorHoldersBtn')?.addEventListener('click', loadAdminErrorHolders);
+    document.querySelector('#adminRefreshErrorHoldersBtn')?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();void loadAdminErrorHolders();});
+    document.querySelector('#openMailboxBtn')?.addEventListener('click',openMailbox);
+    document.querySelector('#mailboxCloseBtn')?.addEventListener('click',closeMailbox);
+    document.querySelector('#mailRefreshBtn')?.addEventListener('click',loadMailbox);
+    document.querySelector('#mailSendBtn')?.addEventListener('click',sendMailboxLetter);
+    document.querySelector('#mailGiftKindSelect')?.addEventListener('change',updateMailGiftOptions);
+    document.querySelector('#adminGlobalGemsResetBtn')?.addEventListener('click', resetAllServerGemsOnly);
+    document.querySelector('#adminGlobalItemResetBtn')?.addEventListener('click', resetSpecificServerItem);
     document.querySelector('#adminGlobalResetBtn')?.addEventListener('click', resetAllServerCurrencyItems);
     document.querySelector('#adminUnitGrantBtn').addEventListener('click', grantAdminUnit);
     document.querySelector('#adminFragmentGrantBtn')?.addEventListener('click', grantAdminFragments);

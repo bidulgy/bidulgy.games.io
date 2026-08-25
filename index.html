@@ -7638,16 +7638,34 @@ button {
 
 
         <div class="admin-card" style="border-color:rgba(255,173,70,.42);">
-          <h3>🎲 서버 전체 주사위 초기화</h3>
-          <p class="muted" style="display:block!important;">모든 계정의 모든 등급 주사위 수량만 0으로 만듭니다. 소환석·아이템·유닛은 유지됩니다.</p>
+          <h3>🎲 서버 주사위 초기화</h3>
+          <p class="muted" style="display:block!important;">특정 등급 하나만 고르거나, 모든 등급을 한꺼번에 0으로 만들 수 있습니다. 소환석·아이템·유닛은 유지됩니다.</p>
+
+          <strong style="display:block;margin:8px 0 6px;">선택한 주사위만 모든 계정에서 0</strong>
+          <select id="adminGlobalDiceTypeResetSelect"></select>
+          <input id="adminGlobalDiceTypeResetConfirmInput" type="text" maxlength="24" placeholder="RESET_DICE_TYPE 입력" autocomplete="off" />
+          <input id="adminGlobalDiceTypeResetReasonInput" type="text" maxlength="120" value="관리자 특정 주사위 서버 전체 초기화" />
+          <button id="adminGlobalDiceTypeResetBtn" class="danger" type="button">선택한 주사위만 모든 계정에서 0</button>
+
+          <div style="height:1px;background:rgba(255,255,255,.12);margin:14px 0;"></div>
+          <strong style="display:block;margin-bottom:6px;">모든 주사위 등급 전체 초기화</strong>
           <input id="adminGlobalDiceResetConfirmInput" type="text" maxlength="20" placeholder="RESET_DICE 입력" autocomplete="off" />
           <input id="adminGlobalDiceResetReasonInput" type="text" maxlength="120" value="관리자 서버 전체 주사위 초기화" />
           <button id="adminGlobalDiceResetBtn" class="danger" type="button">모든 계정 주사위 0으로 초기화</button>
         </div>
 
         <div class="admin-card" style="border-color:rgba(255,90,120,.48);">
-          <h3>⚔️ 서버 전체 유닛 초기화</h3>
-          <p class="muted" style="display:block!important;">모든 계정의 보유 유닛과 덱을 비웁니다. 주사위·소환석·아이템은 유지됩니다.</p>
+          <h3>⚔️ 서버 유닛 초기화</h3>
+          <p class="muted" style="display:block!important;">특정 유닛 하나만 모든 계정에서 삭제하거나, 모든 보유 유닛과 덱을 비울 수 있습니다. 주사위·소환석·아이템은 유지됩니다.</p>
+
+          <strong style="display:block;margin:8px 0 6px;">선택한 유닛만 모든 계정에서 삭제</strong>
+          <select id="adminGlobalUnitTypeResetSelect"></select>
+          <input id="adminGlobalUnitTypeResetConfirmInput" type="text" maxlength="24" placeholder="RESET_UNIT_TYPE 입력" autocomplete="off" />
+          <input id="adminGlobalUnitTypeResetReasonInput" type="text" maxlength="120" value="관리자 특정 유닛 서버 전체 초기화" />
+          <button id="adminGlobalUnitTypeResetBtn" class="admin-danger-button" type="button">선택한 유닛만 모든 계정에서 삭제</button>
+
+          <div style="height:1px;background:rgba(255,255,255,.12);margin:14px 0;"></div>
+          <strong style="display:block;margin-bottom:6px;">모든 유닛 전체 초기화</strong>
           <input id="adminGlobalUnitResetConfirmInput" type="text" maxlength="20" placeholder="RESET_UNITS 입력" autocomplete="off" />
           <input id="adminGlobalUnitResetReasonInput" type="text" maxlength="120" value="관리자 서버 전체 유닛 초기화" />
           <button id="adminGlobalUnitResetBtn" class="admin-danger-button" type="button">모든 계정 유닛 0으로 초기화</button>
@@ -9071,9 +9089,9 @@ function applyStagePreview(stageId = selectedStage) {
         id:'rainbowBeyond', name:'무지개 저편', icon:'🌈', rarity:'갤럭시', rarityKey:'galaxy', rarityClass:'rarity-galaxy', eventExclusive:true,
         cost:1000, damage:20000, range:240, fireInterval:.5, meleeConeAngle:180, rainbowOreInterval:.5, rainbowOreHp:20000, rainbowOreMax:7,
         rainbowMapBuffEvery:20, rainbowMapBuffDuration:5, rainbowMapDamageMultiplier:4, rainbowMapSpeedMultiplier:4,
-        footprintRadius:110, multiplayerFootprintRadius:92, maxPlaced:1, color:'#9b7cff',
+        footprintRadius:110, multiplayerFootprintRadius:92, maxPlaced:0, color:'#9b7cff',
         skillName:'무지개 세계',
-        skillText:'0.5초마다 전방 180°를 20,000 피해로 베고, 0.5초마다 길의 무작위 위치에 HP 20,000 광석을 소환합니다(최대 7개). 적이 광석에 부딪히면 서로의 HP만큼 상쇄됩니다. 20초마다 5초 동안 맵 전체가 무지개가 되어 모든 아군 공격력과 공격속도가 4배가 됩니다. 플레이어당 1명만 배치 가능합니다.'
+        skillText:'0.5초마다 전방 180°를 20,000 피해로 베고, 0.5초마다 길의 무작위 위치에 HP 20,000 광석을 소환합니다(최대 7개). 적이 광석에 부딪히면 서로의 HP만큼 상쇄됩니다. 20초마다 5초 동안 맵 전체가 무지개가 되어 모든 아군 공격력과 공격속도가 4배가 됩니다. 여러 명을 배치할 수 있습니다.'
       },
       errorEntity: {
         id: 'errorEntity',
@@ -10277,6 +10295,36 @@ function populateAdminDiceGrantSelect() {
   });
 }
 
+function populateAdminGlobalSelectiveResetSelects() {
+  const diceSelect = document.querySelector('#adminGlobalDiceTypeResetSelect');
+  if (diceSelect) {
+    diceSelect.innerHTML = '';
+    const diceOrder = ['common','rare','epic','legendary','mythic','secret','galaxy','rainbow','error'];
+    diceOrder.forEach(key => {
+      const dice = DICE_DATA[key];
+      if (!dice) return;
+      const option = document.createElement('option');
+      option.value = key;
+      option.textContent = `🎲 ${dice.rarity || dice.name || key} 주사위`;
+      diceSelect.appendChild(option);
+    });
+  }
+
+  const unitSelect = document.querySelector('#adminGlobalUnitTypeResetSelect');
+  if (unitSelect) {
+    unitSelect.innerHTML = '';
+    Object.values(UNIT_DATA)
+      .slice()
+      .sort((a,b) => String(a.name || a.id).localeCompare(String(b.name || b.id), 'ko'))
+      .forEach(unit => {
+        const option = document.createElement('option');
+        option.value = unit.id;
+        option.textContent = `${unit.icon || '◈'} ${unit.name} · ${unit.rarity || ''}`;
+        unitSelect.appendChild(option);
+      });
+  }
+}
+
 function populateAdminInventoryUnitSelect() {
   const select = document.querySelector('#adminInventoryUnitSelect');
   if (!select) return;
@@ -10319,6 +10367,7 @@ async function openAdminPanel() {
 
   populateAdminUnitSelect();
   populateAdminDiceGrantSelect();
+  populateAdminGlobalSelectiveResetSelects();
   showScreen('admin');
   setAdminStatus('서버에서 관리자 권한이 확인되었습니다.', 'good');
   await Promise.all([
@@ -10764,6 +10813,95 @@ async function resetSpecificServerItem() {
   }
 }
 
+
+async function resetSpecificServerDiceType() {
+  const rarity = String(document.querySelector('#adminGlobalDiceTypeResetSelect')?.value || '').trim();
+  const input = document.querySelector('#adminGlobalDiceTypeResetConfirmInput');
+  const confirmText = String(input?.value || '').trim();
+  const reason = document.querySelector('#adminGlobalDiceTypeResetReasonInput')?.value?.trim() || '관리자 특정 주사위 서버 전체 초기화';
+  if (!rarity || !DICE_DATA[rarity]) {
+    setAdminStatus('초기화할 주사위를 선택하세요.', 'error');
+    return;
+  }
+  if (confirmText !== 'RESET_DICE_TYPE') {
+    setAdminStatus('선택 주사위 초기화는 RESET_DICE_TYPE을 정확히 입력하세요.', 'error');
+    return;
+  }
+  const diceLabel = DICE_DATA[rarity]?.rarity || DICE_DATA[rarity]?.name || rarity;
+  if (!confirm(`${diceLabel} 주사위만 모든 계정에서 0으로 만듭니다.
+다른 주사위와 재화는 유지됩니다. 실행하시겠습니까?`)) return;
+  const btn = document.querySelector('#adminGlobalDiceTypeResetBtn');
+  if (btn) btn.disabled = true;
+  try {
+    const { data, error } = await supabaseClient.rpc('admin_reset_dice_type_for_all_v1', {
+      p_rarity: rarity,
+      p_confirm: 'RESET_DICE_TYPE',
+      p_reason: reason
+    });
+    if (error) throw error;
+    if (input) input.value = '';
+    setAdminStatus(`${diceLabel} 주사위 전체 서버 초기화 완료 · ${Number(data?.holderCount||0).toLocaleString()}명 · 기존 총 ${Number(data?.beforeTotal||0).toLocaleString()}개 → 0`, 'good');
+    await loadAdminLogs();
+    if (adminSelectedUserId) await loadAdminPlayer(adminSelectedUserId);
+    await syncServerDiceInventory();
+    renderInventory();
+  } catch (error) {
+    console.error('특정 주사위 전체 서버 초기화 실패:', error);
+    setAdminStatus(`특정 주사위 초기화 실패: ${error.message}`, 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function resetSpecificServerUnitType() {
+  const unitId = String(document.querySelector('#adminGlobalUnitTypeResetSelect')?.value || '').trim();
+  const input = document.querySelector('#adminGlobalUnitTypeResetConfirmInput');
+  const confirmText = String(input?.value || '').trim();
+  const reason = document.querySelector('#adminGlobalUnitTypeResetReasonInput')?.value?.trim() || '관리자 특정 유닛 서버 전체 초기화';
+  const unit = UNIT_DATA[unitId];
+  if (!unit) {
+    setAdminStatus('초기화할 유닛을 선택하세요.', 'error');
+    return;
+  }
+  if (confirmText !== 'RESET_UNIT_TYPE') {
+    setAdminStatus('선택 유닛 초기화는 RESET_UNIT_TYPE을 정확히 입력하세요.', 'error');
+    return;
+  }
+  if (!confirm(`${unit.name}만 모든 계정에서 삭제합니다.
+해당 유닛의 보유 수량과 조각, 덱 편성이 모두 제거됩니다. 실행하시겠습니까?`)) return;
+  const btn = document.querySelector('#adminGlobalUnitTypeResetBtn');
+  if (btn) btn.disabled = true;
+  try {
+    const { data, error } = await supabaseClient.rpc('admin_reset_unit_type_for_all_v1', {
+      p_unit_id: unitId,
+      p_confirm: 'RESET_UNIT_TYPE',
+      p_reason: reason
+    });
+    if (error) throw error;
+    if (input) input.value = '';
+
+    if (player?.ownedUnits?.[unitId]) delete player.ownedUnits[unitId];
+    if (Array.isArray(player?.deck)) player.deck = player.deck.map(id => id === unitId ? null : id);
+    if (player) {
+      player.adminInventoryAppliedSeq = Math.max(
+        Math.max(0, Math.floor(Number(player.adminInventoryAppliedSeq || 0))),
+        Math.max(0, Math.floor(Number(data?.resetSeq || 0)))
+      );
+      ensurePlayerData();
+      renderInventory();
+      renderDeck();
+    }
+
+    setAdminStatus(`${unit.name} 전체 서버 삭제 완료 · 기존 ${Number(data?.holderCount||0).toLocaleString()}개 계정에서 제거`, 'good');
+    await loadAdminLogs();
+    if (adminSelectedUserId) await loadAdminPlayer(adminSelectedUserId);
+  } catch (error) {
+    console.error('특정 유닛 전체 서버 초기화 실패:', error);
+    setAdminStatus(`특정 유닛 초기화 실패: ${error.message}`, 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
 
 async function resetAllServerDiceOnly(){
   const input=document.querySelector('#adminGlobalDiceResetConfirmInput');const confirmText=String(input?.value||'').trim();
@@ -15183,7 +15321,7 @@ function requestGachaDraw(count) {
         rainbowMage: '🌈 오버 더 레인보우 · 20타마다 3초 동안 공격속도×2',
         rainbowLight: `🌈 스펙트럼 링크 · 0.01초 연속 광선 · 누적 5,000타마다 동시 링크 +1 (현재 ${1+Math.floor(Number(placed?.rainbowLightHits||0)/5000)}명)`,
         rainbowUnicornUnit: '🌈 레인보우 저지먼트 · 10타마다 사거리 전체 표식 · 3초 뒤 일반 적 즉사 / 보스 최대 HP 20% 피해',
-        rainbowBeyond: '🌈 무지개 세계 · 평타는 전방 180° 실제 범위 공격 · 0.5초마다 HP 20,000 광석(최대 7) · 20초마다 5초간 전체 아군 공격력·공속×4',
+        rainbowBeyond: '🌈 무지개 세계 · 평타는 전방 180° 실제 범위 공격 · 0.5초마다 HP 20,000 광석(개체당 최대 7) · 20초마다 5초간 전체 아군 공격력·공속×4 · 여러 명 배치 가능',
         astralChronomancer: '다중발사(2/3/4발) · 공전탄 최대 10발 · 각 탄환 20% 황금 시간기절 · 60회 공격마다 사거리 300 시간정지 5초'
       };
       return summaries[unit.id] || '기본 공격 유닛';
@@ -18224,7 +18362,24 @@ function requestGachaDraw(count) {
       return false;
     }
 
+    function updatePlacedUnitFacing(placed, dt) {
+      if (!placed || placed.unitId === 'moneyTree') return;
+      placed._facingAcquireTimer = Math.max(0, Number(placed._facingAcquireTimer || 0) - dt);
+      if (placed._facingAcquireTimer > 0) return;
+      placed._facingAcquireTimer = 0.10;
+
+      let target = null;
+      if (placed.unitId === 'rainbowUnicornUnit') {
+        target = getClosestEnemyToUnit(placed, placed.range)?.enemy || null;
+      } else {
+        target = getFrontmostEnemyInRange(placed, placed.range);
+      }
+      if (!target || target.dead) return;
+      placed.angle = Math.atan2(target.y - placed.y, target.x - placed.x);
+    }
+
     function updatePlacedUnitCore(placed, dt) {
+      updatePlacedUnitFacing(placed, dt);
       placed.rainbowBossStunRemaining = Math.max(0, Number(placed.rainbowBossStunRemaining || 0) - dt);
       if (UNIT_DATA[placed.unitId]?.stunImmune) placed.stunRemaining = 0;
       else placed.stunRemaining = Math.max(0, (placed.stunRemaining || 0) - dt);
@@ -18378,9 +18533,9 @@ function requestGachaDraw(count) {
         // 실제 데미지는 전방 180° 그대로지만, 화면 이펙트는 검 주변의 짧은 초승달만 표시합니다.
         let slashFx=placed._rainbowSlashFx;
         if(!slashFx || Number(slashFx.life||0)<=0 || !battle.shots.includes(slashFx)) slashFx=null;
-        const rainbowSlashVisualRadius = 66;
-        if(slashFx){slashFx.x1=placed.x;slashFx.y1=placed.y;slashFx.x2=placed.x+Math.cos(placed.angle)*72;slashFx.y2=placed.y+Math.sin(placed.angle)*72;slashFx.life=.22;slashFx.maxLife=.22;slashFx.angle=placed.angle;slashFx.radius=placed.range;slashFx.visualRadius=rainbowSlashVisualRadius;slashFx.coneAngle=38;slashFx.compact=true;slashFx.seed=Math.random()*1000;}
-        else {slashFx={x1:placed.x,y1:placed.y,x2:placed.x+Math.cos(placed.angle)*72,y2:placed.y+Math.sin(placed.angle)*72,life:.22,maxLife:.22,effect:'rainbowSlash',color:'#ff8fd0',sourceUnitId:placed.id,angle:placed.angle,radius:placed.range,visualRadius:rainbowSlashVisualRadius,coneAngle:38,compact:true,seed:Math.random()*1000};battle.shots.push(slashFx);placed._rainbowSlashFx=slashFx;}
+        const rainbowSlashVisualRadius = 82;
+        if(slashFx){slashFx.x1=placed.x;slashFx.y1=placed.y;slashFx.x2=placed.x+Math.cos(placed.angle)*82;slashFx.y2=placed.y+Math.sin(placed.angle)*82;slashFx.life=.28;slashFx.maxLife=.28;slashFx.angle=placed.angle;slashFx.radius=placed.range;slashFx.visualRadius=rainbowSlashVisualRadius;slashFx.coneAngle=96;slashFx.compact=true;slashFx.seed=Math.random()*1000;}
+        else {slashFx={x1:placed.x,y1:placed.y,x2:placed.x+Math.cos(placed.angle)*82,y2:placed.y+Math.sin(placed.angle)*82,life:.28,maxLife:.28,effect:'rainbowSlash',color:'#ff8fd0',sourceUnitId:placed.id,angle:placed.angle,radius:placed.range,visualRadius:rainbowSlashVisualRadius,coneAngle:96,compact:true,seed:Math.random()*1000};battle.shots.push(slashFx);placed._rainbowSlashFx=slashFx;}
         return;
       }
 
@@ -24290,6 +24445,22 @@ function drawEnemy(enemy, time) {
       g.restore();
     }
 
+    function drawTargetFacingUnitBody(unit, time) {
+      // 유니콘은 자체 렌더러가 실제 각도로 회전하므로 중복 회전을 피합니다.
+      if (unit.unitId === 'rainbowUnicornUnit') {
+        drawStandingUnitBody(unit, time);
+        return;
+      }
+      const angle = Number.isFinite(Number(unit.angle)) ? Number(unit.angle) : 0;
+      const faceLeft = Math.cos(angle) < 0;
+      const verticalLean = Math.max(-0.055, Math.min(0.055, Math.sin(angle) * 0.055));
+      ctx.save();
+      if (faceLeft) ctx.scale(-1, 1);
+      ctx.rotate(verticalLean * (faceLeft ? -1 : 1));
+      drawStandingUnitBody(unit, time);
+      ctx.restore();
+    }
+
     function drawDetailedUnitSprite(unit, time) {
       const data = UNIT_DATA[unit.unitId];
       // 분신은 최종적으로 완전 검정 실루엣이 되므로, 내부에서 사라지는 고비용 컬러 aura를
@@ -24310,7 +24481,7 @@ function drawEnemy(enemy, time) {
         ctx.translate(swordPose.dx, swordPose.dy);
         ctx.save();
         ctx.rotate(swordPose.bodyTilt);
-        drawStandingUnitBody(unit, time);
+        drawTargetFacingUnitBody(unit, time);
         ctx.restore();
         // 어깨는 몸에 남고 팔꿈치/손목이 검을 따라가는 2관절 팔 모션.
         drawSwordSwingArmArt(ctx, unit, time, time);
@@ -24318,7 +24489,7 @@ function drawEnemy(enemy, time) {
         drawAimedUnitWeapon(unit, data, time);
         ctx.restore();
       } else {
-        drawStandingUnitBody(unit, time);
+        drawTargetFacingUnitBody(unit, time);
         drawSwordSwingArmArt(ctx, unit, time, time);
         drawAimedUnitWeapon(unit, data, time);
       }
@@ -24913,31 +25084,47 @@ function drawEnemy(enemy, time) {
           const core=ctx.createRadialGradient(-2,-2,1,0,0,11);core.addColorStop(0,'#fff');core.addColorStop(.35,`hsl(${(time*.16)%360},100%,75%)`);core.addColorStop(1,'rgba(140,80,255,0)');ctx.fillStyle=core;ctx.beginPath();ctx.arc(0,0,11,0,Math.PI*2);ctx.fill();ctx.restore();
         } else if (shot.effect === 'rainbowSlash') {
           const pulse = Math.sin(progress * Math.PI);
-          const isCompact = Boolean(shot.compact || shot.sourceUnitId);
-          const gameplayRadius = Math.max(1, Number(shot.radius || 240));
-          const visualRadius = isCompact ? Math.min(68, Math.max(50, Number(shot.visualRadius || 66))) : Math.min(76, Math.max(44, Number(shot.visualRadius || 58)));
-          const coneDeg = isCompact ? Math.min(42, Math.max(24, Number(shot.coneAngle || 38))) : Math.min(28, Math.max(10, Number(shot.coneAngle || 20)));
-          const half = coneDeg * Math.PI / 360;
+          const visualRadius = Math.min(88, Math.max(64, Number(shot.visualRadius || 82)));
+          const sweepHalf = Math.min(58, Math.max(38, Number(shot.coneAngle || 96) * .5)) * Math.PI / 180;
+          const sweepHead = -sweepHalf + (sweepHalf * 2) * Math.min(1, progress * 1.18);
           ctx.save();
           ctx.translate(shot.x1, shot.y1);
           ctx.rotate(Number(shot.angle || 0));
           ctx.globalCompositeOperation = 'lighter';
-          // 맵을 덮는 부채꼴은 완전히 사용하지 않고, 검끝 가까이에 짧은 초승달 2겹만 그립니다.
-          for (let i=0;i<2;i++) {
-            const rr=visualRadius*(.82+i*.13);
-            ctx.strokeStyle=`hsla(${(time*.20+i*92)%360},100%,74%,${(.80-i*.20)*fade})`;
-            ctx.lineWidth=6-i*2;
+
+          // 검이 지나간 궤적을 따라 4겹의 짧은 프리즘 초승달을 그립니다.
+          for (let i=0;i<4;i++) {
+            const lag = i * .12;
+            const head = Math.max(-sweepHalf, sweepHead - lag);
+            const tail = Math.max(-sweepHalf, head - (.48 + i*.05));
+            const rr = visualRadius - i * 4;
+            const alpha = (0.86 - i * .15) * fade * pulse;
+            const grad = ctx.createLinearGradient(Math.cos(tail)*rr,Math.sin(tail)*rr,Math.cos(head)*rr,Math.sin(head)*rr);
+            grad.addColorStop(0,`hsla(${(time*.22+i*54+250)%360},100%,68%,0)`);
+            grad.addColorStop(.45,`hsla(${(time*.22+i*54+35)%360},100%,72%,${alpha*.72})`);
+            grad.addColorStop(1,`rgba(255,255,255,${alpha})`);
+            ctx.strokeStyle=grad;
+            ctx.lineWidth=8-i*1.35;
             ctx.beginPath();
-            ctx.arc(0,0,rr,-half,half);
+            ctx.arc(0,0,rr,tail,head);
             ctx.stroke();
           }
-          // 검 방향의 짧은 코어선. 최대 길이를 72px로 고정해 공격범위와 무관하게 커지지 않습니다.
-          const coreLen=Math.min(72,visualRadius+8);
-          const grad=ctx.createLinearGradient(18,0,coreLen,0);
-          grad.addColorStop(0,'rgba(255,255,255,0)');
-          grad.addColorStop(.55,`rgba(255,255,255,${.9*fade})`);
-          grad.addColorStop(1,'rgba(255,255,255,0)');
-          ctx.strokeStyle=grad;ctx.lineWidth=3.2;ctx.beginPath();ctx.moveTo(18,0);ctx.lineTo(coreLen,0);ctx.stroke();
+
+          // 가장 바깥쪽 날카로운 흰색 검날 궤적.
+          ctx.strokeStyle=`rgba(255,255,255,${.94*fade*pulse})`;
+          ctx.lineWidth=2.2;
+          ctx.beginPath();ctx.arc(0,0,visualRadius+2,Math.max(-sweepHalf,sweepHead-.42),sweepHead);ctx.stroke();
+
+          // 검끝에서 깨져 나오는 작은 프리즘 파편. 화면 전체로 퍼지지 않도록 90px 안에 고정합니다.
+          for(let i=0;i<6;i++){
+            const a=sweepHead-(i%3)*.10;
+            const rr=visualRadius-8-(i%2)*7;
+            const px=Math.cos(a)*rr,py=Math.sin(a)*rr;
+            ctx.save();ctx.translate(px,py);ctx.rotate(a+i*.7);
+            ctx.fillStyle=`hsla(${(time*.24+i*57)%360},100%,78%,${(.72-i*.07)*fade*pulse})`;
+            ctx.beginPath();ctx.moveTo(5,0);ctx.lineTo(-2,-2.3);ctx.lineTo(-1,0);ctx.lineTo(-2,2.3);ctx.closePath();ctx.fill();
+            ctx.restore();
+          }
           ctx.restore();
         } else if (shot.effect === 'rainbowPierce') {
           const a=Math.max(0,fade), len=Math.hypot(shot.x2-shot.x1,shot.y2-shot.y1);
@@ -26109,6 +26296,8 @@ function drawEnemy(enemy, time) {
     document.querySelector('#mailGiftKindSelect')?.addEventListener('change',updateMailGiftOptions);
     document.querySelector('#adminGlobalGemsResetBtn')?.addEventListener('click', resetAllServerGemsOnly);
     document.querySelector('#adminGlobalItemResetBtn')?.addEventListener('click', resetSpecificServerItem);
+    document.querySelector('#adminGlobalDiceTypeResetBtn')?.addEventListener('click', resetSpecificServerDiceType);
+    document.querySelector('#adminGlobalUnitTypeResetBtn')?.addEventListener('click', resetSpecificServerUnitType);
     document.querySelector('#adminGlobalDiceResetBtn')?.addEventListener('click', resetAllServerDiceOnly);
     document.querySelector('#adminGlobalUnitResetBtn')?.addEventListener('click', resetAllServerUnitsOnly);
     document.querySelector('#adminGlobalResetBtn')?.addEventListener('click', resetAllServerCurrencyItems);
@@ -31819,7 +32008,7 @@ function drawEnemy(enemy, time) {
     set('#profileNextLevelText',next?`Lv.${info.level+1}까지 ${fmtExp(info.remaining)} EXP 남음 · 누적 ${fmtExp(info.exp)} EXP`:'최고 레벨에 도달했습니다.');
     if(!expBarAnimating && !pendingExpAnimation) setExpBarPct(info.pct,true);
     const input=document.querySelector('#nicknameInput'); if(input && document.activeElement!==input) input.value=nickname===currentUsername && !player.nickname?'':nickname;
-    setTimeout(animatePendingExpGain,220);
+cd /workspaces/bidulgy.games.io    setTimeout(animatePendingExpGain,220);
     if (typeof window.updateFeatureUnlockCards === 'function') window.updateFeatureUnlockCards();
   };
 

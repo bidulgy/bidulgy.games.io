@@ -7643,9 +7643,8 @@ button {
 
           <strong style="display:block;margin:8px 0 6px;">선택한 주사위만 모든 계정에서 0</strong>
           <select id="adminGlobalDiceTypeResetSelect"></select>
-          <input id="adminGlobalDiceTypeResetConfirmInput" type="text" maxlength="24" placeholder="RESET_DICE_TYPE 입력" autocomplete="off" />
           <input id="adminGlobalDiceTypeResetReasonInput" type="text" maxlength="120" value="관리자 특정 주사위 서버 전체 초기화" />
-          <button id="adminGlobalDiceTypeResetBtn" class="danger" type="button">선택한 주사위만 모든 계정에서 0</button>
+          <button id="adminGlobalDiceTypeResetBtn" class="danger" type="button">선택한 주사위만 모든 계정에서 0</button><div class="muted" style="margin-top:6px;font-size:11px;">선택 후 버튼을 누르면 관리자 권한으로 서버 전체에 즉시 적용됩니다.</div>
 
           <div style="height:1px;background:rgba(255,255,255,.12);margin:14px 0;"></div>
           <strong style="display:block;margin-bottom:6px;">모든 주사위 등급 전체 초기화</strong>
@@ -7660,9 +7659,8 @@ button {
 
           <strong style="display:block;margin:8px 0 6px;">선택한 유닛만 모든 계정에서 삭제</strong>
           <select id="adminGlobalUnitTypeResetSelect"></select>
-          <input id="adminGlobalUnitTypeResetConfirmInput" type="text" maxlength="24" placeholder="RESET_UNIT_TYPE 입력" autocomplete="off" />
           <input id="adminGlobalUnitTypeResetReasonInput" type="text" maxlength="120" value="관리자 특정 유닛 서버 전체 초기화" />
-          <button id="adminGlobalUnitTypeResetBtn" class="admin-danger-button" type="button">선택한 유닛만 모든 계정에서 삭제</button>
+          <button id="adminGlobalUnitTypeResetBtn" class="admin-danger-button" type="button">선택한 유닛만 모든 계정에서 삭제</button><div class="muted" style="margin-top:6px;font-size:11px;">선택 후 버튼을 누르면 관리자 권한으로 서버 전체에 즉시 적용됩니다.</div>
 
           <div style="height:1px;background:rgba(255,255,255,.12);margin:14px 0;"></div>
           <strong style="display:block;margin-bottom:6px;">모든 유닛 전체 초기화</strong>
@@ -10672,22 +10670,40 @@ async function openCraftScreen(){
 async function craftRainbowDice(){
   const input=document.querySelector('#craftCountInput');
   const count=Math.max(1,Math.min(1000,Math.floor(Number(input?.value||1))));
-  const btn=document.querySelector('#craftRainbowDiceBtn');const status=document.querySelector('#craftStatus');
-  if(btn)btn.disabled=true;if(status){status.textContent='⚗️ 서버에서 재료를 확인하고 합성 중...';status.className='message';}
+  const btn=document.querySelector('#craftRainbowDiceBtn');
+  const status=document.querySelector('#craftStatus');
+  if(btn)btn.disabled=true;
+  if(status){status.textContent='⚗️ 서버에서 재료를 확인하고 합성 중...';status.className='message';}
+
+  let data=null;
   try{
-    const {data,error}=await supabaseClient.rpc('craft_rainbow_dice_v1',{p_count:count});
-    if(error)throw error;
-    player.gems=Math.max(0,Math.floor(Number(data?.gems??player.gems??0)));
-    player.itemInventory ||= {};player.itemInventory.rainbowFragment=Math.max(0,Math.floor(Number(data?.rainbowFragment??player.itemInventory.rainbowFragment??0)));
-    player.diceInventory ||= {};player.diceInventory.rainbow=Math.max(0,Math.floor(Number(data?.rainbowDice??player.diceInventory.rainbow??0)));
-    if(status){status.textContent=`✅ 무지개 주사위 ${count.toLocaleString()}개 합성 완료!`;status.className='message good';}
-    renderCraftScreen();renderMenu();
+    const result=await supabaseClient.rpc('craft_rainbow_dice_v1',{p_count:count});
+    if(result?.error) throw result.error;
+    data=result?.data||{};
   }catch(error){
-    console.error('무지개 주사위 합성 실패:',error);
-    if(status){status.textContent=`합성 실패: ${error.message||error}`;status.className='message error';}
-    renderCraftScreen();
-  }finally{if(btn)btn.disabled=false;renderCraftScreen();}
+    // 서버 RPC 자체가 실패한 경우에만 조용히 재동기화합니다.
+    // 성공 후 후속 UI 렌더 오류 때문에 "합성 실패"라고 잘못 표시되던 문구는 제거했습니다.
+    console.error('무지개 주사위 합성 서버 오류:',error);
+    if(status){status.textContent='';status.className='message';}
+    await Promise.allSettled([syncServerWallet(),syncServerItemInventory(),syncServerDiceInventory()]);
+    try{renderCraftScreen();}catch(_e){}
+    if(btn)btn.disabled=false;
+    return;
+  }
+
+  player.gems=Math.max(0,Math.floor(Number(data?.gems??player.gems??0)));
+  player.itemInventory ||= {};
+  player.itemInventory.rainbowFragment=Math.max(0,Math.floor(Number(data?.rainbowFragment??player.itemInventory.rainbowFragment??0)));
+  player.diceInventory ||= {};
+  player.diceInventory.rainbow=Math.max(0,Math.floor(Number(data?.rainbowDice??player.diceInventory.rainbow??0)));
+  if(status){status.textContent=`✅ 무지개 주사위 ${count.toLocaleString()}개 합성 완료!`;status.className='message good';}
+
+  // 아래 렌더링 중 하나가 실패해도 이미 성공한 합성을 실패로 표시하지 않습니다.
+  try{renderCraftScreen();}catch(error){console.warn('합성 화면 갱신 경고:',error);}
+  try{renderMenu();}catch(error){console.warn('합성 후 메뉴 갱신 경고:',error);}
+  if(btn)btn.disabled=false;
 }
+
 
 function getAdminItemDisplayName(itemKey) {
   const names = {
@@ -10816,22 +10832,16 @@ async function resetSpecificServerItem() {
 
 async function resetSpecificServerDiceType() {
   const rarity = String(document.querySelector('#adminGlobalDiceTypeResetSelect')?.value || '').trim();
-  const input = document.querySelector('#adminGlobalDiceTypeResetConfirmInput');
-  const confirmText = String(input?.value || '').trim();
+  const input = null;
   const reason = document.querySelector('#adminGlobalDiceTypeResetReasonInput')?.value?.trim() || '관리자 특정 주사위 서버 전체 초기화';
   if (!rarity || !DICE_DATA[rarity]) {
     setAdminStatus('초기화할 주사위를 선택하세요.', 'error');
     return;
   }
-  if (confirmText !== 'RESET_DICE_TYPE') {
-    setAdminStatus('선택 주사위 초기화는 RESET_DICE_TYPE을 정확히 입력하세요.', 'error');
-    return;
-  }
   const diceLabel = DICE_DATA[rarity]?.rarity || DICE_DATA[rarity]?.name || rarity;
-  if (!confirm(`${diceLabel} 주사위만 모든 계정에서 0으로 만듭니다.
-다른 주사위와 재화는 유지됩니다. 실행하시겠습니까?`)) return;
   const btn = document.querySelector('#adminGlobalDiceTypeResetBtn');
   if (btn) btn.disabled = true;
+  setAdminStatus(`${diceLabel} 주사위를 모든 계정에서 0으로 맞추는 중...`, 'message');
   try {
     const { data, error } = await supabaseClient.rpc('admin_reset_dice_type_for_all_v1', {
       p_rarity: rarity,
@@ -10855,22 +10865,16 @@ async function resetSpecificServerDiceType() {
 
 async function resetSpecificServerUnitType() {
   const unitId = String(document.querySelector('#adminGlobalUnitTypeResetSelect')?.value || '').trim();
-  const input = document.querySelector('#adminGlobalUnitTypeResetConfirmInput');
-  const confirmText = String(input?.value || '').trim();
+  const input = null;
   const reason = document.querySelector('#adminGlobalUnitTypeResetReasonInput')?.value?.trim() || '관리자 특정 유닛 서버 전체 초기화';
   const unit = UNIT_DATA[unitId];
   if (!unit) {
     setAdminStatus('초기화할 유닛을 선택하세요.', 'error');
     return;
   }
-  if (confirmText !== 'RESET_UNIT_TYPE') {
-    setAdminStatus('선택 유닛 초기화는 RESET_UNIT_TYPE을 정확히 입력하세요.', 'error');
-    return;
-  }
-  if (!confirm(`${unit.name}만 모든 계정에서 삭제합니다.
-해당 유닛의 보유 수량과 조각, 덱 편성이 모두 제거됩니다. 실행하시겠습니까?`)) return;
   const btn = document.querySelector('#adminGlobalUnitTypeResetBtn');
   if (btn) btn.disabled = true;
+  setAdminStatus(`${unit.name}을(를) 모든 계정에서 삭제하는 중...`, 'message');
   try {
     const { data, error } = await supabaseClient.rpc('admin_reset_unit_type_for_all_v1', {
       p_unit_id: unitId,
@@ -14689,7 +14693,7 @@ function requestGachaDraw(count) {
     }
 
 
-    const RAINBOW_EVENT_HP_MULTIPLIER = 4;
+    const RAINBOW_EVENT_HP_MULTIPLIER = 2;
     const RAINBOW_EVENT_DASH_INTERVAL = 3;
     const RAINBOW_EVENT_DASH_DISTANCE = 92;
     const RAINBOW_BOSS_STUN_INTERVAL = 2;
@@ -15013,7 +15017,7 @@ function requestGachaDraw(count) {
         if (rainbowBoss?.type === 'rainbowUnicornBoss') { bossName='유니콘'; message=`🌈 WAVE ${wave} · 유니콘 등장!`; }
         else if (rainbowBoss?.type === 'rainbowGuardCaptainBoss') { bossName='무지개 근위대 대장'; message=`🌈 WAVE ${wave} · 무지개 근위대 대장 등장!`; }
         else if (rainbowBoss?.type === 'rainbowFeverCore') { bossName='무지개 저편 FEVER'; message=`🌈 WAVE ${wave} · 무지개 저편 FEVER!`; }
-        else message=`🌈 무지개 저편 WAVE ${wave} · 무지개 조각 드롭 확률 ${(5+Math.floor(wave/10))*2}%`;
+        else message=`🌈 무지개 저편 WAVE ${wave} · 무지개 조각 드롭 확률 ${(5+Math.floor(wave/10))*4}%`;
       } else if (battle.stage === 2) {
         if (wave === 10) { bossName = '보석이 박힌 골렘'; message = '보석 골렘 등장! 10초마다 최대체력 50%의 보호막을 만듭니다.'; }
         else if (wave === 30) { bossName = '거대 골렘'; message = '거대 골렘 등장! 5초마다 지면을 내려쳐 구르는 골렘을 소환하고 주변 유닛을 기절시킵니다.'; }
@@ -15782,10 +15786,9 @@ function requestGachaDraw(count) {
       if(!battle?.isRainbowEvent) return false;
 
       if (isRainbowEventBossEnemy(enemy)) {
-        if (!enemy.rainbowInitialBossStunApplied) {
-          enemy.rainbowInitialBossStunApplied = true;
-          applyRainbowBossForcedStun(enemy, RAINBOW_BOSS_INITIAL_STUN_DURATION, true);
-        }
+        // 보스가 처음 등장할 때 주던 3초 강제 기절은 제거합니다.
+        // 이후 2초 주기의 보스 강제 기절은 기존 규칙대로 유지합니다.
+        if (!enemy.rainbowInitialBossStunApplied) enemy.rainbowInitialBossStunApplied = true;
         const stunInterval = Math.max(.25, Number(enemy.rainbowBossStunInterval || RAINBOW_BOSS_STUN_INTERVAL));
         enemy.rainbowBossStunTimer = Number.isFinite(enemy.rainbowBossStunTimer) ? enemy.rainbowBossStunTimer - dt : stunInterval;
         if (enemy.rainbowBossStunTimer <= 0) {
@@ -23897,19 +23900,13 @@ function drawEnemy(enemy, time) {
         rainbowGlowDot(g,-28,10,3.5,hue+230,.9);
         g.save();g.translate(-28,10);g.rotate(time*.002);g.strokeStyle=`hsla(${hue},100%,80%,.7)`;g.lineWidth=1;g.beginPath();g.arc(0,0,8,0,Math.PI*2);g.stroke();g.beginPath();g.ellipse(0,0,11,4,.7,0,Math.PI*2);g.stroke();g.restore();
 
-        // 오른팔과 대형 단일 프리즘 검. 짧은 이펙트만 사용.
+        // 오른팔/손만 본체에서 그립니다. 실제 프리즘 검은 drawAimedUnitWeapon에서
+        // 단 한 자루만 렌더링하여 무지개 저편이 검 두 자루처럼 보이지 않게 합니다.
         const swing=-1.0+power*1.72;
         g.save();g.translate(13,-4);g.rotate(swing);
-        g.strokeStyle='#312a48';g.lineWidth=6;g.beginPath();g.moveTo(0,0);g.lineTo(13,7);g.stroke();
-        g.fillStyle='#eaf7ff';g.beginPath();g.arc(14,7,3.2,0,Math.PI*2);g.fill();
-        // 가드
-        g.strokeStyle='#fff';g.lineWidth=2.4;g.beginPath();g.moveTo(9,3);g.lineTo(19,12);g.stroke();
-        const blade=rainbowSpectrumGradient(g,15,8,66,-2,hue+20);
-        g.strokeStyle='rgba(255,255,255,.25)';g.lineWidth=10;g.beginPath();g.moveTo(16,8);g.lineTo(62,-2);g.stroke();
-        g.strokeStyle=blade;g.lineWidth=6;g.shadowBlur=13+power*8;g.shadowColor=`hsl(${hue},100%,72%)`;g.beginPath();g.moveTo(16,8);g.lineTo(62,-2);g.stroke();
-        rainbowFacet(g,[[70,-4],[59,-8],[61,3]],'#fff',null,0);
-        g.shadowBlur=0;
-        if(power>.08){g.globalCompositeOperation='lighter';g.globalAlpha=.45*power;g.strokeStyle='#fff';g.lineWidth=2.2;g.beginPath();g.arc(15,6,43,-.20,.52);g.stroke();}
+        g.strokeStyle='#312a48';g.lineWidth=7;g.lineCap='round';g.beginPath();g.moveTo(0,0);g.lineTo(13,7);g.stroke();
+        g.strokeStyle='rgba(255,255,255,.55)';g.lineWidth=2;g.beginPath();g.moveTo(1,-1);g.lineTo(12,6);g.stroke();
+        g.fillStyle='#eaf7ff';g.strokeStyle=`hsla(${hue},100%,75%,.85)`;g.lineWidth=1.2;g.beginPath();g.arc(14,7,4,0,Math.PI*2);g.fill();g.stroke();
         g.restore();
 
         // 작은 궤도 결정 4개
@@ -32008,7 +32005,7 @@ function drawEnemy(enemy, time) {
     set('#profileNextLevelText',next?`Lv.${info.level+1}까지 ${fmtExp(info.remaining)} EXP 남음 · 누적 ${fmtExp(info.exp)} EXP`:'최고 레벨에 도달했습니다.');
     if(!expBarAnimating && !pendingExpAnimation) setExpBarPct(info.pct,true);
     const input=document.querySelector('#nicknameInput'); if(input && document.activeElement!==input) input.value=nickname===currentUsername && !player.nickname?'':nickname;
-cd /workspaces/bidulgy.games.io    setTimeout(animatePendingExpGain,220);
+    setTimeout(animatePendingExpGain,220);
     if (typeof window.updateFeatureUnlockCards === 'function') window.updateFeatureUnlockCards();
   };
 

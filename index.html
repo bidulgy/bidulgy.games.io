@@ -4705,6 +4705,12 @@ body {
     .unit-card::before{content:'';position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);opacity:.65;pointer-events:none;}
     .deck-slot.filled{min-height:132px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
     @media(max-width:620px){.unit-icon.unit-icon-live{height:102px}.unit-live-portrait{width:98px;height:98px}.deck-live-portrait{width:66px;height:66px}.deck-slot.filled{min-height:118px}}
+
+
+/* ===== 2026-08-25 합성 / 안정화 UI ===== */
+.craft-layout{display:grid;place-items:center;padding:18px 0}.craft-rainbow-card{width:min(760px,100%);display:grid;gap:16px;overflow:hidden;position:relative;background:radial-gradient(circle at 12% 8%,rgba(255,255,255,.12),transparent 28%),linear-gradient(145deg,rgba(255,90,160,.13),rgba(255,215,80,.10),rgba(75,220,255,.11),rgba(170,90,255,.13)),rgba(9,15,30,.94);border-color:rgba(255,255,255,.24)}
+.craft-prism-emblem{font-size:68px;filter:drop-shadow(0 0 18px rgba(255,255,255,.55));animation:rainbowPrismFloat 1.1s ease-in-out infinite alternate}.craft-resource-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.craft-resource-grid>div{display:grid;gap:4px;padding:12px;border:1px solid rgba(255,255,255,.13);border-radius:14px;background:rgba(0,0,0,.18)}.craft-resource-grid span{font-size:11px;color:#b9c6d8}.craft-resource-grid strong{font-size:20px}.craft-count-row{display:grid;grid-template-columns:46px minmax(90px,1fr) 46px auto;gap:8px}.craft-count-row input{text-align:center;font-size:18px;font-weight:900}.craft-cost-preview{padding:11px 13px;border-radius:12px;background:rgba(255,220,90,.08);border:1px solid rgba(255,220,90,.18);font-weight:850}.craft-cost-preview.insufficient{background:rgba(255,90,110,.08);border-color:rgba(255,90,110,.28);color:#ffb5c1}@media(max-width:620px){.craft-resource-grid{grid-template-columns:1fr}.craft-count-row{grid-template-columns:42px 1fr 42px}.craft-count-row #craftMaxBtn{grid-column:1/-1}}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style id="multiplayerStyles">
@@ -7379,6 +7385,12 @@ button {
         <small>유닛 · 주사위 · 조각을 관리하세요</small>
       </button>
 
+      <button id="openCraftBtn" class="defense-menu-card" type="button">
+        <span class="defense-card-icon">⚗️</span>
+        <strong>합성</strong>
+        <small>무지개 조각 10 + 소환석 100 → 무지개 주사위</small>
+      </button>
+
       <button id="openTraitsBtn" class="defense-menu-card" type="button">
         <span class="defense-card-icon">🧬</span>
         <strong>특성</strong>
@@ -7624,6 +7636,23 @@ button {
           <button id="adminGlobalItemResetBtn" class="danger" type="button">선택한 아이템만 모든 유저에게서 삭제</button>
         </div>
 
+
+        <div class="admin-card" style="border-color:rgba(255,173,70,.42);">
+          <h3>🎲 서버 전체 주사위 초기화</h3>
+          <p class="muted" style="display:block!important;">모든 계정의 모든 등급 주사위 수량만 0으로 만듭니다. 소환석·아이템·유닛은 유지됩니다.</p>
+          <input id="adminGlobalDiceResetConfirmInput" type="text" maxlength="20" placeholder="RESET_DICE 입력" autocomplete="off" />
+          <input id="adminGlobalDiceResetReasonInput" type="text" maxlength="120" value="관리자 서버 전체 주사위 초기화" />
+          <button id="adminGlobalDiceResetBtn" class="danger" type="button">모든 계정 주사위 0으로 초기화</button>
+        </div>
+
+        <div class="admin-card" style="border-color:rgba(255,90,120,.48);">
+          <h3>⚔️ 서버 전체 유닛 초기화</h3>
+          <p class="muted" style="display:block!important;">모든 계정의 보유 유닛과 덱을 비웁니다. 주사위·소환석·아이템은 유지됩니다.</p>
+          <input id="adminGlobalUnitResetConfirmInput" type="text" maxlength="20" placeholder="RESET_UNITS 입력" autocomplete="off" />
+          <input id="adminGlobalUnitResetReasonInput" type="text" maxlength="120" value="관리자 서버 전체 유닛 초기화" />
+          <button id="adminGlobalUnitResetBtn" class="admin-danger-button" type="button">모든 계정 유닛 0으로 초기화</button>
+        </div>
+
         <div class="admin-card" style="border-color:rgba(255,70,90,.45);">
           <h3>☢️ 서버 전체 재화/주사위/아이템 초기화</h3>
           <p class="muted" style="display:block!important;">모든 유저의 소환석, 모든 주사위, 모든 아이템 수량을 서버에서 0으로 만듭니다. 유닛/조각은 삭제하지 않습니다. 필요한 경우 위의 선택 초기화를 우선 사용하세요.</p>
@@ -7728,6 +7757,34 @@ button {
   </section>
 
   <div id="mailboxOverlay" class="social-overlay hidden"><div class="social-dialog mailbox-dialog"><button id="mailboxCloseBtn" class="social-close" type="button">×</button><h2>📬 우편함</h2><div class="mail-compose"><strong>편지 보내기</strong><input id="mailRecipientInput" maxlength="40" placeholder="받는 플레이어 아이디"><textarea id="mailMessageInput" maxlength="500" rows="4" placeholder="메시지 (최대 500자)"></textarea><div class="mail-gift-row"><select id="mailGiftKindSelect"><option value="">선물 없음</option><option value="gems">💎 소환석</option><option value="dice">🎲 주사위</option><option value="item">🎁 아이템</option></select><select id="mailGiftKeySelect" disabled><option value="">종류 선택</option></select><input id="mailGiftAmountInput" type="number" min="1" max="1000000" value="1" disabled></div><button id="mailSendBtn" type="button">편지 보내기</button><div id="mailStatus" class="social-status"></div></div><div class="social-section-title"><strong>받은 편지</strong><button id="mailRefreshBtn" class="secondary" type="button">새로고침</button></div><div id="mailList" class="mail-list"><div class="social-empty">우편함을 불러오는 중...</div></div></div></div>
+
+
+<section id="craftScreen" class="screen hidden craft-screen">
+  <div class="between">
+    <div><span class="section-kicker">PRISM SYNTHESIS</span><h2>⚗️ 합성</h2><p class="muted">전투에서 얻은 무지개 조각과 소환석으로 무지개 주사위를 제작합니다.</p></div>
+    <button class="secondary backToMenu" type="button">메뉴로</button>
+  </div>
+  <div class="craft-layout">
+    <div class="card craft-rainbow-card">
+      <div class="craft-prism-emblem">🌈💠</div>
+      <div><small class="section-kicker">LIMITED RECIPE</small><h3>무지개 주사위 제작</h3><p>무지개 조각 <b>10개</b> + 소환석 <b>100개</b>를 사용해 무지개 주사위 <b>1개</b>를 만듭니다.</p></div>
+      <div class="craft-resource-grid">
+        <div><span>🌈💠 무지개 조각</span><strong id="craftFragmentCount">0</strong></div>
+        <div><span>💎 소환석</span><strong id="craftGemCount">0</strong></div>
+        <div><span>🌈🎲 무지개 주사위</span><strong id="craftRainbowDiceCount">0</strong></div>
+      </div>
+      <div class="craft-count-row">
+        <button id="craftMinusBtn" class="secondary" type="button">−</button>
+        <input id="craftCountInput" type="number" min="1" max="1000" value="1" inputmode="numeric" />
+        <button id="craftPlusBtn" class="secondary" type="button">＋</button>
+        <button id="craftMaxBtn" class="secondary" type="button">최대</button>
+      </div>
+      <div id="craftCostPreview" class="craft-cost-preview">필요: 무지개 조각 10개 · 소환석 100개</div>
+      <button id="craftRainbowDiceBtn" class="premium-summon-button" type="button"><span>⚗️</span><span><strong>무지개 주사위 합성</strong><small>서버에서 재료를 확인한 뒤 제작합니다</small></span></button>
+      <p id="craftStatus" class="message">합성할 수량을 선택하세요.</p>
+    </div>
+  </div>
+</section>
 
 <section id="collectionScreen" class="screen hidden inventory-screen">
     <div class="between">
@@ -7907,7 +7964,7 @@ button {
         <h2>스테이지 <span id="battleStage">1</span> · <span id="battleDifficulty">보통</span></h2>
         <div class="resource-bar">
           <div class="resource">🪙 <strong id="battleGold">0</strong></div>
-          <div id="battleRainbowDiceResource" class="resource rainbow-dice-resource hidden">🌈🎲 <strong id="battleRainbowDice">0</strong></div>
+          <div id="battleRainbowDiceResource" class="resource rainbow-dice-resource hidden" title="이번 전투에서 획득한 무지개 조각">🌈💠 <strong id="battleRainbowDice">0</strong></div>
           <div class="resource">🏰 <strong id="battleLives">0 / 2000</strong></div>
           <div class="resource">💀 <strong id="battleKills">0</strong></div>
         </div>
@@ -8137,7 +8194,7 @@ button {
 
   <script>
 console.log("[TRAIT BUILD] 2026-08-19-admin-gems-10m-v1");
-    window.BIDULGY_BUILD_VERSION = '2026-08-21-stage4-desert-glitch-v1';
+    window.BIDULGY_BUILD_VERSION = '2026-08-25-rainbow-final-stability-v4';
     console.info('[BIDULGY BUILD]', window.BIDULGY_BUILD_VERSION);
     const SUPABASE_URL =
   'https://gomwkcqkslaoypdbebid.supabase.co';
@@ -8479,8 +8536,8 @@ const STAGE_CONFIG = Object.freeze({
     extendedMaxWave: 100,
     startingGold: 380,
     baseHp: 2000,
-    stageBonus: 8000,
-    rewardMultiplier: 2,
+    stageBonus: 40000,
+    rewardMultiplier: 10,
     available: true,
     unlockRule: 'stage3Hard',
     battlePalette: {
@@ -9006,9 +9063,9 @@ function applyStagePreview(stageId = selectedStage) {
       },
       rainbowUnicornUnit: {
         id:'rainbowUnicornUnit', name:'유니콘', icon:'🦄', rarity:'비밀', rarityKey:'secret', rarityClass:'rarity-secret', eventExclusive:true,
-        cost:700, damage:3000, range:210, fireInterval:.9, rainbowExecuteEvery:10, rainbowExecuteDelay:3, rainbowBossRatio:.20, color:'#f5b7ff',
+        cost:700, damage:3000, range:210, fireInterval:.9, rainbowExecuteEvery:10, rainbowExecuteDelay:3, rainbowExecuteRangeMultiplier:1.5, rainbowBossRatio:.20, color:'#f5b7ff',
         skillName:'레인보우 저지먼트',
-        skillText:'뿔로 돌진해 공격합니다. 10번 공격할 때마다 사거리 안 모든 적을 무지개로 만들고 3초 뒤 일반 적은 즉사, 보스는 최대체력의 20% 피해를 받습니다.'
+        skillText:'가장 가까운 적에게 직접 뿔로 돌진해 공격합니다. 10번 공격할 때마다 기본 공격 사거리의 1.5배 안 모든 적을 무지개로 표식하고 3초 뒤 일반 적은 즉사, 보스는 최대체력의 20% 피해를 받습니다.'
       },
       rainbowBeyond: {
         id:'rainbowBeyond', name:'무지개 저편', icon:'🌈', rarity:'갤럭시', rarityKey:'galaxy', rarityClass:'rarity-galaxy', eventExclusive:true,
@@ -9299,6 +9356,7 @@ function applyStagePreview(stageId = selectedStage) {
       menu: document.querySelector('#menuScreen'),
       admin: document.querySelector('#adminScreen'),
       gacha: document.querySelector('#gachaScreen'),
+      craft: document.querySelector('#craftScreen'),
       collection: document.querySelector('#collectionScreen'),
       traits: document.querySelector('#traitScreen'),
       deck: document.querySelector('#deckScreen'),
@@ -9781,6 +9839,18 @@ function applyStagePreview(stageId = selectedStage) {
     const appliedSeq = Math.max(0, Math.floor(Number(player.adminInventoryAppliedSeq || 0)));
     let newestSeq = appliedSeq;
     let changed = false;
+
+    // 서버 전체 유닛 초기화가 다른 기기에서 실행된 뒤 오래 켜 둔 클라이언트가
+    // 예전 ownedUnits/deck을 다시 저장해서 복구하지 못하도록 서버 reset seq를 우선 적용합니다.
+    const globalUnitResetSeq = Math.max(0, Math.floor(Number(serverSave.adminGlobalUnitResetSeq || 0)));
+    const localGlobalUnitResetAppliedSeq = Math.max(0, Math.floor(Number(player.adminGlobalUnitResetAppliedSeq || 0)));
+    if (globalUnitResetSeq > localGlobalUnitResetAppliedSeq) {
+      player.ownedUnits = {};
+      player.deck = [];
+      player.adminGlobalUnitResetAppliedSeq = globalUnitResetSeq;
+      changed = true;
+    }
+    if (globalUnitResetSeq > 0) player.adminGlobalUnitResetSeq = globalUnitResetSeq;
 
     if (corrections && typeof corrections === 'object' && !Array.isArray(corrections)) {
       Object.entries(corrections).forEach(([unitId, info]) => {
@@ -10522,6 +10592,54 @@ async function zeroAdminUserGems() {
   }
 }
 
+
+function getMaxRainbowCraftCount(){
+  const fragments=Math.max(0,Math.floor(Number(player?.itemInventory?.rainbowFragment||0)));
+  const gems=Math.max(0,Math.floor(Number(player?.gems||0)));
+  return Math.max(0,Math.min(1000,Math.floor(fragments/10),Math.floor(gems/100)));
+}
+function renderCraftScreen(){
+  const countInput=document.querySelector('#craftCountInput');
+  if(!countInput)return;
+  let count=Math.max(1,Math.min(1000,Math.floor(Number(countInput.value||1))));
+  countInput.value=String(count);
+  const fragments=Math.max(0,Math.floor(Number(player?.itemInventory?.rainbowFragment||0)));
+  const gems=Math.max(0,Math.floor(Number(player?.gems||0)));
+  const dice=Math.max(0,Math.floor(Number(player?.diceInventory?.rainbow||0)));
+  const needFragments=count*10,needGems=count*100;
+  const f=document.querySelector('#craftFragmentCount'),g=document.querySelector('#craftGemCount'),d=document.querySelector('#craftRainbowDiceCount');
+  if(f)f.textContent=fragments.toLocaleString();if(g)g.textContent=gems.toLocaleString();if(d)d.textContent=dice.toLocaleString();
+  const cost=document.querySelector('#craftCostPreview');
+  if(cost){cost.textContent=`필요: 무지개 조각 ${needFragments.toLocaleString()}개 · 소환석 ${needGems.toLocaleString()}개`;cost.classList.toggle('insufficient',fragments<needFragments||gems<needGems);}
+  const btn=document.querySelector('#craftRainbowDiceBtn');if(btn)btn.disabled=fragments<needFragments||gems<needGems;
+}
+async function openCraftScreen(){
+  showScreen('craft');
+  const status=document.querySelector('#craftStatus');if(status){status.textContent='서버 재료 수량을 확인하고 있습니다.';status.className='message';}
+  await Promise.allSettled([syncServerWallet(),syncServerItemInventory(),syncServerDiceInventory()]);
+  renderCraftScreen();
+  if(status)status.textContent='무지개 조각 10개 + 소환석 100개로 무지개 주사위 1개를 합성할 수 있습니다.';
+}
+async function craftRainbowDice(){
+  const input=document.querySelector('#craftCountInput');
+  const count=Math.max(1,Math.min(1000,Math.floor(Number(input?.value||1))));
+  const btn=document.querySelector('#craftRainbowDiceBtn');const status=document.querySelector('#craftStatus');
+  if(btn)btn.disabled=true;if(status){status.textContent='⚗️ 서버에서 재료를 확인하고 합성 중...';status.className='message';}
+  try{
+    const {data,error}=await supabaseClient.rpc('craft_rainbow_dice_v1',{p_count:count});
+    if(error)throw error;
+    player.gems=Math.max(0,Math.floor(Number(data?.gems??player.gems??0)));
+    player.itemInventory ||= {};player.itemInventory.rainbowFragment=Math.max(0,Math.floor(Number(data?.rainbowFragment??player.itemInventory.rainbowFragment??0)));
+    player.diceInventory ||= {};player.diceInventory.rainbow=Math.max(0,Math.floor(Number(data?.rainbowDice??player.diceInventory.rainbow??0)));
+    if(status){status.textContent=`✅ 무지개 주사위 ${count.toLocaleString()}개 합성 완료!`;status.className='message good';}
+    renderCraftScreen();renderMenu();
+  }catch(error){
+    console.error('무지개 주사위 합성 실패:',error);
+    if(status){status.textContent=`합성 실패: ${error.message||error}`;status.className='message error';}
+    renderCraftScreen();
+  }finally{if(btn)btn.disabled=false;renderCraftScreen();}
+}
+
 function getAdminItemDisplayName(itemKey) {
   const names = {
     rainbowFragment: '🌈💠 무지개의 조각'
@@ -10644,6 +10762,29 @@ async function resetSpecificServerItem() {
   } finally {
     if (button) button.disabled = false;
   }
+}
+
+
+async function resetAllServerDiceOnly(){
+  const input=document.querySelector('#adminGlobalDiceResetConfirmInput');const confirmText=String(input?.value||'').trim();
+  const reason=document.querySelector('#adminGlobalDiceResetReasonInput')?.value?.trim()||'관리자 서버 전체 주사위 초기화';
+  if(confirmText!=='RESET_DICE'){setAdminStatus('주사위 전체 초기화는 RESET_DICE를 정확히 입력하세요.','error');return;}
+  if(!confirm('모든 계정의 모든 주사위 수량만 0으로 만듭니다. 실행하시겠습니까?'))return;
+  const btn=document.querySelector('#adminGlobalDiceResetBtn');if(btn)btn.disabled=true;
+  try{const {data,error}=await supabaseClient.rpc('admin_reset_all_dice_v1',{p_confirm:'RESET_DICE',p_reason:reason});if(error)throw error;if(input)input.value='';setAdminStatus(`전체 주사위 초기화 완료 · ${Number(data?.diceRows||0).toLocaleString()}개 서버 행 반영`,'good');await loadAdminLogs();if(adminSelectedUserId)await loadAdminPlayer(adminSelectedUserId);await syncServerDiceInventory();renderInventory();}
+  catch(error){console.error('전체 주사위 초기화 실패:',error);setAdminStatus(`주사위 초기화 실패: ${error.message}`,'error');}
+  finally{if(btn)btn.disabled=false;}
+}
+async function resetAllServerUnitsOnly(){
+  const input=document.querySelector('#adminGlobalUnitResetConfirmInput');const confirmText=String(input?.value||'').trim();
+  const reason=document.querySelector('#adminGlobalUnitResetReasonInput')?.value?.trim()||'관리자 서버 전체 유닛 초기화';
+  if(confirmText!=='RESET_UNITS'){setAdminStatus('유닛 전체 초기화는 RESET_UNITS를 정확히 입력하세요.','error');return;}
+  if(!confirm('모든 계정의 보유 유닛과 덱을 비웁니다. 이 작업은 되돌릴 수 없습니다. 실행하시겠습니까?'))return;
+  if(!confirm('마지막 확인: 소환석·주사위·아이템은 유지되지만 모든 보유 유닛이 삭제됩니다.'))return;
+  const btn=document.querySelector('#adminGlobalUnitResetBtn');if(btn)btn.disabled=true;
+  try{const {data,error}=await supabaseClient.rpc('admin_reset_all_units_v1',{p_confirm:'RESET_UNITS',p_reason:reason});if(error)throw error;if(input)input.value='';if(player){player.ownedUnits={};player.deck=[];player.adminGlobalUnitResetAppliedSeq=Math.max(0,Math.floor(Number(data?.resetSeq||0)));player.adminGlobalUnitResetSeq=player.adminGlobalUnitResetAppliedSeq;ensurePlayerData();renderInventory();renderDeck();}setAdminStatus(`전체 유닛 초기화 완료 · ${Number(data?.saveRows||0).toLocaleString()}개 계정 저장 데이터 반영`,'good');await loadAdminLogs();if(adminSelectedUserId)await loadAdminPlayer(adminSelectedUserId);}
+  catch(error){console.error('전체 유닛 초기화 실패:',error);setAdminStatus(`유닛 초기화 실패: ${error.message}`,'error');}
+  finally{if(btn)btn.disabled=false;}
 }
 
 async function resetAllServerCurrencyItems() {
@@ -11694,7 +11835,7 @@ async function logout() {
         if (eventItemGrid) {
           const rainbowDiceAmount = Math.max(0, Math.floor(Number(player.diceInventory?.rainbow || 0)));
           const fragmentMarkup = rainbowFragments > 0
-            ? `<div class="fragment-card" style="background:linear-gradient(135deg,rgba(255,102,170,.18),rgba(255,225,96,.14),rgba(80,220,255,.16),rgba(175,100,255,.18));border-color:rgba(255,255,255,.28);"><div class="fragment-icon">🌈💠</div><h4>무지개의 조각</h4><div class="fragment-count">${rainbowFragments.toLocaleString()}개</div><small class="rarity-galaxy">무지개 주사위 0.01%</small></div>`
+            ? `<div class="fragment-card" style="background:linear-gradient(135deg,rgba(255,102,170,.18),rgba(255,225,96,.14),rgba(80,220,255,.16),rgba(175,100,255,.18));border-color:rgba(255,255,255,.28);"><div class="fragment-icon">🌈💠</div><h4>무지개의 조각</h4><div class="fragment-count">${rainbowFragments.toLocaleString()}개</div><small class="rarity-galaxy">무지개 저편 적 처치 시 드롭 · 합성 재료</small></div>`
             : '<div class="card"><p class="muted">아직 보유한 한정 아이템이 없습니다.</p></div>';
           const rainbowDiceMarkup = `<div class="rainbow-item-roll-card rainbow-dice-card"><div class="rainbow-item-die">🎲</div><div><strong>무지개 주사위</strong><div class="dice-count">×${rainbowDiceAmount.toLocaleString()}</div><small class="muted">아이템 칸에서도 바로 굴릴 수 있습니다.</small></div><div class="rainbow-item-roll-controls"><input id="rainbowItemRollCount" type="number" inputmode="numeric" min="${rainbowDiceAmount>0?1:0}" max="${rainbowDiceAmount}" value="${rainbowDiceAmount>0?1:0}" ${rainbowDiceAmount<=0?'disabled':''}><button id="rainbowItemRollBtn" type="button" ${rainbowDiceAmount<=0?'disabled':''}>🌈🎲 선택한 개수 굴리기</button></div></div>`;
           eventItemGrid.innerHTML = rainbowDiceMarkup + fragmentMarkup;
@@ -14662,7 +14803,8 @@ function requestGachaDraw(count) {
 
     function isPathEnemyForSpawnCap(enemy) {
       if (!enemy || enemy.dead) return false;
-      // 4스테이지 50웨이브의 고정 선인장은 길 위를 이동하는 적이 아니므로 제외합니다.
+      // 모든 보스는 20마리 제한의 바깥에서 별도로 존재합니다.
+      if (enemy.type !== 'normal') return false;
       if ((enemy.staticCactus && enemy.spawnRandomVisible) || enemy.staticRainbowObject || enemy.rainbowOre) return false;
       return true;
     }
@@ -14733,7 +14875,7 @@ function requestGachaDraw(count) {
         if (rainbowBoss?.type === 'rainbowUnicornBoss') { bossName='유니콘'; message=`🌈 WAVE ${wave} · 유니콘 등장!`; }
         else if (rainbowBoss?.type === 'rainbowGuardCaptainBoss') { bossName='무지개 근위대 대장'; message=`🌈 WAVE ${wave} · 무지개 근위대 대장 등장!`; }
         else if (rainbowBoss?.type === 'rainbowFeverCore') { bossName='무지개 저편 FEVER'; message=`🌈 WAVE ${wave} · 무지개 저편 FEVER!`; }
-        else message=`🌈 무지개 저편 WAVE ${wave} · 병사 주사위 드롭 확률 ${5+Math.floor(wave/10)}%`;
+        else message=`🌈 무지개 저편 WAVE ${wave} · 무지개 조각 드롭 확률 ${(5+Math.floor(wave/10))*2}%`;
       } else if (battle.stage === 2) {
         if (wave === 10) { bossName = '보석이 박힌 골렘'; message = '보석 골렘 등장! 10초마다 최대체력 50%의 보호막을 만듭니다.'; }
         else if (wave === 30) { bossName = '거대 골렘'; message = '거대 골렘 등장! 5초마다 지면을 내려쳐 구르는 골렘을 소환하고 주변 유닛을 기절시킵니다.'; }
@@ -15493,8 +15635,8 @@ function requestGachaDraw(count) {
       if (target) enemy.heading = Math.atan2(target.y - enemy.y, target.x - enemy.x);
       battle.shots.push({
         x1:oldX,y1:oldY,x2:enemy.x,y2:enemy.y,
-        life:.22,maxLife:.22,effect:'rainbowSlash',color:'#ff8fd0',
-        angle:Math.atan2(enemy.y-oldY,enemy.x-oldX),radius:Math.max(55,dashDistance),visualRadius:Math.min(72,Math.max(46,dashDistance*.58)),coneAngle:20,seed:Math.random()*1000
+        life:.22,maxLife:.22,effect:'rainbowBossDash',color:'#ff8fd0',
+        angle:Math.atan2(enemy.y-oldY,enemy.x-oldX),radius:Math.max(40,Math.min(78,dashDistance*.65)),seed:Math.random()*1000
       });
     }
 
@@ -15554,12 +15696,14 @@ function requestGachaDraw(count) {
         const {data,error}=await supabaseClient.rpc('resolve_rainbow_event_drop_v1',{p_claim_key:claimKey,p_source:source,p_wave:Number(enemy.waveNumber||battle.wave||1)});
         if(error) throw error;
         const amount=Math.max(0,Math.floor(Number(data?.amount||0)));
+        player.itemInventory ||= {};
+        if(Number.isFinite(Number(data?.fragmentAmount))) player.itemInventory.rainbowFragment=Math.max(0,Math.floor(Number(data.fragmentAmount)));
         if(Number.isFinite(Number(data?.diceAmount))) player.diceInventory.rainbow=Math.max(0,Math.floor(Number(data.diceAmount)));
         if(amount>0 && battle?.isRainbowEvent){
           battle.rainbowDiceDrops ||= [];
-          battle.rainbowDiceDrops.push({x:Number(x),y:Number(y),startX:Number(x),startY:Number(y),elapsed:0,hold:3,fly:.78,amount,seed:Math.random()*1000,credited:false});
+          battle.rainbowDiceDrops.push({kind:'fragment',x:Number(x),y:Number(y),startX:Number(x),startY:Number(y),elapsed:0,hold:1.15,fly:.68,amount,seed:Math.random()*1000,credited:false});
         }
-      }catch(error){console.warn('무지개 주사위 드롭 서버 처리 실패:',error);}
+      }catch(error){console.warn('무지개 조각 드롭 서버 처리 실패:',error);}
     }
 
     function updateEnemy(enemy, dt) {
@@ -16576,7 +16720,9 @@ function requestGachaDraw(count) {
         eden: 'edenBolt',
         errorEntity: 'errorPacket',
         eclipse: 'eclipseSlash',
-        cherrySamurai: 'sakuraWave'
+        cherrySamurai: 'sakuraWave',
+        rainbowSoldier: 'rainbowLance',
+        rainbowMage: 'rainbowSigil'
       };
 
       return effects[unitId] || 'arcaneBolt';
@@ -16625,7 +16771,11 @@ function requestGachaDraw(count) {
         sakuraWave: .62,
         sakuraIssen: .82,
         sakuraUltimateCut: .96,
-        sakuraMarkBurst: .90
+        sakuraMarkBurst: .90,
+        rainbowLance: .30,
+        rainbowSigil: .46,
+        rainbowHornImpact: .30,
+        rainbowBossDash: .22
       };
 
       return durations[effect] || .34;
@@ -17368,13 +17518,11 @@ function requestGachaDraw(count) {
       placed.baseDamage = Number(placed.baseDamage || placed.damage || data.damage) * 1.02;
       if (placed._rainbowWorldBuffApplied) {
         placed._rainbowWorldBaseDamage = Number(placed._rainbowWorldBaseDamage || placed.damage / 4 || data.damage) * 1.02;
-        placed._rainbowWorldBaseInterval = Math.max(.02, Number(placed._rainbowWorldBaseInterval || placed.fireInterval * 4 || data.fireInterval) / 1.02);
         placed.damage = placed._rainbowWorldBaseDamage * 4;
-        placed.fireInterval = Math.max(.005, placed._rainbowWorldBaseInterval / 4);
       } else {
         placed.damage = Number(placed.damage || data.damage) * 1.02;
-        placed.fireInterval = Math.max(.08, Number(placed.fireInterval || data.fireInterval) / 1.02);
       }
+      placed.fireInterval = Math.max(.08, Number(placed.fireInterval || data.fireInterval) / 1.02);
       placed.eclipseGrowthStacks = Number(placed.eclipseGrowthStacks || 0) + 1;
       battle.eclipseBursts ||= [];
       battle.eclipseBursts.push({
@@ -18028,8 +18176,11 @@ function requestGachaDraw(count) {
     }
 
     function markRainbowExecution(placed){
-      const targets=getEnemiesInRangeFast(placed,placed.range);for(const enemy of targets){enemy.rainbowExecutionRemaining=Number(UNIT_DATA.rainbowUnicornUnit.rainbowExecuteDelay||3);enemy.rainbowExecutionMax=enemy.rainbowExecutionRemaining;enemy.rainbowExecutionSourceId=placed.id;}
-      if(targets.length)setBattleMessage(`🦄 유니콘 · 레인보우 저지먼트! ${targets.length}명 표식 · 3초 뒤 처형`);
+      const data=UNIT_DATA.rainbowUnicornUnit;
+      const executeRange=Math.max(1,Number(placed.range||data.range||210)*Number(data.rainbowExecuteRangeMultiplier||1.5));
+      const targets=getEnemiesInRangeFast(placed,executeRange);
+      for(const enemy of targets){enemy.rainbowExecutionRemaining=Number(data.rainbowExecuteDelay||3);enemy.rainbowExecutionMax=enemy.rainbowExecutionRemaining;enemy.rainbowExecutionSourceId=placed.id;}
+      if(targets.length)setBattleMessage(`🦄 유니콘 · 레인보우 저지먼트! 사거리 ×1.5 · ${targets.length}명 표식 · 3초 뒤 처형`);
     }
 
     function updateRainbowLightUnit(placed,dt){
@@ -18040,7 +18191,8 @@ function requestGachaDraw(count) {
       placed.rainbowLightAccumulator-=ticks*interval;
       const before=Number(placed.rainbowLightHits||0);placed.rainbowLightHits=before+ticks;
       const links=1+Math.floor(placed.rainbowLightHits/Number(UNIT_DATA.rainbowLight.rainbowLinkHits||5000));
-      const targets=getEnemiesInRangeFast(placed,placed.range,links);if(!targets.length)return;
+      const rangeSq=Number(placed.range||280)**2;
+      const targets=battle.enemies.filter(e=>{if(e.dead||e.soilPileState||e.type==='rainbowFeverCore')return false;const dx=e.x-placed.x,dy=e.y-placed.y;return dx*dx+dy*dy<=rangeSq;}).sort((a,b)=>{const ai=Number(a.targetIndex||0),bi=Number(b.targetIndex||0);if(bi!==ai)return bi-ai;const an=path[Math.min(path.length-1,ai)]||a,bn=path[Math.min(path.length-1,bi)]||b;const ar=(an.x-a.x)**2+(an.y-a.y)**2,br=(bn.x-b.x)**2+(bn.y-b.y)**2;return ar-br;}).slice(0,links);if(!targets.length)return;
       const dmg=Number(placed.damage||7)*ticks;
       for(const target of targets) applyTraitDamage(placed,target,dmg);
       placed.rainbowBeamTargetIds=targets.map(e=>e.id);placed.rainbowBeamFxRemaining=.11;placed.attackCount=Number(placed.attackCount||0)+ticks;placed.angle=Math.atan2(targets[0].y-placed.y,targets[0].x-placed.x);
@@ -18135,7 +18287,8 @@ function requestGachaDraw(count) {
 
       if (placed.stunRemaining > 0 || placed.cooldown > 0) return;
 
-      const slowMultiplier = placed.attackSlowRemaining > 0 ? Math.max(1,Number(placed.attackSlowMultiplier||1.5)) : 1;
+      const rainbowWorldSpeedMultiplier = Number(battle?.rainbowMapBuffRemaining||0)>0 ? .25 : 1;
+      const slowMultiplier = (placed.attackSlowRemaining > 0 ? Math.max(1,Number(placed.attackSlowMultiplier||1.5)) : 1) * rainbowWorldSpeedMultiplier;
       const rainbowHasteMultiplier = placed.unitId==='rainbowMage' && Number(placed.rainbowHasteRemaining||0)>0 ? .5 : 1;
 
       if (placed.hackedRemaining > 0) {
@@ -18223,10 +18376,31 @@ function requestGachaDraw(count) {
         }
 
         // 실제 데미지는 전방 180° 그대로지만, 화면 이펙트는 검 주변의 짧은 초승달만 표시합니다.
-        let slashFx=battle.shots.find(shot=>shot.effect==='rainbowSlash'&&shot.sourceUnitId===placed.id&&shot.life>0);
+        let slashFx=placed._rainbowSlashFx;
+        if(!slashFx || Number(slashFx.life||0)<=0 || !battle.shots.includes(slashFx)) slashFx=null;
         const rainbowSlashVisualRadius = 66;
         if(slashFx){slashFx.x1=placed.x;slashFx.y1=placed.y;slashFx.x2=placed.x+Math.cos(placed.angle)*72;slashFx.y2=placed.y+Math.sin(placed.angle)*72;slashFx.life=.22;slashFx.maxLife=.22;slashFx.angle=placed.angle;slashFx.radius=placed.range;slashFx.visualRadius=rainbowSlashVisualRadius;slashFx.coneAngle=38;slashFx.compact=true;slashFx.seed=Math.random()*1000;}
-        else battle.shots.push({x1:placed.x,y1:placed.y,x2:placed.x+Math.cos(placed.angle)*72,y2:placed.y+Math.sin(placed.angle)*72,life:.22,maxLife:.22,effect:'rainbowSlash',color:'#ff8fd0',sourceUnitId:placed.id,angle:placed.angle,radius:placed.range,visualRadius:rainbowSlashVisualRadius,coneAngle:38,compact:true,seed:Math.random()*1000});
+        else {slashFx={x1:placed.x,y1:placed.y,x2:placed.x+Math.cos(placed.angle)*72,y2:placed.y+Math.sin(placed.angle)*72,life:.22,maxLife:.22,effect:'rainbowSlash',color:'#ff8fd0',sourceUnitId:placed.id,angle:placed.angle,radius:placed.range,visualRadius:rainbowSlashVisualRadius,coneAngle:38,compact:true,seed:Math.random()*1000};battle.shots.push(slashFx);placed._rainbowSlashFx=slashFx;}
+        return;
+      }
+
+
+      if (placed.unitId === 'rainbowUnicornUnit') {
+        const data = UNIT_DATA.rainbowUnicornUnit;
+        const targetInfo = getClosestEnemyToUnit(placed, placed.range);
+        if (!targetInfo) return;
+        const target = targetInfo.enemy;
+        const targetAngle = Math.atan2(target.y - placed.y, target.x - placed.x);
+        placed.angle = targetAngle;
+        placed.cooldown = Math.max(.04, Number(placed.fireInterval || data.fireInterval || .9) * slowMultiplier * rainbowHasteMultiplier);
+        placed.attackAnimation = 1;
+        placed.attackMode = 'rainbowUnicornCharge';
+        placed.attackCount = Number(placed.attackCount || 0) + 1;
+        placed.rainbowChargeTargetX = target.x;
+        placed.rainbowChargeTargetY = target.y;
+        applyTraitDamage(placed, target, Number(placed.damage || data.damage || 3000));
+        battle.shots.push({x1:target.x,y1:target.y,x2:target.x,y2:target.y,life:.30,maxLife:.30,effect:'rainbowHornImpact',color:'#fff2b2',angle:targetAngle,seed:Math.random()*1000,radius:Math.max(18,Number(target.radius||18))});
+        if (placed.attackCount % Number(data.rainbowExecuteEvery || 10) === 0) markRainbowExecution(placed);
         return;
       }
 
@@ -18244,7 +18418,6 @@ function requestGachaDraw(count) {
         placed.rainbowHasteRemaining=Number(UNIT_DATA.rainbowMage.rainbowHasteDuration||3);
         setBattleMessage('🌈 무지개 마법사 · 오버 더 레인보우! 3초간 공격속도 ×2');
       }
-      if (placed.unitId === 'rainbowUnicornUnit' && placed.attackCount % Number(UNIT_DATA.rainbowUnicornUnit.rainbowExecuteEvery||10) === 0) markRainbowExecution(placed);
       if (placed.unitId === 'rainbowSoldier' && placed.attackCount % Number(UNIT_DATA.rainbowSoldier.rainbowPierceEvery||6) === 0) {
         const d = UNIT_DATA.rainbowSoldier;
         const reach = Number(placed.range || d.range || 205);
@@ -18499,7 +18672,7 @@ function requestGachaDraw(count) {
           waveState.profileExpGranted = true;
           if (typeof awardPlayerExp === 'function') awardPlayerExp(infiniteWaveExp(waveState.wave), `무지개 저편 웨이브 ${waveState.wave}`);
         }
-        setBattleMessage(`🌈 무지개 저편 WAVE ${waveState.wave} 클리어 · 소환석 보상 없음 · 이벤트 주사위 ${Number(battle.eventDiceCollected||0)}개 획득`);
+        setBattleMessage(`🌈 무지개 저편 WAVE ${waveState.wave} 클리어 · 소환석 보상 없음 · 이번 전투 무지개 조각 ${Number(battle.eventDiceCollected||0)}개 획득`);
         updateWaveSkipUi();
         return;
       }
@@ -18594,19 +18767,19 @@ function requestGachaDraw(count) {
 
 
     function syncRainbowWorldBuffStats(){
+      // 안정화: fireInterval 자체를 매번 바꾸지 않습니다. 극단적으로 짧은 interval이 다른 스킬 루프에 전파되어
+      // 이펙트/연산이 폭증하던 멈춤 원인을 제거하고, 공속 ×4는 공격 쿨다운 배율로만 적용합니다.
       const active=Number(battle?.rainbowMapBuffRemaining||0)>0;
       for(const unit of battle?.placedUnits||[]){
         if(active && !unit._rainbowWorldBuffApplied){
           unit._rainbowWorldBaseDamage=Number(unit.damage||0);
-          unit._rainbowWorldBaseInterval=Math.max(.005,Number(unit.fireInterval||1));
           if(unit.unitId!=='moneyTree') unit.damage=unit._rainbowWorldBaseDamage*4;
-          unit.fireInterval=Math.max(.0025,unit._rainbowWorldBaseInterval/4);
           unit._rainbowWorldBuffApplied=true;
         }else if(!active && unit._rainbowWorldBuffApplied){
           if(unit.unitId!=='moneyTree') unit.damage=Number(unit._rainbowWorldBaseDamage||unit.damage||0);
-          unit.fireInterval=Math.max(.005,Number(unit._rainbowWorldBaseInterval||unit.fireInterval||1));
           unit._rainbowWorldBuffApplied=false;
-          delete unit._rainbowWorldBaseDamage;delete unit._rainbowWorldBaseInterval;
+          delete unit._rainbowWorldBaseDamage;
+          delete unit._rainbowWorldBaseInterval;
         }
       }
     }
@@ -18683,7 +18856,8 @@ function requestGachaDraw(count) {
 
         const nextSpec = waveState.queue[waveState.spawned];
         if (!nextSpec) continue;
-        const isPathSpawn = !((nextSpec.staticCactus && nextSpec.spawnRandomVisible) || nextSpec.staticRainbowObject || nextSpec.rainbowOre);
+        const isBossSpawn = nextSpec.type !== 'normal';
+        const isPathSpawn = !isBossSpawn && !((nextSpec.staticCactus && nextSpec.spawnRandomVisible) || nextSpec.staticRainbowObject || nextSpec.rainbowOre);
 
         if (isPathSpawn && pathSpawnSlots <= 0) {
           // 타이머를 0에 고정해서 슬롯이 생기는 즉시 소환되도록 대기합니다.
@@ -18729,6 +18903,17 @@ function requestGachaDraw(count) {
         if (shot.life > 0) battle.shots[shotWrite++] = shot;
       }
       battle.shots.length = shotWrite;
+
+      // 정상 플레이에서는 도달하지 않는 높은 상한입니다. 특정 스킬/브라우저 오류로
+      // 이펙트가 비정상 누적될 때만 오래된 효과를 정리하여 화면 전체 정지를 막습니다.
+      if (battle.shots.length > 1800) {
+        battle.shots.splice(0, battle.shots.length - 1800);
+        battle.effectOverflowRecoveries = Number(battle.effectOverflowRecoveries || 0) + 1;
+        if (battle.effectOverflowRecoveries <= 2) console.warn('과도한 전투 이펙트를 자동 정리했습니다.');
+      }
+      if (Array.isArray(battle.delayedAttacks) && battle.delayedAttacks.length > 1200) {
+        battle.delayedAttacks.splice(0, battle.delayedAttacks.length - 1200);
+      }
 
       completeResolvedWaves();
       if (battle.ended) {
@@ -23233,114 +23418,353 @@ function drawEnemy(enemy, time) {
     }
 
 
+
+    function rainbowSpectrumGradient(g,x1,y1,x2,y2,shift=0){
+      const gr=g.createLinearGradient(x1,y1,x2,y2);
+      const h=((shift%360)+360)%360;
+      const stops=[0,.18,.36,.55,.74,1];
+      const hues=[h,h+48,h+105,h+175,h+236,h+305];
+      stops.forEach((s,i)=>gr.addColorStop(s,`hsl(${hues[i]%360},100%,${i===0||i===5?76:66}%)`));
+      return gr;
+    }
+    function rainbowFacet(g,pts,fill,stroke='rgba(255,255,255,.85)',lineWidth=1.2){
+      g.fillStyle=fill;g.strokeStyle=stroke;g.lineWidth=lineWidth;
+      g.beginPath();g.moveTo(pts[0][0],pts[0][1]);
+      for(let i=1;i<pts.length;i++)g.lineTo(pts[i][0],pts[i][1]);
+      g.closePath();g.fill();if(stroke)g.stroke();
+    }
+    function rainbowGlowDot(g,x,y,r,hue,alpha=.9){
+      g.save();g.globalCompositeOperation='lighter';
+      const gr=g.createRadialGradient(x-r*.25,y-r*.25,.2,x,y,r*2.4);
+      gr.addColorStop(0,`rgba(255,255,255,${alpha})`);
+      gr.addColorStop(.28,`hsla(${hue%360},100%,78%,${alpha*.8})`);
+      gr.addColorStop(1,`hsla(${hue%360},100%,55%,0)`);
+      g.fillStyle=gr;g.beginPath();g.arc(x,y,r*2.4,0,Math.PI*2);g.fill();g.restore();
+    }
     function drawRainbowUnitBodyArt(g,time,unit){
-      const id=unit.unitId,t=time*.001,pulse=.82+Math.sin(time*.012+Number(unit.animationOffset||0))*.18;
+      const id=unit.unitId;
+      const seed=Number(unit.animationOffset||0);
+      const t=time*.001;
+      const idle=Math.sin(time*.0034+seed*5.17);
+      const breathe=.96+Math.sin(time*.0046+seed*3.1)*.025;
+      const attack=Math.max(0,Math.min(1,Number(unit.attackAnimation||0)));
+      const hue=(time*.055+seed*91)%360;
+      const attackKick=Math.sin((1-attack)*Math.PI);
+
       g.save();
-      g.fillStyle='rgba(0,0,0,.30)';g.beginPath();g.ellipse(0,23,21,7,0,0,Math.PI*2);g.fill();
-      if(id==='rainbowLight'){
-        g.globalCompositeOperation='lighter';for(let i=4;i>=0;i--){g.strokeStyle=`hsla(${(time*.12+i*58)%360},100%,75%,${.18+i*.07})`;g.lineWidth=2+i*.8;g.beginPath();g.arc(0,-5,10+i*6+Math.sin(time*.01+i)*2,0,Math.PI*2);g.stroke();}
-        const core=g.createRadialGradient(-3,-10,1,0,-5,25);core.addColorStop(0,'#fff');core.addColorStop(.3,'rgba(255,255,255,.9)');core.addColorStop(1,'rgba(130,190,255,0)');g.fillStyle=core;g.beginPath();g.arc(0,-5,25,0,Math.PI*2);g.fill();g.restore();return;
-      }
-      if(id==='rainbowUnicornUnit'){
-        g.fillStyle='#fffaff';g.shadowBlur=12;g.shadowColor='#ffbff0';g.beginPath();g.ellipse(0,3,20,12,0,0,Math.PI*2);g.fill();g.beginPath();g.ellipse(15,-10,10,12,-.25,0,Math.PI*2);g.fill();
-        const grad=g.createLinearGradient(-25,-25,25,20);grad.addColorStop(0,'#ff6fa8');grad.addColorStop(.25,'#ffd95b');grad.addColorStop(.5,'#69ef9b');grad.addColorStop(.75,'#67c8ff');grad.addColorStop(1,'#b77cff');g.strokeStyle=grad;g.lineWidth=6;g.beginPath();g.moveTo(-13,-4);g.quadraticCurveTo(-27,-18,-17,10);g.stroke();g.strokeStyle='#ffe77c';g.lineWidth=4;g.beginPath();g.moveTo(19,-20);g.lineTo(31,-36);g.stroke();g.restore();return;
-      }
-      if(id==='rainbowBeyond'){
-        const attack=Math.max(0,Math.min(1,Number(unit.attackAnimation||0)));
-        const hue=(time*.11+Number(unit.animationOffset||0)*77)%360;
-        g.save();
-        g.globalCompositeOperation='lighter';
+      // 고급 공통 바닥 그림자/오라. 작은 반경만 사용해 화면을 덮지 않게 한다.
+      g.fillStyle='rgba(0,0,0,.34)';g.beginPath();g.ellipse(0,25,24,7.5,0,0,Math.PI*2);g.fill();
+      g.save();g.globalCompositeOperation='lighter';g.globalAlpha=.25+.08*Math.sin(time*.004+seed);
+      g.strokeStyle=`hsla(${hue},100%,72%,.72)`;g.lineWidth=1.5;g.beginPath();g.ellipse(0,22,28,8.5,0,0,Math.PI*2);g.stroke();
+      g.strokeStyle=`hsla(${(hue+130)%360},100%,72%,.34)`;g.beginPath();g.ellipse(0,22,34,11.5,0,0,Math.PI*2);g.stroke();g.restore();
 
-        // 뒤쪽 프리즘 날개
+      if(id==='rainbowSoldier'){
+        g.save();g.scale(breathe,breathe);g.translate(attackKick*2,-Math.abs(idle)*.5);
+        const thrust=attackKick*10;
+        // 짧은 망토
+        g.save();g.translate(-8,-5);g.rotate(-.10+idle*.035);
+        const cape=g.createLinearGradient(-14,-15,11,24);cape.addColorStop(0,'#7c2cff');cape.addColorStop(.45,'#3a4dc8');cape.addColorStop(1,'#15142d');
+        g.fillStyle=cape;g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=1;
+        g.beginPath();g.moveTo(-5,-14);g.lineTo(12,-10);g.quadraticCurveTo(15,10+idle*2,5,24);g.lineTo(-12,19);g.quadraticCurveTo(-7,5,-5,-14);g.fill();g.stroke();g.restore();
+
+        // 다리/장화
         for(const side of [-1,1]){
-          const wing=g.createLinearGradient(0,-18,side*42,20);
-          wing.addColorStop(0,'rgba(255,255,255,.92)');
-          wing.addColorStop(.28,`hsla(${(hue+side*45+360)%360},100%,72%,.78)`);
-          wing.addColorStop(1,`hsla(${(hue+170+side*30+360)%360},100%,62%,.08)`);
-          g.fillStyle=wing;
-          g.beginPath();
-          g.moveTo(side*8,-9);
-          g.quadraticCurveTo(side*31,-27,side*43,-8);
-          g.quadraticCurveTo(side*27,0,side*47,18);
-          g.quadraticCurveTo(side*22,13,side*11,8);
-          g.closePath();g.fill();
+          const legX=side*8;
+          const leg=g.createLinearGradient(legX,-1,legX,25);leg.addColorStop(0,'#59627f');leg.addColorStop(1,'#171b31');
+          g.strokeStyle=leg;g.lineWidth=7;g.lineCap='round';
+          g.beginPath();g.moveTo(legX,7);g.lineTo(legX+side*1.5,22);g.stroke();
+          g.fillStyle='#151728';g.beginPath();g.roundRect(legX-5,18,10,8,3);g.fill();
+          g.strokeStyle=`hsla(${(hue+side*35+360)%360},100%,74%,.55)`;g.lineWidth=1.3;g.beginPath();g.moveTo(legX-3,18);g.lineTo(legX+3,18);g.stroke();
         }
+        // 몸통 갑옷
+        const torso=g.createLinearGradient(-19,-17,19,18);torso.addColorStop(0,'#ecf7ff');torso.addColorStop(.17,'#8ba8d7');torso.addColorStop(.42,'#2d3557');torso.addColorStop(.67,'#11172b');torso.addColorStop(1,'#6f5ac7');
+        rainbowFacet(g,[[-15,-13],[0,-19],[15,-13],[18,8],[9,19],[-9,19],[-18,8]],torso,'rgba(238,248,255,.9)',1.5);
+        // 프리즘 가슴판
+        const chest=rainbowSpectrumGradient(g,-9,-8,9,8,hue);
+        rainbowFacet(g,[[0,-10],[9,-2],[6,10],[0,14],[-6,10],[-9,-2]],chest,'#fff',1);
+        g.globalAlpha=.5;g.strokeStyle='#fff';g.lineWidth=.8;g.beginPath();g.moveTo(0,-10);g.lineTo(0,14);g.moveTo(-9,-2);g.lineTo(6,10);g.moveTo(9,-2);g.lineTo(-6,10);g.stroke();g.globalAlpha=1;
+        // 어깨 장갑
+        for(const side of [-1,1]){
+          const pauld=rainbowSpectrumGradient(g,side*17,-12,side*27,2,hue+(side>0?80:280));
+          rainbowFacet(g,[[side*11,-13],[side*23,-10],[side*27,-2],[side*17,4],[side*10,0]],pauld,'#fff',1.1);
+          g.strokeStyle='rgba(255,255,255,.55)';g.lineWidth=1;g.beginPath();g.moveTo(side*14,-9);g.lineTo(side*23,-5);g.stroke();
+        }
+        // 투구
+        const helm=g.createLinearGradient(-13,-34,13,-13);helm.addColorStop(0,'#eaf9ff');helm.addColorStop(.35,'#7a8da8');helm.addColorStop(.7,'#303652');helm.addColorStop(1,'#111528');
+        g.fillStyle=helm;g.strokeStyle='#e7f9ff';g.lineWidth=1.4;g.beginPath();g.arc(0,-22,12.5,Math.PI*.94,Math.PI*2.06);g.fill();g.stroke();
+        rainbowFacet(g,[[-12,-22],[0,-31],[12,-22],[8,-15],[-8,-15]],'rgba(30,36,59,.95)','#f4fbff',1.1);
+        // 바이저
+        const visor=g.createLinearGradient(-8,-22,8,-18);visor.addColorStop(0,`hsl(${hue},100%,72%)`);visor.addColorStop(.5,'#fff');visor.addColorStop(1,`hsl(${(hue+130)%360},100%,72%)`);
+        g.fillStyle=visor;g.shadowBlur=8;g.shadowColor=`hsl(${hue},100%,70%)`;g.beginPath();g.roundRect(-8,-22,16,3.5,2);g.fill();g.shadowBlur=0;
+        // 깃 장식
+        const plume=rainbowSpectrumGradient(g,-3,-40,8,-31,hue+40);g.fillStyle=plume;g.beginPath();g.moveTo(-3,-31);g.quadraticCurveTo(-2,-44,11,-40);g.quadraticCurveTo(4,-35,2,-29);g.closePath();g.fill();
 
-        // 회전하는 무지개 궤도
-        for(let ring=0;ring<3;ring++){
-          g.save();
-          g.rotate(time*(ring%2?-.0018:.0014)+ring*1.7);
-          g.strokeStyle=`hsla(${(hue+ring*110)%360},100%,75%,${.38+attack*.20})`;
-          g.lineWidth=2.2+ring*.5;
-          g.setLineDash(ring===1?[7,5]:[]);
-          g.beginPath();g.ellipse(0,-3,31+ring*6,14+ring*4,ring*.35,0,Math.PI*2);g.stroke();
-          g.setLineDash([]);g.restore();
-        }
+        // 양 팔 + 방패
+        g.strokeStyle='#39415f';g.lineWidth=6;g.lineCap='round';g.beginPath();g.moveTo(-13,-5);g.lineTo(-23,7);g.stroke();
+        g.save();g.translate(-25,9);g.rotate(-.12+idle*.03);
+        const shield=g.createLinearGradient(-12,-16,12,17);shield.addColorStop(0,'#f6fdff');shield.addColorStop(.2,'#7587a9');shield.addColorStop(.55,'#262b49');shield.addColorStop(1,'#101426');
+        rainbowFacet(g,[[0,-16],[12,-8],[10,9],[0,17],[-10,9],[-12,-8]],shield,'#fff',1.4);
+        const sig=rainbowSpectrumGradient(g,-7,-6,7,7,hue+90);rainbowFacet(g,[[0,-8],[7,0],[0,9],[-7,0]],sig,'rgba(255,255,255,.9)',1);
         g.restore();
 
-        // 왕관/후광
-        g.save();
-        g.translate(0,-39);
-        g.rotate(-time*.0011);
-        g.shadowBlur=16+attack*10;g.shadowColor='#fff';
-        for(let i=0;i<8;i++){
-          const a=i*Math.PI/4;
-          g.strokeStyle=`hsl(${(hue+i*44)%360},100%,78%)`;
-          g.lineWidth=2.3;
-          g.beginPath();g.moveTo(Math.cos(a)*12,Math.sin(a)*12);g.lineTo(Math.cos(a)*23,Math.sin(a)*23);g.stroke();
-        }
-        g.strokeStyle='rgba(255,255,255,.88)';g.lineWidth=2;g.beginPath();g.arc(0,0,15,0,Math.PI*2);g.stroke();
+        // 개성 있는 창. 공격할 때 직접 찌르는 자세.
+        g.save();g.translate(10,-2);g.rotate(-.23+attackKick*.06);
+        g.strokeStyle='#4b5575';g.lineWidth=6;g.beginPath();g.moveTo(0,0);g.lineTo(13+thrust*.15,4);g.stroke();
+        g.translate(9+thrust,2);
+        const shaft=g.createLinearGradient(-7,0,62,0);shaft.addColorStop(0,'#28304f');shaft.addColorStop(.42,'#d7f8ff');shaft.addColorStop(.68,`hsl(${hue},100%,74%)`);shaft.addColorStop(1,'#fff');
+        g.strokeStyle=shaft;g.lineWidth=3.8;g.beginPath();g.moveTo(-4,0);g.lineTo(53,0);g.stroke();
+        // 창날: 3중 프리즘 구조
+        const lance=rainbowSpectrumGradient(g,48,-10,75,10,hue+40);
+        rainbowFacet(g,[[46,0],[58,-8],[76,0],[58,8]],lance,'#fff',1.2);
+        g.fillStyle='rgba(255,255,255,.78)';g.beginPath();g.moveTo(52,0);g.lineTo(61,-3);g.lineTo(71,0);g.lineTo(61,3);g.closePath();g.fill();
+        for(const side of [-1,1]){g.fillStyle=`hsla(${(hue+(side>0?110:300))%360},100%,72%,.8)`;g.beginPath();g.moveTo(49,0);g.lineTo(38,side*10);g.lineTo(54,side*5);g.closePath();g.fill();}
+        if(attackKick>.08){g.globalCompositeOperation='lighter';g.globalAlpha=.5*attackKick;g.strokeStyle='#fff';g.lineWidth=2;for(let i=0;i<3;i++){g.beginPath();g.moveTo(20-i*8,(i-1)*4);g.lineTo(58-i*3,(i-1)*2);g.stroke();}}
         g.restore();
-
-        // 본체: 검은 우주핵 + 프리즘 갑옷
-        const core=g.createRadialGradient(-4,-9,2,0,-2,27);
-        core.addColorStop(0,'#ffffff');core.addColorStop(.16,`hsl(${hue},100%,82%)`);
-        core.addColorStop(.48,'#432b73');core.addColorStop(1,'#10091d');
-        g.shadowBlur=18;g.shadowColor=`hsl(${hue},100%,70%)`;
-        g.fillStyle=core;g.strokeStyle='rgba(255,255,255,.92)';g.lineWidth=2;
-        g.beginPath();g.moveTo(-17,17);g.lineTo(-18,-8);g.lineTo(-9,-21);g.lineTo(9,-21);g.lineTo(18,-8);g.lineTo(17,17);g.lineTo(0,24);g.closePath();g.fill();g.stroke();
-
-        // 가슴 프리즘
-        const prism=g.createLinearGradient(-8,-10,8,10);
-        prism.addColorStop(0,'#ff6fa8');prism.addColorStop(.25,'#ffd95b');prism.addColorStop(.5,'#69ef9b');prism.addColorStop(.75,'#67c8ff');prism.addColorStop(1,'#b77cff');
-        g.fillStyle=prism;g.beginPath();g.moveTo(0,-12);g.lineTo(9,-3);g.lineTo(0,9);g.lineTo(-9,-3);g.closePath();g.fill();
-        g.strokeStyle='#fff';g.lineWidth=1.2;g.stroke();
-
-        // 머리와 발광 눈
-        g.fillStyle='#171025';g.beginPath();g.arc(0,-24,11,0,Math.PI*2);g.fill();
-        g.fillStyle='#fff';g.shadowBlur=10;g.shadowColor='#fff';
-        g.beginPath();g.arc(-4,-25,1.8,0,Math.PI*2);g.arc(4,-25,1.8,0,Math.PI*2);g.fill();
-
-        // 한 자루의 프리즘 검. 공격 중 팔/검이 적 방향으로 크게 스윙.
-        const swing=(-.95 + attack*1.75);
-        g.save();g.translate(11,-2);g.rotate(swing);
-        g.strokeStyle='#33224f';g.lineWidth=6;g.lineCap='round';
-        g.beginPath();g.moveTo(0,0);g.lineTo(13,8);g.stroke(); // 팔
-        g.fillStyle='#fff';g.beginPath();g.arc(14,8,3.2,0,Math.PI*2);g.fill();
-        const blade=g.createLinearGradient(14,8,57,0);
-        blade.addColorStop(0,'#fff');blade.addColorStop(.25,`hsl(${hue},100%,78%)`);blade.addColorStop(.7,`hsl(${(hue+120)%360},100%,68%)`);blade.addColorStop(1,'#fff');
-        g.strokeStyle=blade;g.shadowBlur=15+attack*8;g.shadowColor=`hsl(${hue},100%,72%)`;g.lineWidth=5;
-        g.beginPath();g.moveTo(15,8);g.lineTo(55,0);g.stroke();
-        g.fillStyle='#fff';g.beginPath();g.moveTo(62,-1);g.lineTo(52,-5);g.lineTo(54,4);g.closePath();g.fill();
-        g.restore();
-
-        // 공격 순간 전방 광휘
-        if(attack>.05){
-          g.save();g.globalCompositeOperation='lighter';g.globalAlpha=.35+attack*.5;
-          g.strokeStyle=`hsl(${hue},100%,82%)`;g.lineWidth=3+attack*4;
-          g.beginPath();g.arc(10,-2,31+attack*9,-1.1,.95);g.stroke();g.restore();
-        }
-        g.restore();return;
+        g.restore();g.restore();return;
       }
 
-      const armor=g.createLinearGradient(-20,-20,20,20);armor.addColorStop(0,'#ff6fa8');armor.addColorStop(.25,'#ffd95b');armor.addColorStop(.5,'#69ef9b');armor.addColorStop(.75,'#67c8ff');armor.addColorStop(1,'#b77cff');
       if(id==='rainbowMage'){
-        g.fillStyle=armor;g.beginPath();g.moveTo(-20,20);g.lineTo(-12,-10);g.lineTo(12,-10);g.lineTo(20,20);g.closePath();g.fill();g.fillStyle='#f7dbb8';g.beginPath();g.arc(0,-15,8,0,Math.PI*2);g.fill();g.fillStyle='#6b3bb2';g.beginPath();g.moveTo(-15,-17);g.lineTo(0,-38);g.lineTo(17,-15);g.closePath();g.fill();
-        if(Number(unit.rainbowHasteRemaining||0)>0){g.strokeStyle=`hsl(${(time*.18)%360},100%,72%)`;g.lineWidth=4;g.beginPath();g.arc(0,-43,19,Math.PI,Math.PI*2);g.stroke();}
-      } else {
-        g.fillStyle=armor;g.strokeStyle='rgba(255,255,255,.9)';g.lineWidth=1.5;g.beginPath();g.roundRect(-15,-10,30,27,7);g.fill();g.stroke();g.fillStyle='#eaf7ff';g.beginPath();g.arc(0,-18,11,0,Math.PI*2);g.fill();g.fillStyle='#3a3560';g.fillRect(-9,-21,18,5);
-        if(id==='rainbowBeyond'){g.globalAlpha=.48*pulse;g.strokeStyle=`hsl(${(time*.12)%360},100%,72%)`;g.lineWidth=3;for(let i=0;i<4;i++){g.beginPath();g.arc(0,0,34+i*5,i*.6,i*.6+Math.PI*1.2);g.stroke();}}
+        g.save();g.translate(0,-Math.abs(idle)*1.1);g.scale(breathe,breathe);
+        const haste=Number(unit.rainbowHasteRemaining||0)>0;
+        // 뒤쪽 마도진 2겹
+        g.save();g.translate(0,-6);g.globalCompositeOperation='lighter';
+        for(let r=0;r<2;r++){
+          g.save();g.rotate(time*(r?-.0017:.00125)+seed+r*.7);
+          g.strokeStyle=`hsla(${(hue+r*130)%360},100%,75%,${haste?.48:.25})`;g.lineWidth=r?1.2:1.8;
+          g.setLineDash(r?[5,5]:[2,7]);
+          g.beginPath();g.arc(0,0,31+r*7,0,Math.PI*2);g.stroke();g.setLineDash([]);
+          for(let i=0;i<6;i++){const a=i*Math.PI/3;g.beginPath();g.moveTo(Math.cos(a)*(24+r*5),Math.sin(a)*(24+r*5));g.lineTo(Math.cos(a)*(30+r*6),Math.sin(a)*(30+r*6));g.stroke();}
+          g.restore();
+        }g.restore();
+
+        // 레이어드 로브
+        const outer=g.createLinearGradient(-20,-20,20,26);outer.addColorStop(0,'#1b1235');outer.addColorStop(.45,'#4d2a7d');outer.addColorStop(.76,'#201435');outer.addColorStop(1,'#0b0918');
+        g.fillStyle=outer;g.strokeStyle='rgba(255,255,255,.6)';g.lineWidth=1.2;
+        g.beginPath();g.moveTo(-17,-10);g.lineTo(-24,24);g.lineTo(-8,20);g.lineTo(0,27);g.lineTo(8,20);g.lineTo(24,24);g.lineTo(17,-10);g.closePath();g.fill();g.stroke();
+        const robe=rainbowSpectrumGradient(g,-12,-10,12,21,hue+15);g.globalAlpha=.82;g.fillStyle=robe;
+        g.beginPath();g.moveTo(-10,-8);g.lineTo(-13,18);g.lineTo(0,24);g.lineTo(13,18);g.lineTo(10,-8);g.closePath();g.fill();g.globalAlpha=1;
+        // 자수/룬
+        g.strokeStyle='rgba(255,255,255,.8)';g.lineWidth=1;g.beginPath();g.moveTo(0,-4);g.lineTo(0,17);g.moveTo(-8,6);g.lineTo(0,12);g.lineTo(8,6);g.stroke();
+
+        // 머리와 후드/모자
+        g.fillStyle='#f0caa8';g.beginPath();g.arc(0,-19,8.5,0,Math.PI*2);g.fill();
+        const hat=g.createLinearGradient(-19,-43,18,-14);hat.addColorStop(0,'#111027');hat.addColorStop(.48,'#5f38a5');hat.addColorStop(1,'#19142f');
+        g.fillStyle=hat;g.strokeStyle='rgba(225,210,255,.7)';g.lineWidth=1.1;
+        g.beginPath();g.moveTo(-17,-18);g.quadraticCurveTo(-9,-29,-5,-44);g.quadraticCurveTo(3,-38,5,-31);g.quadraticCurveTo(15,-27,20,-18);g.closePath();g.fill();g.stroke();
+        // 별 보석
+        rainbowGlowDot(g,-4,-34,2.7,hue+180,.8);
+        // 눈
+        g.fillStyle='#2f2147';g.beginPath();g.arc(-3,-20,1.2,0,Math.PI*2);g.arc(3,-20,1.2,0,Math.PI*2);g.fill();
+
+        // 왼팔 + 떠다니는 책
+        g.strokeStyle='#3a285e';g.lineWidth=5.5;g.lineCap='round';g.beginPath();g.moveTo(-12,-4);g.lineTo(-24,3);g.stroke();
+        g.save();g.translate(-29,-1+idle*1.2);g.rotate(-.12+Math.sin(time*.002+seed)*.06);
+        g.fillStyle='#20163d';g.strokeStyle='#d9c3ff';g.lineWidth=1.2;g.beginPath();g.roundRect(-10,-7,20,14,2);g.fill();g.stroke();
+        g.strokeStyle=`hsl(${(hue+220)%360},100%,76%)`;g.beginPath();g.moveTo(0,-6);g.lineTo(0,6);g.stroke();
+        for(let i=-1;i<=1;i++){g.strokeStyle='rgba(255,255,255,.45)';g.beginPath();g.moveTo(-7,i*3);g.lineTo(-2,i*3);g.moveTo(2,i*3);g.lineTo(7,i*3);g.stroke();}
+        g.restore();
+
+        // 오른팔 + 고유 프리즘 지팡이
+        const cast=attackKick;
+        g.save();g.translate(12,-3);g.rotate(-.45-cast*.18);
+        g.strokeStyle='#392854';g.lineWidth=5.5;g.beginPath();g.moveTo(0,0);g.lineTo(11,7);g.stroke();
+        g.strokeStyle='#d7eaff';g.lineWidth=3.5;g.beginPath();g.moveTo(8,7);g.lineTo(42,-23);g.stroke();
+        g.strokeStyle='#7d5fd6';g.lineWidth=1.1;g.beginPath();g.moveTo(10,7);g.lineTo(44,-25);g.stroke();
+        g.translate(44,-25);
+        g.globalCompositeOperation='lighter';
+        for(let i=0;i<3;i++){g.save();g.rotate(time*(i%2?-.003:.002)+i*1.1);g.strokeStyle=`hsla(${(hue+i*95)%360},100%,78%,${.55+cast*.2})`;g.lineWidth=1.8;g.beginPath();g.arc(0,0,7+i*4,0,Math.PI*2);g.stroke();g.restore();}
+        rainbowGlowDot(g,0,0,4.2,hue+80,1);
+        if(cast>.05){for(let i=0;i<5;i++){const a=i*Math.PI*2/5+time*.004;g.fillStyle=`hsl(${(hue+i*65)%360},100%,78%)`;g.beginPath();g.arc(Math.cos(a)*(14+cast*8),Math.sin(a)*(14+cast*8),1.5,0,Math.PI*2);g.fill();}}
+        g.restore();
+
+        if(haste){
+          g.save();g.globalCompositeOperation='lighter';g.globalAlpha=.65;g.strokeStyle='#fff';g.lineWidth=2.4;
+          g.beginPath();g.arc(0,-7,43,Math.PI*1.08,Math.PI*1.92);g.stroke();
+          for(let i=0;i<7;i++){const a=i*Math.PI*2/7+time*.004;rainbowGlowDot(g,Math.cos(a)*40,Math.sin(a)*17-7,1.6,hue+i*45,.55);}
+          g.restore();
+        }
+        g.restore();g.restore();return;
       }
+
+      if(id==='rainbowLight'){
+        g.save();g.translate(0,-4+idle*1.6);g.scale(.98+idle*.01,.98+idle*.01);
+        const beamOn=Number(unit.rainbowBeamFxRemaining||0)>0;
+        // 여섯 장의 프리즘 날개 - 단순 원이 아닌 날카로운 수정 실루엣
+        for(let side of [-1,1]){
+          for(let layer=0;layer<3;layer++){
+            const y=-15+layer*12;
+            const length=30+layer*5;
+            const flap=Math.sin(time*.003+seed+layer*.7)*2.2;
+            const wing=rainbowSpectrumGradient(g,side*5,y,side*(length+12),y+8,hue+layer*55+(side>0?20:200));
+            g.save();g.globalAlpha=.55-layer*.07;g.fillStyle=wing;g.strokeStyle='rgba(255,255,255,.72)';g.lineWidth=.9;
+            g.beginPath();g.moveTo(side*6,y);g.lineTo(side*(length+flap),y-9);g.lineTo(side*(length-5),y+1);g.lineTo(side*(length+7),y+8);g.lineTo(side*9,y+8);g.closePath();g.fill();g.stroke();g.restore();
+          }
+        }
+        // 뒤 halo 및 궤도 조각
+        g.save();g.globalCompositeOperation='lighter';g.rotate(time*.0013);
+        for(let r=0;r<2;r++){g.strokeStyle=`hsla(${(hue+r*130)%360},100%,78%,${beamOn?.52:.28})`;g.lineWidth=1.5+r*.4;g.setLineDash(r?[4,7]:[10,5]);g.beginPath();g.ellipse(0,-5,31+r*8,19+r*5,r*.4,0,Math.PI*2);g.stroke();g.setLineDash([]);}
+        for(let i=0;i<8;i++){const a=i*Math.PI/4+time*.0018*(i%2?1:-1);const rr=34+(i%2)*8;const x=Math.cos(a)*rr,y=Math.sin(a)*rr*.55-5;g.save();g.translate(x,y);g.rotate(a);const fg=rainbowSpectrumGradient(g,-4,-2,4,2,hue+i*36);rainbowFacet(g,[[0,-4],[5,0],[0,4],[-5,0]],fg,'rgba(255,255,255,.7)',.7);g.restore();}
+        g.restore();
+
+        // 중앙 공허/빛 코어
+        const aura=g.createRadialGradient(0,-4,1,0,-4,29);aura.addColorStop(0,'rgba(255,255,255,1)');aura.addColorStop(.2,`hsla(${hue},100%,82%,.95)`);aura.addColorStop(.52,`hsla(${(hue+150)%360},100%,66%,.36)`);aura.addColorStop(1,'rgba(60,80,255,0)');
+        g.save();g.globalCompositeOperation='lighter';g.fillStyle=aura;g.beginPath();g.arc(0,-4,30,0,Math.PI*2);g.fill();g.restore();
+        // 다면체 본체
+        const crystal=rainbowSpectrumGradient(g,-12,-28,12,23,hue+40);
+        rainbowFacet(g,[[0,-31],[12,-14],[10,10],[0,24],[-10,10],[-12,-14]],crystal,'rgba(255,255,255,.95)',1.4);
+        g.fillStyle='rgba(255,255,255,.24)';g.beginPath();g.moveTo(0,-31);g.lineTo(0,24);g.lineTo(10,10);g.lineTo(0,-3);g.lineTo(-12,-14);g.closePath();g.fill();
+        g.strokeStyle='rgba(255,255,255,.75)';g.lineWidth=.8;g.beginPath();g.moveTo(0,-31);g.lineTo(0,24);g.moveTo(-12,-14);g.lineTo(10,10);g.moveTo(12,-14);g.lineTo(-10,10);g.stroke();
+        // 얼굴 대신 별핵
+        g.save();g.translate(0,-9);g.rotate(time*.002);g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();for(let i=0;i<8;i++){const a=i*Math.PI/4,rr=i%2?4:8;const x=Math.cos(a)*rr,y=Math.sin(a)*rr;if(i===0)g.moveTo(x,y);else g.lineTo(x,y);}g.closePath();g.stroke();g.restore();
+        if(beamOn){g.save();g.globalCompositeOperation='lighter';for(let i=0;i<4;i++){g.strokeStyle=`hsla(${(hue+i*70)%360},100%,82%,${.42-i*.07})`;g.lineWidth=2.2;g.beginPath();g.arc(0,-4,20+i*6,-1.1,1.1);g.stroke();}g.restore();}
+        g.restore();g.restore();return;
+      }
+
+      if(id==='rainbowUnicornUnit'){
+        // 유니콘은 실제 진행 방향을 바라보도록 회전하며, 돌진 시 몸 전체가 낮아진다.
+        const charging=unit.attackMode==='rainbowUnicornCharge'&&Number(unit.attackAnimation||0)>0;
+        const charge=charging?attackKick:0;
+        g.save();g.rotate(Number(unit.angle||0));g.translate(charge*4,-charge*1.5);
+        const bob=charging?0:idle*1.2;
+        g.translate(0,bob);
+        // 꼬리 여러 갈래
+        for(let i=0;i<5;i++){
+          g.save();g.globalAlpha=.72-i*.08;g.strokeStyle=`hsl(${(hue+i*55+245)%360},100%,74%)`;g.lineWidth=4.6-i*.45;g.lineCap='round';
+          g.beginPath();g.moveTo(-24,3+i*.5);g.bezierCurveTo(-38,-7+i*3+idle*2,-47,5+i*3,-56+i*2,10+i*2);g.stroke();g.restore();
+        }
+        // 다리 - 관절형
+        const legPhase=charging?charge*1.3:Math.sin(time*.005+seed)*.12;
+        for(const side of [-1,1]){
+          for(const front of [-1,1]){
+            const x=(front>0?13:-13)+side*2.2;
+            const swing=(front>0?1:-1)*legPhase*(side>0?1:-1);
+            g.strokeStyle='#e9efff';g.lineWidth=6;g.lineCap='round';
+            g.beginPath();g.moveTo(x,9);g.lineTo(x+side*swing*8,20);g.lineTo(x+side*swing*10+(front>0?4:-2),29);g.stroke();
+            g.fillStyle='#d3ddf5';g.beginPath();g.roundRect(x-4+side*swing*10+(front>0?4:-2),25,8,5,2);g.fill();
+            g.strokeStyle=`hsl(${(hue+(front>0?70:230))%360},100%,72%)`;g.lineWidth=1.2;g.beginPath();g.moveTo(x-3+side*swing*10+(front>0?4:-2),25);g.lineTo(x+3+side*swing*10+(front>0?4:-2),25);g.stroke();
+          }
+        }
+        // 몸통
+        const body=g.createLinearGradient(-27,-17,25,18);body.addColorStop(0,'#ffffff');body.addColorStop(.22,'#edf8ff');body.addColorStop(.58,'#d9e3ff');body.addColorStop(1,'#a9bde7');
+        g.fillStyle=body;g.strokeStyle='rgba(255,255,255,.96)';g.lineWidth=1.4;g.beginPath();g.ellipse(-3,2,25,14,-.05,0,Math.PI*2);g.fill();g.stroke();
+        // 장식 갑주
+        const bard=rainbowSpectrumGradient(g,-18,-7,14,12,hue+20);g.globalAlpha=.68;g.fillStyle=bard;
+        g.beginPath();g.moveTo(-17,-8);g.quadraticCurveTo(-2,-14,15,-7);g.lineTo(10,10);g.quadraticCurveTo(-4,15,-18,8);g.closePath();g.fill();g.globalAlpha=1;
+        g.strokeStyle='rgba(255,255,255,.75)';g.lineWidth=1;g.beginPath();g.moveTo(-14,-4);g.lineTo(12,-4);g.moveTo(-7,-9);g.lineTo(-3,12);g.stroke();
+
+        // 목과 머리
+        g.save();g.rotate(-charge*.14);g.fillStyle=body;g.strokeStyle='white';
+        g.beginPath();g.moveTo(10,-8);g.quadraticCurveTo(18,-26,26,-19);g.lineTo(22,-5);g.lineTo(15,4);g.closePath();g.fill();g.stroke();
+        g.beginPath();g.ellipse(28,-21,13,10,-.22,0,Math.PI*2);g.fill();g.stroke();
+        // 귀
+        for(const sy of [-1,1]){g.fillStyle='#f5f7ff';g.beginPath();g.moveTo(23,-29+sy*1.5);g.lineTo(18,-38+sy*3);g.lineTo(28,-31+sy*2);g.closePath();g.fill();}
+        // 갈기 여러 리본
+        for(let i=0;i<6;i++){g.strokeStyle=`hsl(${(hue+i*48)%360},100%,73%)`;g.lineWidth=4-i*.35;g.lineCap='round';g.beginPath();g.moveTo(12-i*.7,-15+i*2);g.quadraticCurveTo(-2,-25+i*4,-13-i*2,-14+i*4+idle*1.5);g.stroke();}
+        // 눈
+        g.fillStyle='#392052';g.beginPath();g.ellipse(32,-22,2.2,1.7,0,0,Math.PI*2);g.fill();rainbowGlowDot(g,32,-22,1.1,hue+180,.75);
+        // 나선 뿔: 굵고 길게
+        g.save();g.translate(32,-29);g.rotate(-.78-charge*.12);
+        const horn=rainbowSpectrumGradient(g,0,-3,35,3,hue+10);
+        g.strokeStyle='rgba(255,255,255,.3)';g.lineWidth=8+charge*2;g.beginPath();g.moveTo(0,0);g.lineTo(36,0);g.stroke();
+        g.strokeStyle=horn;g.lineWidth=5.6+charge*1.5;g.beginPath();g.moveTo(0,0);g.lineTo(36,0);g.stroke();
+        g.strokeStyle='rgba(255,255,255,.9)';g.lineWidth=1;for(let i=0;i<6;i++){g.beginPath();g.moveTo(i*6,-3);g.lineTo(i*6+4,3);g.stroke();}
+        g.fillStyle='#fff';g.beginPath();g.moveTo(42,0);g.lineTo(34,-4);g.lineTo(34,4);g.closePath();g.fill();g.restore();
+        g.restore();
+
+        // 가슴 보석/주변 별가루
+        rainbowGlowDot(g,5,-1,3,hue+80,.7);
+        if(charging){
+          g.save();g.globalCompositeOperation='lighter';g.globalAlpha=.7*charge;
+          for(let i=0;i<6;i++){g.strokeStyle=`hsla(${(hue+i*42)%360},100%,78%,.72)`;g.lineWidth=2.2;g.beginPath();g.moveTo(-26-i*7,(i-2.5)*4);g.lineTo(-58-i*9,(i-2.5)*5);g.stroke();}
+          g.restore();
+        }
+        g.restore();g.restore();return;
+      }
+
+      if(id==='rainbowBeyond'){
+        // 최상위 갤럭시 유닛: 키가 큰 왕/기사 실루엣 + 별빛 망토 + 프리즘 검
+        g.save();g.translate(0,-2+idle*.6);g.scale(1.08,1.08);
+        const power=attackKick;
+        // 뒤쪽 별빛 망토
+        g.save();g.translate(0,-2);g.rotate(idle*.015);
+        const cloak=g.createLinearGradient(0,-28,0,31);cloak.addColorStop(0,'rgba(42,25,82,.98)');cloak.addColorStop(.45,'rgba(15,11,35,.98)');cloak.addColorStop(1,'rgba(4,4,14,.96)');
+        g.fillStyle=cloak;g.strokeStyle='rgba(180,160,255,.55)';g.lineWidth=1.2;g.beginPath();g.moveTo(-14,-18);g.quadraticCurveTo(-34,-4,-29,29);g.lineTo(-8,22);g.lineTo(0,31);g.lineTo(8,22);g.lineTo(29,29);g.quadraticCurveTo(34,-4,14,-18);g.closePath();g.fill();g.stroke();
+        // 망토 내부 별
+        g.globalCompositeOperation='lighter';for(let i=0;i<12;i++){const a=i*2.37+seed*3.1;const x=Math.sin(a*1.7)*22,y=-10+(i*17%36);g.fillStyle=i%3===0?'rgba(255,255,255,.9)':`hsla(${(hue+i*29)%360},100%,80%,.5)`;g.beginPath();g.arc(x,y,i%4===0?1.4:.8,0,Math.PI*2);g.fill();}
+        g.restore();
+
+        // 분절형 수정 날개
+        g.save();g.globalCompositeOperation='lighter';
+        for(const side of [-1,1]){
+          for(let i=0;i<4;i++){
+            const y=-18+i*10;
+            const len=34-i*3;
+            const wing=rainbowSpectrumGradient(g,side*9,y,side*(len+18),y+5,hue+i*38+(side>0?30:190));
+            g.globalAlpha=.45-i*.055;
+            rainbowFacet(g,[[side*9,y-4],[side*(len+13),y-12+idle*1.5],[side*(len+20),y],[side*(len+5),y+7]],wing,'rgba(255,255,255,.5)',.7);
+          }
+        }g.restore();
+
+        // 3중 후광, 크기는 제한
+        g.save();g.translate(0,-39);g.globalCompositeOperation='lighter';
+        for(let r=0;r<3;r++){g.save();g.rotate(time*(r%2?-.0016:.0012)+r*.5);g.strokeStyle=`hsla(${(hue+r*105)%360},100%,78%,${.36+r*.05})`;g.lineWidth=1.6+r*.45;g.setLineDash(r===1?[5,4]:[]);g.beginPath();g.arc(0,0,14+r*5,0,Math.PI*2);g.stroke();g.setLineDash([]);for(let i=0;i<6;i++){const a=i*Math.PI/3;g.beginPath();g.moveTo(Math.cos(a)*(14+r*5),Math.sin(a)*(14+r*5));g.lineTo(Math.cos(a)*(18+r*6),Math.sin(a)*(18+r*6));g.stroke();}g.restore();}
+        rainbowGlowDot(g,0,0,3.5,hue+180,.85);g.restore();
+
+        // 다리/부츠
+        for(const side of [-1,1]){
+          g.fillStyle='#141325';g.beginPath();g.roundRect(side*7-4,11,8,14,3);g.fill();
+          g.strokeStyle=`hsla(${(hue+(side>0?70:220))%360},100%,72%,.7)`;g.lineWidth=1.2;g.beginPath();g.moveTo(side*7-3,18);g.lineTo(side*7+3,18);g.stroke();
+        }
+        // 몸통: 검은 코어 위에 하얀 프리즘 갑옷
+        const torso=g.createLinearGradient(-17,-24,18,20);torso.addColorStop(0,'#f8fdff');torso.addColorStop(.2,'#9fb2d9');torso.addColorStop(.43,'#342e57');torso.addColorStop(.67,'#171326');torso.addColorStop(1,'#080713');
+        rainbowFacet(g,[[-15,-18],[0,-24],[15,-18],[19,5],[11,19],[0,23],[-11,19],[-19,5]],torso,'rgba(255,255,255,.95)',1.6);
+        // 어깨 왕관갑
+        for(const side of [-1,1]){
+          const pgrad=rainbowSpectrumGradient(g,side*12,-18,side*28,-4,hue+(side>0?40:240));
+          rainbowFacet(g,[[side*10,-18],[side*24,-18],[side*29,-8],[side*18,-2],[side*10,-6]],pgrad,'#fff',1);
+          g.fillStyle='rgba(255,255,255,.45)';g.beginPath();g.moveTo(side*17,-17);g.lineTo(side*23,-10);g.lineTo(side*15,-8);g.closePath();g.fill();
+        }
+        // 가슴 별문장
+        const chest=rainbowSpectrumGradient(g,-9,-8,9,10,hue+100);
+        rainbowFacet(g,[[0,-12],[8,-5],[10,5],[0,15],[-10,5],[-8,-5]],chest,'#fff',1.2);
+        g.save();g.translate(0,1);g.rotate(time*.001);g.strokeStyle='rgba(255,255,255,.95)';g.lineWidth=1.4;g.beginPath();for(let i=0;i<8;i++){const a=i*Math.PI/4,rr=i%2?3.5:7;const x=Math.cos(a)*rr,y=Math.sin(a)*rr;if(i===0)g.moveTo(x,y);else g.lineTo(x,y);}g.closePath();g.stroke();g.restore();
+
+        // 왕관형 헬름
+        const helm=g.createLinearGradient(-12,-37,12,-20);helm.addColorStop(0,'#eefcff');helm.addColorStop(.35,'#858fb0');helm.addColorStop(.65,'#26223f');helm.addColorStop(1,'#0b0915');
+        g.fillStyle=helm;g.strokeStyle='#fff';g.lineWidth=1.2;g.beginPath();g.arc(0,-27,11,0,Math.PI*2);g.fill();g.stroke();
+        g.fillStyle='#11101d';g.beginPath();g.roundRect(-8,-29,16,5,2);g.fill();
+        for(let i=-2;i<=2;i++){g.fillStyle=`hsl(${(hue+(i+2)*52)%360},100%,78%)`;g.beginPath();g.moveTo(i*4-2,-36);g.lineTo(i*4,-45-(i===0?5:0));g.lineTo(i*4+2,-36);g.closePath();g.fill();}
+        // 눈
+        g.shadowBlur=9;g.shadowColor='#fff';g.fillStyle='#fff';g.beginPath();g.roundRect(-6,-28,4,2,1);g.roundRect(2,-28,4,2,1);g.fill();g.shadowBlur=0;
+
+        // 왼손은 작은 무지개 보주
+        g.strokeStyle='#302945';g.lineWidth=6;g.lineCap='round';g.beginPath();g.moveTo(-13,-3);g.lineTo(-24,8);g.stroke();
+        rainbowGlowDot(g,-28,10,3.5,hue+230,.9);
+        g.save();g.translate(-28,10);g.rotate(time*.002);g.strokeStyle=`hsla(${hue},100%,80%,.7)`;g.lineWidth=1;g.beginPath();g.arc(0,0,8,0,Math.PI*2);g.stroke();g.beginPath();g.ellipse(0,0,11,4,.7,0,Math.PI*2);g.stroke();g.restore();
+
+        // 오른팔과 대형 단일 프리즘 검. 짧은 이펙트만 사용.
+        const swing=-1.0+power*1.72;
+        g.save();g.translate(13,-4);g.rotate(swing);
+        g.strokeStyle='#312a48';g.lineWidth=6;g.beginPath();g.moveTo(0,0);g.lineTo(13,7);g.stroke();
+        g.fillStyle='#eaf7ff';g.beginPath();g.arc(14,7,3.2,0,Math.PI*2);g.fill();
+        // 가드
+        g.strokeStyle='#fff';g.lineWidth=2.4;g.beginPath();g.moveTo(9,3);g.lineTo(19,12);g.stroke();
+        const blade=rainbowSpectrumGradient(g,15,8,66,-2,hue+20);
+        g.strokeStyle='rgba(255,255,255,.25)';g.lineWidth=10;g.beginPath();g.moveTo(16,8);g.lineTo(62,-2);g.stroke();
+        g.strokeStyle=blade;g.lineWidth=6;g.shadowBlur=13+power*8;g.shadowColor=`hsl(${hue},100%,72%)`;g.beginPath();g.moveTo(16,8);g.lineTo(62,-2);g.stroke();
+        rainbowFacet(g,[[70,-4],[59,-8],[61,3]],'#fff',null,0);
+        g.shadowBlur=0;
+        if(power>.08){g.globalCompositeOperation='lighter';g.globalAlpha=.45*power;g.strokeStyle='#fff';g.lineWidth=2.2;g.beginPath();g.arc(15,6,43,-.20,.52);g.stroke();}
+        g.restore();
+
+        // 작은 궤도 결정 4개
+        g.save();g.globalCompositeOperation='lighter';
+        for(let i=0;i<4;i++){const a=time*.0016*(i%2?1:-1)+i*Math.PI/2;const rr=35+(i%2)*5;const x=Math.cos(a)*rr,y=Math.sin(a)*13-5;g.save();g.translate(x,y);g.rotate(a);const cg=rainbowSpectrumGradient(g,-4,0,4,0,hue+i*70);rainbowFacet(g,[[0,-5],[4,0],[0,5],[-4,0]],cg,'rgba(255,255,255,.75)',.8);g.restore();}
+        g.restore();
+
+        g.restore();g.restore();return;
+      }
+
       g.restore();
     }
 
@@ -24106,6 +24530,11 @@ function drawEnemy(enemy, time) {
       ctx.save();
       const renderPos = unit.unitId === 'cherrySamurai' ? getSamuraiRenderPosition(unit, time) : { x: unit.x, y: unit.y };
       ctx.translate(renderPos.x, renderPos.y);
+      if (unit.unitId === 'rainbowUnicornUnit' && unit.attackMode === 'rainbowUnicornCharge' && Number(unit.attackAnimation||0)>0) {
+        const p=1-Math.max(0,Math.min(1,Number(unit.attackAnimation||0)));
+        const lunge=Math.sin(p*Math.PI)*Math.min(72,Math.max(28,Math.hypot(Number(unit.rainbowChargeTargetX||unit.x)-unit.x,Number(unit.rainbowChargeTargetY||unit.y)-unit.y)*.46));
+        ctx.translate(Math.cos(Number(unit.angle||0))*lunge,Math.sin(Number(unit.angle||0))*lunge);
+      }
       if (unit.unitId === 'phoenix' && Number(unit.phoenixFlightRemaining || 0) > 0) ctx.translate(0, -18);
       if (Number(unit.rainbowDoomRemaining||0)>0) { const max=Math.max(.01,Number(unit.rainbowDoomMax||3)); const ratio=Math.max(.06,Math.min(1,Number(unit.rainbowDoomRemaining)/max)); ctx.globalAlpha*=ratio; ctx.save();ctx.globalAlpha=.8;ctx.strokeStyle=`hsl(${(time*.18)%360},100%,72%)`;ctx.lineWidth=4;ctx.beginPath();ctx.arc(0,0,39+(1-ratio)*10,0,Math.PI*2);ctx.stroke();ctx.restore(); }
 
@@ -24239,7 +24668,7 @@ function drawEnemy(enemy, time) {
       ctx.restore();
     }
 
-    function drawShots() {
+    function drawShots(time) {
       const clamp01 = value => Math.max(0, Math.min(1, value));
       const lerp = (start, end, amount) => start + (end - start) * amount;
 
@@ -24466,6 +24895,22 @@ function drawEnemy(enemy, time) {
           for (let layer=0; layer<4; layer+=1){const amp=7+layer*4;const wave=Math.sin(progress*Math.PI*8+shot.seed+layer*1.7)*amp;ctx.strokeStyle=layer===0?`rgba(218,255,233,${.85*fade})`:`rgba(54,222,143,${(.5-layer*.08)*fade})`;ctx.lineWidth=4-layer*.65;ctx.beginPath();ctx.moveTo(shot.x1,shot.y1);ctx.bezierCurveTo(shot.x1+dx*.28+nx*wave,shot.y1+dy*.28+ny*wave,shot.x1+dx*.68-nx*wave,shot.y1+dy*.68-ny*wave,x,y);ctx.stroke();}
           for(let i=0;i<5;i+=1){const a=shot.seed+i*2.4+progress*10;ctx.fillStyle=`rgba(170,255,207,${.75*fade})`;ctx.beginPath();ctx.ellipse(x-ux*(10+i*7)+nx*Math.sin(a)*8,y-uy*(10+i*7)+ny*Math.sin(a)*8,4,1.7,a,0,Math.PI*2);ctx.fill();}
           ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.fillStyle='#d7ffe8';ctx.beginPath();ctx.moveTo(12,0);ctx.lineTo(-5,-7);ctx.lineTo(-1,0);ctx.lineTo(-5,7);ctx.closePath();ctx.fill();ctx.restore();
+        } else if (shot.effect === 'rainbowBossDash') {
+          const p=Math.sin(progress*Math.PI),len=Math.hypot(dx,dy);ctx.save();ctx.translate(shot.x1,shot.y1);ctx.rotate(Number(shot.angle||0));ctx.globalCompositeOperation='lighter';
+          for(let i=0;i<4;i++){ctx.strokeStyle=`hsla(${(time*.16+i*76)%360},100%,73%,${(.62-i*.10)*fade})`;ctx.lineWidth=5-i*.8;ctx.beginPath();ctx.moveTo(0,(i-1.5)*4);ctx.quadraticCurveTo(len*.45,(i-1.5)*7+Math.sin(shot.seed+i)*5,len,0);ctx.stroke();}
+          ctx.fillStyle=`rgba(255,255,255,${.82*p})`;for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(len*(.25+i*.13),Math.sin(i+shot.seed)*7,1.5+(i%2),0,Math.PI*2);ctx.fill();}ctx.restore();
+        } else if (shot.effect === 'rainbowHornImpact') {
+          const p=Math.min(1,progress*1.35),a=1-progress,r=Math.max(18,Number(shot.radius||20));ctx.save();ctx.translate(shot.x1,shot.y1);ctx.globalCompositeOperation='lighter';
+          for(let i=0;i<7;i++){const ang=Number(shot.angle||0)+Math.PI+(i-3)*.16;ctx.strokeStyle=`hsla(${(time*.18+i*48)%360},100%,78%,${a*.76})`;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(Math.cos(ang)*5,Math.sin(ang)*5);ctx.lineTo(Math.cos(ang)*(r+18*p),Math.sin(ang)*(r+18*p));ctx.stroke();}
+          ctx.strokeStyle=`rgba(255,255,255,${a*.9})`;ctx.lineWidth=4;ctx.beginPath();ctx.arc(0,0,7+p*(r+14),0,Math.PI*2);ctx.stroke();ctx.restore();
+        } else if (shot.effect === 'rainbowLance') {
+          const tail=34;ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.globalCompositeOperation='lighter';
+          const lg=ctx.createLinearGradient(-tail,0,14,0);lg.addColorStop(0,'rgba(255,90,160,0)');lg.addColorStop(.32,`hsla(${(time*.17)%360},100%,68%,${.35*fade})`);lg.addColorStop(1,`rgba(255,255,255,${.95*fade})`);ctx.strokeStyle=lg;ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(-tail,0);ctx.lineTo(8,0);ctx.stroke();
+          const pr=ctx.createLinearGradient(-4,-8,18,8);pr.addColorStop(0,'#ff6fa8');pr.addColorStop(.25,'#ffd95b');pr.addColorStop(.5,'#69ef9b');pr.addColorStop(.75,'#67c8ff');pr.addColorStop(1,'#b77cff');ctx.fillStyle=pr;ctx.strokeStyle='#fff';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(18,0);ctx.lineTo(0,-7);ctx.lineTo(5,0);ctx.lineTo(0,7);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
+        } else if (shot.effect === 'rainbowSigil') {
+          ctx.save();ctx.translate(x,y);ctx.globalCompositeOperation='lighter';ctx.rotate(time*.004+Number(shot.seed||0));
+          for(let ring=0;ring<3;ring++){ctx.strokeStyle=`hsla(${(time*.14+ring*105)%360},100%,75%,${(.72-ring*.15)*fade})`;ctx.lineWidth=2.3-ring*.35;ctx.beginPath();for(let i=0;i<6;i++){const a=i*Math.PI/3,rr=10+ring*4;const px=Math.cos(a)*rr,py=Math.sin(a)*rr;if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);}ctx.closePath();ctx.stroke();}
+          const core=ctx.createRadialGradient(-2,-2,1,0,0,11);core.addColorStop(0,'#fff');core.addColorStop(.35,`hsl(${(time*.16)%360},100%,75%)`);core.addColorStop(1,'rgba(140,80,255,0)');ctx.fillStyle=core;ctx.beginPath();ctx.arc(0,0,11,0,Math.PI*2);ctx.fill();ctx.restore();
         } else if (shot.effect === 'rainbowSlash') {
           const pulse = Math.sin(progress * Math.PI);
           const isCompact = Boolean(shot.compact || shot.sourceUnitId);
@@ -25222,8 +25667,8 @@ function drawEnemy(enemy, time) {
       // captain spears
       for(const spear of battle.rainbowBaseSpears||[]){const p=Math.max(0,Math.min(1,1-spear.life/spear.maxLife)),t=1-Math.pow(1-p,2),x=spear.x1+(spear.x2-spear.x1)*t,y=spear.y1+(spear.y2-spear.y1)*t,a=Math.atan2(spear.y2-spear.y1,spear.x2-spear.x1);ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.shadowBlur=16;ctx.shadowColor='#fff3a0';ctx.strokeStyle=`hsl(${(time*.16)%360},100%,75%)`;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-38,0);ctx.lineTo(16,0);ctx.stroke();ctx.fillStyle='#fff';ctx.beginPath();ctx.moveTo(30,0);ctx.lineTo(12,-8);ctx.lineTo(15,0);ctx.lineTo(12,8);ctx.closePath();ctx.fill();ctx.restore();}
       // dice drops: 3 sec hold then fly into HUD
-      const target=rainbowHudCanvasTarget();for(const d of battle.rainbowDiceDrops||[]){let x=d.startX,y=d.startY;if(d.elapsed>d.hold){const p=Math.max(0,Math.min(1,(d.elapsed-d.hold)/d.fly)),e=1-Math.pow(1-p,3);x=d.startX+(target.x-d.startX)*e;y=d.startY+(target.y-d.startY)*e-55*Math.sin(p*Math.PI);}else y-=Math.sin(time*.006+d.seed)*5;ctx.save();ctx.translate(x,y);ctx.rotate(time*.002+d.seed);ctx.shadowBlur=20;ctx.shadowColor='#fff';const rg=ctx.createLinearGradient(-12,-12,12,12);rg.addColorStop(0,'#ff6fa8');rg.addColorStop(.25,'#ffd95b');rg.addColorStop(.5,'#69ef9b');rg.addColorStop(.75,'#67c8ff');rg.addColorStop(1,'#b77cff');ctx.fillStyle=rg;ctx.strokeStyle='white';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(-13,-13,26,26,6);ctx.fill();ctx.stroke();ctx.fillStyle='#fff';for(const [px,py] of [[-5,-5],[5,5],[-5,5],[5,-5]]){ctx.beginPath();ctx.arc(px,py,2,0,Math.PI*2);ctx.fill();}ctx.rotate(-(time*.002+d.seed));if(d.amount>1){ctx.font='900 13px Arial';ctx.textAlign='center';ctx.fillStyle='white';ctx.fillText(`×${d.amount}`,0,-19);}ctx.restore();}
-      if(Number(battle.rainbowMapBuffRemaining||0)>0){const a=Math.min(.34,.16+Number(battle.rainbowMapBuffRemaining)/5*.12);const rg=ctx.createLinearGradient(0,0,canvas.width,0);rg.addColorStop(0,`rgba(255,80,150,${a})`);rg.addColorStop(.25,`rgba(255,220,80,${a})`);rg.addColorStop(.5,`rgba(80,255,170,${a})`);rg.addColorStop(.75,`rgba(80,170,255,${a})`);rg.addColorStop(1,`rgba(190,90,255,${a})`);ctx.fillStyle=rg;ctx.fillRect(0,0,canvas.width,canvas.height);ctx.save();ctx.font='900 24px Arial';ctx.textAlign='center';ctx.fillStyle='rgba(255,255,255,.9)';ctx.shadowBlur=12;ctx.shadowColor='#fff';ctx.fillText(`RAINBOW WORLD · ${Number(battle.rainbowMapBuffRemaining).toFixed(1)}s`,canvas.width/2,46);ctx.restore();}
+      const target=rainbowHudCanvasTarget();for(const d of battle.rainbowDiceDrops||[]){let x=d.startX,y=d.startY;if(d.elapsed>d.hold){const p=Math.max(0,Math.min(1,(d.elapsed-d.hold)/d.fly)),e=1-Math.pow(1-p,3);x=d.startX+(target.x-d.startX)*e;y=d.startY+(target.y-d.startY)*e-48*Math.sin(p*Math.PI);}else y-=Math.sin(time*.006+d.seed)*5;ctx.save();ctx.translate(x,y);ctx.rotate(time*.003+d.seed);ctx.shadowBlur=18;ctx.shadowColor='#fff';const rg=ctx.createLinearGradient(-12,-14,13,14);rg.addColorStop(0,'#ff6fa8');rg.addColorStop(.22,'#ffd95b');rg.addColorStop(.46,'#69ef9b');rg.addColorStop(.70,'#67c8ff');rg.addColorStop(1,'#b77cff');ctx.fillStyle=rg;ctx.strokeStyle='white';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-16);ctx.lineTo(12,-4);ctx.lineTo(7,14);ctx.lineTo(-8,11);ctx.lineTo(-13,-3);ctx.closePath();ctx.fill();ctx.stroke();ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,-16);ctx.lineTo(0,7);ctx.lineTo(7,14);ctx.moveTo(0,7);ctx.lineTo(-8,11);ctx.stroke();ctx.rotate(-(time*.003+d.seed));if(d.amount>1){ctx.font='900 13px Arial';ctx.textAlign='center';ctx.fillStyle='white';ctx.fillText(`×${d.amount}`,0,-20);}ctx.restore();}
+      if(Number(battle.rainbowMapBuffRemaining||0)>0){const a=.10;ctx.save();const rg=ctx.createRadialGradient(canvas.width*.5,canvas.height*.5,canvas.height*.18,canvas.width*.5,canvas.height*.5,Math.max(canvas.width,canvas.height)*.72);rg.addColorStop(0,'rgba(255,255,255,0)');rg.addColorStop(.58,`rgba(95,210,255,${a*.45})`);rg.addColorStop(1,`rgba(185,95,255,${a})`);ctx.fillStyle=rg;ctx.fillRect(0,0,canvas.width,canvas.height);ctx.font='900 18px Arial';ctx.textAlign='center';ctx.fillStyle='rgba(255,255,255,.86)';ctx.shadowBlur=6;ctx.shadowColor='#7ad7ff';ctx.fillText(`RAINBOW WORLD · ${Number(battle.rainbowMapBuffRemaining).toFixed(1)}s`,canvas.width/2,44);ctx.restore();}
     }
 
     function drawRainbowEventMapDecor(time){
@@ -25260,7 +25705,7 @@ function drawEnemy(enemy, time) {
       drawTraitShields();
       drawEdenMinions(time);
       battle.enemies.forEach(enemy => drawEnemy(enemy, time));
-      drawShots();
+      drawShots(time);
       drawRainbowBattleEffects(time);
       drawStage4CactusCutscene(time);
 
@@ -25664,6 +26109,8 @@ function drawEnemy(enemy, time) {
     document.querySelector('#mailGiftKindSelect')?.addEventListener('change',updateMailGiftOptions);
     document.querySelector('#adminGlobalGemsResetBtn')?.addEventListener('click', resetAllServerGemsOnly);
     document.querySelector('#adminGlobalItemResetBtn')?.addEventListener('click', resetSpecificServerItem);
+    document.querySelector('#adminGlobalDiceResetBtn')?.addEventListener('click', resetAllServerDiceOnly);
+    document.querySelector('#adminGlobalUnitResetBtn')?.addEventListener('click', resetAllServerUnitsOnly);
     document.querySelector('#adminGlobalResetBtn')?.addEventListener('click', resetAllServerCurrencyItems);
     document.querySelector('#adminUnitGrantBtn').addEventListener('click', grantAdminUnit);
     document.querySelector('#adminFragmentGrantBtn')?.addEventListener('click', grantAdminFragments);
@@ -25673,6 +26120,12 @@ function drawEnemy(enemy, time) {
     document.querySelector('#adminRefreshRoomsBtn').addEventListener('click', loadAdminRooms);
     document.querySelector('#adminRefreshLogsBtn').addEventListener('click', loadAdminLogs);
     document.querySelector('#openGachaBtn').addEventListener('click', openGacha);
+    document.querySelector('#openCraftBtn')?.addEventListener('click', openCraftScreen);
+    document.querySelector('#craftRainbowDiceBtn')?.addEventListener('click', craftRainbowDice);
+    document.querySelector('#craftCountInput')?.addEventListener('input', renderCraftScreen);
+    document.querySelector('#craftMinusBtn')?.addEventListener('click',()=>{const i=document.querySelector('#craftCountInput');if(i){i.value=String(Math.max(1,Number(i.value||1)-1));renderCraftScreen();}});
+    document.querySelector('#craftPlusBtn')?.addEventListener('click',()=>{const i=document.querySelector('#craftCountInput');if(i){i.value=String(Math.min(1000,Number(i.value||1)+1));renderCraftScreen();}});
+    document.querySelector('#craftMaxBtn')?.addEventListener('click',()=>{const i=document.querySelector('#craftCountInput');if(i){i.value=String(Math.max(1,getMaxRainbowCraftCount()));renderCraftScreen();}});
     document.querySelector('#openDeckBtn').addEventListener('click', openDeck);
     document.querySelector('#openCollectionBtn').addEventListener('click', () => openCollection('units'));
     document.querySelector('#inventoryUnitsTab').addEventListener('click', () => {

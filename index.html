@@ -4695,6 +4695,16 @@ body {
 .rainbow-dice-cutscene .batch-reward-die{background:linear-gradient(135deg,#ff5f9f,#ffd85f,#68ef9c,#69caff,#ba79ff)!important;background-size:300% 300%!important;animation:rainbowDiceFlow 2s linear infinite!important}
 
 .mailbox-dialog{width:min(760px,96vw)}.mail-compose{display:grid;gap:8px;padding:12px;border:1px solid rgba(255,255,255,.13);border-radius:16px;background:rgba(255,255,255,.04)}.mail-compose textarea{resize:vertical;min-height:86px}.mail-gift-row{display:grid;grid-template-columns:1fr 1fr 110px;gap:7px}.mail-list{display:grid;gap:9px}.mail-card{padding:12px;border:1px solid rgba(255,255,255,.13);border-radius:15px;background:rgba(255,255,255,.045)}.mail-card.unread{border-color:rgba(106,211,255,.55)}.mail-card-head{display:flex;justify-content:space-between;gap:10px}.mail-card-head small{color:#91a8c2}.mail-card p{white-space:pre-wrap;line-height:1.48}.mail-gift{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px;border-radius:11px;background:rgba(255,216,90,.08)}.mail-system{color:#ffd86a}.mailbox-dialog input,.mailbox-dialog textarea,.mailbox-dialog select{width:100%;box-sizing:border-box}#adminRefreshErrorHoldersBtn{pointer-events:auto!important;position:relative!important;z-index:30!important}@media(max-width:620px){.mail-gift-row{grid-template-columns:1fr}}
+
+    /* 인벤토리/덱: 이모티콘 대신 실제 전투 렌더러로 만든 캐릭터 초상화 */
+    .unit-icon.unit-icon-live{width:100%;height:116px;display:grid;place-items:center;margin:2px 0 7px;overflow:hidden;border-radius:15px;background:radial-gradient(circle at 50% 42%,rgba(255,255,255,.12),rgba(20,24,42,.42) 62%,rgba(5,7,16,.74));border:1px solid rgba(255,255,255,.12);}
+    .unit-live-portrait{width:112px;height:112px;object-fit:contain;display:block;filter:drop-shadow(0 8px 8px rgba(0,0,0,.34));}
+    .deck-live-portrait{width:76px;height:76px;object-fit:contain;display:block;margin:0 auto 4px;filter:drop-shadow(0 6px 7px rgba(0,0,0,.38));}
+    .portrait-fallback{display:grid;place-items:center;color:#fff;font-size:28px;font-weight:950;background:rgba(255,255,255,.08);}
+    .unit-card{overflow:hidden;position:relative;}
+    .unit-card::before{content:'';position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);opacity:.65;pointer-events:none;}
+    .deck-slot.filled{min-height:132px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+    @media(max-width:620px){.unit-icon.unit-icon-live{height:102px}.unit-live-portrait{width:98px;height:98px}.deck-live-portrait{width:66px;height:66px}.deck-slot.filled{min-height:118px}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style id="multiplayerStyles">
@@ -8978,22 +8988,26 @@ function applyStagePreview(stageId = selectedStage) {
 
       rainbowSoldier: {
         id:'rainbowSoldier', name:'무지개 군사', icon:'🌈', rarity:'영웅', rarityKey:'epic', rarityClass:'rarity-epic', eventExclusive:true,
-        cost:220, damage:300, range:205, fireInterval:.75, color:'#ff72b9',
-        skillText:'무지개 갑옷과 창으로 적을 찌르는 한정 영웅 유닛입니다. 공격속도 0.75초 · 공격력 300.'
+        cost:220, damage:300, range:205, fireInterval:.75, rainbowPierceEvery:6, rainbowPierceMultiplier:2, rainbowPierceWidth:24, color:'#ff72b9',
+        skillName:'프리즘 돌격',
+        skillText:'6번 공격할 때마다 프리즘 창을 직선으로 내질러 사거리 끝까지 관통합니다. 경로의 모든 적에게 평타의 2배 피해를 줍니다.'
       },
       rainbowMage: {
         id:'rainbowMage', name:'무지개 마법사', icon:'🔮', rarity:'전설', rarityKey:'legendary', rarityClass:'rarity-legendary', eventExclusive:true,
         cost:360, damage:250, range:235, fireInterval:.5, rainbowHasteEvery:20, rainbowHasteDuration:3, rainbowHasteMultiplier:2, color:'#ffd35e',
+        skillName:'오버 더 레인보우',
         skillText:'20번 공격할 때마다 머리 위에 무지개가 나타나 3초 동안 공격속도가 2배가 됩니다.'
       },
       rainbowLight: {
         id:'rainbowLight', name:'무지개의 빛', icon:'✨', rarity:'신화', rarityKey:'mythic', rarityClass:'rarity-mythic', eventExclusive:true,
         cost:520, damage:7, range:280, fireInterval:.01, rainbowLinkHits:5000, color:'#f8fbff',
+        skillName:'스펙트럼 링크',
         skillText:'한 적과 무지개 빛으로 연결되어 0.01초마다 7 피해를 줍니다. 누적 5,000타마다 동시에 연결할 수 있는 적이 1명씩 늘어나며 해당 전투가 끝날 때까지 유지됩니다.'
       },
       rainbowUnicornUnit: {
         id:'rainbowUnicornUnit', name:'유니콘', icon:'🦄', rarity:'비밀', rarityKey:'secret', rarityClass:'rarity-secret', eventExclusive:true,
         cost:700, damage:3000, range:210, fireInterval:.9, rainbowExecuteEvery:10, rainbowExecuteDelay:3, rainbowBossRatio:.20, color:'#f5b7ff',
+        skillName:'레인보우 저지먼트',
         skillText:'뿔로 돌진해 공격합니다. 10번 공격할 때마다 사거리 안 모든 적을 무지개로 만들고 3초 뒤 일반 적은 즉사, 보스는 최대체력의 20% 피해를 받습니다.'
       },
       rainbowBeyond: {
@@ -9001,6 +9015,7 @@ function applyStagePreview(stageId = selectedStage) {
         cost:1000, damage:20000, range:240, fireInterval:.5, meleeConeAngle:180, rainbowOreInterval:.5, rainbowOreHp:20000, rainbowOreMax:7,
         rainbowMapBuffEvery:20, rainbowMapBuffDuration:5, rainbowMapDamageMultiplier:4, rainbowMapSpeedMultiplier:4,
         footprintRadius:110, multiplayerFootprintRadius:92, maxPlaced:1, color:'#9b7cff',
+        skillName:'무지개 세계',
         skillText:'0.5초마다 전방 180°를 20,000 피해로 베고, 0.5초마다 길의 무작위 위치에 HP 20,000 광석을 소환합니다(최대 7개). 적이 광석에 부딪히면 서로의 HP만큼 상쇄됩니다. 20초마다 5초 동안 맵 전체가 무지개가 되어 모든 아군 공격력과 공격속도가 4배가 됩니다. 플레이어당 1명만 배치 가능합니다.'
       },
       errorEntity: {
@@ -9444,6 +9459,10 @@ function applyStagePreview(stageId = selectedStage) {
     function queueBattleReward(kind, stage, wave = null, difficultyKey = null) {
       ensurePlayerData();
 
+      // 무지개 저편은 소환석 보상이 없는 이벤트입니다.
+      // 혹시 다른 보상 코드가 이 함수를 호출하더라도 클라이언트 큐에 들어가지 않게 이중 차단합니다.
+      if (battle?.isRainbowEvent || Number(stage) === 5) return;
+
       const runId = battle?.runId || makeBattleRunId();
       const difficulty = getDifficultyConfig(
         difficultyKey || battle?.difficultyKey || 'normal'
@@ -9483,6 +9502,7 @@ function applyStagePreview(stageId = selectedStage) {
       const gems = Number(data);
       if (Number.isFinite(gems)) {
         const pending = (player?.pendingBattleRewards || [])
+          .filter(item => Number(item?.stage) !== 5)
           .reduce((sum, item) => sum + Number(item.amount || 0), 0);
 
         player.gems = Math.max(Number(player.gems || 0), gems + pending);
@@ -9529,6 +9549,12 @@ function applyStagePreview(stageId = selectedStage) {
 
         while (player.pendingBattleRewards.length) {
           const reward = player.pendingBattleRewards[0];
+
+          // 예전 버전에서 잘못 저장됐을 수 있는 무지개 저편(stage 5) 소환석 보상도 서버로 보내지 않고 폐기합니다.
+          if (Number(reward?.stage) === 5) {
+            player.pendingBattleRewards.shift();
+            continue;
+          }
 
           const { data, error } = await supabaseClient
             .rpc('claim_battle_reward', {
@@ -11309,6 +11335,41 @@ async function logout() {
         .filter(unitId => UNIT_DATA[unitId]);
     }
 
+    const unitPortraitCache = new Map();
+    function makeUnitPortraitDataUrl(unitId) {
+      if (unitPortraitCache.has(unitId)) return unitPortraitCache.get(unitId);
+      const data = UNIT_DATA[unitId];
+      if (!data || typeof drawDetailedUnitSprite !== 'function' || !canvas || !ctx) return '';
+      let result='';
+      try {
+        const backup=document.createElement('canvas');backup.width=canvas.width;backup.height=canvas.height;
+        const bg=backup.getContext('2d');bg.drawImage(canvas,0,0);
+        const portrait=document.createElement('canvas');portrait.width=180;portrait.height=180;
+        const pg=portrait.getContext('2d');pg.imageSmoothingEnabled=true;try{pg.imageSmoothingQuality='high';}catch(_){}
+        ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);
+        const cx=Math.floor(canvas.width/2),cy=Math.floor(canvas.height/2);
+        ctx.translate(cx,cy+5);ctx.scale(1.45,1.45);
+        const preview={unitId,angle:0,targetAngle:0,lastTargetAngle:0,attackAnimation:.10,animationOffset:.35,level:1,
+          stunRemaining:0,attackSlowRemaining:0,chronoFieldRemaining:0,chronoOrbitingShots:[],iceTraitOrbs:[],
+          edenCharge:55,edenStyle:3,eclipseGrowthStacks:3,errorStacks:2,rainbowHasteRemaining:0,rainbowMapBuffRemaining:0};
+        drawDetailedUnitSprite(preview, 1650);
+        ctx.restore();
+        const crop=150;pg.drawImage(canvas,cx-crop/2,cy-crop/2,crop,crop,15,15,150,150);
+        ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(backup,0,0);ctx.restore();
+        result=portrait.toDataURL('image/png');
+      } catch (error) {
+        try { ctx.restore(); } catch (_) {}
+        console.warn('유닛 초상화 생성 실패:',unitId,error?.message||error);
+        result='';
+      }
+      unitPortraitCache.set(unitId,result);
+      return result;
+    }
+    function unitPortraitMarkup(unitId, className='unit-live-portrait') {
+      const src=makeUnitPortraitDataUrl(unitId);
+      return src ? `<img class="${className}" src="${src}" alt="${UNIT_DATA[unitId]?.name||unitId} 전투 캐릭터 외형">` : `<div class="${className} portrait-fallback">${UNIT_DATA[unitId]?.name?.slice(0,1)||'?'}</div>`;
+    }
+
     function unitCardHtml(unitId, ownedInfo, selectable = false) {
       const unit = UNIT_DATA[unitId];
       const copies = Math.max(1, Math.floor(Number(ownedInfo.copies || 1)));
@@ -11355,7 +11416,7 @@ async function logout() {
         <div class="unit-card ${selectable && selectedDeckUnitId === unitId ? 'selected' : ''}"
              ${selectable ? `data-unit-id="${unitId}"` : ''}>
           <div class="unit-copy-count">X${copies}</div>
-          <div class="unit-icon">${unit.icon}</div>
+          <div class="unit-icon unit-icon-live">${unitPortraitMarkup(unitId)}</div>
           <h3>${unit.name}</h3>
           <p class="${unit.rarityClass}">${unit.rarity}</p>
           ${unit.id === 'errorEntity' ? `<div class="error-live-identity"><span class="rarity-error">ERROR</span><span>//</span><span class="error-live-code">${makeErrorLiveCode()}</span></div>` : ''}
@@ -12956,7 +13017,7 @@ function requestGachaDraw(count) {
         const unit = UNIT_DATA[unitId];
         return `
           <button class="deck-slot filled" data-slot="${index}">
-            <div style="font-size:32px;">${unit.icon}</div>
+            ${unitPortraitMarkup(unitId, 'deck-live-portrait')}
             <strong>${unit.name}</strong><br>
             <span class="${unit.rarityClass}">${unit.rarity}</span>
           </button>
@@ -14396,7 +14457,7 @@ function requestGachaDraw(count) {
       return Array.from({length:count}, (_,i)=>({
         type:'normal', variant:'rainbowSoldierEnemy', name:'무지개 병사', icon:'🌈', health:500*RAINBOW_EVENT_HP_MULTIPLIER,
         speed:Math.min(82,48+wave*.18), radius:23, reward:25+Math.floor(wave/8), rainbowSoldier:true, formationSeed:i,
-        rainbowDashInterval:RAINBOW_EVENT_DASH_INTERVAL, rainbowDashTimer:RAINBOW_EVENT_DASH_INTERVAL, rainbowDashDistance:RAINBOW_EVENT_DASH_DISTANCE
+        rainbowDashInterval:0, rainbowDashTimer:0, rainbowDashDistance:0
       }));
     }
 
@@ -14976,6 +15037,11 @@ function requestGachaDraw(count) {
         eden: '기절 면역 · Charge 최대100(1당 피해 +0.5%) · 14타마다 크기가 다른 공허 분신 6체를 9초 소환(각자 자동 공격) · 6타 Impale · 8타 Cut Into Nothing · 11타 Taunt(+15 Charge) · Charge30↑ Voidrush · Style V Deadeye · 맵당 1기',
         errorEntity: `<span class="error-live-identity"><span class="rarity-error">ERROR</span><span>//</span><span class="error-live-code">${makeErrorLiveCode()}</span></span><br>DATA CUT: 평타 5발 · 적 1명이면 5발 집중 · 각 탄환 적중지 반경58 범위피해/오류스택 · 5스택 CORRUPTED · 5타 404 · 10타 ROLLBACK · 25타 SYSTEM FAILURE · 50타 DELETE · 기절 면역`,
         eclipse: `공격력 ${Math.round(unit.damage || 6000).toLocaleString()} · 전방 180° 사거리 ${unit.range || 230} 범위 베기 · 처치 시 5% 성장(공격력·공속 +2%, 회전참 범위 +5%) · 타격 시 5% 블랙홀 · 4타마다 회전참×3 + 1초 기절 · 기절 면역`,
+        rainbowSoldier: '🌈 프리즘 돌격 · 6타마다 사거리 끝까지 직선 관통 · 경로의 모든 적에게 평타×2',
+        rainbowMage: '🌈 오버 더 레인보우 · 20타마다 3초 동안 공격속도×2',
+        rainbowLight: `🌈 스펙트럼 링크 · 0.01초 연속 광선 · 누적 5,000타마다 동시 링크 +1 (현재 ${1+Math.floor(Number(placed?.rainbowLightHits||0)/5000)}명)`,
+        rainbowUnicornUnit: '🌈 레인보우 저지먼트 · 10타마다 사거리 전체 표식 · 3초 뒤 일반 적 즉사 / 보스 최대 HP 20% 피해',
+        rainbowBeyond: '🌈 무지개 세계 · 평타는 전방 180° 실제 범위 공격 · 0.5초마다 HP 20,000 광석(최대 7) · 20초마다 5초간 전체 아군 공격력·공속×4',
         astralChronomancer: '다중발사(2/3/4발) · 공전탄 최대 10발 · 각 탄환 20% 황금 시간기절 · 60회 공격마다 사거리 300 시간정지 5초'
       };
       return summaries[unit.id] || '기본 공격 유닛';
@@ -17963,7 +18029,7 @@ function requestGachaDraw(count) {
 
     function markRainbowExecution(placed){
       const targets=getEnemiesInRangeFast(placed,placed.range);for(const enemy of targets){enemy.rainbowExecutionRemaining=Number(UNIT_DATA.rainbowUnicornUnit.rainbowExecuteDelay||3);enemy.rainbowExecutionMax=enemy.rainbowExecutionRemaining;enemy.rainbowExecutionSourceId=placed.id;}
-      if(targets.length)setBattleMessage(`🦄 유니콘의 심판! 사거리 안 ${targets.length}명이 무지개 표식에 걸렸습니다.`);
+      if(targets.length)setBattleMessage(`🦄 유니콘 · 레인보우 저지먼트! ${targets.length}명 표식 · 3초 뒤 처형`);
     }
 
     function updateRainbowLightUnit(placed,dt){
@@ -18156,10 +18222,11 @@ function requestGachaDraw(count) {
           applyTraitDamage(placed,target,dmg);
         }
 
+        // 실제 데미지는 전방 180° 그대로지만, 화면 이펙트는 검 주변의 짧은 초승달만 표시합니다.
         let slashFx=battle.shots.find(shot=>shot.effect==='rainbowSlash'&&shot.sourceUnitId===placed.id&&shot.life>0);
-        const rainbowSlashVisualRadius = Math.min(118, Math.max(82, Number(placed.range || 240) * .49));
-        if(slashFx){slashFx.x1=placed.x;slashFx.y1=placed.y;slashFx.x2=placed.x+Math.cos(placed.angle)*placed.range;slashFx.y2=placed.y+Math.sin(placed.angle)*placed.range;slashFx.life=.38;slashFx.maxLife=.38;slashFx.angle=placed.angle;slashFx.radius=placed.range;slashFx.visualRadius=rainbowSlashVisualRadius;slashFx.coneAngle=180;slashFx.seed=Math.random()*1000;}
-        else battle.shots.push({x1:placed.x,y1:placed.y,x2:placed.x+Math.cos(placed.angle)*placed.range,y2:placed.y+Math.sin(placed.angle)*placed.range,life:.38,maxLife:.38,effect:'rainbowSlash',color:'#ff8fd0',sourceUnitId:placed.id,angle:placed.angle,radius:placed.range,visualRadius:rainbowSlashVisualRadius,coneAngle:180,seed:Math.random()*1000});
+        const rainbowSlashVisualRadius = 66;
+        if(slashFx){slashFx.x1=placed.x;slashFx.y1=placed.y;slashFx.x2=placed.x+Math.cos(placed.angle)*72;slashFx.y2=placed.y+Math.sin(placed.angle)*72;slashFx.life=.22;slashFx.maxLife=.22;slashFx.angle=placed.angle;slashFx.radius=placed.range;slashFx.visualRadius=rainbowSlashVisualRadius;slashFx.coneAngle=38;slashFx.compact=true;slashFx.seed=Math.random()*1000;}
+        else battle.shots.push({x1:placed.x,y1:placed.y,x2:placed.x+Math.cos(placed.angle)*72,y2:placed.y+Math.sin(placed.angle)*72,life:.22,maxLife:.22,effect:'rainbowSlash',color:'#ff8fd0',sourceUnitId:placed.id,angle:placed.angle,radius:placed.range,visualRadius:rainbowSlashVisualRadius,coneAngle:38,compact:true,seed:Math.random()*1000});
         return;
       }
 
@@ -18173,8 +18240,31 @@ function requestGachaDraw(count) {
       placed.attackAnimation = 1;
       placed.attackMode = 'normal';
       placed.attackCount = Number(placed.attackCount || 0) + 1;
-      if (placed.unitId === 'rainbowMage' && placed.attackCount % Number(UNIT_DATA.rainbowMage.rainbowHasteEvery||20) === 0) { placed.rainbowHasteRemaining=Number(UNIT_DATA.rainbowMage.rainbowHasteDuration||3); }
+      if (placed.unitId === 'rainbowMage' && placed.attackCount % Number(UNIT_DATA.rainbowMage.rainbowHasteEvery||20) === 0) {
+        placed.rainbowHasteRemaining=Number(UNIT_DATA.rainbowMage.rainbowHasteDuration||3);
+        setBattleMessage('🌈 무지개 마법사 · 오버 더 레인보우! 3초간 공격속도 ×2');
+      }
       if (placed.unitId === 'rainbowUnicornUnit' && placed.attackCount % Number(UNIT_DATA.rainbowUnicornUnit.rainbowExecuteEvery||10) === 0) markRainbowExecution(placed);
+      if (placed.unitId === 'rainbowSoldier' && placed.attackCount % Number(UNIT_DATA.rainbowSoldier.rainbowPierceEvery||6) === 0) {
+        const d = UNIT_DATA.rainbowSoldier;
+        const reach = Number(placed.range || d.range || 205);
+        const width = Number(d.rainbowPierceWidth || 24);
+        const ex = placed.x + Math.cos(targetAngle) * reach;
+        const ey = placed.y + Math.sin(targetAngle) * reach;
+        const victims = [];
+        for (const enemy of battle.enemies) {
+          if (enemy.dead || enemy.soilPileState || enemy.type==='rainbowFeverCore') continue;
+          const vx=ex-placed.x, vy=ey-placed.y, wx=enemy.x-placed.x, wy=enemy.y-placed.y;
+          const vv=Math.max(.001,vx*vx+vy*vy), t=Math.max(0,Math.min(1,(wx*vx+wy*vy)/vv));
+          const px=placed.x+vx*t, py=placed.y+vy*t;
+          if (Math.hypot(enemy.x-px,enemy.y-py) <= width + Number(enemy.radius||16)) victims.push(enemy);
+        }
+        const skillDamage = Number(placed.damage||d.damage||300) * Number(d.rainbowPierceMultiplier||2);
+        victims.forEach(enemy=>applyTraitDamage(placed,enemy,skillDamage));
+        battle.shots.push({x1:placed.x,y1:placed.y,x2:ex,y2:ey,life:.28,maxLife:.28,effect:'rainbowPierce',color:'#fff7a8',angle:targetAngle,width,seed:Math.random()*1000});
+        setBattleMessage(`🌈 무지개 군사 · 프리즘 돌격! ${victims.length}명 관통 · 피해 ×2`);
+        return;
+      }
 
       if (placed.unitId === 'astralChronomancer') {
         performChronoAttack(placed);
@@ -20878,7 +20968,7 @@ function requestGachaDraw(count) {
     const enemySpriteCache = new Map();
     let enemySpriteCacheTheme = -1;
     const ENEMY_SPRITE_CACHE_LIMIT = 280;
-    const ENEMY_SPRITE_CACHE_SCALE = Math.min(1.5, Math.max(1, Number(window.devicePixelRatio || 1)));
+    const ENEMY_SPRITE_CACHE_SCALE = Math.min(1.65, Math.max(1.1, Number(window.devicePixelRatio || 1)));
     const ENEMY_SPRITE_FRAMES = 24;
 
     function enemySpriteCanvas(width, height) {
@@ -21100,6 +21190,89 @@ function requestGachaDraw(count) {
       scheduleEnemySpritePrewarm(specs);
     }
 
+function drawPremiumEnemyBackdrop(enemy, drawX, drawY, time) {
+      const kind = enemySpriteKind(enemy);
+      const r = Math.max(10, Number(enemy.radius || 22));
+      const boss = enemy.type !== 'normal' && !enemy.rainbowOre && enemy.type !== 'rainbowFeverCore';
+      const t = time * .001;
+      ctx.save();
+      ctx.translate(drawX, drawY);
+
+      // 모든 적에게 공통으로 입체감을 주는 부드러운 접지 그림자.
+      const shadow = ctx.createRadialGradient(0, r*.48, 2, 0, r*.48, r*1.15);
+      shadow.addColorStop(0, boss ? 'rgba(0,0,0,.38)' : 'rgba(0,0,0,.27)');
+      shadow.addColorStop(.62, 'rgba(0,0,0,.14)');
+      shadow.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = shadow;
+      ctx.beginPath();
+      ctx.ellipse(0, r*.58, r*1.12, r*.42, 0, 0, Math.PI*2);
+      ctx.fill();
+
+      // 이동 중에는 종류별로 아주 적은 수의 궤적만 사용해 품질은 올리고 렉은 억제합니다.
+      const moving = Number(enemy.speed || 0) > 0 && !enemy.staticCactus && !enemy.staticRainbowObject;
+      if (moving) {
+        ctx.globalCompositeOperation = 'lighter';
+        if (kind === 'pigeon') {
+          for (let i=0;i<3;i++) {
+            const y=-r*.15+i*r*.24+Math.sin(t*5+i)*2;
+            ctx.strokeStyle=`rgba(205,235,255,${.16+i*.045})`;ctx.lineWidth=1.4+i*.35;
+            ctx.beginPath();ctx.moveTo(-r*.55-i*4,y);ctx.quadraticCurveTo(-r*1.05-i*7,y-3,-r*1.55-i*8,y+1);ctx.stroke();
+          }
+        } else if (kind === 'golem') {
+          for(let i=0;i<3;i++){const a=t*.55+i*2.09,rr=r*(.85+i*.17);ctx.fillStyle=i===0?'rgba(190,235,255,.32)':'rgba(137,180,255,.22)';ctx.save();ctx.rotate(a);ctx.translate(rr,0);ctx.rotate(-a*.7);ctx.fillRect(-2,-4,4,8);ctx.restore();}
+        } else if (kind === 'llama') {
+          for(let i=0;i<3;i++){const a=t*.8+i*2.1;ctx.fillStyle='rgba(255,247,226,.34)';ctx.beginPath();ctx.arc(-r*.72-i*5,Math.sin(a)*r*.36,2.2+i*.45,0,Math.PI*2);ctx.fill();}
+        } else if (kind === 'scorpion' || kind === 'sandworm' || kind === 'cactus') {
+          for(let i=0;i<4;i++){const a=t*(.7+i*.05)+i*1.7;const px=-r*.65-i*5,py=r*.42+Math.sin(a)*r*.22;ctx.fillStyle=i%2?'rgba(255,210,125,.26)':'rgba(229,164,84,.22)';ctx.beginPath();ctx.arc(px,py,1.8+(i%2),0,Math.PI*2);ctx.fill();}
+        } else if (kind === 'rainbow') {
+          for(let i=0;i<4;i++){const a=t*(1.1+i*.06)+i*1.57,rr=r*(.85+(i%2)*.28);ctx.fillStyle=`hsla(${(time*.08+i*82)%360},100%,72%,.30)`;ctx.beginPath();ctx.arc(Math.cos(a)*rr,Math.sin(a)*rr*.6,2.1+(i%2),0,Math.PI*2);ctx.fill();}
+        }
+      }
+
+      // 보스는 외형을 크게 가리지 않는 얇은 이중 보스 링을 추가합니다.
+      if (boss) {
+        ctx.globalCompositeOperation='lighter';
+        const hue = kind==='rainbow' ? (time*.06)%360 : kind==='golem' ? 205 : kind==='scorpion'||kind==='sandworm'||kind==='cactus' ? 38 : 48;
+        for(let i=0;i<2;i++){
+          ctx.strokeStyle=`hsla(${hue+i*22},95%,68%,${.18+i*.08})`;
+          ctx.lineWidth=1.6+i*.7;ctx.setLineDash(i?[8,7]:[3,8]);
+          ctx.beginPath();ctx.ellipse(0,r*.12,r*(1.26+i*.12),r*(.56+i*.06),t*(i?-.18:.12),0,Math.PI*2);ctx.stroke();
+        }
+        ctx.setLineDash([]);
+      }
+      ctx.restore();
+    }
+
+    function drawPremiumEnemyForeground(enemy, drawX, drawY, time) {
+      const kind=enemySpriteKind(enemy), r=Math.max(10,Number(enemy.radius||22));
+      const boss=enemy.type!=='normal'&&!enemy.rainbowOre&&enemy.type!=='rainbowFeverCore';
+      const t=time*.001;
+      ctx.save();ctx.translate(drawX,drawY);ctx.globalCompositeOperation='lighter';
+
+      // 종류별 재질 하이라이트: 적 본체 위에 얹어 더 선명하고 고급스럽게 보이게 합니다.
+      if(kind==='pigeon'){
+        ctx.strokeStyle='rgba(235,249,255,.35)';ctx.lineWidth=1.3;ctx.beginPath();ctx.arc(-r*.08,-r*.18,r*.72,-2.75,-.55);ctx.stroke();
+      }else if(kind==='golem'){
+        for(let i=0;i<3;i++){const a=t*.24+i*2.1,rr=r*.6;ctx.fillStyle=i===0?'rgba(255,255,255,.46)':'rgba(152,220,255,.28)';ctx.save();ctx.translate(Math.cos(a)*rr,Math.sin(a)*rr*.75);ctx.rotate(a);ctx.beginPath();ctx.moveTo(0,-4);ctx.lineTo(2,0);ctx.lineTo(0,5);ctx.lineTo(-2,0);ctx.closePath();ctx.fill();ctx.restore();}
+      }else if(kind==='llama'){
+        ctx.strokeStyle='rgba(255,255,255,.32)';ctx.lineWidth=1.2;for(let i=0;i<4;i++){ctx.beginPath();ctx.arc(-r*.25+i*r*.17,-r*.25+Math.sin(t*2+i)*2,r*.22,Math.PI,Math.PI*2);ctx.stroke();}
+      }else if(kind==='scorpion'){
+        ctx.strokeStyle='rgba(255,228,145,.36)';ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(0,-r*.06,r*.56,-2.7,-.4);ctx.stroke();
+        if(enemy.variant==='venomScorpion'||enemy.type==='poisonScorpionBoss'){ctx.fillStyle='rgba(117,255,105,.42)';for(let i=0;i<3;i++){const a=t*1.8+i*2.1;ctx.beginPath();ctx.arc(Math.cos(a)*r*.55,Math.sin(a)*r*.35,2.2,0,Math.PI*2);ctx.fill();}}
+      }else if(kind==='sandworm'){
+        ctx.strokeStyle='rgba(255,228,159,.36)';ctx.lineWidth=1.5;for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(0,r*.35,r*(.72+i*.16),Math.PI*.08,Math.PI*.92);ctx.stroke();}
+      }else if(kind==='cactus'){
+        ctx.fillStyle='rgba(255,245,185,.45)';for(let i=0;i<4;i++){const a=i*Math.PI/2+t*.08;ctx.save();ctx.rotate(a);ctx.fillRect(r*.58,-.8,r*.25,1.6);ctx.restore();}
+      }else if(kind==='rainbow'){
+        for(let i=0;i<(boss?6:3);i++){const a=t*(.7+i*.035)+i*Math.PI*2/(boss?6:3),rr=r*(.72+(i%2)*.34);ctx.fillStyle=`hsla(${(time*.1+i*57)%360},100%,78%,${boss?.46:.31})`;ctx.save();ctx.translate(Math.cos(a)*rr,Math.sin(a)*rr*.72);ctx.rotate(a);ctx.beginPath();ctx.moveTo(0,-4);ctx.lineTo(1.7,0);ctx.lineTo(0,4);ctx.lineTo(-1.7,0);ctx.closePath();ctx.fill();ctx.restore();}
+      }
+
+      // 체력이 낮아지면 작은 손상 점멸을 표시해 피격 피드백을 강화합니다.
+      const hp=Math.max(0,Number(enemy.health||0)),max=Math.max(1,Number(enemy.maxHealth||enemy.health||1));
+      if(hp/max<.34&&!enemy.rainbowOre){ctx.strokeStyle=`rgba(255,90,90,${.18+.12*(.5+.5*Math.sin(time*.02))})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,r+6,0,Math.PI*2);ctx.stroke();}
+      ctx.restore();
+    }
+
 function drawEnemy(enemy, time) {
       // 무지개 병사의 긴 창이 몸보다 먼저 화면 안쪽에 보이던 스폰 지점 잔상 방지.
       if (battle?.isRainbowEvent && !enemy.rainbowOre && enemy.type !== 'rainbowFeverCore' && !enemy.rainbowSpawnVisualReady) {
@@ -21148,8 +21321,10 @@ function drawEnemy(enemy, time) {
       }
 
       // 모든 적의 본체는 고품질 스프라이트 캐시를 사용합니다.
-      // 체력바·상태이상·피격/보스 효과는 아래에서 실시간으로 유지됩니다.
+      // 접지 그림자/종류별 오라 → 본체 → 재질 하이라이트 순으로 그려 입체감과 이펙트 품질을 높입니다.
+      drawPremiumEnemyBackdrop(enemy, drawX, drawY, time);
       drawCachedEnemyBase(enemy, drawX, drawY, time);
+      drawPremiumEnemyForeground(enemy, drawX, drawY, time);
 
 
       if (Number(enemy.rainbowGuardDamageHalfRemaining||0) > 0) {
@@ -24292,35 +24467,38 @@ function drawEnemy(enemy, time) {
           for(let i=0;i<5;i+=1){const a=shot.seed+i*2.4+progress*10;ctx.fillStyle=`rgba(170,255,207,${.75*fade})`;ctx.beginPath();ctx.ellipse(x-ux*(10+i*7)+nx*Math.sin(a)*8,y-uy*(10+i*7)+ny*Math.sin(a)*8,4,1.7,a,0,Math.PI*2);ctx.fill();}
           ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.fillStyle='#d7ffe8';ctx.beginPath();ctx.moveTo(12,0);ctx.lineTo(-5,-7);ctx.lineTo(-1,0);ctx.lineTo(-5,7);ctx.closePath();ctx.fill();ctx.restore();
         } else if (shot.effect === 'rainbowSlash') {
-          // 무지개 저편의 실제 공격 범위와 화면 이펙트 크기를 분리합니다.
-          // 예전에는 radius 전체(최대 240)를 반원으로 채워 맵을 덮는 것처럼 보였습니다.
           const pulse = Math.sin(progress * Math.PI);
+          const isCompact = Boolean(shot.compact || shot.sourceUnitId);
           const gameplayRadius = Math.max(1, Number(shot.radius || 240));
-          const visualRadius = Math.max(42, Math.min(gameplayRadius, Number(shot.visualRadius || Math.min(118, gameplayRadius * .52))));
-          const coneDeg = Math.max(8, Math.min(180, Number(shot.coneAngle || 180)));
-          const half = (coneDeg * Math.PI / 180) / 2;
-          const sweep = Math.max(.10, Math.min(half, half * (.76 + .18 * pulse)));
+          const visualRadius = isCompact ? Math.min(68, Math.max(50, Number(shot.visualRadius || 66))) : Math.min(76, Math.max(44, Number(shot.visualRadius || 58)));
+          const coneDeg = isCompact ? Math.min(42, Math.max(24, Number(shot.coneAngle || 38))) : Math.min(28, Math.max(10, Number(shot.coneAngle || 20)));
+          const half = coneDeg * Math.PI / 360;
           ctx.save();
           ctx.translate(shot.x1, shot.y1);
           ctx.rotate(Number(shot.angle || 0));
           ctx.globalCompositeOperation = 'lighter';
-          // 넓은 반투명 반원 채우기를 제거하고 검날처럼 얇은 호만 남깁니다.
-          for (let i = 0; i < 4; i += 1) {
-            const rr = visualRadius * (.66 + i * .095);
-            const a = Math.max(.16, (.76 - i * .12) * fade);
-            ctx.strokeStyle = `hsla(${(time * .18 + i * 68) % 360},100%,72%,${a})`;
-            ctx.lineWidth = Math.max(2.2, 8.5 - i * 1.65);
+          // 맵을 덮는 부채꼴은 완전히 사용하지 않고, 검끝 가까이에 짧은 초승달 2겹만 그립니다.
+          for (let i=0;i<2;i++) {
+            const rr=visualRadius*(.82+i*.13);
+            ctx.strokeStyle=`hsla(${(time*.20+i*92)%360},100%,74%,${(.80-i*.20)*fade})`;
+            ctx.lineWidth=6-i*2;
             ctx.beginPath();
-            ctx.arc(0, 0, rr, -sweep, sweep);
+            ctx.arc(0,0,rr,-half,half);
             ctx.stroke();
           }
-          // 검끝 중심의 짧은 흰색 코어 잔광.
-          ctx.strokeStyle = `rgba(255,255,255,${.82 * fade})`;
-          ctx.lineWidth = 2.2;
-          ctx.beginPath();
-          ctx.arc(0, 0, visualRadius * .92, -sweep * .92, sweep * .92);
-          ctx.stroke();
+          // 검 방향의 짧은 코어선. 최대 길이를 72px로 고정해 공격범위와 무관하게 커지지 않습니다.
+          const coreLen=Math.min(72,visualRadius+8);
+          const grad=ctx.createLinearGradient(18,0,coreLen,0);
+          grad.addColorStop(0,'rgba(255,255,255,0)');
+          grad.addColorStop(.55,`rgba(255,255,255,${.9*fade})`);
+          grad.addColorStop(1,'rgba(255,255,255,0)');
+          ctx.strokeStyle=grad;ctx.lineWidth=3.2;ctx.beginPath();ctx.moveTo(18,0);ctx.lineTo(coreLen,0);ctx.stroke();
           ctx.restore();
+        } else if (shot.effect === 'rainbowPierce') {
+          const a=Math.max(0,fade), len=Math.hypot(shot.x2-shot.x1,shot.y2-shot.y1);
+          ctx.save();ctx.translate(shot.x1,shot.y1);ctx.rotate(Number(shot.angle||0));ctx.globalCompositeOperation='lighter';
+          for(let i=0;i<4;i++){ctx.strokeStyle=`hsla(${(time*.22+i*72)%360},100%,72%,${(.72-i*.11)*a})`;ctx.lineWidth=7-i*1.4;ctx.beginPath();ctx.moveTo(8,i-1.5);ctx.lineTo(len,0);ctx.stroke();}
+          ctx.fillStyle=`rgba(255,255,255,${.9*a})`;ctx.beginPath();ctx.moveTo(len+12,0);ctx.lineTo(len-4,-7);ctx.lineTo(len-1,0);ctx.lineTo(len-4,7);ctx.closePath();ctx.fill();ctx.restore();
         } else if (shot.effect === 'steelSlash') {
           const pulse=Math.sin(progress*Math.PI);
           if (shot.radius) {

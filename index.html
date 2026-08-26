@@ -4711,59 +4711,6 @@ body {
 .craft-layout{display:grid;place-items:center;padding:18px 0}.craft-rainbow-card{width:min(760px,100%);display:grid;gap:16px;overflow:hidden;position:relative;background:radial-gradient(circle at 12% 8%,rgba(255,255,255,.12),transparent 28%),linear-gradient(145deg,rgba(255,90,160,.13),rgba(255,215,80,.10),rgba(75,220,255,.11),rgba(170,90,255,.13)),rgba(9,15,30,.94);border-color:rgba(255,255,255,.24)}
 .craft-prism-emblem{font-size:68px;filter:drop-shadow(0 0 18px rgba(255,255,255,.55));animation:rainbowPrismFloat 1.1s ease-in-out infinite alternate}.craft-resource-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.craft-resource-grid>div{display:grid;gap:4px;padding:12px;border:1px solid rgba(255,255,255,.13);border-radius:14px;background:rgba(0,0,0,.18)}.craft-resource-grid span{font-size:11px;color:#b9c6d8}.craft-resource-grid strong{font-size:20px}.craft-count-row{display:grid;grid-template-columns:46px minmax(90px,1fr) 46px auto;gap:8px}.craft-count-row input{text-align:center;font-size:18px;font-weight:900}.craft-cost-preview{padding:11px 13px;border-radius:12px;background:rgba(255,220,90,.08);border:1px solid rgba(255,220,90,.18);font-weight:850}.craft-cost-preview.insufficient{background:rgba(255,90,110,.08);border-color:rgba(255,90,110,.28);color:#ffb5c1}@media(max-width:620px){.craft-resource-grid{grid-template-columns:1fr}.craft-count-row{grid-template-columns:42px 1fr 42px}.craft-count-row #craftMaxBtn{grid-column:1/-1}}
 
-
-/* ===== 무지개 주사위 아이템 카드 UI 개선 ===== */
-#eventItemInventoryGrid{grid-template-columns:1fr!important;gap:14px!important}
-.rainbow-item-roll-card{
-  width:100%;box-sizing:border-box;display:grid!important;
-  grid-template-columns:76px minmax(0,1fr) minmax(220px,300px)!important;
-  gap:16px!important;align-items:center!important;padding:18px!important;
-  border-radius:22px!important;overflow:hidden!important;
-  background:
-    radial-gradient(circle at 8% 18%,rgba(255,104,171,.22),transparent 26%),
-    radial-gradient(circle at 91% 82%,rgba(104,212,255,.16),transparent 30%),
-    linear-gradient(135deg,rgba(32,25,51,.98),rgba(12,26,39,.97))!important;
-  border:1px solid rgba(255,255,255,.30)!important;
-  box-shadow:0 14px 34px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.10);
-}
-.rainbow-item-roll-card .rainbow-item-die{
-  width:70px!important;height:70px!important;border-radius:20px!important;font-size:36px!important;
-  background:linear-gradient(135deg,#ff6fa8,#ffd95b,#69ef9b,#67c8ff,#b77cff)!important;
-  box-shadow:0 0 0 2px rgba(255,255,255,.86),0 0 24px rgba(151,113,255,.32)!important;
-}
-.rainbow-item-roll-copy{min-width:0;display:grid;gap:4px}
-.rainbow-item-roll-copy>strong{font-size:22px;line-height:1.1;white-space:normal;word-break:keep-all}
-.rainbow-item-roll-copy .dice-count{font-size:30px;font-weight:950;line-height:1}
-.rainbow-item-roll-copy small{line-height:1.45}
-.rainbow-item-roll-controls{
-  grid-column:auto!important;display:grid!important;
-  grid-template-columns:minmax(90px,112px) minmax(120px,1fr)!important;
-  gap:10px!important;align-items:stretch!important
-}
-.rainbow-roll-count-label{display:grid;gap:5px;color:#b9c6d8;font-size:11px;font-weight:800}
-.rainbow-roll-count-label input{width:100%;min-width:0;height:48px;text-align:center;font-size:18px;font-weight:950;border-radius:13px}
-#rainbowItemRollBtn{
-  min-width:0!important;min-height:72px!important;padding:10px 14px!important;border-radius:15px!important;
-  display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;
-  white-space:nowrap!important;word-break:keep-all!important;writing-mode:horizontal-tb!important;
-  font-size:14px!important;font-weight:950!important;line-height:1.2!important;
-}
-#rainbowItemRollBtn span{font-size:22px}
-.rainbow-strand-card{border-color:rgba(255,255,255,.38)!important;background:linear-gradient(135deg,rgba(255,87,160,.16),rgba(255,223,92,.12),rgba(102,211,255,.13),rgba(179,112,255,.16))!important}
-.rainbow-strand-card .fragment-icon{filter:drop-shadow(0 0 12px rgba(255,255,255,.45))}
-@media(max-width:760px){
-  .rainbow-item-roll-card{grid-template-columns:68px minmax(0,1fr)!important}
-  .rainbow-item-roll-controls{grid-column:1/-1!important;grid-template-columns:minmax(90px,120px) minmax(0,1fr)!important}
-}
-@media(max-width:430px){
-  .rainbow-item-roll-card{grid-template-columns:58px minmax(0,1fr)!important;padding:14px!important;gap:12px!important}
-  .rainbow-item-roll-card .rainbow-item-die{width:56px!important;height:56px!important;font-size:29px!important;border-radius:16px!important}
-  .rainbow-item-roll-copy>strong{font-size:18px}
-  .rainbow-item-roll-copy .dice-count{font-size:24px}
-  .rainbow-item-roll-controls{grid-template-columns:86px minmax(0,1fr)!important}
-  #rainbowItemRollBtn{min-height:58px!important;font-size:13px!important;padding:8px 10px!important}
-}
-
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style id="multiplayerStyles">
@@ -9142,7 +9089,7 @@ function applyStagePreview(stageId = selectedStage) {
         rainbowMapBuffEvery:20, rainbowMapBuffDuration:5, rainbowMapDamageMultiplier:4, rainbowMapSpeedMultiplier:4,
         footprintRadius:110, multiplayerFootprintRadius:92, maxPlaced:0, color:'#9b7cff',
         skillName:'무지개 세계',
-        skillText:'설치 직후에는 공격하지 않고 첫 공격 쿨다운을 기다립니다. 근거리에서는 실제 검 한 자루로 전방 180°를 베고, 먼 적에게는 한 번에 최대 7발의 프리즘 검기를 각각 발사합니다. 0.5초마다 길의 무작위 위치에 HP 20,000 광석을 소환하며(최대 7개), 적과 충돌하면 서로의 HP만큼 상쇄됩니다. 20초마다 5초 동안 모든 아군 공격력과 공격속도가 4배가 됩니다. 여러 명을 배치할 수 있습니다.'
+        skillText:'0.5초마다 전방 180°를 20,000 피해로 베고, 0.5초마다 길의 무작위 위치에 HP 20,000 광석을 소환합니다(최대 7개). 적이 광석에 부딪히면 서로의 HP만큼 상쇄됩니다. 20초마다 5초 동안 맵 전체가 무지개가 되어 모든 아군 공격력과 공격속도가 4배가 됩니다. 여러 명을 배치할 수 있습니다.'
       },
       errorEntity: {
         id: 'errorEntity',
@@ -9245,11 +9192,7 @@ function applyStagePreview(stageId = selectedStage) {
 
     const RAINBOW_FRAGMENT_ITEM = Object.freeze({
       id:'rainbowFragmentItem', itemKey:'rainbowFragment', name:'무지개의 조각', icon:'🌈💠',
-      rarity:'합성 재료', rarityKey:'rainbow', rarityClass:'rarity-galaxy', isItem:true
-    });
-    const RAINBOW_STRAND_ITEM = Object.freeze({
-      id:'rainbowStrandItem', itemKey:'rainbowStrand', name:'무지개의 한자락', icon:'🌈🪡',
-      rarity:'0.01% 한정 아이템', rarityKey:'rainbow', rarityClass:'rarity-galaxy', isItem:true
+      rarity:'한정 아이템', rarityKey:'rainbow', rarityClass:'rarity-galaxy', isItem:true
     });
 
     const DICE_DATA = {
@@ -9496,8 +9439,7 @@ function applyStagePreview(stageId = selectedStage) {
           error: 0
         },
         itemInventory: {
-          rainbowFragment: 0,
-          rainbowStrand: 0
+          rainbowFragment: 0
         },
         deck: [
           'starterArcher',
@@ -9575,10 +9517,6 @@ function applyStagePreview(stageId = selectedStage) {
       player.itemInventory.rainbowFragment = Math.max(
         0,
         Math.floor(Number(player.itemInventory.rainbowFragment || 0))
-      );
-      player.itemInventory.rainbowStrand = Math.max(
-        0,
-        Math.floor(Number(player.itemInventory.rainbowStrand || 0))
       );
     }
 
@@ -9894,10 +9832,6 @@ function applyStagePreview(stageId = selectedStage) {
         player.itemInventory.rainbowFragment = Math.max(
           0,
           Math.floor(Number(data?.rainbowFragment || 0))
-        );
-        player.itemInventory.rainbowStrand = Math.max(
-          0,
-          Math.floor(Number(data?.rainbowStrand || 0))
         );
         return true;
       } catch (error) {
@@ -10621,14 +10555,14 @@ async function loadAdminPlayer(userId = adminSelectedUserId) {
 
 let mailboxCache=[];
 function setMailStatus(message,type=''){const el=document.querySelector('#mailStatus');if(el){el.textContent=message||'';el.className=`social-status ${type||''}`;}}
-function mailGiftLabel(m){if(!m?.giftKind||Number(m.giftAmount||0)<=0)return '';if(m.giftKind==='gems')return `💎 소환석 ${Number(m.giftAmount).toLocaleString()}개`;if(m.giftKind==='dice')return `🎲 ${m.giftKey} 주사위 ${Number(m.giftAmount).toLocaleString()}개`;return `🎁 ${m.giftKey==='rainbowFragment'?'무지개의 조각':m.giftKey==='rainbowStrand'?'무지개의 한자락':m.giftKey} ${Number(m.giftAmount).toLocaleString()}개`;}
-function updateMailGiftOptions(){const kind=document.querySelector('#mailGiftKindSelect')?.value||'',key=document.querySelector('#mailGiftKeySelect'),amt=document.querySelector('#mailGiftAmountInput');if(!key||!amt)return;if(!kind){key.innerHTML='<option value="">종류 선택</option>';key.disabled=true;amt.disabled=true;return;}amt.disabled=false;if(kind==='gems'){key.innerHTML='<option value="gems">소환석</option>';key.disabled=true;}else if(kind==='dice'){key.disabled=false;key.innerHTML=Object.values(DICE_DATA).map(d=>`<option value="${d.key}">${d.rarity} (${Number(player.diceInventory?.[d.key]||0).toLocaleString()}개)</option>`).join('');}else{key.disabled=false;const items=player.itemInventory||{};const keys=Object.keys(items);key.innerHTML=(keys.length?keys:['rainbowFragment','rainbowStrand']).map(k=>`<option value="${k}">${k==='rainbowFragment'?'무지개의 조각':k==='rainbowStrand'?'무지개의 한자락':k} (${Number(items[k]||0).toLocaleString()}개)</option>`).join('');}}
+function mailGiftLabel(m){if(!m?.giftKind||Number(m.giftAmount||0)<=0)return '';if(m.giftKind==='gems')return `💎 소환석 ${Number(m.giftAmount).toLocaleString()}개`;if(m.giftKind==='dice')return `🎲 ${m.giftKey} 주사위 ${Number(m.giftAmount).toLocaleString()}개`;return `🎁 ${m.giftKey==='rainbowFragment'?'무지개의 조각':m.giftKey} ${Number(m.giftAmount).toLocaleString()}개`;}
+function updateMailGiftOptions(){const kind=document.querySelector('#mailGiftKindSelect')?.value||'',key=document.querySelector('#mailGiftKeySelect'),amt=document.querySelector('#mailGiftAmountInput');if(!key||!amt)return;if(!kind){key.innerHTML='<option value="">종류 선택</option>';key.disabled=true;amt.disabled=true;return;}amt.disabled=false;if(kind==='gems'){key.innerHTML='<option value="gems">소환석</option>';key.disabled=true;}else if(kind==='dice'){key.disabled=false;key.innerHTML=Object.values(DICE_DATA).map(d=>`<option value="${d.key}">${d.rarity} (${Number(player.diceInventory?.[d.key]||0).toLocaleString()}개)</option>`).join('');}else{key.disabled=false;const items=player.itemInventory||{};const keys=Object.keys(items);key.innerHTML=(keys.length?keys:['rainbowFragment']).map(k=>`<option value="${k}">${k==='rainbowFragment'?'무지개의 조각':k} (${Number(items[k]||0).toLocaleString()}개)</option>`).join('');}}
 function updateMailUnreadBadge(){const b=document.querySelector('#mailUnreadBadge');if(!b)return;const n=mailboxCache.filter(m=>!m.isRead).length;b.textContent=n;b.classList.toggle('hidden',n<=0);}
-function renderMailbox(){const list=document.querySelector('#mailList');if(!list)return;if(!mailboxCache.length){list.innerHTML='<div class="social-empty">받은 편지가 없습니다.</div>';return;}list.innerHTML=mailboxCache.map(m=>{const gift=mailGiftLabel(m);return `<div class="mail-card ${m.isRead?'':'unread'}" data-mail-id="${m.id}"><div class="mail-card-head"><strong class="${m.systemMail?'mail-system':''}">${m.systemMail?'🛠️ ':''}${adminEscapeHtml(m.senderName||'SYSTEM')}</strong><small>${adminEscapeHtml(formatAdminDate(m.createdAt))}</small></div><p>${adminEscapeHtml(m.message||'')}</p>${gift?`<div class="mail-gift"><span>${adminEscapeHtml(gift)}</span><button data-mail-claim="${m.id}" ${m.giftClaimed?'disabled':''}>${m.giftClaimed?'수령 완료':'선물 받기'}</button></div>`:''}</div>`}).join('');list.querySelectorAll('.mail-card').forEach(c=>c.addEventListener('click',e=>{if(e.target.closest('[data-mail-claim]'))return;const id=c.dataset.mailId;void supabaseClient.rpc('mark_mail_read_v1',{p_mail_id:id});const m=mailboxCache.find(x=>x.id===id);if(m)m.isRead=true;c.classList.remove('unread');updateMailUnreadBadge();}));list.querySelectorAll('[data-mail-claim]').forEach(btn=>btn.addEventListener('click',async()=>{btn.disabled=true;try{const {error}=await supabaseClient.rpc('claim_mail_gift_v1',{p_mail_id:btn.dataset.mailClaim});if(error)throw error;setMailStatus('선물을 받았습니다.','good');await Promise.all([syncServerDiceInventory(),syncServerItemInventory()]);await loadMailbox();if(typeof renderMenu==='function')renderMenu();}catch(e){setMailStatus(`선물 수령 실패: ${e.message}`,'error');btn.disabled=false;}}));}
+function renderMailbox(){const list=document.querySelector('#mailList');if(!list)return;if(!mailboxCache.length){list.innerHTML='<div class="social-empty">받은 편지가 없습니다.</div>';return;}list.innerHTML=mailboxCache.map(m=>{const gift=mailGiftLabel(m);return `<div class="mail-card ${m.isRead?'':'unread'}" data-mail-id="${m.id}"><div class="mail-card-head"><strong class="${m.systemMail?'mail-system':''}">${m.systemMail?'🛠️ ':''}${adminEscapeHtml(m.senderName||'SYSTEM')}</strong><small>${adminEscapeHtml(formatAdminDate(m.createdAt))}</small></div><p>${adminEscapeHtml(m.message||'')}</p>${gift?`<div class="mail-gift"><span>${adminEscapeHtml(gift)}</span><button data-mail-claim="${m.id}" ${m.giftClaimed?'disabled':''}>${m.giftClaimed?'수령 완료':'선물 받기'}</button></div>`:''}</div>`}).join('');list.querySelectorAll('.mail-card').forEach(c=>c.addEventListener('click',e=>{if(e.target.closest('[data-mail-claim]'))return;const id=c.dataset.mailId;void supabaseClient.rpc('mark_mail_read_v1',{p_mail_id:id});const m=mailboxCache.find(x=>x.id===id);if(m)m.isRead=true;c.classList.remove('unread');updateMailUnreadBadge();}));list.querySelectorAll('[data-mail-claim]').forEach(btn=>btn.addEventListener('click',async()=>{btn.disabled=true;try{const {error}=await supabaseClient.rpc('claim_mail_gift_v1',{p_mail_id:btn.dataset.mailClaim});if(error)throw error;setMailStatus('선물을 받았습니다.','good');await Promise.all([syncServerDiceInventory(),syncServerItemInventory()]);await loadMailbox();renderMenu();}catch(e){setMailStatus(`선물 수령 실패: ${e.message}`,'error');btn.disabled=false;}}));}
 async function loadMailbox(){try{const {data,error}=await supabaseClient.rpc('list_my_mail_v1');if(error)throw error;mailboxCache=Array.isArray(data)?data:[];renderMailbox();updateMailUnreadBadge();}catch(e){console.warn('우편함 조회 실패',e);}}
 async function openMailbox(){document.querySelector('#mailboxOverlay')?.classList.remove('hidden');await Promise.all([syncServerDiceInventory(),syncServerItemInventory()]);updateMailGiftOptions();await loadMailbox();}
 function closeMailbox(){document.querySelector('#mailboxOverlay')?.classList.add('hidden');}
-async function sendMailboxLetter(){const r=document.querySelector('#mailRecipientInput')?.value?.trim()||'',m=document.querySelector('#mailMessageInput')?.value?.trim()||'',k=document.querySelector('#mailGiftKindSelect')?.value||'',key=document.querySelector('#mailGiftKeySelect')?.value||'',a=Math.max(0,Math.floor(Number(document.querySelector('#mailGiftAmountInput')?.value||0)));if(!r||!m){setMailStatus('받는 사람과 메시지를 입력하세요.','error');return;}const b=document.querySelector('#mailSendBtn');if(b)b.disabled=true;try{const {data,error}=await supabaseClient.rpc('send_player_mail_v1',{p_recipient_username:r,p_message:m,p_gift_kind:k||null,p_gift_key:k?key:null,p_gift_amount:k?a:0});if(error)throw error;setMailStatus(`${data?.recipient||r}에게 보냈습니다.`,'good');document.querySelector('#mailMessageInput').value='';await Promise.all([syncServerDiceInventory(),syncServerItemInventory()]);if(typeof renderMenu==='function')renderMenu();}catch(e){setMailStatus(`전송 실패: ${e.message}`,'error');}finally{if(b)b.disabled=false;}}
+async function sendMailboxLetter(){const r=document.querySelector('#mailRecipientInput')?.value?.trim()||'',m=document.querySelector('#mailMessageInput')?.value?.trim()||'',k=document.querySelector('#mailGiftKindSelect')?.value||'',key=document.querySelector('#mailGiftKeySelect')?.value||'',a=Math.max(0,Math.floor(Number(document.querySelector('#mailGiftAmountInput')?.value||0)));if(!r||!m){setMailStatus('받는 사람과 메시지를 입력하세요.','error');return;}const b=document.querySelector('#mailSendBtn');if(b)b.disabled=true;try{const {data,error}=await supabaseClient.rpc('send_player_mail_v1',{p_recipient_username:r,p_message:m,p_gift_kind:k||null,p_gift_key:k?key:null,p_gift_amount:k?a:0});if(error)throw error;setMailStatus(`${data?.recipient||r}에게 보냈습니다.`,'good');document.querySelector('#mailMessageInput').value='';await Promise.all([syncServerDiceInventory(),syncServerItemInventory()]);renderMenu();}catch(e){setMailStatus(`전송 실패: ${e.message}`,'error');}finally{if(b)b.disabled=false;}}
 
 async function loadAdminErrorHolders() {
   const list = document.querySelector('#adminErrorHolderList');
@@ -10773,8 +10707,7 @@ async function craftRainbowDice(){
 
 function getAdminItemDisplayName(itemKey) {
   const names = {
-    rainbowFragment: '🌈💠 무지개의 조각',
-    rainbowStrand: '🌈🪡 무지개의 한자락'
+    rainbowFragment: '🌈💠 무지개의 조각'
   };
   return names[itemKey] || `📦 ${itemKey}`;
 }
@@ -10910,8 +10843,9 @@ async function resetSpecificServerDiceType() {
   if (btn) btn.disabled = true;
   setAdminStatus(`${diceLabel} 주사위를 모든 계정에서 0으로 맞추는 중...`, 'message');
   try {
-    const { data, error } = await supabaseClient.rpc('admin_reset_dice_type_for_all_v2', {
+    const { data, error } = await supabaseClient.rpc('admin_reset_dice_type_for_all_v1', {
       p_rarity: rarity,
+      p_confirm: 'RESET_DICE_TYPE',
       p_reason: reason
     });
     if (error) throw error;
@@ -10942,8 +10876,9 @@ async function resetSpecificServerUnitType() {
   if (btn) btn.disabled = true;
   setAdminStatus(`${unit.name}을(를) 모든 계정에서 삭제하는 중...`, 'message');
   try {
-    const { data, error } = await supabaseClient.rpc('admin_reset_unit_type_for_all_v2', {
+    const { data, error } = await supabaseClient.rpc('admin_reset_unit_type_for_all_v1', {
       p_unit_id: unitId,
+      p_confirm: 'RESET_UNIT_TYPE',
       p_reason: reason
     });
     if (error) throw error;
@@ -12039,13 +11974,13 @@ async function logout() {
       if (showingItems) {
         const eventItemGrid = document.querySelector('#eventItemInventoryGrid');
         const rainbowFragments = Math.max(0, Math.floor(Number(player.itemInventory?.rainbowFragment || 0)));
-        const rainbowStrands = Math.max(0, Math.floor(Number(player.itemInventory?.rainbowStrand || 0)));
         if (eventItemGrid) {
           const rainbowDiceAmount = Math.max(0, Math.floor(Number(player.diceInventory?.rainbow || 0)));
-          const fragmentMarkup = `<div class="fragment-card rainbow-material-card"><div class="fragment-icon">🌈💠</div><h4>무지개의 조각</h4><div class="fragment-count">${rainbowFragments.toLocaleString()}개</div><small class="rarity-galaxy">무지개 저편 적 처치 시 획득 · 주사위 합성 재료</small></div>`;
-          const strandMarkup = `<div class="fragment-card rainbow-strand-card"><div class="fragment-icon">🌈🪡</div><h4>무지개의 한자락</h4><div class="fragment-count">${rainbowStrands.toLocaleString()}개</div><small class="rarity-galaxy">무지개 주사위에서 0.01% 확률로 등장하는 한정 아이템</small></div>`;
-          const rainbowDiceMarkup = `<div class="rainbow-item-roll-card rainbow-dice-card"><div class="rainbow-item-die">🎲</div><div class="rainbow-item-roll-copy"><strong>무지개 주사위</strong><div class="dice-count">×${rainbowDiceAmount.toLocaleString()}</div><small class="muted">보유한 무지개 주사위를 여기서 바로 굴릴 수 있습니다.</small></div><div class="rainbow-item-roll-controls"><label class="rainbow-roll-count-label"><span>굴릴 개수</span><input id="rainbowItemRollCount" type="number" inputmode="numeric" min="${rainbowDiceAmount>0?1:0}" max="${rainbowDiceAmount}" value="${rainbowDiceAmount>0?1:0}" ${rainbowDiceAmount<=0?'disabled':''}></label><button id="rainbowItemRollBtn" type="button" ${rainbowDiceAmount<=0?'disabled':''}><span>🌈🎲</span><strong>주사위 굴리기</strong></button></div></div>`;
-          eventItemGrid.innerHTML = rainbowDiceMarkup + fragmentMarkup + strandMarkup;
+          const fragmentMarkup = rainbowFragments > 0
+            ? `<div class="fragment-card" style="background:linear-gradient(135deg,rgba(255,102,170,.18),rgba(255,225,96,.14),rgba(80,220,255,.16),rgba(175,100,255,.18));border-color:rgba(255,255,255,.28);"><div class="fragment-icon">🌈💠</div><h4>무지개의 조각</h4><div class="fragment-count">${rainbowFragments.toLocaleString()}개</div><small class="rarity-galaxy">무지개 저편 적 처치 시 드롭 · 합성 재료</small></div>`
+            : '<div class="card"><p class="muted">아직 보유한 한정 아이템이 없습니다.</p></div>';
+          const rainbowDiceMarkup = `<div class="rainbow-item-roll-card rainbow-dice-card"><div class="rainbow-item-die">🎲</div><div><strong>무지개 주사위</strong><div class="dice-count">×${rainbowDiceAmount.toLocaleString()}</div><small class="muted">아이템 칸에서도 바로 굴릴 수 있습니다.</small></div><div class="rainbow-item-roll-controls"><input id="rainbowItemRollCount" type="number" inputmode="numeric" min="${rainbowDiceAmount>0?1:0}" max="${rainbowDiceAmount}" value="${rainbowDiceAmount>0?1:0}" ${rainbowDiceAmount<=0?'disabled':''}><button id="rainbowItemRollBtn" type="button" ${rainbowDiceAmount<=0?'disabled':''}>🌈🎲 선택한 개수 굴리기</button></div></div>`;
+          eventItemGrid.innerHTML = rainbowDiceMarkup + fragmentMarkup;
           const rainbowItemRollBtn = eventItemGrid.querySelector('#rainbowItemRollBtn');
           const rainbowItemRollCount = eventItemGrid.querySelector('#rainbowItemRollCount');
           rainbowItemRollBtn?.addEventListener('click', () => {
@@ -13286,17 +13221,13 @@ function requestGachaDraw(count) {
         });
 
         if (rarityKey === 'rainbow') {
-          beforeCopies['item:rainbowStrand'] = Math.max(0, Math.floor(Number(player.itemInventory?.rainbowStrand || 0)));
+          beforeCopies['item:rainbowFragment'] = Math.max(0, Math.floor(Number(player.itemInventory?.rainbowFragment || 0)));
           cutsceneRunning = true;
           const serverResult = await commitRainbowDiceRollToServer(count);
           const rollResults = serverResult.results.map(result => {
             const type = String(result?.type || 'unit');
             const id = String(result?.id || '');
-            if (type === 'item' && id === 'rainbowStrand') {
-              return { faces: buildRainbowDiceFaces(RAINBOW_STRAND_ITEM), winningUnit: RAINBOW_STRAND_ITEM, isItem:true };
-            }
             if (type === 'item' && id === 'rainbowFragment') {
-              // 과거 서버 응답과의 호환성만 유지합니다. 신규 0.01% 아이템은 무지개의 한자락입니다.
               return { faces: buildRainbowDiceFaces(RAINBOW_FRAGMENT_ITEM), winningUnit: RAINBOW_FRAGMENT_ITEM, isItem:true };
             }
             const winningUnit = UNIT_DATA[id];
@@ -14796,7 +14727,7 @@ function requestGachaDraw(count) {
         if (pick === 'captain') return [{
           ...commonBoss,
           type:'rainbowGuardCaptainBoss', variant:'rainbowGuardCaptain', name:'무지개 근위대 대장', icon:'🌈', health:30000*RAINBOW_EVENT_HP_MULTIPLIER,
-          speed:38, radius:46, reward:1800, rainbowSpearInterval:0, rainbowSpearTimer:999999, rainbowGuardInterval:5, rainbowGuardTimer:3, rainbowGuardDuration:2
+          speed:38, radius:46, reward:1800, rainbowSpearInterval:8, rainbowSpearTimer:5, rainbowGuardInterval:5, rainbowGuardTimer:3, rainbowGuardDuration:2
         }];
         return [{
           ...commonBoss,
@@ -15394,7 +15325,7 @@ function requestGachaDraw(count) {
         rainbowMage: '🌈 오버 더 레인보우 · 20타마다 3초 동안 공격속도×2',
         rainbowLight: `🌈 스펙트럼 링크 · 0.01초 연속 광선 · 누적 5,000타마다 동시 링크 +1 (현재 ${1+Math.floor(Number(placed?.rainbowLightHits||0)/5000)}명)`,
         rainbowUnicornUnit: '🌈 레인보우 저지먼트 · 10타마다 사거리 전체 표식 · 3초 뒤 일반 적 즉사 / 보스 최대 HP 20% 피해',
-        rainbowBeyond: '🌈 무지개 세계 · 근거리 180° 검격 / 원거리 최대 7발 프리즘 검기 · 0.5초마다 HP 20,000 광석(개체당 최대 7) · 20초마다 5초간 전체 아군 공격력·공속×4 · 여러 명 배치 가능',
+        rainbowBeyond: '🌈 무지개 세계 · 평타는 전방 180° 실제 범위 공격 · 0.5초마다 HP 20,000 광석(개체당 최대 7) · 20초마다 5초간 전체 아군 공격력·공속×4 · 여러 명 배치 가능',
         astralChronomancer: '다중발사(2/3/4발) · 공전탄 최대 10발 · 각 탄환 20% 황금 시간기절 · 60회 공격마다 사거리 300 시간정지 5초'
       };
       return summaries[unit.id] || '기본 공격 유닛';
@@ -15601,15 +15532,17 @@ function requestGachaDraw(count) {
         rainbowSpawnOriginX: randomVisibleSpawn?.x ?? path[0].x,
         rainbowSpawnOriginY: randomVisibleSpawn?.y ?? path[0].y,
         rainbowSpawnVisualReady: Boolean(spec.spawnOffMap || spec.spawnRandomVisible),
+        // 일반 적도 스폰 직후 몸은 화면 밖인데 무기/꼬리 끝만 먼저 보이지 않도록
+        // 본체 중심이 충분히 맵 안으로 들어오기 전에는 적 전체 렌더링을 잠시 숨깁니다.
         spawnVisualOriginX: randomVisibleSpawn?.x ?? path[0].x,
         spawnVisualOriginY: randomVisibleSpawn?.y ?? path[0].y,
-        spawnVisualReady: Boolean(spec.spawnOffMap || spec.spawnRandomVisible || spec.staticRainbowObject || spec.rainbowOre)
+        spawnVisualReady: Boolean(spec.spawnOffMap || spec.spawnRandomVisible || spec.staticRainbowObject || spec.rainbowOre || spec.staticCactus)
       };
       battle.enemies.push(spawnedEnemy);
 
       if (battle?.isRainbowEvent && isRainbowEventBossEnemy(spawnedEnemy)) {
-        // 등장 순간 기절은 사용하지 않습니다. 주기 기절 타이머만 유지합니다.
         spawnedEnemy.rainbowInitialBossStunApplied = true;
+        applyRainbowBossForcedStun(spawnedEnemy, RAINBOW_BOSS_INITIAL_STUN_DURATION, true);
       }
 
       waveState.spawned += 1;
@@ -15875,8 +15808,8 @@ function requestGachaDraw(count) {
         enemy.rainbowDoomTimer=Number(enemy.rainbowDoomTimer||enemy.rainbowDoomInterval||5)-dt;
         if(enemy.rainbowDoomTimer<=0){markRainbowDoomOnAllies(enemy);enemy.rainbowDoomTimer+=Number(enemy.rainbowDoomInterval||5);}
       } else if(enemy.type==='rainbowGuardCaptainBoss') {
-        // 근위대 대장은 더 이상 기지로 창을 던지지 않습니다.
-        enemy.rainbowSpearTimer = 999999;
+        enemy.rainbowSpearTimer=Number(enemy.rainbowSpearTimer||enemy.rainbowSpearInterval||8)-dt;
+        if(enemy.rainbowSpearTimer<=0){launchRainbowCaptainSpear(enemy);enemy.rainbowSpearTimer+=Number(enemy.rainbowSpearInterval||8);}
         enemy.rainbowGuardTimer=Number(enemy.rainbowGuardTimer||enemy.rainbowGuardInterval||5)-dt;
         enemy.rainbowGuardDamageHalfRemaining=Math.max(0,Number(enemy.rainbowGuardDamageHalfRemaining||0)-dt);
         if(enemy.rainbowGuardTimer<=0){enemy.rainbowGuardDamageHalfRemaining=Number(enemy.rainbowGuardDuration||2);enemy.rainbowGuardTimer+=Number(enemy.rainbowGuardInterval||5);enemy.pulseEffect=.65;enemy.pulseKind='rainbowGuard';}
@@ -16988,8 +16921,7 @@ function requestGachaDraw(count) {
         rainbowLance: .30,
         rainbowSigil: .46,
         rainbowHornImpact: .30,
-        rainbowBossDash: .22,
-        rainbowSwordWave: .34
+        rainbowBossDash: .22
       };
 
       return durations[effect] || .34;
@@ -17822,21 +17754,6 @@ function requestGachaDraw(count) {
 
     function getFrontmostEnemyInRange(placed, maxRange) {
       const rangeSq = maxRange * maxRange;
-
-      // FEVER의 무지개 광석은 공격 가능한 적 오브젝트입니다.
-      // 사거리 안에 광석이 있으면 아군이 이를 확실히 공격하도록 우선 타깃으로 잡습니다.
-      if (battle?.isRainbowEvent) {
-        let oreTarget = null;
-        let oreDistSq = Infinity;
-        forEachBattleEnemyNear(placed.x, placed.y, maxRange, enemy => {
-          if (!enemy || enemy.dead || !enemy.rainbowOre) return;
-          const dx = enemy.x - placed.x, dy = enemy.y - placed.y;
-          const distSq = dx*dx + dy*dy;
-          if (distSq <= rangeSq && distSq < oreDistSq) { oreTarget = enemy; oreDistSq = distSq; }
-        });
-        if (oreTarget) return oreTarget;
-      }
-
       let best = null;
       let bestProgress = -Infinity;
       let bestRemainSq = Infinity;
@@ -18601,68 +18518,32 @@ function requestGachaDraw(count) {
         if (!target) return;
 
         placed.angle = Math.atan2(target.y-placed.y,target.x-placed.x);
-        placed.cooldown = Math.max(.015, Number(placed.fireInterval||.5) * slowMultiplier * rainbowHasteMultiplier);
+        placed.cooldown = Math.max(.015, Number(placed.fireInterval||.5) * slowMultiplier);
         placed.attackAnimation = 1;
+        placed.attackMode = 'rainbowSlash';
         placed.attackCount = Number(placed.attackCount||0)+1;
 
         const dmg = Math.max(1, Number(placed.damage||UNIT_DATA.rainbowBeyond.damage||20000));
-        const targetDistance = Math.hypot(target.x-placed.x,target.y-placed.y);
-        const closeRange = Math.min(132, Number(placed.range||240) * .56);
-
-        if (targetDistance <= closeRange) {
-          // 근거리: 실제 검을 한 번 휘두르는 180° 근접 베기.
-          placed.attackMode = 'rainbowSlash';
-          const half = Math.PI/2;
-          let hitCount = 0;
-          for (const enemy of battle.enemies) {
-            if (enemy.dead || enemy.type==='rainbowFeverCore') continue;
-            if (isEnemyInsideCone(enemy,placed,placed.angle,closeRange,half)) {
-              applyTraitDamage(placed,enemy,dmg);
-              hitCount += 1;
-            }
-          }
-          if (hitCount === 0 && !target.dead && target.type !== 'rainbowFeverCore') applyTraitDamage(placed,target,dmg);
-
-          // 설치 모션과 분리된 전용 검 휘두르기 이펙트.
-          const fx = {
-            x1:placed.x,y1:placed.y,
-            x2:placed.x+Math.cos(placed.angle)*124,y2:placed.y+Math.sin(placed.angle)*124,
-            life:.42,maxLife:.42,effect:'rainbowSlash',color:'#ffffff',
-            sourceUnitId:placed.id,angle:placed.angle,radius:closeRange,
-            visualRadius:124,coneAngle:118,compact:false,seed:Math.random()*1000
-          };
-          battle.shots.push(fx);
-        } else {
-          // 원거리: ERROR처럼 여러 갈래로 검기를 방출하되 최대 7명의 적에게 한 발씩 보냅니다.
-          placed.attackMode = 'rainbowSwordWave';
-          const rangeSq = Number(placed.range||240) ** 2;
-          const candidates = battle.enemies
-            .filter(enemy => {
-              if (!enemy || enemy.dead || enemy.soilPileState || enemy.type==='rainbowFeverCore') return false;
-              const dx=enemy.x-placed.x,dy=enemy.y-placed.y;
-              return dx*dx+dy*dy<=rangeSq;
-            })
-            .sort((a,b)=>{
-              if (Boolean(b.rainbowOre)!==Boolean(a.rainbowOre)) return Number(Boolean(b.rainbowOre))-Number(Boolean(a.rainbowOre));
-              const ap=Number(a.targetIndex||0),bp=Number(b.targetIndex||0);
-              if (bp!==ap) return bp-ap;
-              return Math.hypot(a.x-placed.x,a.y-placed.y)-Math.hypot(b.x-placed.x,b.y-placed.y);
-            })
-            .slice(0,7);
-          if (!candidates.length) candidates.push(target);
-
-          candidates.forEach((enemy,index)=>{
-            const angle=Math.atan2(enemy.y-placed.y,enemy.x-placed.x);
+        const half = Math.PI/2;
+        let hitCount = 0;
+        for (const enemy of battle.enemies) {
+          if (enemy.dead || enemy.type==='rainbowFeverCore' || enemy.rainbowOre) continue;
+          if (isEnemyInsideCone(enemy,placed,placed.angle,placed.range,half)) {
             applyTraitDamage(placed,enemy,dmg);
-            battle.shots.push({
-              x1:placed.x+Math.cos(angle)*22,y1:placed.y+Math.sin(angle)*22,
-              x2:enemy.x,y2:enemy.y,
-              life:.34,maxLife:.34,effect:'rainbowSwordWave',
-              color:'#ffffff',sourceUnitId:placed.id,angle,
-              seed:Math.random()*1000+index*37,bladeIndex:index
-            });
-          });
+            hitCount += 1;
+          }
         }
+        // 경계각/좌표 오차로 타깃이 콘 판정에서 빠져도 최소한 바라본 적은 반드시 타격합니다.
+        if (hitCount === 0 && !target.dead && target.type !== 'rainbowFeverCore' && !target.rainbowOre) {
+          applyTraitDamage(placed,target,dmg);
+        }
+
+        // 실제 데미지는 전방 180° 그대로지만, 화면 이펙트는 검 주변의 짧은 초승달만 표시합니다.
+        let slashFx=placed._rainbowSlashFx;
+        if(!slashFx || Number(slashFx.life||0)<=0 || !battle.shots.includes(slashFx)) slashFx=null;
+        const rainbowSlashVisualRadius = 82;
+        if(slashFx){slashFx.x1=placed.x;slashFx.y1=placed.y;slashFx.x2=placed.x+Math.cos(placed.angle)*82;slashFx.y2=placed.y+Math.sin(placed.angle)*82;slashFx.life=.28;slashFx.maxLife=.28;slashFx.angle=placed.angle;slashFx.radius=placed.range;slashFx.visualRadius=rainbowSlashVisualRadius;slashFx.coneAngle=96;slashFx.compact=true;slashFx.seed=Math.random()*1000;}
+        else {slashFx={x1:placed.x,y1:placed.y,x2:placed.x+Math.cos(placed.angle)*82,y2:placed.y+Math.sin(placed.angle)*82,life:.28,maxLife:.28,effect:'rainbowSlash',color:'#ff8fd0',sourceUnitId:placed.id,angle:placed.angle,radius:placed.range,visualRadius:rainbowSlashVisualRadius,coneAngle:96,compact:true,seed:Math.random()*1000};battle.shots.push(slashFx);placed._rainbowSlashFx=slashFx;}
         return;
       }
 
@@ -21427,17 +21308,8 @@ function requestGachaDraw(count) {
       g.fillStyle=captain?'#fff3a0':'#d7ecff';g.beginPath();g.arc(0,-r*.86,r*.48,0,Math.PI*2);g.fill();g.stroke();
       g.fillStyle='#382f64';g.fillRect(-r*.35,-r*.94,r*.70,r*.15);
       if(captain){g.fillStyle='#ffe66e';g.beginPath();g.moveTo(-r*.46,-r*1.23);g.lineTo(-r*.18,-r*.96);g.lineTo(0,-r*1.35);g.lineTo(r*.18,-r*.96);g.lineTo(r*.48,-r*1.24);g.lineTo(r*.42,-r*.89);g.lineTo(-r*.43,-r*.89);g.closePath();g.fill();}
-      // 근위대 대장은 창 투척을 제거하고 짧은 프리즘 방패/완드만 사용합니다.
-      if(captain){
-        g.save();g.translate(r*.72,-r*.02);g.rotate(-.22);
-        g.shadowBlur=10;g.shadowColor='#fff2a5';
-        const guard=rainbowSpectrumGradient(g,-r*.2,-r*.35,r*.4,r*.35,(time*.12)%360);
-        g.fillStyle=guard;g.strokeStyle='#fff';g.lineWidth=1.8;
-        g.beginPath();g.roundRect(-r*.16,-r*.42,r*.48,r*.84,r*.12);g.fill();g.stroke();
-        g.restore();
-      } else {
-        g.shadowBlur=8;g.shadowColor='#fff';g.strokeStyle='#fff1af';g.lineWidth=4;g.beginPath();g.moveTo(-r*.15,r*.14);g.lineTo(r*.95,-r*.48);g.stroke();
-      }
+      // spear
+      g.shadowBlur=8;g.shadowColor='#fff';g.strokeStyle='#fff1af';g.lineWidth=captain?5.5:4;g.beginPath();g.moveTo(-r*.15,r*.14);g.lineTo(r*1.45,-r*.72);g.stroke();g.fillStyle=armor;g.beginPath();g.moveTo(r*1.43,-r*.72);g.lineTo(r*1.82,-r*.78);g.lineTo(r*1.56,-r*.48);g.closePath();g.fill();g.strokeStyle='white';g.stroke();
       g.restore();
     }
 
@@ -21750,15 +21622,27 @@ function drawPremiumEnemyBackdrop(enemy, drawX, drawY, time) {
     }
 
 function drawEnemy(enemy, time) {
-      // 스폰 지점에서 무기/날개/뿔 끝부분만 먼저 화면에 보이는 현상을 막습니다.
-      // 경로형 적은 몸 전체가 충분히 진입할 때까지 렌더링하지 않습니다.
-      if (!enemy.spawnVisualReady && !enemy.staticRainbowObject && !enemy.rainbowOre && !(enemy.staticCactus && enemy.spawnRandomVisible)) {
-        const sx = Number(enemy.spawnVisualOriginX ?? enemy.rainbowSpawnOriginX ?? path?.[0]?.x ?? enemy.x);
-        const sy = Number(enemy.spawnVisualOriginY ?? enemy.rainbowSpawnOriginY ?? path?.[0]?.y ?? enemy.y);
-        const moved = Math.hypot(Number(enemy.x||0)-sx, Number(enemy.y||0)-sy);
-        const revealDistance = Math.max(110, Number(enemy.radius||22) * 3.6);
-        if (moved < revealDistance) return;
+      // 스폰 지점에서 본체보다 창/검/꼬리 같은 긴 부위 끝만 화면에 먼저 보이는 현상 방지.
+      // 경로형 적은 중심점이 화면 안으로 충분히 들어올 때까지 적 전체를 그리지 않습니다.
+      if (!enemy.spawnVisualReady && !enemy.rainbowOre && enemy.type !== 'rainbowFeverCore') {
+        const sx = Number(enemy.spawnVisualOriginX ?? path?.[0]?.x ?? enemy.x);
+        const sy = Number(enemy.spawnVisualOriginY ?? path?.[0]?.y ?? enemy.y);
+        const ex = Number(enemy.x || 0);
+        const ey = Number(enemy.y || 0);
+        const moved = Math.hypot(ex - sx, ey - sy);
+        const r = Math.max(12, Number(enemy.radius || 22));
+        const neededMove = Math.max(58, Math.min(105, r + 42));
+        const bodySafelyVisible = ex >= Math.max(8, r * .72);
+        if (moved < neededMove || !bodySafelyVisible) return;
         enemy.spawnVisualReady = true;
+        enemy.rainbowSpawnVisualReady = true;
+      }
+      // 구버전 무지개 스폰 플래그와도 호환합니다.
+      if (battle?.isRainbowEvent && !enemy.rainbowOre && enemy.type !== 'rainbowFeverCore' && !enemy.rainbowSpawnVisualReady) {
+        const sx = Number(enemy.rainbowSpawnOriginX ?? path?.[0]?.x ?? enemy.x);
+        const sy = Number(enemy.rainbowSpawnOriginY ?? path?.[0]?.y ?? enemy.y);
+        const moved = Math.hypot(Number(enemy.x||0)-sx, Number(enemy.y||0)-sy);
+        if (moved < 58) return;
         enemy.rainbowSpawnVisualReady = true;
       }
       const cullMargin=Math.max(90,Number(enemy.radius||22)*4);
@@ -25217,8 +25101,8 @@ function drawEnemy(enemy, time) {
           const core=ctx.createRadialGradient(-2,-2,1,0,0,11);core.addColorStop(0,'#fff');core.addColorStop(.35,`hsl(${(time*.16)%360},100%,75%)`);core.addColorStop(1,'rgba(140,80,255,0)');ctx.fillStyle=core;ctx.beginPath();ctx.arc(0,0,11,0,Math.PI*2);ctx.fill();ctx.restore();
         } else if (shot.effect === 'rainbowSlash') {
           const pulse = Math.sin(progress * Math.PI);
-          const visualRadius = Math.min(138, Math.max(96, Number(shot.visualRadius || 124)));
-          const sweepHalf = Math.min(66, Math.max(48, Number(shot.coneAngle || 118) * .5)) * Math.PI / 180;
+          const visualRadius = Math.min(88, Math.max(64, Number(shot.visualRadius || 82)));
+          const sweepHalf = Math.min(58, Math.max(38, Number(shot.coneAngle || 96) * .5)) * Math.PI / 180;
           const sweepHead = -sweepHalf + (sweepHalf * 2) * Math.min(1, progress * 1.18);
           ctx.save();
           ctx.translate(shot.x1, shot.y1);
@@ -25248,7 +25132,7 @@ function drawEnemy(enemy, time) {
           ctx.lineWidth=2.2;
           ctx.beginPath();ctx.arc(0,0,visualRadius+2,Math.max(-sweepHalf,sweepHead-.42),sweepHead);ctx.stroke();
 
-          // 검끝에서 깨져 나오는 프리즘 파편. 근접 검 휘두르기의 묵직함이 느껴지도록 확대했습니다.
+          // 검끝에서 깨져 나오는 작은 프리즘 파편. 화면 전체로 퍼지지 않도록 90px 안에 고정합니다.
           for(let i=0;i<6;i++){
             const a=sweepHead-(i%3)*.10;
             const rr=visualRadius-8-(i%2)*7;
@@ -25257,41 +25141,6 @@ function drawEnemy(enemy, time) {
             ctx.fillStyle=`hsla(${(time*.24+i*57)%360},100%,78%,${(.72-i*.07)*fade*pulse})`;
             ctx.beginPath();ctx.moveTo(5,0);ctx.lineTo(-2,-2.3);ctx.lineTo(-1,0);ctx.lineTo(-2,2.3);ctx.closePath();ctx.fill();
             ctx.restore();
-          }
-          ctx.restore();
-        } else if (shot.effect === 'rainbowSwordWave') {
-          const waveP = Math.max(0, Math.min(1, progress));
-          const alpha = Math.max(0, fade);
-          const travelX = shot.x1 + dx * waveP;
-          const travelY = shot.y1 + dy * waveP;
-          const bladeAngle = Math.atan2(dy,dx);
-          ctx.save();
-          ctx.translate(travelX,travelY);
-          ctx.rotate(bladeAngle);
-          ctx.globalCompositeOperation='lighter';
-
-          // 독립적인 초승달 검기. 단순 색변환 탄환이 아니라 칼날 자체가 날아가는 모양.
-          const arcRadius = 30 + Math.sin(waveP*Math.PI)*8;
-          for(let layer=0;layer<4;layer++){
-            const h=(time*.18+Number(shot.seed||0)*.6+layer*78)%360;
-            ctx.strokeStyle=layer===0?`rgba(255,255,255,${.95*alpha})`:`hsla(${h},100%,72%,${(.72-layer*.12)*alpha})`;
-            ctx.lineWidth=6-layer*1.15;
-            ctx.beginPath();
-            ctx.arc(-4,0,arcRadius-layer*3,-.88,.88);
-            ctx.stroke();
-          }
-          // 검기 중심의 날카로운 프리즘 코어
-          const core=ctx.createLinearGradient(-18,0,24,0);
-          core.addColorStop(0,'rgba(255,255,255,0)');
-          core.addColorStop(.35,`hsla(${(time*.2+40)%360},100%,75%,${.6*alpha})`);
-          core.addColorStop(.72,`rgba(255,255,255,${.98*alpha})`);
-          core.addColorStop(1,'rgba(255,255,255,0)');
-          ctx.strokeStyle=core;ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(-18,0);ctx.lineTo(25,0);ctx.stroke();
-
-          for(let i=0;i<4;i++){
-            const px=-12-i*7, py=Math.sin(Number(shot.seed||0)+i*1.8+time*.01)*5;
-            ctx.fillStyle=`hsla(${(time*.22+i*64)%360},100%,78%,${.55*alpha})`;
-            ctx.beginPath();ctx.moveTo(px+4,py);ctx.lineTo(px,py-2);ctx.lineTo(px-3,py);ctx.lineTo(px,py+2);ctx.closePath();ctx.fill();
           }
           ctx.restore();
         } else if (shot.effect === 'rainbowPierce') {
@@ -26279,7 +26128,7 @@ function drawEnemy(enemy, time) {
         fireInterval: getTraitedUnitInterval(unitData),
         traits: getUnitTraits(unitData.id),
         traitProjectileMultiplier: getTraitStatModifiers(unitData.id).projectiles,
-        cooldown: unitData.id === 'rainbowBeyond' ? Math.max(.25, getTraitedUnitInterval(unitData)) : 0,
+        cooldown: 0,
         totalInvestment: getTraitedUnitCost(unitData),
         animationOffset: Math.random() * Math.PI * 2,
         attackAnimation: 0,
@@ -27828,7 +27677,7 @@ function drawEnemy(enemy, time) {
       totalInvestment: Number(getTraitedUnitCost(data,resolvedTraits)),
       traits: resolvedTraits,
       traitProjectileMultiplier: traitMods.projectiles,
-      cooldown: unitId === 'rainbowBeyond' ? Math.max(.25, Number(getTraitedUnitInterval(data,resolvedTraits))) : 0,
+      cooldown: 0,
       attackCount: 0,
       attackAnimation: 0,
       attackMode: 'idle',

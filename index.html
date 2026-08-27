@@ -9092,7 +9092,7 @@ function applyStagePreview(stageId = selectedStage) {
         rainbowMapBuffEvery:20, rainbowMapBuffDuration:5, rainbowMapDamageMultiplier:4, rainbowMapSpeedMultiplier:4,
         footprintRadius:110, multiplayerFootprintRadius:92, maxPlaced:0, color:'#9b7cff',
         skillName:'무지개 세계',
-        skillText:'광석 설치 스킬은 제거되었습니다. 근거리 120 이내에서는 프리즘 왕검으로 전방 180°를 베고, 121~240 거리에서는 최대 7발의 프리즘 검기를 발사합니다. 평타를 20번 할 때마다 성에 가장 가까운 적을 추적하며 일섬을 20번 연속 사용합니다. 도중에 대상이 죽으면 즉시 다음으로 성에 가까운 적을 다시 지정해 남은 일섬을 계속합니다. 20초마다 5초 동안 모든 아군 공격력과 공격속도가 4배가 됩니다.'
+        skillText:'광석 설치 스킬은 제거되었습니다. 근거리 120 이내에서는 프리즘 왕검으로 전방 180°를 베고, 121~240 거리에서는 최대 7발의 프리즘 검기를 발사합니다. 평타를 20번 할 때마다 성에 가장 가까운 적을 추적하며 일섬을 20번 연속 사용합니다. 매 일섬마다 적을 관통해 참격의 끝 지점까지 직접 이동하고, 다음 일섬은 바로 그 위치에서 다시 시작합니다. 도중에 대상이 죽으면 새 위치에서 다음으로 성에 가까운 적을 즉시 재지정해 남은 일섬을 계속합니다. 20초마다 5초 동안 모든 아군 공격력과 공격속도가 4배가 됩니다.'
       },
       errorEntity: {
         id: 'errorEntity',
@@ -15324,7 +15324,7 @@ function requestGachaDraw(count) {
         rainbowMage: '🌈 오버 더 레인보우 · 20타마다 3초 동안 공격속도×2',
         rainbowLight: `🌈 스펙트럼 링크 · 0.01초 연속 광선 · 누적 5,000타마다 동시 링크 +1 (현재 ${1+Math.floor(Number(placed?.rainbowLightHits||0)/5000)}명)`,
         rainbowUnicornUnit: '🌈 레인보우 저지먼트 · 10타마다 사거리 전체 표식 · 3초 뒤 일반 적 즉사 / 보스 최대 HP 20% 피해',
-        rainbowBeyond: '🌈 무지개 세계 · 광석 설치 제거 · 근거리 120 전방 180° 왕검 베기 · 원거리 최대 7발 프리즘 검기 · 평타 20회마다 성에 가장 가까운 적을 재추적하며 20연속 일섬 · 20초마다 5초 전체 아군 공격력·공속×4',
+        rainbowBeyond: '🌈 무지개 세계 · 광석 설치 제거 · 근거리 120 전방 180° 왕검 베기 · 원거리 최대 7발 프리즘 검기 · 평타 20회마다 성에 가장 가까운 적을 재추적하며 20연속 이동 일섬(매 참격 끝점으로 직접 이동 후 그 자리에서 다음 일섬) · 20초마다 5초 전체 아군 공격력·공속×4',
         astralChronomancer: '다중발사(2/3/4발) · 공전탄 최대 10발 · 각 탄환 20% 황금 시간기절 · 60회 공격마다 사거리 300 시간정지 5초'
       };
       return summaries[unit.id] || '기본 공격 유닛';
@@ -18350,9 +18350,37 @@ function requestGachaDraw(count) {
       setBattleMessage(`🌈 무지개 저편 · 무지개 일섬! 성에 가장 가까운 적을 추적하며 ${placed.rainbowIssenRemaining}연속 참격!`);
     }
 
+    function clampRainbowBeyondIssenPoint(x,y){
+      const margin=42;
+      return {
+        x:Math.max(margin,Math.min(canvas.width-margin,Number(x||0))),
+        y:Math.max(margin,Math.min(canvas.height-margin,Number(y||0)))
+      };
+    }
+
+    function updateRainbowBeyondIssenDash(placed,dt){
+      const dash=placed?.rainbowIssenDash;
+      if(!dash) return false;
+      dash.elapsed=Math.max(0,Number(dash.elapsed||0))+Math.max(0,Number(dt||0));
+      const duration=Math.max(.025,Number(dash.duration||.055));
+      const t=Math.max(0,Math.min(1,dash.elapsed/duration));
+      // 초반에 빠르게 튀어나가고 끝에서 짧게 멈추는 일섬 이동.
+      const ease=1-Math.pow(1-t,4);
+      placed.x=Number(dash.fromX||0)+(Number(dash.toX||0)-Number(dash.fromX||0))*ease;
+      placed.y=Number(dash.fromY||0)+(Number(dash.toY||0)-Number(dash.fromY||0))*ease;
+      if(t>=1){
+        placed.x=Number(dash.toX||placed.x);
+        placed.y=Number(dash.toY||placed.y);
+        placed.rainbowIssenDash=null;
+        return false;
+      }
+      return true;
+    }
+
     function updateRainbowBeyondIssen(placed,dt){
+      const dashActive=updateRainbowBeyondIssenDash(placed,dt);
       const remaining=Math.max(0,Math.floor(Number(placed.rainbowIssenRemaining||0)));
-      if(remaining<=0) return false;
+      if(remaining<=0) return dashActive;
       if(placed.stunRemaining>0) return true;
 
       const data=UNIT_DATA.rainbowBeyond;
@@ -18360,6 +18388,13 @@ function requestGachaDraw(count) {
       placed.rainbowIssenTimer=Number.isFinite(placed.rainbowIssenTimer)?placed.rainbowIssenTimer-dt:0;
       placed.attackAnimation=Math.max(0,Number(placed.attackAnimation||0)-dt*9.5);
       if(placed.rainbowIssenTimer>0) return true;
+
+      // 다음 참격을 시작할 때 이전 일섬의 끝 위치를 정확히 시작점으로 확정합니다.
+      if(placed.rainbowIssenDash){
+        placed.x=Number(placed.rainbowIssenDash.toX||placed.x);
+        placed.y=Number(placed.rainbowIssenDash.toY||placed.y);
+        placed.rainbowIssenDash=null;
+      }
 
       const target=getRainbowBeyondIssenTarget();
       if(!target){
@@ -18369,7 +18404,26 @@ function requestGachaDraw(count) {
       }
 
       const slashNumber=Math.max(1,Number(data.rainbowIssenCount||20)-remaining+1);
-      const angle=Math.atan2(target.y-placed.y,target.x-placed.x);
+      const startX=Number(placed.x||0);
+      const startY=Number(placed.y||0);
+      let dx=Number(target.x||0)-startX;
+      let dy=Number(target.y||0)-startY;
+      let distance=Math.hypot(dx,dy);
+      let angle;
+      if(distance<4){
+        // 바로 겹쳐 있어도 직전 진행 방향으로 관통해서 다음 일섬의 시작 위치가 달라지게 합니다.
+        angle=Number.isFinite(Number(placed.angle))?Number(placed.angle):0;
+        dx=Math.cos(angle);dy=Math.sin(angle);distance=1;
+      }else{
+        angle=Math.atan2(dy,dx);
+      }
+
+      // 적 중심을 지나 약 54px 뒤까지 관통합니다. 다음 일섬은 바로 이 끝점에서 시작합니다.
+      const overshoot=54;
+      const rawEndX=Number(target.x||0)+Math.cos(angle)*overshoot;
+      const rawEndY=Number(target.y||0)+Math.sin(angle)*overshoot;
+      const end=clampRainbowBeyondIssenPoint(rawEndX,rawEndY);
+
       placed.angle=angle;
       placed.attackMode='rainbowIssen';
       placed.attackAnimation=1;
@@ -18378,10 +18432,21 @@ function requestGachaDraw(count) {
       const damage=Math.max(1,Number(placed.damage||data.damage||20000)*Number(data.rainbowIssenDamageMultiplier||1));
       const seed=Math.random()*1000+slashNumber*47;
       battle.shots.push({
-        x1:placed.x,y1:placed.y-4,x2:target.x,y2:target.y,
+        x1:startX,y1:startY-4,x2:end.x,y2:end.y-4,
         life:.30,maxLife:.30,effect:'rainbowIssen',color:'#ffffff',angle,
-        seed,issenIndex:slashNumber,issenTotal:Number(data.rainbowIssenCount||20),premium:true
+        seed,issenIndex:slashNumber,issenTotal:Number(data.rainbowIssenCount||20),premium:true,
+        dashThroughTarget:true,targetX:Number(target.x||0),targetY:Number(target.y||0)
       });
+
+      // 시각적으로 검선만 그리는 것이 아니라 유닛 본체가 일섬의 끝점까지 실제 이동합니다.
+      placed.rainbowIssenDash={
+        fromX:startX,fromY:startY,
+        toX:end.x,toY:end.y,
+        elapsed:0,
+        duration:Math.min(.065,Math.max(.035,interval*.62)),
+        index:slashNumber
+      };
+
       applyTraitDamage(placed,target,damage);
 
       placed.rainbowIssenRemaining=remaining-1;
@@ -18389,7 +18454,7 @@ function requestGachaDraw(count) {
       if(placed.rainbowIssenRemaining<=0){
         placed.rainbowIssenRemaining=0;
         placed.rainbowIssenTargetId=null;
-        setBattleMessage('🌈 무지개 저편 · 20연속 일섬 완료!');
+        setBattleMessage('🌈 무지개 저편 · 20연속 이동 일섬 완료!');
       }
       return true;
     }

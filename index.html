@@ -6119,6 +6119,7 @@ button {
     font-size: 9px !important;
     line-height: 1.25;
     -webkit-line-clamp: 2;
+  line-clamp: 2;
     -webkit-box-orient: vertical;
   }
 
@@ -9084,40 +9085,14 @@ function applyStagePreview(stageId = selectedStage) {
         skillText:'가장 가까운 적에게 직접 뿔로 돌진해 공격합니다. 10번 공격할 때마다 기본 공격 사거리의 1.5배 안 모든 적을 무지개로 표식하고 3초 뒤 일반 적은 즉사, 보스는 최대체력의 20% 피해를 받습니다.'
       },
       rainbowBeyond: {
-        id:'rainbowBeyond', name:'무지개 저편', icon:'🌈',
-        rarity:'갤럭시', rarityKey:'galaxy',
-        rarityClass:'rarity-galaxy', eventExclusive:true,
-
-        cost:1000,
-        damage:20000,
-        range:240,
-        fireInterval:.5,
-
-        // 실제 검으로 베는 근거리
-        meleeRange:120,
-        meleeConeAngle:180,
-
-        // 원거리 검기
-        rainbowSwordWaveMax:7,
-
-        // 광석 설치 공격은 검 공격과 완전히 별도
-        rainbowOreInterval:.5,
-        rainbowOreInitialDelay:.25,
-        rainbowOreHp:20000,
-        rainbowOreMax:7,
-
-        rainbowMapBuffEvery:20,
-        rainbowMapBuffDuration:5,
-        rainbowMapDamageMultiplier:4,
-        rainbowMapSpeedMultiplier:4,
-
-        footprintRadius:110,
-        multiplayerFootprintRadius:92,
-        maxPlaced:0,
-        color:'#9b7cff',
-
+        id:'rainbowBeyond', name:'무지개 저편', icon:'🌈', rarity:'갤럭시', rarityKey:'galaxy', rarityClass:'rarity-galaxy', eventExclusive:true,
+        cost:1000, damage:20000, range:240, fireInterval:.5,
+        meleeRange:120, meleeConeAngle:180, rainbowSwordWaveMax:7,
+        rainbowIssenEvery:20, rainbowIssenCount:20, rainbowIssenInterval:.09, rainbowIssenDamageMultiplier:1,
+        rainbowMapBuffEvery:20, rainbowMapBuffDuration:5, rainbowMapDamageMultiplier:4, rainbowMapSpeedMultiplier:4,
+        footprintRadius:110, multiplayerFootprintRadius:92, maxPlaced:0, color:'#9b7cff',
         skillName:'무지개 세계',
-        skillText:'광석 설치 공격과 검 공격이 서로 독립적으로 작동합니다. 근거리 120 이내에서는 실제 검 한 자루로 전방 180°를 베고, 멀리 있는 적에게는 한 번에 최대 7명의 적에게 프리즘 검기를 각각 발사합니다. 광석은 별도의 0.5초 주기로 길 위에 설치되며 개체당 최대 7개까지 유지됩니다. 20초마다 5초 동안 모든 아군 공격력과 공격속도가 4배가 됩니다.'
+        skillText:'광석 설치 스킬은 제거되었습니다. 근거리 120 이내에서는 프리즘 왕검으로 전방 180°를 베고, 121~240 거리에서는 최대 7발의 프리즘 검기를 발사합니다. 평타를 20번 할 때마다 성에 가장 가까운 적을 추적하며 일섬을 20번 연속 사용합니다. 도중에 대상이 죽으면 즉시 다음으로 성에 가까운 적을 다시 지정해 남은 일섬을 계속합니다. 20초마다 5초 동안 모든 아군 공격력과 공격속도가 4배가 됩니다.'
       },
       errorEntity: {
         id: 'errorEntity',
@@ -14724,9 +14699,7 @@ function requestGachaDraw(count) {
     const RAINBOW_EVENT_HP_MULTIPLIER = 2;
     const RAINBOW_EVENT_DASH_INTERVAL = 3;
     const RAINBOW_EVENT_DASH_DISTANCE = 92;
-    const RAINBOW_BOSS_STUN_INTERVAL = 2;
-    const RAINBOW_BOSS_STUN_DURATION = 2;
-    const RAINBOW_BOSS_INITIAL_STUN_DURATION = 3;
+    // 무지개 보스의 아군 강제 기절 패턴은 완전히 제거되었습니다.
     const RAINBOW_BOSS_PROBABILITIES = Object.freeze({ unicorn: 1/3, captain: 1/3, fever: 1/3 });
     function rainbowBossTypeForWave(wave){
       if (!battle?.rainbowBossRolls) battle.rainbowBossRolls = {};
@@ -14740,8 +14713,6 @@ function requestGachaDraw(count) {
       if (wave > 0 && wave % 25 === 0) {
         const commonBoss = {
           rainbowEventBoss:true,
-          rainbowBossStunInterval:RAINBOW_BOSS_STUN_INTERVAL,
-          rainbowBossStunTimer:RAINBOW_BOSS_STUN_INTERVAL,
           rainbowDashInterval:RAINBOW_EVENT_DASH_INTERVAL,
           rainbowDashTimer:RAINBOW_EVENT_DASH_INTERVAL,
           rainbowDashDistance:RAINBOW_EVENT_DASH_DISTANCE
@@ -15353,7 +15324,7 @@ function requestGachaDraw(count) {
         rainbowMage: '🌈 오버 더 레인보우 · 20타마다 3초 동안 공격속도×2',
         rainbowLight: `🌈 스펙트럼 링크 · 0.01초 연속 광선 · 누적 5,000타마다 동시 링크 +1 (현재 ${1+Math.floor(Number(placed?.rainbowLightHits||0)/5000)}명)`,
         rainbowUnicornUnit: '🌈 레인보우 저지먼트 · 10타마다 사거리 전체 표식 · 3초 뒤 일반 적 즉사 / 보스 최대 HP 20% 피해',
-        rainbowBeyond: '🌈 무지개 세계 · 광석 설치와 검 공격은 서로 독립 · 근거리 120은 실제 검 전방 180° 베기 · 원거리 121~240은 서로 다른 적에게 최대 7발 프리즘 검기 · 0.5초마다 HP 20,000 광석 설치(최대 7개) · 20초마다 5초 전체 아군 공격력·공속×4',
+        rainbowBeyond: '🌈 무지개 세계 · 광석 설치 제거 · 근거리 120 전방 180° 왕검 베기 · 원거리 최대 7발 프리즘 검기 · 평타 20회마다 성에 가장 가까운 적을 재추적하며 20연속 일섬 · 20초마다 5초 전체 아군 공격력·공속×4',
         astralChronomancer: '다중발사(2/3/4발) · 공전탄 최대 10발 · 각 탄환 20% 황금 시간기절 · 60회 공격마다 사거리 300 시간정지 5초'
       };
       return summaries[unit.id] || '기본 공격 유닛';
@@ -15554,7 +15525,7 @@ function requestGachaDraw(count) {
         rainbowFeverStarted:false,
         rainbowExecutionRemaining:0,
         rainbowExecutionMax:0,
-        rainbowBossStunTimer:Number(spec.rainbowBossStunTimer || spec.rainbowBossStunInterval || 0),
+        rainbowBossStunTimer:0,
         rainbowDashTimer:Number(spec.rainbowDashTimer || spec.rainbowDashInterval || 0),
         rainbowDashAnim:0,
         rainbowSpawnOriginX: randomVisibleSpawn?.x ?? path[0].x,
@@ -15567,11 +15538,6 @@ function requestGachaDraw(count) {
         spawnVisualReady: Boolean(spec.spawnOffMap || spec.spawnRandomVisible || spec.staticRainbowObject || spec.rainbowOre || spec.staticCactus)
       };
       battle.enemies.push(spawnedEnemy);
-
-      if (battle?.isRainbowEvent && isRainbowEventBossEnemy(spawnedEnemy)) {
-        spawnedEnemy.rainbowInitialBossStunApplied = true;
-        applyRainbowBossForcedStun(spawnedEnemy, RAINBOW_BOSS_INITIAL_STUN_DURATION, true);
-      }
 
       waveState.spawned += 1;
     }
@@ -15753,14 +15719,26 @@ function requestGachaDraw(count) {
       if(!battle?.isRainbowEvent) return null;
       const alive=battle.enemies.reduce((n,e)=>n+(!e.dead&&e.rainbowOre?1:0),0);
       if(alive>=7) return null;
-      const x=Math.max(105,Math.min(canvas.width-150,105+Math.random()*(canvas.width-255)));
-      const y=Math.max(90,Math.min(canvas.height-90,90+Math.random()*(canvas.height-180)));
+
+      // 광석을 맵 아무 곳에 띄우지 않고 실제 적 이동 경로 위에 생성합니다.
+      // 이렇게 해야 모든 사거리 기반 유닛이 정상적으로 광석을 적으로 인식하고 공격할 수 있습니다.
+      const usableSegments=[];
+      for(let i=0;i<path.length-1;i++){
+        const a=path[i], b=path[i+1];
+        const len=Math.hypot(b.x-a.x,b.y-a.y);
+        if(len>12) usableSegments.push({i,a,b,len});
+      }
+      const seg=usableSegments[Math.floor(Math.random()*Math.max(1,usableSegments.length))] || {i:0,a:path[0],b:path[1]||path[0],len:1};
+      const t=.12+Math.random()*.76;
+      const x=seg.a.x+(seg.b.x-seg.a.x)*t;
+      const y=seg.a.y+(seg.b.y-seg.a.y)*t;
       const ore={
         id:`rainbow-ore-${Date.now()}-${Math.random().toString(36).slice(2,7)}`, type:'rainbowOre',variant:'rainbowOre',name:'무지개 광석',icon:'💎',
-        waveNumber, x,y,targetIndex:1,health:3000*RAINBOW_EVENT_HP_MULTIPLIER,maxHealth:3000*RAINBOW_EVENT_HP_MULTIPLIER,speed:0,radius:27,reward:0,dead:false,resolvedRecorded:true,
+        waveNumber, x,y,targetIndex:Math.max(1,seg.i+1),health:3000*RAINBOW_EVENT_HP_MULTIPLIER,maxHealth:3000*RAINBOW_EVENT_HP_MULTIPLIER,speed:0,radius:27,reward:0,dead:false,resolvedRecorded:true,
         rainbowOre:true,staticRainbowObject:true,pulseEffect:0,pulseKind:'',heading:0,timeStunRemaining:0,reviveInvulnerableRemaining:0
       };
-      battle.enemies.push(ore); return ore;
+      battle.enemies.push(ore);
+      return ore;
     }
 
 
@@ -15774,22 +15752,8 @@ function requestGachaDraw(count) {
     }
 
     function applyRainbowBossForcedStun(enemy, seconds, initial = false) {
-      if (!battle?.isRainbowEvent || !isRainbowEventBossEnemy(enemy)) return 0;
-      const duration = Math.max(.1, Number(seconds || 0));
-      let affected = 0;
-      for (const unit of battle.placedUnits || []) {
-        unit.rainbowBossStunRemaining = Math.max(Number(unit.rainbowBossStunRemaining || 0), duration);
-        unit.rainbowBossStunSource = enemy.id || enemy.type || 'rainbowBoss';
-        affected += 1;
-      }
-      if (affected) {
-        enemy.pulseKind = 'rainbowStun';
-        enemy.pulseEffect = .65;
-        setBattleMessage(initial
-          ? `🌈 ${enemy.name} 등장! 기절 면역을 무시하고 모든 아군을 ${duration.toFixed(0)}초 기절시켰습니다!`
-          : `🌈 ${enemy.name}의 무지개 압박! 모든 아군이 ${duration.toFixed(0)}초 기절했습니다!`);
-      }
-      return affected;
+      // 2026-08-27: 무지개 보스 강제 기절 패턴 제거. 호환성을 위해 함수만 no-op으로 남깁니다.
+      return 0;
     }
 
     function updateRainbowEventDash(enemy, dt) {
@@ -15817,18 +15781,6 @@ function requestGachaDraw(count) {
 
     function updateRainbowEventEnemy(enemy,dt) {
       if(!battle?.isRainbowEvent) return false;
-
-      if (isRainbowEventBossEnemy(enemy)) {
-        // 보스가 처음 등장할 때 주던 3초 강제 기절은 제거합니다.
-        // 이후 2초 주기의 보스 강제 기절은 기존 규칙대로 유지합니다.
-        if (!enemy.rainbowInitialBossStunApplied) enemy.rainbowInitialBossStunApplied = true;
-        const stunInterval = Math.max(.25, Number(enemy.rainbowBossStunInterval || RAINBOW_BOSS_STUN_INTERVAL));
-        enemy.rainbowBossStunTimer = Number.isFinite(enemy.rainbowBossStunTimer) ? enemy.rainbowBossStunTimer - dt : stunInterval;
-        if (enemy.rainbowBossStunTimer <= 0) {
-          applyRainbowBossForcedStun(enemy, RAINBOW_BOSS_STUN_DURATION, false);
-          enemy.rainbowBossStunTimer += stunInterval;
-        }
-      }
 
       updateRainbowEventDash(enemy, dt);
 
@@ -17084,7 +17036,7 @@ function requestGachaDraw(count) {
       let closestDistance = Infinity;
 
       for (const enemy of battle.enemies) {
-        if (enemy.dead || enemy.soilPileState) continue;
+        if (enemy.dead || enemy.soilPileState || enemy.type === 'rainbowFeverCore') continue;
         const distance = Math.hypot(enemy.x - placed.x, enemy.y - placed.y);
         if (distance <= maxRange && distance < closestDistance) {
           closest = enemy;
@@ -17787,7 +17739,8 @@ function requestGachaDraw(count) {
       let bestRemainSq = Infinity;
 
       forEachBattleEnemyNear(placed.x, placed.y, maxRange, enemy => {
-        if (enemy.dead || enemy.soilPileState) return;
+        // FEVER 코어는 공격 대상이 아니며, 무지개 광석은 일반 적과 동일하게 정상 타깃으로 취급합니다.
+        if (enemy.dead || enemy.soilPileState || enemy.type === 'rainbowFeverCore') return;
         const dx = enemy.x - placed.x;
         const dy = enemy.y - placed.y;
         if (dx * dx + dy * dy > rangeSq) return;
@@ -18376,118 +18329,91 @@ function requestGachaDraw(count) {
       const lengths=[];let total=0;for(let i=0;i<path.length-1;i++){const len=Math.hypot(path[i+1].x-path[i].x,path[i+1].y-path[i].y);lengths.push(len);total+=len;}let d=Math.random()*total;for(let i=0;i<lengths.length;i++){if(d<=lengths[i]){const t=d/Math.max(.001,lengths[i]);return{x:path[i].x+(path[i+1].x-path[i].x)*t,y:path[i].y+(path[i+1].y-path[i].y)*t};}d-=lengths[i];}return{x:path[1].x,y:path[1].y};
     }
 
-    function spawnRainbowAllyOre(placed){
-      if (!battle) return null;
+    function getRainbowBeyondIssenTarget(){
+      if(!battle?.enemies?.length) return null;
+      let best=null;
+      let bestBaseDistance=Infinity;
+      for(const enemy of battle.enemies){
+        if(!enemy || enemy.dead || enemy.soilPileState || enemy.type==='rainbowFeverCore' || Number(enemy.reviveInvulnerableRemaining||0)>0) continue;
+        const d=Math.hypot(Number(enemy.x||0)-BASE_POSITION.x,Number(enemy.y||0)-BASE_POSITION.y);
+        if(d<bestBaseDistance){best=enemy;bestBaseDistance=d;}
+      }
+      return best;
+    }
 
-      battle.rainbowAllyOres ||= [];
+    function startRainbowBeyondIssen(placed){
+      const data=UNIT_DATA.rainbowBeyond;
+      placed.rainbowIssenRemaining=Math.max(1,Math.floor(Number(data.rainbowIssenCount||20)));
+      placed.rainbowIssenTimer=0;
+      placed.rainbowIssenSequence=Number(placed.rainbowIssenSequence||0)+1;
+      placed.attackMode='rainbowIssen';
+      setBattleMessage(`🌈 무지개 저편 · 무지개 일섬! 성에 가장 가까운 적을 추적하며 ${placed.rainbowIssenRemaining}연속 참격!`);
+    }
 
-      const data = UNIT_DATA.rainbowBeyond;
-      const owned = battle.rainbowAllyOres.filter(
-        o => o.ownerId === placed.id && o.hp > 0
-      );
+    function updateRainbowBeyondIssen(placed,dt){
+      const remaining=Math.max(0,Math.floor(Number(placed.rainbowIssenRemaining||0)));
+      if(remaining<=0) return false;
+      if(placed.stunRemaining>0) return true;
 
-      if (owned.length >= Number(data.rainbowOreMax || 7)) {
-        return null;
+      const data=UNIT_DATA.rainbowBeyond;
+      const interval=Math.max(.045,Number(data.rainbowIssenInterval||.09));
+      placed.rainbowIssenTimer=Number.isFinite(placed.rainbowIssenTimer)?placed.rainbowIssenTimer-dt:0;
+      placed.attackAnimation=Math.max(0,Number(placed.attackAnimation||0)-dt*9.5);
+      if(placed.rainbowIssenTimer>0) return true;
+
+      const target=getRainbowBeyondIssenTarget();
+      if(!target){
+        placed.rainbowIssenRemaining=0;
+        placed.rainbowIssenTimer=0;
+        return false;
       }
 
-      const p = randomPointOnPath();
+      const slashNumber=Math.max(1,Number(data.rainbowIssenCount||20)-remaining+1);
+      const angle=Math.atan2(target.y-placed.y,target.x-placed.x);
+      placed.angle=angle;
+      placed.attackMode='rainbowIssen';
+      placed.attackAnimation=1;
+      placed.rainbowIssenTargetId=target.id;
 
-      const ore = {
-        id:`ally-rainbow-ore-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
-        ownerId:placed.id,
-        x:p.x,
-        y:p.y,
-        hp:Number(data.rainbowOreHp || 20000),
-        maxHp:Number(data.rainbowOreHp || 20000),
-        radius:23
-      };
-
-      battle.rainbowAllyOres.push(ore);
-
-      // 설치 공격 전용 이펙트
-      // 검 공격 애니메이션/쿨다운에는 절대 영향을 주지 않습니다.
+      const damage=Math.max(1,Number(placed.damage||data.damage||20000)*Number(data.rainbowIssenDamageMultiplier||1));
+      const seed=Math.random()*1000+slashNumber*47;
       battle.shots.push({
-        x1:placed.x,
-        y1:placed.y - 10,
-        x2:p.x,
-        y2:p.y,
-        life:.42,
-        maxLife:.42,
-        effect:'rainbowOreInstall',
-        color:'#b98cff',
-        seed:Math.random()*1000
+        x1:placed.x,y1:placed.y-4,x2:target.x,y2:target.y,
+        life:.30,maxLife:.30,effect:'rainbowIssen',color:'#ffffff',angle,
+        seed,issenIndex:slashNumber,issenTotal:Number(data.rainbowIssenCount||20),premium:true
       });
+      applyTraitDamage(placed,target,damage);
 
-      return ore;
+      placed.rainbowIssenRemaining=remaining-1;
+      placed.rainbowIssenTimer=interval;
+      if(placed.rainbowIssenRemaining<=0){
+        placed.rainbowIssenRemaining=0;
+        placed.rainbowIssenTargetId=null;
+        setBattleMessage('🌈 무지개 저편 · 20연속 일섬 완료!');
+      }
+      return true;
     }
 
     function updateRainbowBeyondUnit(placed,dt){
-      if (
-        !battle ||
-        placed.rainbowBossStunRemaining > 0 ||
-        placed.stunRemaining > 0
-      ) return;
+      if (!battle || placed.stunRemaining > 0) return Boolean(Number(placed.rainbowIssenRemaining||0)>0);
 
-      const data = UNIT_DATA.rainbowBeyond;
+      // 광석 설치 스킬은 완전히 제거했습니다. 기존 전투 상태에 남은 아군 광석도 즉시 정리합니다.
+      if(Array.isArray(battle.rainbowAllyOres) && battle.rainbowAllyOres.length) battle.rainbowAllyOres.length=0;
+      delete placed.rainbowOreTimer;
 
-      // ------------------------------------------------------
-      // 광석 설치 전용 타이머
-      // 검 공격의 placed.cooldown과 완전히 별개입니다.
-      // 첫 설치를 0.25초 뒤에 시작해서 베기와 동시에 나오지 않게 합니다.
-      // ------------------------------------------------------
+      const issenActive=updateRainbowBeyondIssen(placed,dt);
 
-      const oreInterval = Math.max(
-        .08,
-        Number(data.rainbowOreInterval || .5)
-      );
-
-      if (!Number.isFinite(placed.rainbowOreTimer)) {
-        placed.rainbowOreTimer = Math.max(
-          .05,
-          Number(data.rainbowOreInitialDelay ?? .25)
-        );
-      } else {
-        placed.rainbowOreTimer -= dt;
-      }
-
-      while (placed.rainbowOreTimer <= 0) {
-        spawnRainbowAllyOre(placed);
-        placed.rainbowOreTimer += oreInterval;
-      }
-
-      // ------------------------------------------------------
-      // 전체 맵 버프 역시 별도 타이머
-      // ------------------------------------------------------
-
-      const buffEvery = Math.max(
-        1,
-        Number(data.rainbowMapBuffEvery || 20)
-      );
-
-      placed.rainbowBuffTimer =
-        Number.isFinite(placed.rainbowBuffTimer)
-          ? placed.rainbowBuffTimer - dt
-          : buffEvery;
-
-      if (placed.rainbowBuffTimer <= 0) {
-        battle.rainbowMapBuffRemaining = Math.max(
-          Number(battle.rainbowMapBuffRemaining || 0),
-          Number(data.rainbowMapBuffDuration || 5)
-        );
-
-        placed.rainbowBuffTimer += buffEvery;
-
-        setBattleMessage(
-          '🌈 무지개 저편! 5초 동안 모든 아군 공격력·공격속도 ×4!'
-        );
-      }
+      const buffEvery=Math.max(1,Number(UNIT_DATA.rainbowBeyond.rainbowMapBuffEvery||20));
+      placed.rainbowBuffTimer=Number.isFinite(placed.rainbowBuffTimer)?placed.rainbowBuffTimer-dt:buffEvery;
+      if(placed.rainbowBuffTimer<=0){battle.rainbowMapBuffRemaining=Math.max(Number(battle.rainbowMapBuffRemaining||0),Number(UNIT_DATA.rainbowBeyond.rainbowMapBuffDuration||5));placed.rainbowBuffTimer+=buffEvery;setBattleMessage('🌈 무지개 저편! 5초 동안 모든 아군 공격력·공격속도 ×4!');}
+      return issenActive;
     }
 
     function updateRainbowUnitSpecials(placed,dt){
       placed.rainbowBeamFxRemaining=Math.max(0,Number(placed.rainbowBeamFxRemaining||0)-dt);
       placed.rainbowHasteRemaining=Math.max(0,Number(placed.rainbowHasteRemaining||0)-dt);
       if(placed.unitId==='rainbowLight'){updateRainbowLightUnit(placed,dt);return true;}
-      if(placed.unitId==='rainbowBeyond')updateRainbowBeyondUnit(placed,dt);
+      if(placed.unitId==='rainbowBeyond') return updateRainbowBeyondUnit(placed,dt);
       return false;
     }
 
@@ -18509,19 +18435,15 @@ function requestGachaDraw(count) {
 
     function updatePlacedUnitCore(placed, dt) {
       updatePlacedUnitFacing(placed, dt);
-      placed.rainbowBossStunRemaining = Math.max(0, Number(placed.rainbowBossStunRemaining || 0) - dt);
+      // 무지개 보스 강제 기절 패턴은 제거됨. 과거 상태가 남아 있어도 즉시 해제합니다.
+      placed.rainbowBossStunRemaining = 0;
+      placed.rainbowBossStunSource = null;
       if (UNIT_DATA[placed.unitId]?.stunImmune) placed.stunRemaining = 0;
       else placed.stunRemaining = Math.max(0, (placed.stunRemaining || 0) - dt);
       placed.attackSlowRemaining = Math.max(0, (placed.attackSlowRemaining || 0) - dt);
       placed.hackedRemaining = Math.max(0, Number(placed.hackedRemaining || 0) - dt);
       if (placed.attackSlowRemaining <= 0) placed.attackSlowMultiplier = 1;
       if (placed.hackedRemaining <= 0) placed.hackedByEnemyId = null;
-
-      // 무지개 이벤트 보스의 강제 기절은 일반 '기절 면역'을 관통합니다.
-      if (placed.rainbowBossStunRemaining > 0) {
-        placed.attackAnimation = Math.max(0, Number(placed.attackAnimation || 0) - dt * 4);
-        return;
-      }
 
       if (updateRainbowUnitSpecials(placed,dt)) return;
       placed.cooldown -= dt;
@@ -18538,6 +18460,10 @@ function requestGachaDraw(count) {
       }
       if (placed.unitId === 'cherrySamurai') {
         animationSpeed = placed.attackMode === 'sakuraUltimate' ? .24 : (placed.attackMode === 'sakuraIssen' ? 1.35 : (placed.attackMode === 'sakuraMelee' ? 1.62 : 2.15));
+      }
+      if (placed.unitId === 'rainbowBeyond') {
+        // 왕검의 무게감이 느껴지도록 근접 베기는 크게/천천히, 검기 발사는 조금 더 빠르게 재생합니다.
+        animationSpeed = placed.attackMode === 'rainbowIssen' ? 8.8 : (placed.attackMode === 'rainbowSlash' ? 1.34 : 2.15);
       }
       placed.attackAnimation = Math.max(0, placed.attackAnimation - dt * animationSpeed);
 
@@ -18635,217 +18561,71 @@ function requestGachaDraw(count) {
 
       if (placed.unitId === 'rainbowBeyond') {
         const data = UNIT_DATA.rainbowBeyond;
-
-        const fallbackInfo = getClosestEnemyToUnit(
-          placed,
-          placed.range
-        );
-
-        const target =
-          getFrontmostEnemyInRange(placed, placed.range) ||
-          fallbackInfo?.enemy;
-
+        const fallbackInfo = getClosestEnemyToUnit(placed, placed.range);
+        const target = getFrontmostEnemyInRange(placed, placed.range) || fallbackInfo?.enemy;
         if (!target) return;
 
-        const targetDistance = Math.hypot(
-          target.x - placed.x,
-          target.y - placed.y
-        );
-
-        placed.angle = Math.atan2(
-          target.y - placed.y,
-          target.x - placed.x
-        );
-
-        placed.cooldown = Math.max(
-          .015,
-          Number(placed.fireInterval || data.fireInterval || .5)
-            * slowMultiplier
-        );
-
+        const distance = Math.hypot(target.x-placed.x,target.y-placed.y);
+        const meleeRange = Math.max(1,Number(data.meleeRange||120));
+        placed.angle = Math.atan2(target.y-placed.y,target.x-placed.x);
+        placed.cooldown = Math.max(.015,Number(placed.fireInterval||data.fireInterval||.5)*slowMultiplier);
         placed.attackAnimation = 1;
-        placed.attackCount =
-          Number(placed.attackCount || 0) + 1;
+        placed.attackCount = Number(placed.attackCount||0)+1;
+        placed.rainbowBasicAttackCount = Number(placed.rainbowBasicAttackCount||0)+1;
+        const triggerIssen = placed.rainbowBasicAttackCount % Math.max(1,Number(data.rainbowIssenEvery||20)) === 0;
+        const dmg = Math.max(1,Number(placed.damage||data.damage||20000));
 
-        const damage = Math.max(
-          1,
-          Number(placed.damage || data.damage || 20000)
-        );
-
-        const meleeRange = Math.max(
-          1,
-          Number(data.meleeRange || 120)
-        );
-
-        // ====================================================
-        // 근거리 공격
-        // 120 이내에서만 실제 검으로 180도 베기
-        // ====================================================
-
-        if (targetDistance <= meleeRange) {
+        if (distance <= meleeRange) {
           placed.attackMode = 'rainbowSlash';
-
-          const halfAngle =
-            ((Number(data.meleeConeAngle || 180) * Math.PI / 180) / 2);
-
+          const half = ((Number(data.meleeConeAngle||180)*Math.PI/180)/2);
           const victims = battle.enemies.filter(enemy => {
-            if (
-              enemy.dead ||
-              enemy.type === 'rainbowFeverCore' ||
-              enemy.rainbowOre
-            ) return false;
-
-            return isEnemyInsideCone(
-              enemy,
-              placed,
-              placed.angle,
-              meleeRange,
-              halfAngle
-            );
+            if(enemy.dead || enemy.type==='rainbowFeverCore') return false;
+            return isEnemyInsideCone(enemy,placed,placed.angle,meleeRange,half);
           });
-
-          victims.forEach(enemy => {
-            applyTraitDamage(placed, enemy, damage);
-          });
-
-          // 좌표 오차 때문에 대상이 빠질 경우 대상은 반드시 맞음
-          if (
-            !victims.includes(target) &&
-            !target.dead &&
-            target.type !== 'rainbowFeverCore' &&
-            !target.rainbowOre
-          ) {
-            applyTraitDamage(placed, target, damage);
+          victims.forEach(enemy=>applyTraitDamage(placed,enemy,dmg));
+          if(!victims.includes(target) && !target.dead && target.type!=='rainbowFeverCore'){
+            applyTraitDamage(placed,target,dmg);
           }
-
-          // 실제 검 베기 이펙트
           battle.shots.push({
-            x1:placed.x,
-            y1:placed.y,
-            x2:placed.x + Math.cos(placed.angle) * 82,
-            y2:placed.y + Math.sin(placed.angle) * 82,
-            life:.28,
-            maxLife:.28,
-            effect:'rainbowSlash',
-            color:'#ff8fd0',
-            sourceUnitId:placed.id,
-            angle:placed.angle,
-            radius:meleeRange,
-            visualRadius:82,
-            coneAngle:96,
-            compact:true,
-            seed:Math.random()*1000
+            x1:placed.x,y1:placed.y-4,
+            x2:placed.x+Math.cos(placed.angle)*98,y2:placed.y-4+Math.sin(placed.angle)*98,
+            life:.52,maxLife:.52,effect:'rainbowSlash',color:'#fff5ff',sourceUnitId:placed.id,
+            angle:placed.angle,radius:meleeRange,visualRadius:104,coneAngle:134,compact:false,
+            seed:Math.random()*1000,premium:true
           });
-
+          if(triggerIssen) startRainbowBeyondIssen(placed);
           return;
         }
 
-
-        // ====================================================
-        // 원거리 공격
-        // 120보다 멀고 전체 사거리 안에 있는 적에게
-        // 서로 다른 목표로 최대 7발의 검기를 동시에 발사
-        // ====================================================
-
         placed.attackMode = 'rainbowSwordWave';
-
-        const maxShots = Math.max(
-          1,
-          Math.floor(Number(data.rainbowSwordWaveMax || 7))
-        );
-
-        const rangedCandidates = battle.enemies
-          .filter(enemy => {
-            if (
-              enemy.dead ||
-              enemy.type === 'rainbowFeverCore' ||
-              enemy.rainbowOre
-            ) return false;
-
-            const distance = Math.hypot(
-              enemy.x - placed.x,
-              enemy.y - placed.y
-            );
-
-            return (
-              distance > meleeRange &&
-              distance <= Number(placed.range || data.range || 240)
-            );
+        const maxShots=Math.max(1,Math.floor(Number(data.rainbowSwordWaveMax||7)));
+        const candidates=battle.enemies
+          .filter(enemy=>{
+            if(enemy.dead || enemy.type==='rainbowFeverCore') return false;
+            const d=Math.hypot(enemy.x-placed.x,enemy.y-placed.y);
+            return d>meleeRange && d<=Number(placed.range||data.range||240);
           })
-          .sort((a,b) => {
-            const ai = Number(a.targetIndex || 0);
-            const bi = Number(b.targetIndex || 0);
-
-            if (bi !== ai) return bi - ai;
-
-            return (
-              Math.hypot(a.x-placed.x,a.y-placed.y) -
-              Math.hypot(b.x-placed.x,b.y-placed.y)
-            );
-          });
-
-        const swordTargets = [
-          target,
-          ...rangedCandidates.filter(enemy => enemy.id !== target.id)
-        ]
-          .filter((enemy,index,array) => {
-            if (!enemy || enemy.dead) return false;
-
-            const distance = Math.hypot(
-              enemy.x - placed.x,
-              enemy.y - placed.y
-            );
-
-            if (
-              distance <= meleeRange ||
-              distance > Number(placed.range || data.range || 240)
-            ) return false;
-
-            return array.findIndex(x => x?.id === enemy.id) === index;
-          })
+          .sort((a,b)=>Number(b.targetIndex||0)-Number(a.targetIndex||0));
+        const targets=[target,...candidates.filter(e=>e.id!==target.id)]
+          .filter((enemy,index,array)=>enemy && !enemy.dead && array.findIndex(x=>x?.id===enemy.id)===index)
+          .filter(enemy=>{const d=Math.hypot(enemy.x-placed.x,enemy.y-placed.y);return d>meleeRange && d<=Number(placed.range||data.range||240);})
           .slice(0,maxShots);
-
-        if (!swordTargets.length) return;
-
-        placed.angle = Math.atan2(
-          swordTargets[0].y - placed.y,
-          swordTargets[0].x - placed.x
-        );
-
-        swordTargets.forEach((enemy,index) => {
-          const waveAngle = Math.atan2(
-            enemy.y - placed.y,
-            enemy.x - placed.x
-          );
-
-          // 검 끝에서 발사되는 것처럼 약간 앞으로 이동
-          const startX =
-            placed.x + Math.cos(waveAngle) * 37;
-
-          const startY =
-            placed.y - 7 + Math.sin(waveAngle) * 37;
-
+        if(!targets.length) return;
+        placed.angle=Math.atan2(targets[0].y-placed.y,targets[0].x-placed.x);
+        targets.forEach((enemy,index)=>{
+          const a=Math.atan2(enemy.y-placed.y,enemy.x-placed.x);
+          const spread=(index-(targets.length-1)/2)*2.1;
+          const nx=-Math.sin(a),ny=Math.cos(a);
           battle.shots.push({
-            x1:startX,
-            y1:startY,
-            x2:enemy.x,
-            y2:enemy.y,
-            life:.46,
-            maxLife:.46,
-            effect:'rainbowSwordWave',
-            color:'#ffffff',
-            angle:waveAngle,
-            seed:Math.random()*1000 + index*31,
-            waveIndex:index
+            x1:placed.x+Math.cos(a)*43+nx*spread,
+            y1:placed.y-7+Math.sin(a)*43+ny*spread,
+            x2:enemy.x,y2:enemy.y,
+            life:.50,maxLife:.50,effect:'rainbowSwordWave',color:'#ffffff',angle:a,
+            seed:Math.random()*1000+index*37,waveIndex:index,premium:true
           });
-
-          applyTraitDamage(
-            placed,
-            enemy,
-            damage
-          );
+          applyTraitDamage(placed,enemy,dmg);
         });
-
+        if(triggerIssen) startRainbowBeyondIssen(placed);
         return;
       }
 
@@ -19266,7 +19046,8 @@ function requestGachaDraw(count) {
     }
 
     function updateRainbowAllyOres(){
-      if(!battle.rainbowAllyOres?.length)return;for(const ore of battle.rainbowAllyOres){if(ore.hp<=0)continue;for(const enemy of battle.enemies){if(enemy.dead||enemy.rainbowOre||enemy.type==='rainbowFeverCore')continue;const rr=Number(ore.radius||23)+Number(enemy.radius||18);const dx=enemy.x-ore.x,dy=enemy.y-ore.y;if(dx*dx+dy*dy>rr*rr)continue;const enemyHp=Math.max(0,Number(enemy.health||0)),oreHp=Math.max(0,Number(ore.hp||0));if(oreHp>=enemyHp){enemy.noRevive=true;ore.hp=Math.max(0,oreHp-enemyHp);applyDamageToEnemy(enemy,enemyHp+1);}else{applyDamageToEnemy(enemy,oreHp);ore.hp=0;}if(ore.hp<=0)break;}}let w=0;for(const ore of battle.rainbowAllyOres)if(ore.hp>0)battle.rainbowAllyOres[w++]=ore;battle.rainbowAllyOres.length=w;
+      // 무지개 저편의 아군 광석 설치 스킬 제거 후 남은 호환 데이터만 정리합니다.
+      if(Array.isArray(battle?.rainbowAllyOres) && battle.rainbowAllyOres.length) battle.rainbowAllyOres.length=0;
     }
 
     function updateBattle(dt) {
@@ -22768,7 +22549,7 @@ function drawEnemy(enemy, time) {
 
 
     function isSwordHoldingUnit(unit) {
-      return ['starterKnight','royalGuardian','cherrySamurai','eclipse'].includes(String(unit?.unitId || ''));
+      return ['starterKnight','royalGuardian','cherrySamurai','eclipse','rainbowBeyond'].includes(String(unit?.unitId || ''));
     }
 
     function drawSwordHoldingHandsArt(g, unit, layer = 'behind') {
@@ -22796,6 +22577,11 @@ function drawEnemy(enemy, time) {
           grips:[[-11,0]], shoulders:[[-21,1]],
           sleeve: '#030104', armor: '#250711',
           skin: '#090206', edge: shadow ? '#000' : '#ff446a'
+        },
+        rainbowBeyond: {
+          grips:[[-13,0]], shoulders:[[-22,2]],
+          sleeve: shadow ? '#000' : '#17102e', armor: shadow ? '#000' : '#6c54a8',
+          skin: shadow ? '#000' : '#d9c8ff', edge: shadow ? '#000' : '#f7ecff'
         }
       };
       const c = configs[id];
@@ -24439,7 +24225,7 @@ function drawEnemy(enemy, time) {
       const angle = Number.isFinite(Number(unit?.angle)) ? Number(unit.angle) : 0;
       const strike = Math.sin(Math.max(0, Math.min(1, p)) * Math.PI);
       const settle = Math.sin(Math.max(0, Math.min(1, p)) * Math.PI * 2);
-      let lunge = (id === 'cherrySamurai' ? 11 : id === 'eclipse' ? 10 : id === 'royalGuardian' ? 8 : 7) * strike;
+      let lunge = (id === 'cherrySamurai' ? 11 : id === 'eclipse' ? 10 : id === 'rainbowBeyond' ? 10.5 : id === 'royalGuardian' ? 8 : 7) * strike;
       if (id === 'eclipse' && unit?.attackMode === 'eclipseSpin') lunge *= .35;
       if (id === 'royalGuardian' && unit?.attackMode === 'rangedSmash') lunge *= .55;
       const dx = Math.cos(angle) * lunge;
@@ -24469,6 +24255,29 @@ function drawEnemy(enemy, time) {
         const motionProgress = 1 - attack;
         weaponRecoil = 0;
         weaponAngle += -.78 + motionProgress * 1.10;
+      }
+
+      if (unit.unitId === 'rainbowBeyond') {
+        weaponRecoil = 0;
+        if (attack > 0) {
+          const p = Math.max(0,Math.min(1,1-attack));
+          const ease = p*p*(3-2*p);
+          if (unit.attackMode === 'rainbowSlash') {
+            // 머리 뒤까지 크게 감았다가 전신으로 내려치는 약 155° 왕검 베기.
+            const anticipation = -1.30 + ease * 2.70;
+            const snap = Math.sin(Math.min(1,p*1.25)*Math.PI) * .16;
+            weaponAngle += anticipation + snap;
+          } else if (unit.attackMode === 'rainbowSwordWave') {
+            // 검기를 보낼 때는 검을 뒤로 당겼다가 앞으로 강하게 뻗습니다.
+            weaponAngle += -.62 + ease * 1.22 + Math.sin(p*Math.PI)*.08;
+            weaponRecoil = (1-Math.sin(p*Math.PI)) * 2.2;
+          } else if (unit.attackMode === 'rainbowIssen') {
+            // 20연속 일섬은 짧고 폭발적인 횡베기를 반복합니다.
+            const snap = Math.sin(Math.min(1,p*1.55)*Math.PI);
+            weaponAngle += -.92 + ease * 1.84 + snap * .30;
+            weaponRecoil = -snap * 4.2;
+          }
+        }
       }
 
       if (unit.unitId === 'cherrySamurai') {
@@ -24526,6 +24335,11 @@ function drawEnemy(enemy, time) {
           shoulder:[10,-3], upper:16, fore:16,
           sleeve:'#030104', armor:'#390a18', hand:'#090206',
           edge: shadow ? '#000' : '#ff496d', grip:-11
+        },
+        rainbowBeyond: {
+          shoulder:[11,-3], upper:16.5, fore:17,
+          sleeve: shadow ? '#000' : '#191032', armor: shadow ? '#000' : '#735bb2',
+          hand: shadow ? '#000' : '#ddcfff', edge: shadow ? '#000' : '#fff7ff', grip:-13
         }
       }[id];
       if (!cfg) return;
@@ -24538,7 +24352,7 @@ function drawEnemy(enemy, time) {
       const wristY = pivotY + Math.sin(weaponAngle) * gripX;
 
       // 공격 순간에는 어깨도 적 방향으로 조금 밀리게 해서 상체의 힘이 팔로 이어집니다.
-      const shoulderDrive = strike * (id === 'cherrySamurai' ? 3.0 : id === 'eclipse' ? 2.8 : 2.2);
+      const shoulderDrive = strike * (id === 'cherrySamurai' ? 3.0 : id === 'rainbowBeyond' ? 3.8 : id === 'eclipse' ? 2.8 : 2.2);
       const shoulderX = cfg.shoulder[0] + Math.cos(baseAngle) * shoulderDrive;
       const shoulderY = cfg.shoulder[1] + Math.sin(baseAngle) * shoulderDrive * .55 + strike * .9;
 
@@ -24609,6 +24423,90 @@ function drawEnemy(enemy, time) {
       g.restore();
     }
 
+    function drawRainbowBeyondPremiumSwordArt(g, unit, time, attack = 0) {
+      const pulse = .72 + Math.sin(time*.010 + Number(unit?.animationOffset||0)*7.3)*.18;
+      const power = Math.max(0,Math.min(1,Number(attack||0)));
+      const hue = (time*.075 + Number(unit?.animationOffset||0)*113) % 360;
+
+      g.save();
+      g.globalCompositeOperation='lighter';
+
+      // 왕검 뒤쪽의 은은한 오라. 검 자체보다 살짝 크게 두어 광택이 살아납니다.
+      g.shadowBlur = 25 + power*18;
+      g.shadowColor = `hsla(${hue},100%,72%,.95)`;
+      g.strokeStyle = `rgba(255,255,255,${.14+.14*pulse})`;
+      g.lineWidth = 13 + power*3;
+      g.beginPath();g.moveTo(-8,0);g.lineTo(83,0);g.stroke();
+
+      // 손잡이: 흑요석 코어 + 은색 링 + 프리즘 보석.
+      g.globalCompositeOperation='source-over';
+      const grip=g.createLinearGradient(-22,-5,-3,5);
+      grip.addColorStop(0,'#090612');grip.addColorStop(.45,'#312050');grip.addColorStop(.72,'#0b0716');grip.addColorStop(1,'#4a2d71');
+      g.fillStyle=grip;g.strokeStyle='rgba(245,235,255,.82)';g.lineWidth=1.15;
+      g.beginPath();g.roundRect(-25,-4.5,23,9,3.5);g.fill();g.stroke();
+      for(let x=-21;x<=-5;x+=5){g.strokeStyle='rgba(210,185,255,.44)';g.lineWidth=1;g.beginPath();g.moveTo(x,-4);g.lineTo(x+4,4);g.stroke();}
+      g.fillStyle='#c9b2ff';g.beginPath();g.arc(-27,0,4.2,0,Math.PI*2);g.fill();
+      g.fillStyle='#fff';g.beginPath();g.arc(-28,-1.2,1.15,0,Math.PI*2);g.fill();
+
+      // 넓은 날개형 가드.
+      g.shadowBlur=16;g.shadowColor='#c791ff';
+      const guard=g.createLinearGradient(-7,-14,3,14);
+      guard.addColorStop(0,'#ffffff');guard.addColorStop(.22,'#b9dfff');guard.addColorStop(.48,'#9a62ff');guard.addColorStop(.76,'#ff7fbd');guard.addColorStop(1,'#ffe891');
+      g.fillStyle=guard;g.strokeStyle='rgba(255,255,255,.95)';g.lineWidth=1.4;
+      g.beginPath();g.moveTo(-5,-4);g.lineTo(-1,-15);g.lineTo(6,-7);g.lineTo(3,-2);g.lineTo(3,2);g.lineTo(6,7);g.lineTo(-1,15);g.lineTo(-5,4);g.closePath();g.fill();g.stroke();
+      g.fillStyle=`hsl(${(hue+160)%360},100%,75%)`;g.beginPath();g.arc(0,0,4.5,0,Math.PI*2);g.fill();
+      g.fillStyle='rgba(255,255,255,.96)';g.beginPath();g.arc(-1.4,-1.2,1.5,0,Math.PI*2);g.fill();
+
+      // 칼날: 두꺼운 외곽 프리즘 + 밝은 백색 중심 + 반투명 단면.
+      g.globalCompositeOperation='lighter';
+      const blade=g.createLinearGradient(2,-7,92,8);
+      blade.addColorStop(0,'#8062c6');
+      blade.addColorStop(.12,'#ff6cae');
+      blade.addColorStop(.29,'#ffd96a');
+      blade.addColorStop(.46,'#6ff0a8');
+      blade.addColorStop(.63,'#6bd2ff');
+      blade.addColorStop(.80,'#a88bff');
+      blade.addColorStop(.94,'#f8d5ff');
+      blade.addColorStop(1,'#ffffff');
+      g.shadowBlur=28+power*22;g.shadowColor=`hsla(${hue},100%,72%,.96)`;
+      g.fillStyle=blade;g.strokeStyle='rgba(255,255,255,.96)';g.lineWidth=1.55;
+      g.beginPath();
+      g.moveTo(3,-5.5);g.lineTo(67,-5.0);g.quadraticCurveTo(80,-4.2,92,0);g.quadraticCurveTo(80,4.2,67,5.0);g.lineTo(3,5.5);g.lineTo(10,0);g.closePath();g.fill();g.stroke();
+
+      // 검날 내부의 유리 같은 백색 코어.
+      const core=g.createLinearGradient(8,-2.4,86,2.4);
+      core.addColorStop(0,'rgba(255,255,255,.12)');core.addColorStop(.20,'rgba(255,255,255,.88)');core.addColorStop(.55,'rgba(255,255,255,.98)');core.addColorStop(.84,'rgba(235,246,255,.90)');core.addColorStop(1,'rgba(255,255,255,.22)');
+      g.fillStyle=core;g.beginPath();g.moveTo(11,-1.6);g.lineTo(69,-2.0);g.quadraticCurveTo(79,-1.7,87,0);g.quadraticCurveTo(78,1.8,69,2.1);g.lineTo(11,1.6);g.closePath();g.fill();
+
+      // 면 분할과 룬 각인.
+      g.shadowBlur=0;g.strokeStyle='rgba(255,255,255,.40)';g.lineWidth=.8;
+      for(let x=17;x<69;x+=13){g.beginPath();g.moveTo(x,-4.4);g.lineTo(x+7,4.1);g.stroke();}
+      g.strokeStyle=`hsla(${(hue+210)%360},100%,82%,${.52+.22*pulse})`;g.lineWidth=1.1;
+      for(let i=0;i<5;i++){
+        const x=24+i*10;
+        g.beginPath();g.moveTo(x,-1.9);g.lineTo(x+2.7,0);g.lineTo(x,1.9);g.stroke();
+      }
+
+      // 칼등과 칼끝의 고광택 라인.
+      g.shadowBlur=16;g.shadowColor='#fff';g.strokeStyle='rgba(255,255,255,.96)';g.lineWidth=1.5;
+      g.beginPath();g.moveTo(7,-4.7);g.lineTo(66,-4.3);g.quadraticCurveTo(80,-3.8,90,0);g.stroke();
+      g.shadowBlur=0;
+
+      // 공격할 때 검 주변에서 짧게 솟는 프리즘 입자.
+      if(power>.04){
+        g.globalCompositeOperation='lighter';
+        for(let i=0;i<10;i++){
+          const t=(i+.5)/10;
+          const x=10+t*76;
+          const y=Math.sin(i*2.31+time*.012)*7*(.35+power);
+          const a=(.30+.55*power)*(1-i*.035);
+          g.fillStyle=`hsla(${(hue+i*39)%360},100%,80%,${a})`;
+          g.save();g.translate(x,y);g.rotate(i*.72+time*.004);g.beginPath();g.moveTo(4,0);g.lineTo(-2,-1.6);g.lineTo(-.5,0);g.lineTo(-2,1.6);g.closePath();g.fill();g.restore();
+        }
+      }
+      g.restore();
+    }
+
     function drawAimedUnitWeapon(unit, data, time) {
       const attack = unit.attackAnimation || 0;
       const motion = computeSwordWeaponMotion(unit, time, time);
@@ -24633,7 +24531,7 @@ function drawEnemy(enemy, time) {
       } else if (unit.unitId === 'rainbowMage') {
         ctx.strokeStyle='#6c3f8f';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-8,3);ctx.lineTo(37,-1);ctx.stroke();const rg=ctx.createRadialGradient(38,-3,1,40,0,14);rg.addColorStop(0,'white');rg.addColorStop(.35,`hsl(${(time*.18)%360},100%,70%)`);rg.addColorStop(1,'rgba(150,100,255,0)');ctx.fillStyle=rg;ctx.beginPath();ctx.arc(40,0,14,0,Math.PI*2);ctx.fill();
       } else if (unit.unitId === 'rainbowBeyond') {
-        const rg=ctx.createLinearGradient(0,-3,67,3);rg.addColorStop(0,'#4d315d');rg.addColorStop(.2,'#ff6fa8');rg.addColorStop(.4,'#ffd95b');rg.addColorStop(.6,'#69ef9b');rg.addColorStop(.8,'#67c8ff');rg.addColorStop(1,'#fff');ctx.shadowBlur=14;ctx.shadowColor=`hsl(${(time*.15)%360},100%,70%)`;ctx.fillStyle=rg;ctx.beginPath();ctx.moveTo(-4,-3);ctx.lineTo(54,-2);ctx.lineTo(70,0);ctx.lineTo(54,3);ctx.lineTo(-4,3);ctx.closePath();ctx.fill();ctx.shadowBlur=0;
+        drawRainbowBeyondPremiumSwordArt(ctx,unit,time,attack);
       } else if (unit.unitId === 'starterArcher' || unit.unitId === 'windRanger') {
         const wind = unit.unitId === 'windRanger';
         ctx.strokeStyle = wind ? '#8ff4bd' : '#d49a55';
@@ -24867,6 +24765,12 @@ function drawEnemy(enemy, time) {
           stroke: 'rgba(255, 246, 177, .95)',
           lineWidth: 2,
           dashed: true
+        });
+      }
+
+      if (selected.unitId === 'rainbowBeyond') {
+        drawRangeCircle(selected.x, selected.y, UNIT_DATA.rainbowBeyond.meleeRange || 120, {
+          fill: 'rgba(190, 145, 255, .045)', stroke: 'rgba(245, 224, 255, .88)', lineWidth: 2, dashed: true
         });
       }
 
@@ -25401,151 +25305,98 @@ function drawEnemy(enemy, time) {
           ctx.save();ctx.translate(x,y);ctx.globalCompositeOperation='lighter';ctx.rotate(time*.004+Number(shot.seed||0));
           for(let ring=0;ring<3;ring++){ctx.strokeStyle=`hsla(${(time*.14+ring*105)%360},100%,75%,${(.72-ring*.15)*fade})`;ctx.lineWidth=2.3-ring*.35;ctx.beginPath();for(let i=0;i<6;i++){const a=i*Math.PI/3,rr=10+ring*4;const px=Math.cos(a)*rr,py=Math.sin(a)*rr;if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);}ctx.closePath();ctx.stroke();}
           const core=ctx.createRadialGradient(-2,-2,1,0,0,11);core.addColorStop(0,'#fff');core.addColorStop(.35,`hsl(${(time*.16)%360},100%,75%)`);core.addColorStop(1,'rgba(140,80,255,0)');ctx.fillStyle=core;ctx.beginPath();ctx.arc(0,0,11,0,Math.PI*2);ctx.fill();ctx.restore();
-                } else if (shot.effect === 'rainbowOreInstall') {
-          const pulse = Math.sin(progress * Math.PI);
-          const dx = shot.x2 - shot.x1;
-          const dy = shot.y2 - shot.y1;
-          const len = Math.max(1,Math.hypot(dx,dy));
-          const ux = dx/len;
-          const uy = dy/len;
+        } else if (shot.effect === 'rainbowIssen') {
+          const p=Math.max(0,Math.min(1,progress));
+          const flash=Math.max(0,1-p);
+          const cut=Math.min(1,p*4.8);
+          const ex=shot.x1+(shot.x2-shot.x1)*cut;
+          const ey=shot.y1+(shot.y2-shot.y1)*cut;
+          const len=Math.max(1,Math.hypot(shot.x2-shot.x1,shot.y2-shot.y1));
+          const ca=Math.atan2(shot.y2-shot.y1,shot.x2-shot.x1);
+          const ux2=Math.cos(ca),uy2=Math.sin(ca),nx2=-uy2,ny2=ux2;
+          ctx.save();ctx.globalCompositeOperation='lighter';ctx.lineCap='round';
 
-          ctx.save();
-          ctx.globalCompositeOperation='lighter';
-
-          // 설치 지점으로 이어지는 짧은 프리즘 전송광
-          const travel=Math.min(1,progress*2.2);
-          const px=shot.x1+dx*travel;
-          const py=shot.y1+dy*travel;
-
-          for(let i=0;i<4;i++){
-            ctx.strokeStyle=`hsla(${(time*.19+i*82)%360},100%,72%,${(.54-i*.08)*fade})`;
-            ctx.lineWidth=7-i*1.2;
-            ctx.beginPath();
-            ctx.moveTo(
-              px-ux*(25+i*4),
-              py-uy*(25+i*4)
-            );
-            ctx.lineTo(px,py);
-            ctx.stroke();
-          }
-
-          ctx.translate(shot.x2,shot.y2);
-
-          for(let i=0;i<3;i++){
-            ctx.strokeStyle=`hsla(${(time*.16+i*105)%360},100%,78%,${pulse*(.84-i*.18)})`;
-            ctx.lineWidth=4-i*.7;
-            ctx.beginPath();
-            ctx.arc(
-              0,0,
-              9+progress*(25+i*8),
-              0,
-              Math.PI*2
-            );
-            ctx.stroke();
-          }
-
-          ctx.restore();
-
-        } else if (shot.effect === 'rainbowSwordWave') {
-          const tail=78;
-
-          ctx.save();
-          ctx.translate(x,y);
-          ctx.rotate(angle);
-          ctx.globalCompositeOperation='lighter';
-
-          ctx.shadowBlur=26;
-          ctx.shadowColor=`hsl(${(time*.18+Number(shot.seed||0))%360},100%,72%)`;
-
-          // 무지개 검기 본체
-          const blade=ctx.createLinearGradient(-74,0,42,0);
-
-          blade.addColorStop(0,'rgba(255,80,160,0)');
-          blade.addColorStop(.24,`rgba(255,90,160,${.45*fade})`);
-          blade.addColorStop(.42,`rgba(255,220,80,${.70*fade})`);
-          blade.addColorStop(.58,`rgba(90,245,155,${.78*fade})`);
-          blade.addColorStop(.76,`rgba(90,200,255,${.88*fade})`);
-          blade.addColorStop(.90,`rgba(190,110,255,${.94*fade})`);
-          blade.addColorStop(1,`rgba(255,255,255,${fade})`);
-
-          ctx.fillStyle=blade;
-
-          ctx.beginPath();
-          ctx.moveTo(-70,-4);
-          ctx.quadraticCurveTo(-5,-34,42,-3);
-          ctx.quadraticCurveTo(14,8,-70,6);
-          ctx.closePath();
-          ctx.fill();
-
-          ctx.strokeStyle=`rgba(255,255,255,${fade})`;
-          ctx.lineWidth=3;
-
-          ctx.beginPath();
-          ctx.moveTo(-56,-2);
-          ctx.quadraticCurveTo(3,-27,39,-1);
-          ctx.stroke();
-
-          ctx.restore();
-
-          // 검기 뒤의 꼬리
-          ctx.save();
-          ctx.globalCompositeOperation='lighter';
-
-          const tx=x-Math.cos(angle)*tail;
-          const ty=y-Math.sin(angle)*tail;
-
-          ctx.strokeStyle=`rgba(210,225,255,${.26*fade})`;
-          ctx.lineWidth=14;
-          ctx.beginPath();
-          ctx.moveTo(tx,ty);
-          ctx.lineTo(x,y);
-          ctx.stroke();
-
-          ctx.restore();
-
-        } else if (shot.effect === 'rainbowSlash') {
-          const pulse = Math.sin(progress * Math.PI);
-          const visualRadius = Math.min(88, Math.max(64, Number(shot.visualRadius || 82)));
-          const sweepHalf = Math.min(58, Math.max(38, Number(shot.coneAngle || 96) * .5)) * Math.PI / 180;
-          const sweepHead = -sweepHalf + (sweepHalf * 2) * Math.min(1, progress * 1.18);
-          ctx.save();
-          ctx.translate(shot.x1, shot.y1);
-          ctx.rotate(Number(shot.angle || 0));
-          ctx.globalCompositeOperation = 'lighter';
-
-          // 검이 지나간 궤적을 따라 4겹의 짧은 프리즘 초승달을 그립니다.
-          for (let i=0;i<4;i++) {
-            const lag = i * .12;
-            const head = Math.max(-sweepHalf, sweepHead - lag);
-            const tail = Math.max(-sweepHalf, head - (.48 + i*.05));
-            const rr = visualRadius - i * 4;
-            const alpha = (0.86 - i * .15) * fade * pulse;
-            const grad = ctx.createLinearGradient(Math.cos(tail)*rr,Math.sin(tail)*rr,Math.cos(head)*rr,Math.sin(head)*rr);
-            grad.addColorStop(0,`hsla(${(time*.22+i*54+250)%360},100%,68%,0)`);
-            grad.addColorStop(.45,`hsla(${(time*.22+i*54+35)%360},100%,72%,${alpha*.72})`);
-            grad.addColorStop(1,`rgba(255,255,255,${alpha})`);
-            ctx.strokeStyle=grad;
-            ctx.lineWidth=8-i*1.35;
-            ctx.beginPath();
-            ctx.arc(0,0,rr,tail,head);
-            ctx.stroke();
-          }
-
-          // 가장 바깥쪽 날카로운 흰색 검날 궤적.
-          ctx.strokeStyle=`rgba(255,255,255,${.94*fade*pulse})`;
-          ctx.lineWidth=2.2;
-          ctx.beginPath();ctx.arc(0,0,visualRadius+2,Math.max(-sweepHalf,sweepHead-.42),sweepHead);ctx.stroke();
-
-          // 검끝에서 깨져 나오는 작은 프리즘 파편. 화면 전체로 퍼지지 않도록 90px 안에 고정합니다.
+          // 순간 이동처럼 보이는 6겹 프리즘 참격선.
           for(let i=0;i<6;i++){
-            const a=sweepHead-(i%3)*.10;
-            const rr=visualRadius-8-(i%2)*7;
-            const px=Math.cos(a)*rr,py=Math.sin(a)*rr;
-            ctx.save();ctx.translate(px,py);ctx.rotate(a+i*.7);
-            ctx.fillStyle=`hsla(${(time*.24+i*57)%360},100%,78%,${(.72-i*.07)*fade*pulse})`;
-            ctx.beginPath();ctx.moveTo(5,0);ctx.lineTo(-2,-2.3);ctx.lineTo(-1,0);ctx.lineTo(-2,2.3);ctx.closePath();ctx.fill();
-            ctx.restore();
+            const off=(i-2.5)*4.2;
+            const alpha=(.88-i*.095)*flash;
+            ctx.shadowBlur=26-i*2;ctx.shadowColor=`hsla(${(time*.28+i*58+Number(shot.seed||0))%360},100%,72%,.95)`;
+            ctx.strokeStyle=i===0?`rgba(255,255,255,${.98*flash})`:`hsla(${(time*.24+i*61+Number(shot.seed||0))%360},100%,72%,${alpha})`;
+            ctx.lineWidth=Math.max(1.4,8.5-i*1.1);
+            ctx.beginPath();ctx.moveTo(shot.x1+nx2*off,shot.y1+ny2*off);ctx.lineTo(ex+nx2*off,ey+ny2*off);ctx.stroke();
           }
+
+          // 목표 지점의 X자 교차 참격과 충격파.
+          const burst=Math.sin(Math.min(1,p*1.35)*Math.PI);
+          ctx.save();ctx.translate(shot.x2,shot.y2);ctx.rotate(ca);ctx.shadowBlur=30;ctx.shadowColor='#fff';
+          for(const rot of [-.72,.72]){
+            ctx.save();ctx.rotate(rot);const g=ctx.createLinearGradient(-68,0,68,0);g.addColorStop(0,'rgba(255,85,175,0)');g.addColorStop(.28,`rgba(255,220,92,${.48*burst})`);g.addColorStop(.52,`rgba(255,255,255,${.98*burst})`);g.addColorStop(.75,`rgba(92,210,255,${.54*burst})`);g.addColorStop(1,'rgba(190,115,255,0)');ctx.strokeStyle=g;ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(-68,0);ctx.lineTo(68,0);ctx.stroke();ctx.restore();
+          }
+          ctx.shadowBlur=0;ctx.strokeStyle=`rgba(255,255,255,${.82*burst})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,12+p*54,0,Math.PI*2);ctx.stroke();
+          for(let i=0;i<12;i++){const a=Number(shot.seed||0)+i*Math.PI*2/12+p*4.5;const r=12+p*(28+(i%4)*7);ctx.fillStyle=`hsla(${(time*.25+i*31)%360},100%,80%,${.78*flash})`;ctx.beginPath();ctx.ellipse(Math.cos(a)*r,Math.sin(a)*r*.65,2.2,5.4,a,0,Math.PI*2);ctx.fill();}
+          ctx.restore();
+          ctx.restore();
+        } else if (shot.effect === 'rainbowSlash') {
+          const pulse=Math.sin(progress*Math.PI);
+          const visualRadius=Math.min(112,Math.max(82,Number(shot.visualRadius||104)));
+          const sweepHalf=Math.min(78,Math.max(54,Number(shot.coneAngle||134)*.5))*Math.PI/180;
+          const eased=Math.min(1,progress*1.30);const ease=eased*eased*(3-2*eased);
+          const head=-sweepHalf+(sweepHalf*2)*ease;
+          const speedBurst=Math.sin(Math.min(1,progress*1.65)*Math.PI);
+          ctx.save();ctx.translate(shot.x1,shot.y1);ctx.rotate(Number(shot.angle||0));ctx.globalCompositeOperation='lighter';ctx.lineCap='round';
+
+          // 7겹 프리즘 초승달: 바깥은 넓고 흐리며 안쪽은 얇고 선명하게.
+          for(let i=0;i<7;i++){
+            const lag=i*.085;const localHead=Math.max(-sweepHalf,head-lag);const span=.62+i*.045;
+            const tail=Math.max(-sweepHalf,localHead-span);const rr=visualRadius-i*4.6;
+            const alpha=(.82-i*.085)*fade*pulse;
+            const grad=ctx.createLinearGradient(Math.cos(tail)*rr,Math.sin(tail)*rr,Math.cos(localHead)*rr,Math.sin(localHead)*rr);
+            grad.addColorStop(0,`hsla(${(time*.20+i*43+290)%360},100%,68%,0)`);
+            grad.addColorStop(.34,`hsla(${(time*.20+i*43+330)%360},100%,70%,${alpha*.42})`);
+            grad.addColorStop(.67,`hsla(${(time*.20+i*43+60)%360},100%,76%,${alpha*.78})`);
+            grad.addColorStop(1,`rgba(255,255,255,${alpha})`);
+            ctx.shadowBlur=18-i*1.5;ctx.shadowColor=`hsla(${(time*.18+i*55)%360},100%,72%,.9)`;
+            ctx.strokeStyle=grad;ctx.lineWidth=13-i*1.35;ctx.beginPath();ctx.arc(0,0,rr,tail,localHead);ctx.stroke();
+          }
+
+          // 실제 칼날과 연결되는 흰색 코어 2줄.
+          ctx.shadowBlur=22;ctx.shadowColor='#fff';ctx.strokeStyle=`rgba(255,255,255,${.98*fade*pulse})`;ctx.lineWidth=3.2;
+          ctx.beginPath();ctx.arc(0,0,visualRadius+3,Math.max(-sweepHalf,head-.52),head);ctx.stroke();
+          ctx.strokeStyle=`rgba(218,240,255,${.82*fade*pulse})`;ctx.lineWidth=1.3;
+          ctx.beginPath();ctx.arc(0,0,visualRadius-9,Math.max(-sweepHalf,head-.49),head);ctx.stroke();
+
+          // 휘두르는 방향으로 생기는 풍압/속도선.
+          ctx.shadowBlur=0;
+          for(let i=0;i<9;i++){
+            const a=head-.11-i*.055;const r0=35+(i%3)*8;const r1=70+(i%4)*9;
+            ctx.strokeStyle=`hsla(${(time*.17+i*31)%360},100%,82%,${(.32-i*.021)*fade*speedBurst})`;ctx.lineWidth=1.4+(i%2)*.7;
+            ctx.beginPath();ctx.moveTo(Math.cos(a)*r0,Math.sin(a)*r0);ctx.lineTo(Math.cos(a)*r1,Math.sin(a)*r1);ctx.stroke();
+          }
+
+          // 검끝의 별 모양 플레어와 유리 파편.
+          const tipX=Math.cos(head)*visualRadius,tipY=Math.sin(head)*visualRadius;
+          ctx.save();ctx.translate(tipX,tipY);ctx.rotate(head);ctx.shadowBlur=28;ctx.shadowColor='#fff';
+          ctx.strokeStyle=`rgba(255,255,255,${.92*fade*pulse})`;ctx.lineWidth=2.2;
+          for(let i=0;i<4;i++){ctx.rotate(Math.PI/4);ctx.beginPath();ctx.moveTo(-3,0);ctx.lineTo(12+speedBurst*9,0);ctx.stroke();}
+          ctx.restore();
+          for(let i=0;i<14;i++){
+            const a=head+(i-6.5)*.055;const rr=visualRadius-14-(i%4)*6;
+            ctx.save();ctx.translate(Math.cos(a)*rr,Math.sin(a)*rr);ctx.rotate(a+i*.62+progress*4);
+            ctx.fillStyle=`hsla(${(time*.23+i*29)%360},100%,80%,${(.72-i*.028)*fade*pulse})`;
+            ctx.beginPath();ctx.moveTo(6,0);ctx.lineTo(-2.5,-2.3);ctx.lineTo(-.7,0);ctx.lineTo(-2.5,2.3);ctx.closePath();ctx.fill();ctx.restore();
+          }
+          ctx.restore();
+        } else if (shot.effect === 'rainbowSwordWave') {
+          const len=Math.max(1,Math.hypot(shot.x2-shot.x1,shot.y2-shot.y1));
+          const tail=92;ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.globalCompositeOperation='lighter';
+          ctx.shadowBlur=30;ctx.shadowColor=`hsl(${(time*.17+Number(shot.seed||0))%360},100%,72%)`;
+          const blade=ctx.createLinearGradient(-88,0,46,0);
+          blade.addColorStop(0,'rgba(255,70,170,0)');blade.addColorStop(.18,`rgba(255,92,174,${.38*fade})`);blade.addColorStop(.38,`rgba(255,223,88,${.66*fade})`);blade.addColorStop(.56,`rgba(92,242,169,${.76*fade})`);blade.addColorStop(.72,`rgba(91,207,255,${.86*fade})`);blade.addColorStop(.88,`rgba(185,130,255,${.94*fade})`);blade.addColorStop(1,`rgba(255,255,255,${fade})`);
+          ctx.fillStyle=blade;ctx.beginPath();ctx.moveTo(-84,-4);ctx.quadraticCurveTo(-9,-34,46,-3);ctx.quadraticCurveTo(15,9,-84,6);ctx.closePath();ctx.fill();
+          ctx.strokeStyle=`rgba(255,255,255,${.96*fade})`;ctx.lineWidth=2.7;ctx.beginPath();ctx.moveTo(-67,-2);ctx.quadraticCurveTo(2,-27,43,-1);ctx.stroke();ctx.restore();
+          const tx=x-Math.cos(angle)*tail,ty=y-Math.sin(angle)*tail;ctx.save();ctx.globalCompositeOperation='lighter';
+          ctx.strokeStyle=`rgba(225,235,255,${.22*fade})`;ctx.lineWidth=18;ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(x,y);ctx.stroke();
+          for(let i=0;i<4;i++){const off=(i-1.5)*4;ctx.strokeStyle=`hsla(${(time*.18+i*75+Number(shot.seed||0))%360},100%,72%,${(.34-i*.045)*fade})`;ctx.lineWidth=3.2-i*.45;ctx.beginPath();ctx.moveTo(tx-Math.sin(angle)*off,ty+Math.cos(angle)*off);ctx.lineTo(x-Math.sin(angle)*off,y+Math.cos(angle)*off);ctx.stroke();}
           ctx.restore();
         } else if (shot.effect === 'rainbowPierce') {
           const a=Math.max(0,fade), len=Math.hypot(shot.x2-shot.x1,shot.y2-shot.y1);
@@ -29038,7 +28889,6 @@ function drawEnemy(enemy, time) {
       windArrow: .38,
       windPiercing: .50,
       steelSlash: .28,
-      rainbowSwordWave: .46,
       royalCone: .44,
       royalWave: .46,
       arcane: .40,
@@ -29530,120 +29380,6 @@ function drawEnemy(enemy, time) {
     if (unit.unitId === 'iceQueen') { mpPerformIceQueenAttack(targetState, sideKey, unit, target); return; }
     if (unit.unitId === 'eden') { mpPerformEdenAttack(targetState, sideKey, unit, target); return; }
     if (unit.unitId === 'errorEntity') { mpPerformErrorAttack(targetState, sideKey, unit, target); return; }
-
-    // MP_RAINBOW_BEYOND_7_WAVES
-    if (unit.unitId === 'rainbowBeyond') {
-      const rb = UNIT_DATA.rainbowBeyond;
-
-      const distance = Math.hypot(
-        target.x-unit.x,
-        target.y-unit.y
-      );
-
-      const meleeRange = Number(rb.meleeRange || 120);
-      const damage = mpEffectiveUnitDamage(unit);
-
-      if (distance <= meleeRange) {
-        unit.attackMode='rainbowSlash';
-
-        const half =
-          ((Number(rb.meleeConeAngle || 180)*Math.PI/180)/2);
-
-        const victims=[...targetState.enemies].filter(enemy=>{
-          if(enemy.dead)return false;
-
-          const dx=enemy.x-unit.x;
-          const dy=enemy.y-unit.y;
-          const d=Math.hypot(dx,dy);
-
-          return (
-            d<=meleeRange &&
-            Math.abs(
-              mpAngleDelta(
-                Math.atan2(dy,dx),
-                unit.angle
-              )
-            )<=half
-          );
-        });
-
-        mpPushFx(
-          unit.x,
-          unit.y,
-          target.x,
-          target.y,
-          '#ff8fd0',
-          9,
-          sideKey,
-          'sakuraMelee',
-          {
-            angle:unit.angle,
-            radius:meleeRange,
-            coneAngle:180
-          }
-        );
-
-        victims.forEach(enemy=>{
-          mpApplyDamage(
-            targetState,
-            enemy,
-            damage,
-            unit.ownerRole,
-            sideKey
-          );
-        });
-
-        return;
-      }
-
-      unit.attackMode='rainbowSwordWave';
-
-      const maxShots=Math.max(
-        1,
-        Math.floor(Number(rb.rainbowSwordWaveMax || 7))
-      );
-
-      const targets=[...targetState.enemies]
-        .filter(enemy=>{
-          if(enemy.dead)return false;
-
-          const d=Math.hypot(
-            enemy.x-unit.x,
-            enemy.y-unit.y
-          );
-
-          return d>meleeRange && d<=Number(unit.range||rb.range||240);
-        })
-        .sort((a,b)=>b.x-a.x)
-        .slice(0,maxShots);
-
-      targets.forEach((enemy,index)=>{
-        mpPushFx(
-          unit.x,
-          unit.y-7,
-          enemy.x,
-          enemy.y,
-          '#ffffff',
-          9,
-          sideKey,
-          'rainbowSwordWave',
-          {
-            waveIndex:index,
-            seed:Math.random()*1000+index*31
-          }
-        );
-
-        mpApplyDamage(
-          targetState,
-          enemy,
-          damage,
-          unit.ownerRole,
-          sideKey
-        );
-      });
-
-      return;
-    }
 
     if (unit.unitId === 'astralChronomancer') {
       mpPerformChronoAttack(targetState, sideKey, unit);
@@ -31538,62 +31274,6 @@ function drawEnemy(enemy, time) {
         }
         mpCtx.save(); mpCtx.translate(x,y); mpCtx.rotate(angle); mpCtx.scale(big?2.5:1, big?2.5:1); mpCtx.fillStyle='#dcffea'; mpCtx.strokeStyle='#55e69c'; mpCtx.lineWidth=1.2;
         mpCtx.beginPath(); mpCtx.moveTo(13,0); mpCtx.lineTo(-6,-7); mpCtx.lineTo(-2,0); mpCtx.lineTo(-6,7); mpCtx.closePath(); mpCtx.fill(); mpCtx.stroke(); mpCtx.restore();
-      // MP_RAINBOW_SWORD_WAVE_RENDER
-      } else if (fx.kind === 'rainbowSwordWave') {
-        const tailX=x-ux*70;
-        const tailY=y-uy*70;
-
-        mpCtx.save();
-        mpCtx.globalCompositeOperation=
-          fx.shadowClone?'source-over':'lighter';
-
-        mpCtx.strokeStyle=
-          `rgba(205,225,255,${.26*fade})`;
-
-        mpCtx.lineWidth=13;
-
-        mpCtx.beginPath();
-        mpCtx.moveTo(tailX,tailY);
-        mpCtx.lineTo(x,y);
-        mpCtx.stroke();
-
-        mpCtx.translate(x,y);
-        mpCtx.rotate(angle);
-
-        mpCtx.shadowBlur=26;
-        mpCtx.shadowColor=
-          `hsl(${(nowTime*.12+Number(fx.seed||0))%360},100%,72%)`;
-
-        const blade=
-          mpCtx.createLinearGradient(-70,0,40,0);
-
-        blade.addColorStop(0,'rgba(255,80,160,0)');
-        blade.addColorStop(.25,`rgba(255,90,160,${.45*fade})`);
-        blade.addColorStop(.45,`rgba(255,220,80,${.72*fade})`);
-        blade.addColorStop(.62,`rgba(90,245,155,${.80*fade})`);
-        blade.addColorStop(.79,`rgba(90,200,255,${.88*fade})`);
-        blade.addColorStop(.92,`rgba(190,110,255,${.95*fade})`);
-        blade.addColorStop(1,`rgba(255,255,255,${fade})`);
-
-        mpCtx.fillStyle=blade;
-
-        mpCtx.beginPath();
-        mpCtx.moveTo(-67,-4);
-        mpCtx.quadraticCurveTo(-5,-32,40,-3);
-        mpCtx.quadraticCurveTo(13,8,-67,6);
-        mpCtx.closePath();
-        mpCtx.fill();
-
-        mpCtx.strokeStyle=`rgba(255,255,255,${fade})`;
-        mpCtx.lineWidth=2.8;
-
-        mpCtx.beginPath();
-        mpCtx.moveTo(-54,-2);
-        mpCtx.quadraticCurveTo(3,-25,37,-1);
-        mpCtx.stroke();
-
-        mpCtx.restore();
-
       } else if (fx.kind === 'steelSlash' || fx.kind === 'royalWave') {
         const royal = fx.kind === 'royalWave';
         const pulse=Math.sin(progress*Math.PI);

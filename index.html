@@ -4694,7 +4694,7 @@ body {
 }
 .rainbow-dice-cutscene .batch-reward-die{background:linear-gradient(135deg,#ff5f9f,#ffd85f,#68ef9c,#69caff,#ba79ff)!important;background-size:300% 300%!important;animation:rainbowDiceFlow 2s linear infinite!important}
 
-.mailbox-dialog{width:min(760px,96vw)}.mail-compose{display:grid;gap:8px;padding:12px;border:1px solid rgba(255,255,255,.13);border-radius:16px;background:rgba(255,255,255,.04)}.mail-compose textarea{resize:vertical;min-height:86px}.mail-gift-row{display:grid;grid-template-columns:1fr 1fr 110px;gap:7px}.mail-list{display:grid;gap:9px}.mail-card{padding:12px;border:1px solid rgba(255,255,255,.13);border-radius:15px;background:rgba(255,255,255,.045)}.mail-card.unread{border-color:rgba(106,211,255,.55)}.mail-card-head{display:flex;justify-content:space-between;gap:10px}.mail-card-head small{color:#91a8c2}.mail-card p{white-space:pre-wrap;line-height:1.48}.mail-gift{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px;border-radius:11px;background:rgba(255,216,90,.08)}.mail-system{color:#ffd86a}.mailbox-dialog input,.mailbox-dialog textarea,.mailbox-dialog select{width:100%;box-sizing:border-box}#adminRefreshErrorHoldersBtn{pointer-events:auto!important;position:relative!important;z-index:30!important}@media(max-width:620px){.mail-gift-row{grid-template-columns:1fr}}
+.mailbox-dialog{width:min(760px,96vw)}.mail-compose{display:grid;gap:8px;padding:12px;border:1px solid rgba(255,255,255,.13);border-radius:16px;background:rgba(255,255,255,.04)}.mail-compose textarea{resize:vertical;min-height:86px}.mail-gift-row{display:grid;grid-template-columns:1fr 1fr 110px;gap:7px}.mail-list{display:grid;gap:9px}.mail-card{padding:12px;border:1px solid rgba(255,255,255,.13);border-radius:15px;background:rgba(255,255,255,.045)}.mail-card.unread{border-color:rgba(106,211,255,.55)}.mail-card-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.mail-card-meta{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap}.mail-card-head small{color:#91a8c2}.mail-delete-btn{border:1px solid rgba(255,98,118,.4)!important;background:rgba(255,72,95,.1)!important;color:#ffb9c3!important;padding:5px 9px!important;min-height:0!important;font-size:12px!important}.mail-delete-btn:hover{background:rgba(255,72,95,.2)!important}.mail-card p{white-space:pre-wrap;line-height:1.48}.mail-gift{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px;border-radius:11px;background:rgba(255,216,90,.08)}.mail-system{color:#ffd86a}.mailbox-dialog input,.mailbox-dialog textarea,.mailbox-dialog select{width:100%;box-sizing:border-box}#adminRefreshErrorHoldersBtn{pointer-events:auto!important;position:relative!important;z-index:30!important}@media(max-width:620px){.mail-gift-row{grid-template-columns:1fr}}
 
     /* 인벤토리/덱: 이모티콘 대신 실제 전투 렌더러로 만든 캐릭터 초상화 */
     .unit-icon.unit-icon-live{width:100%;height:116px;display:grid;place-items:center;margin:2px 0 7px;overflow:hidden;border-radius:15px;background:radial-gradient(circle at 50% 42%,rgba(255,255,255,.12),rgba(20,24,42,.42) 62%,rgba(5,7,16,.74));border:1px solid rgba(255,255,255,.12);}
@@ -7186,6 +7186,12 @@ button {
 }
 </style>
 
+
+<style id="playerTitleStyles">
+.profile-identity{min-width:0;display:grid;gap:4px}.profile-title-slot{display:flex;align-items:center;gap:8px;min-height:26px}.profile-title-slot>small{font-size:9px;letter-spacing:.14em;color:#8da7c2;font-weight:900}.player-title-badge{display:inline-flex;align-items:center;justify-content:center;max-width:100%;padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.18);font-size:11px;font-weight:1000;letter-spacing:.04em;box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 4px 14px rgba(0,0,0,.18);white-space:nowrap}.player-title-badge.title-none{background:rgba(255,255,255,.07);color:#9eb2c8}.player-title-badge.title-beginner{background:linear-gradient(135deg,#163e2d,#21684b);color:#a9ffd4;border-color:rgba(103,255,184,.42)}.player-title-badge.title-caveExplorer{background:linear-gradient(135deg,#132d51,#235b89);color:#b9eaff;border-color:rgba(90,199,255,.48);box-shadow:0 0 14px rgba(70,172,255,.16)}.player-title-badge.title-poisonOvercome{background:linear-gradient(135deg,#32194f,#742d87);color:#efc5ff;border-color:rgba(209,108,255,.5);box-shadow:0 0 16px rgba(193,73,255,.18)}.player-title-badge.title-tester{background:linear-gradient(100deg,#fff2a8,#f9b82f 38%,#b98cff 72%,#78dcff);color:#24142f;border-color:#fff1aa;box-shadow:0 0 18px rgba(255,202,66,.28);text-shadow:0 1px 0 rgba(255,255,255,.5)}.player-title-badge.title-alphaTester{background:linear-gradient(105deg,#9c1018 0%,#ff3338 28%,#ffd43b 51%,#ff3d31 75%,#8d0b12 100%);background-size:220% 100%;color:#fffbd1;border-color:#ffd853;box-shadow:0 0 18px rgba(255,70,40,.28),0 0 11px rgba(255,211,52,.22);text-shadow:0 1px 2px #6b0909;animation:alphaTitleFlow 2.2s linear infinite}@keyframes alphaTitleFlow{to{background-position:-220% 0}}
+.profile-title-panel{display:grid;gap:9px;margin:0 0 14px;padding:12px;border:1px solid rgba(148,184,255,.16);border-radius:15px;background:rgba(255,255,255,.035)}.profile-title-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.profile-title-panel-head strong{font-size:13px}.profile-title-panel-head small{color:#91a8c1;font-size:10px}.profile-title-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.profile-title-card{display:grid;gap:4px;padding:9px 10px;border:1px solid rgba(255,255,255,.11);border-radius:12px;background:rgba(6,14,28,.48);color:#dbe8f7;text-align:left;cursor:pointer;min-height:72px}.profile-title-card:hover:not(:disabled){border-color:rgba(125,199,255,.42);transform:translateY(-1px)}.profile-title-card.current{outline:2px solid rgba(115,213,255,.54);background:rgba(48,105,151,.18)}.profile-title-card:disabled{opacity:.48;cursor:not-allowed;filter:saturate(.65)}.profile-title-card .title-card-top{display:flex;align-items:center;justify-content:space-between;gap:7px}.profile-title-card .title-card-top b{font-size:11px}.profile-title-card small{font-size:9px;line-height:1.35;color:#8fa6bf}.profile-title-card .buff{color:#ffe082;font-size:10px;font-weight:950}.profile-title-clear{padding:7px 10px;min-height:32px;font-size:10px}.admin-title-owned{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}.admin-title-owned .player-title-badge{font-size:10px;padding:3px 8px}@media(max-width:520px){.profile-title-grid{grid-template-columns:1fr}.profile-title-slot{align-items:flex-start;flex-direction:column;gap:3px}}
+</style>
+
 </head>
 
 <body>
@@ -7473,12 +7479,20 @@ button {
     <section id="socialProfilePanel" class="social-panel">
       <div class="profile-hero">
         <div id="profileAvatarLarge" class="profile-avatar-large">P</div>
-        <div><small>GAME PROFILE</small><h2 id="profileNicknameTitle">플레이어</h2><p id="profileGameId">ID · -</p></div>
+        <div class="profile-identity">
+          <div class="profile-title-slot"><small>CURRENT TITLE</small><span id="profileCurrentTitleBadge" class="player-title-badge title-none">칭호 없음</span></div>
+          <h2 id="profileNicknameTitle">플레이어</h2><p id="profileGameId">ID · -</p>
+        </div>
       </div>
       <div class="profile-level-card">
         <div><strong id="profileLevelText">LEVEL 1</strong><span id="profileExpText">0 / 100 EXP</span></div>
         <div class="profile-exp-track"><i id="profileExpFill"></i></div>
         <small id="profileNextLevelText">다음 레벨까지 100 EXP</small>
+      </div>
+      <div class="profile-title-panel">
+        <div class="profile-title-panel-head"><div><strong>🏷️ 칭호</strong><br><small>장착한 칭호에 따라 전투 소환석 보상이 증가합니다.</small></div><button id="profileTitleClearBtn" class="secondary profile-title-clear" type="button">칭호 해제</button></div>
+        <div id="profileTitleGrid" class="profile-title-grid"></div>
+        <p id="profileTitleStatus" class="social-status"></p>
       </div>
       <label class="social-label" for="nicknameInput">닉네임</label>
       <div class="nickname-row"><input id="nicknameInput" maxlength="14" inputmode="text" lang="ko" autocomplete="nickname" autocapitalize="off" spellcheck="false" placeholder="한글/영문/숫자 2~14자"><button id="saveNicknameBtn" type="button">닉네임 저장</button></div>
@@ -7554,6 +7568,17 @@ button {
                 <button id="adminUnbanUserBtn" class="secondary" type="button">밴 해제</button>
               </div>
               <span class="muted">밴은 Supabase Auth 계정 로그인/세션 갱신을 차단합니다.</span>
+            </div>
+
+            <div class="admin-action-box">
+              <strong>🏷️ 칭호 지급 / 회수</strong>
+              <select id="adminTitleSelect"></select>
+              <input id="adminTitleReasonInput" type="text" maxlength="120" placeholder="사유 (필수)" value="관리자 칭호 관리" />
+              <div class="admin-action-row">
+                <button id="adminTitleGrantBtn" type="button">칭호 지급</button>
+                <button id="adminTitleRevokeBtn" class="danger" type="button">칭호 회수</button>
+              </div>
+              <div id="adminOwnedTitles" class="admin-title-owned"><span class="muted">유저를 선택하면 보유 칭호가 표시됩니다.</span></div>
             </div>
 
             <div class="admin-action-box">
@@ -9086,13 +9111,14 @@ function applyStagePreview(stageId = selectedStage) {
       },
       rainbowBeyond: {
         id:'rainbowBeyond', name:'무지개 저편', icon:'🌈', rarity:'갤럭시', rarityKey:'galaxy', rarityClass:'rarity-galaxy', eventExclusive:true,
-        cost:1000, damage:20000, range:240, fireInterval:.5,
+        cost:1000, damage:20000, range:240, fireInterval:.5, stunImmune:true,
         meleeRange:120, meleeConeAngle:180, rainbowSwordWaveMax:7,
-        rainbowIssenEvery:20, rainbowIssenCount:20, rainbowIssenInterval:.09, rainbowIssenDamageMultiplier:1,
+        rainbowIssenEvery:20, rainbowIssenCount:20, rainbowIssenInterval:.09, rainbowIssenDamageMultiplier:2,
+        rainbowIssenLineWidth:58, rainbowIssenReturnDuration:.34, rainbowSwordRainDamageMultiplier:3, rainbowSwordRainFallTime:.34,
         rainbowMapBuffEvery:20, rainbowMapBuffDuration:5, rainbowMapDamageMultiplier:4, rainbowMapSpeedMultiplier:4,
         footprintRadius:110, multiplayerFootprintRadius:92, maxPlaced:0, color:'#9b7cff',
         skillName:'무지개 세계',
-        skillText:'광석 설치 스킬은 제거되었습니다. 근거리 120 이내에서는 프리즘 왕검으로 전방 180°를 베고, 121~240 거리에서는 최대 7발의 프리즘 검기를 발사합니다. 평타를 20번 할 때마다 성에 가장 가까운 적을 추적하며 일섬을 20번 연속 사용합니다. 매 일섬마다 적을 관통해 참격의 끝 지점까지 직접 이동하고, 다음 일섬은 바로 그 위치에서 다시 시작합니다. 도중에 대상이 죽으면 새 위치에서 다음으로 성에 가까운 적을 즉시 재지정해 남은 일섬을 계속합니다. 20초마다 5초 동안 모든 아군 공격력과 공격속도가 4배가 됩니다.'
+        skillText:'기절 면역. 광석 설치 스킬은 제거되었습니다. 근거리 120 이내에서는 프리즘 왕검으로 전방 180°를 베고, 121~240 거리에서는 최대 7발의 프리즘 검기를 발사합니다. 평타 20회마다 성에 가장 가까운 적을 재추적하며 20연속 일섬을 사용합니다. 각 일섬은 평타의 2배 피해를 주고, 맵 밖으로 나가기 전까지 현재 사거리만큼 끝까지 돌진한 뒤 그 끝점에서 다음 일섬을 이어갑니다. 20번째 일섬이 끝나면 최초 설치 위치로 귀환하면서 현재 모든 적의 머리 위에 프리즘 왕검을 떨어뜨려 각각 평타의 3배 피해를 줍니다. 20초마다 5초 동안 모든 아군 공격력과 공격속도가 4배가 됩니다.'
       },
       errorEntity: {
         id: 'errorEntity',
@@ -9416,6 +9442,89 @@ function applyStagePreview(stageId = selectedStage) {
 
 
 
+    const TITLE_DATA = Object.freeze({
+      alphaTester: Object.freeze({id:'alphaTester',name:'알파 테스터',buff:1,adminOnly:true,unlockText:'현재 일반 획득 불가 · 관리자 지급 전용',className:'title-alphaTester',sort:1}),
+      beginner: Object.freeze({id:'beginner',name:'초보자',buff:1.10,unlockStage:1,unlockText:'1스테이지 클리어',className:'title-beginner',sort:2}),
+      caveExplorer: Object.freeze({id:'caveExplorer',name:'동굴의 탐방자',buff:1.15,unlockStage:2,unlockText:'2스테이지 클리어',className:'title-caveExplorer',sort:3}),
+      poisonOvercome: Object.freeze({id:'poisonOvercome',name:'독의 극복',buff:1.30,unlockStage:4,unlockText:'4스테이지 클리어',className:'title-poisonOvercome',sort:4}),
+      tester: Object.freeze({id:'tester',name:'테스터',buff:10.00,adminOnly:true,unlockText:'관리자 패널 지급 전용',className:'title-tester',sort:5})
+    });
+
+    function titleOwned(titleId){ return Boolean(player?.ownedTitles?.[titleId]); }
+    function currentTitleData(){ const id=String(player?.currentTitle||''); return titleOwned(id)?TITLE_DATA[id]||null:null; }
+    function getTitleGemMultiplier(){ return Math.max(1,Number(currentTitleData()?.buff||1)); }
+    function applyTitleGemReward(amount){ return Math.max(0,Math.round(Number(amount||0)*getTitleGemMultiplier())); }
+    function titleBuffLabel(data){ const pct=Math.round(Number(data?.buff||1)*100); return `소환석 ${pct}%`; }
+    function titleBadgeHtml(titleId, fallback='칭호 없음'){
+      const d=TITLE_DATA[titleId];
+      if(!d) return `<span class="player-title-badge title-none">${fallback}</span>`;
+      return `<span class="player-title-badge ${d.className}">${d.name}</span>`;
+    }
+
+    function applyTitleStatePayload(payload){
+      if(!player || !payload) return;
+      let owned=payload.ownedTitles;
+      if(typeof owned==='string'){try{owned=JSON.parse(owned);}catch(_){}}
+      const ids=Array.isArray(owned)?owned:(owned&&typeof owned==='object'?Object.keys(owned).filter(k=>owned[k]):[]);
+      player.ownedTitles={};
+      ids.forEach(id=>{if(TITLE_DATA[id])player.ownedTitles[id]=true;});
+      const current=String(payload.currentTitle||'');
+      player.currentTitle=(TITLE_DATA[current]&&player.ownedTitles[current])?current:'';
+    }
+
+    async function syncTitleStateFromServer(silent=true){
+      if(!player) return null;
+      try{
+        const {data,error}=await supabaseClient.rpc('sync_my_titles_v1');
+        if(error) throw error;
+        applyTitleStatePayload(data||{});
+        renderProfileTitles();
+        if(typeof window.refreshSocialMenu==='function') window.refreshSocialMenu();
+        return data||null;
+      }catch(error){
+        if(!silent) console.error('칭호 서버 동기화 실패:',error);
+        return null;
+      }
+    }
+
+    function renderProfileTitles(){
+      if(!player) return;
+      const current=currentTitleData();
+      const badge=document.querySelector('#profileCurrentTitleBadge');
+      if(badge){
+        badge.textContent=current?.name||'칭호 없음';
+        badge.className=`player-title-badge ${current?.className||'title-none'}`;
+        badge.title=current?`${current.name} · ${titleBuffLabel(current)}`:'장착한 칭호 없음';
+      }
+      const grid=document.querySelector('#profileTitleGrid');
+      if(!grid) return;
+      const titles=Object.values(TITLE_DATA).sort((a,b)=>a.sort-b.sort);
+      grid.innerHTML=titles.map(d=>{
+        const owned=titleOwned(d.id), selected=String(player.currentTitle||'')===d.id;
+        return `<button class="profile-title-card ${selected?'current':''}" type="button" data-profile-title="${d.id}" ${owned?'':'disabled'}>
+          <span class="title-card-top">${titleBadgeHtml(d.id)}<b>${selected?'장착 중':owned?'보유':'잠김'}</b></span>
+          <span class="buff">버프 · ${titleBuffLabel(d)}</span>
+          <small>${d.unlockText}${d.id==='alphaTester'?' · 붉은색/노란색 한정 디자인':''}</small>
+        </button>`;
+      }).join('');
+      grid.querySelectorAll('[data-profile-title]:not(:disabled)').forEach(btn=>btn.addEventListener('click',()=>void selectProfileTitle(btn.dataset.profileTitle)));
+    }
+
+    async function selectProfileTitle(titleId=''){
+      const status=document.querySelector('#profileTitleStatus');
+      const id=String(titleId||'');
+      if(id && (!TITLE_DATA[id] || !titleOwned(id))){ if(status){status.textContent='보유하지 않은 칭호입니다.';status.className='social-status error';} return; }
+      try{
+        const {data,error}=await supabaseClient.rpc('set_my_title_v1',{p_title_id:id||null});
+        if(error) throw error;
+        applyTitleStatePayload(data||{});
+        if(status){status.textContent=id?`${TITLE_DATA[id].name} 칭호를 장착했습니다.`:'칭호를 해제했습니다.';status.className='social-status good';}
+        renderProfileTitles();
+        if(typeof window.refreshSocialMenu==='function') window.refreshSocialMenu();
+        await savePlayer();
+      }catch(error){ if(status){status.textContent=`칭호 변경 실패: ${error?.message||error}`;status.className='social-status error';} }
+    }
+
     function createDefaultPlayer() {
       return {
         gems: 500,
@@ -9423,6 +9532,8 @@ function applyStagePreview(stageId = selectedStage) {
         exp: 0,
         level: 1,
         nickname: '',
+        ownedTitles: {},
+        currentTitle: '',
         stageDifficultyClears: {},
         pendingBattleRewards: [],
         ownedUnits: {
@@ -9465,6 +9576,9 @@ function applyStagePreview(stageId = selectedStage) {
       if (!Number.isFinite(Number(player.exp)) || Number(player.exp) < 0) player.exp = 0;
       if (!Number.isFinite(Number(player.level)) || Number(player.level) < 1) player.level = 1;
       if (typeof player.nickname !== 'string') player.nickname = '';
+      if (!player.ownedTitles || typeof player.ownedTitles !== 'object' || Array.isArray(player.ownedTitles)) player.ownedTitles = {};
+      Object.keys(player.ownedTitles).forEach(id => { if (!TITLE_DATA[id] || !player.ownedTitles[id]) delete player.ownedTitles[id]; });
+      if (typeof player.currentTitle !== 'string' || !TITLE_DATA[player.currentTitle] || !player.ownedTitles[player.currentTitle]) player.currentTitle = '';
       if (!player.stageDifficultyClears || typeof player.stageDifficultyClears !== 'object') player.stageDifficultyClears = {};
       if (!Array.isArray(player.pendingBattleRewards)) {
         player.pendingBattleRewards = [];
@@ -9553,9 +9667,10 @@ function applyStagePreview(stageId = selectedStage) {
       }
 
       const rewardStage = getStageConfig(stage);
-      const amount = kind === 'wave'
+      const baseAmount = kind === 'wave'
         ? Math.round(difficulty.waveReward * Number(rewardStage.rewardMultiplier || 1))
         : getStageClearBonus(rewardStage, difficulty);
+      const amount = applyTitleGemReward(baseAmount);
 
       player.pendingBattleRewards.push({
         claimKey,
@@ -10001,6 +10116,7 @@ currentUsername =
   await syncServerWallet();
   await syncServerDiceInventory();
   await syncServerItemInventory();
+  await syncTitleStateFromServer(true);
   await savePlayer();
   return true;
 }
@@ -10230,6 +10346,12 @@ async function refreshAdminAccess(force = false) {
   return adminIsAuthorized;
 }
 
+function populateAdminTitleSelect() {
+  const select=document.querySelector('#adminTitleSelect');
+  if(!select) return;
+  select.innerHTML=Object.values(TITLE_DATA).sort((a,b)=>a.sort-b.sort).map(d=>`<option value="${d.id}">${d.name} · ${titleBuffLabel(d)}${d.adminOnly?' · 관리자/한정':''}</option>`).join('');
+}
+
 function populateAdminUnitSelect() {
   const select = document.querySelector('#adminUnitSelect');
   if (!select) return;
@@ -10367,6 +10489,7 @@ async function openAdminPanel() {
   }
 
   populateAdminUnitSelect();
+  populateAdminTitleSelect();
   populateAdminDiceGrantSelect();
   populateAdminGlobalSelectiveResetSelects();
   showScreen('admin');
@@ -10437,6 +10560,7 @@ function renderAdminPlayer(data) {
   const summary = document.querySelector('#adminPlayerSummary');
   const unitsElement = document.querySelector('#adminOwnedUnits');
   const diceElement = document.querySelector('#adminDiceInventory');
+  const ownedTitlesElement = document.querySelector('#adminOwnedTitles');
 
   selected?.classList.remove('hidden');
   if (title) title.textContent = `${adminSelectedUsernameValue} 관리`;
@@ -10448,12 +10572,20 @@ function renderAdminPlayer(data) {
   summary.innerHTML = `
     <div class="admin-summary-tile"><span>소환석</span><strong>${gemsText}</strong></div>
     <div class="admin-summary-tile"><span>최고 스테이지</span><strong>${Number(data.highestStage || 0)}</strong></div>
+    <div class="admin-summary-tile"><span>현재 칭호</span><strong style="font-size:11px;">${adminEscapeHtml(TITLE_DATA[data?.titleState?.currentTitle]?.name || '없음')}</strong></div>
     <div class="admin-summary-tile"><span>게임 저장</span><strong>${data.hasSave ? '있음' : '없음'}</strong></div>
     <div class="admin-summary-tile"><span>서버 지갑</span><strong>${data.hasWallet ? '있음' : '없음'}</strong></div>
     <div class="admin-summary-tile"><span>가입</span><strong style="font-size:11px;">${adminEscapeHtml(formatAdminDate(data.createdAt))}</strong></div>
     <div class="admin-summary-tile"><span>최근 로그인</span><strong style="font-size:11px;">${adminEscapeHtml(formatAdminDate(data.lastSignInAt))}</strong></div>
     <div class="admin-summary-tile"><span>계정 상태</span><strong style="${data.banned ? 'color:#ff7f8d' : 'color:#75eba5'}">${data.banned ? 'BANNED' : '정상'}</strong></div>
   `;
+
+  if (ownedTitlesElement) {
+    const titleIds=Array.isArray(data?.titleState?.ownedTitles)?data.titleState.ownedTitles:[];
+    ownedTitlesElement.innerHTML=titleIds.length
+      ? titleIds.filter(id=>TITLE_DATA[id]).map(id=>titleBadgeHtml(id)).join('')
+      : '<span class="muted">보유 칭호 없음</span>';
+  }
 
   const ownedUnits = data.ownedUnits && typeof data.ownedUnits === 'object'
     ? data.ownedUnits
@@ -10541,81 +10673,86 @@ async function loadAdminPlayer(userId = adminSelectedUserId) {
   if (!userId) return;
 
   setAdminStatus('유저 정보를 불러오는 중...');
-  const { data, error } = await supabaseClient.rpc('admin_get_player', {
-    p_user_id: userId
-  });
+  const [playerResult,titleResult] = await Promise.all([
+    supabaseClient.rpc('admin_get_player', { p_user_id: userId }),
+    supabaseClient.rpc('admin_get_player_titles_v1', { p_user_id: userId })
+  ]);
+  const {data,error}=playerResult;
 
   if (error) {
     console.error('관리자 유저 정보 조회 실패:', error);
     setAdminStatus(`유저 정보 조회 실패: ${error.message}`, 'error');
     return;
   }
-
-  renderAdminPlayer(data || {});
+  const merged={...(data||{}),titleState:titleResult.error?{ownedTitles:[],currentTitle:null}:(titleResult.data||{})};
+  renderAdminPlayer(merged);
+  if(titleResult.error) console.warn('관리자 칭호 조회 실패:',titleResult.error.message);
   setAdminStatus(`${data?.username || '유저'} 정보를 불러왔습니다.`, 'good');
 }
 
 
 let mailboxCache=[];
 function setMailStatus(message,type=''){const el=document.querySelector('#mailStatus');if(el){el.textContent=message||'';el.className=`social-status ${type||''}`;}}
-function mailGiftLabel(m){if(!m?.giftKind||Number(m.giftAmount||0)<=0)return '';if(m.giftKind==='gems')return `💎 소환석 ${Number(m.giftAmount).toLocaleString()}개`;if(m.giftKind==='dice')return `🎲 ${m.giftKey} 주사위 ${Number(m.giftAmount).toLocaleString()}개`;return `🎁 ${m.giftKey==='rainbowFragment'?'무지개의 조각':m.giftKey} ${Number(m.giftAmount).toLocaleString()}개`;}
-function updateMailGiftOptions(){const kind=document.querySelector('#mailGiftKindSelect')?.value||'',key=document.querySelector('#mailGiftKeySelect'),amt=document.querySelector('#mailGiftAmountInput');if(!key||!amt)return;if(!kind){key.innerHTML='<option value="">종류 선택</option>';key.disabled=true;amt.disabled=true;return;}amt.disabled=false;if(kind==='gems'){key.innerHTML='<option value="gems">소환석</option>';key.disabled=true;}else if(kind==='dice'){key.disabled=false;key.innerHTML=Object.values(DICE_DATA).map(d=>`<option value="${d.key}">${d.rarity} (${Number(player.diceInventory?.[d.key]||0).toLocaleString()}개)</option>`).join('');}else{key.disabled=false;const items=player.itemInventory||{};const keys=Object.keys(items);key.innerHTML=(keys.length?keys:['rainbowFragment']).map(k=>`<option value="${k}">${k==='rainbowFragment'?'무지개의 조각':k} (${Number(items[k]||0).toLocaleString()}개)</option>`).join('');}}
+function mailGiftLabel(m){if(!m?.giftKind||Number(m.giftAmount||0)<=0)return '';if(m.giftKind==='gems')return `💎 소환석 ${Number(m.giftAmount).toLocaleString()}개`;if(m.giftKind==='dice')return `🎲 ${DICE_DATA[m.giftKey]?.rarity||m.giftKey} 주사위 ${Number(m.giftAmount).toLocaleString()}개`;return `🎁 ${m.giftKey==='rainbowFragment'?'무지개의 조각':m.giftKey} ${Number(m.giftAmount).toLocaleString()}개`;}
+function mailboxErrorText(error){const raw=String(error?.message||error||'UNKNOWN');const map={LOGIN_REQUIRED:'로그인이 필요합니다.',RECIPIENT_REQUIRED:'받는 플레이어 아이디를 입력하세요.',RECIPIENT_NOT_FOUND:'받는 플레이어를 찾을 수 없습니다.',CANNOT_MAIL_SELF:'자기 자신에게는 우편을 보낼 수 없습니다.',MESSAGE_LENGTH_INVALID:'메시지는 최대 500자까지 입력할 수 있습니다.',MESSAGE_OR_GIFT_REQUIRED:'메시지를 입력하거나 선물을 선택하세요.',GIFT_AMOUNT_INVALID:'선물 수량이 올바르지 않습니다.',GIFT_KEY_INVALID:'선물 종류가 올바르지 않습니다.',GIFT_KIND_INVALID:'지원하지 않는 선물입니다.',INSUFFICIENT_GEMS:'소환석이 부족합니다.',INSUFFICIENT_DICE:'선택한 주사위가 부족합니다.',INSUFFICIENT_ITEM:'선택한 아이템이 부족합니다.',MAIL_NOT_FOUND:'우편을 찾을 수 없습니다.',NO_GIFT:'이 우편에는 받을 선물이 없습니다.',ALREADY_CLAIMED:'이미 받은 선물입니다.'};for(const [k,v] of Object.entries(map)){if(raw.includes(k))return v;}return raw;}
+function updateMailGiftOptions(){const kind=document.querySelector('#mailGiftKindSelect')?.value||'',key=document.querySelector('#mailGiftKeySelect'),amt=document.querySelector('#mailGiftAmountInput');if(!key||!amt)return;if(!kind){key.innerHTML='<option value="">종류 선택</option>';key.disabled=true;amt.disabled=true;return;}amt.disabled=false;if(kind==='gems'){key.innerHTML=`<option value="gems">소환석 (${Number(player?.gems||0).toLocaleString()}개)</option>`;key.disabled=true;}else if(kind==='dice'){key.disabled=false;key.innerHTML=Object.values(DICE_DATA).map(d=>`<option value="${d.key}">${d.rarity} (${Number(player?.diceInventory?.[d.key]||0).toLocaleString()}개)</option>`).join('');}else{key.disabled=false;const items=player?.itemInventory||{};const keys=Object.keys(items);key.innerHTML=(keys.length?keys:['rainbowFragment']).map(k=>`<option value="${k}">${k==='rainbowFragment'?'무지개의 조각':k} (${Number(items[k]||0).toLocaleString()}개)</option>`).join('');}}
 function updateMailUnreadBadge(){const b=document.querySelector('#mailUnreadBadge');if(!b)return;const n=mailboxCache.filter(m=>!m.isRead).length;b.textContent=n;b.classList.toggle('hidden',n<=0);}
-function renderMailbox(){const list=document.querySelector('#mailList');if(!list)return;if(!mailboxCache.length){list.innerHTML='<div class="social-empty">받은 편지가 없습니다.</div>';return;}list.innerHTML=mailboxCache.map(m=>{const gift=mailGiftLabel(m);return `<div class="mail-card ${m.isRead?'':'unread'}" data-mail-id="${m.id}"><div class="mail-card-head"><strong class="${m.systemMail?'mail-system':''}">${m.systemMail?'🛠️ ':''}${adminEscapeHtml(m.senderName||'SYSTEM')}</strong><small>${adminEscapeHtml(formatAdminDate(m.createdAt))}</small></div><p>${adminEscapeHtml(m.message||'')}</p>${gift?`<div class="mail-gift"><span>${adminEscapeHtml(gift)}</span><button data-mail-claim="${m.id}" ${m.giftClaimed?'disabled':''}>${m.giftClaimed?'수령 완료':'선물 받기'}</button></div>`:''}</div>`}).join('');list.querySelectorAll('.mail-card').forEach(c=>c.addEventListener('click',e=>{if(e.target.closest('[data-mail-claim]'))return;const id=c.dataset.mailId;void supabaseClient.rpc('mark_mail_read_v1',{p_mail_id:id});const m=mailboxCache.find(x=>x.id===id);if(m)m.isRead=true;c.classList.remove('unread');updateMailUnreadBadge();}));list.querySelectorAll('[data-mail-claim]').forEach(btn=>btn.addEventListener('click',async()=>{btn.disabled=true;try{const {error}=await supabaseClient.rpc('claim_mail_gift_v1',{p_mail_id:btn.dataset.mailClaim});if(error)throw error;setMailStatus('선물을 받았습니다.','good');await Promise.all([syncServerDiceInventory(),syncServerItemInventory()]);await loadMailbox();renderMenu();}catch(e){setMailStatus(`선물 수령 실패: ${e.message}`,'error');btn.disabled=false;}}));}
-async function loadMailbox(){try{const {data,error}=await supabaseClient.rpc('list_my_mail_v1');if(error)throw error;mailboxCache=Array.isArray(data)?data:[];renderMailbox();updateMailUnreadBadge();}catch(e){console.warn('우편함 조회 실패',e);}}
-async function openMailbox(){document.querySelector('#mailboxOverlay')?.classList.remove('hidden');await Promise.all([syncServerDiceInventory(),syncServerItemInventory()]);updateMailGiftOptions();await loadMailbox();}
+function renderMailbox(){
+  const list=document.querySelector('#mailList');if(!list)return;
+  if(!mailboxCache.length){list.innerHTML='<div class="social-empty">받은 편지가 없습니다.</div>';updateMailUnreadBadge();return;}
+  list.innerHTML=mailboxCache.map(m=>{const gift=mailGiftLabel(m);return `<div class="mail-card ${m.isRead?'':'unread'}" data-mail-id="${m.id}"><div class="mail-card-head"><strong class="${m.systemMail?'mail-system':''}">${m.systemMail?'🛠️ ':''}${adminEscapeHtml(m.senderName||'SYSTEM')}</strong><div class="mail-card-meta"><small>${adminEscapeHtml(formatAdminDate(m.createdAt))}</small><button class="mail-delete-btn" type="button" data-mail-delete="${m.id}">삭제</button></div></div><p>${adminEscapeHtml(m.message||'')}</p>${gift?`<div class="mail-gift"><span>${adminEscapeHtml(gift)}</span><button data-mail-claim="${m.id}" ${m.giftClaimed?'disabled':''}>${m.giftClaimed?'수령 완료':'선물 받기'}</button></div>`:''}</div>`}).join('');
+  list.querySelectorAll('.mail-card').forEach(c=>c.addEventListener('click',e=>{if(e.target.closest('[data-mail-claim],[data-mail-delete]'))return;const id=c.dataset.mailId;void supabaseClient.rpc('mark_mail_read_v1',{p_mail_id:id});const m=mailboxCache.find(x=>x.id===id);if(m)m.isRead=true;c.classList.remove('unread');updateMailUnreadBadge();}));
+  list.querySelectorAll('[data-mail-claim]').forEach(btn=>btn.addEventListener('click',async()=>{btn.disabled=true;try{const {error}=await supabaseClient.rpc('claim_mail_gift_v1',{p_mail_id:btn.dataset.mailClaim});if(error)throw error;setMailStatus('선물을 받았습니다.','good');await Promise.allSettled([syncServerWallet(),syncServerDiceInventory(),syncServerItemInventory()]);await loadMailbox();updateMailGiftOptions();renderMenu();}catch(e){setMailStatus(`선물 수령 실패: ${mailboxErrorText(e)}`,'error');btn.disabled=false;}}));
+  list.querySelectorAll('[data-mail-delete]').forEach(btn=>btn.addEventListener('click',async()=>{const id=btn.dataset.mailDelete;const mail=mailboxCache.find(x=>x.id===id);if(!mail)return;const hasUnclaimedGift=Boolean(mail.giftKind)&&Number(mail.giftAmount||0)>0&&!mail.giftClaimed;const warning=hasUnclaimedGift?'이 우편에는 아직 받지 않은 선물이 있습니다. 삭제하면 선물도 함께 사라집니다. 정말 삭제할까요?':'이 받은 우편을 삭제할까요?';if(!confirm(warning))return;btn.disabled=true;try{const {error}=await supabaseClient.rpc('delete_my_mail_v1',{p_mail_id:id});if(error)throw error;mailboxCache=mailboxCache.filter(x=>x.id!==id);renderMailbox();updateMailUnreadBadge();setMailStatus('우편을 삭제했습니다.','good');}catch(e){setMailStatus(`우편 삭제 실패: ${mailboxErrorText(e)}`,'error');btn.disabled=false;}}));
+}
+async function loadMailbox(){try{const {data,error}=await supabaseClient.rpc('list_my_mail_v1');if(error)throw error;mailboxCache=Array.isArray(data)?data:[];renderMailbox();updateMailUnreadBadge();}catch(e){console.warn('우편함 조회 실패',e);setMailStatus(`우편함 조회 실패: ${mailboxErrorText(e)}`,'error');}}
+async function openMailbox(){document.querySelector('#mailboxOverlay')?.classList.remove('hidden');setMailStatus('');await Promise.allSettled([syncServerWallet(),syncServerDiceInventory(),syncServerItemInventory()]);updateMailGiftOptions();await loadMailbox();}
 function closeMailbox(){document.querySelector('#mailboxOverlay')?.classList.add('hidden');}
-async function sendMailboxLetter(){const r=document.querySelector('#mailRecipientInput')?.value?.trim()||'',m=document.querySelector('#mailMessageInput')?.value?.trim()||'',k=document.querySelector('#mailGiftKindSelect')?.value||'',key=document.querySelector('#mailGiftKeySelect')?.value||'',a=Math.max(0,Math.floor(Number(document.querySelector('#mailGiftAmountInput')?.value||0)));if(!r||!m){setMailStatus('받는 사람과 메시지를 입력하세요.','error');return;}const b=document.querySelector('#mailSendBtn');if(b)b.disabled=true;try{const {data,error}=await supabaseClient.rpc('send_player_mail_v1',{p_recipient_username:r,p_message:m,p_gift_kind:k||null,p_gift_key:k?key:null,p_gift_amount:k?a:0});if(error)throw error;setMailStatus(`${data?.recipient||r}에게 보냈습니다.`,'good');document.querySelector('#mailMessageInput').value='';await Promise.all([syncServerDiceInventory(),syncServerItemInventory()]);renderMenu();}catch(e){setMailStatus(`전송 실패: ${e.message}`,'error');}finally{if(b)b.disabled=false;}}
-
-async function loadAdminErrorHolders() {
-  const list = document.querySelector('#adminErrorHolderList');
-  if (!list) return;
-  list.innerHTML = '<span class="muted">ERROR 보유 계정을 서버에서 조회 중...</span>';
-  try {
-    const { data, error } = await supabaseClient.rpc('admin_list_error_holders');
-    if (error) throw error;
-    const rows = Array.isArray(data) ? data : [];
-    if (!rows.length) {
-      list.innerHTML = '<span class="muted">현재 ERROR 유닛을 보유한 계정이 없습니다.</span>';
-      return;
-    }
-    list.innerHTML = rows.map(row => `
-      <button class="admin-search-result" type="button" data-error-holder-id="${adminEscapeHtml(row.userId)}">
-        <strong>⚠️ ${adminEscapeHtml(row.username || '플레이어')}</strong>
-        <small>ERROR ×${Math.max(1,Number(row.copies||1))} · Lv.${Math.max(1,Number(row.level||1))}</small>
-      </button>
-    `).join('');
-    list.querySelectorAll('[data-error-holder-id]').forEach(button => {
-      button.addEventListener('click', () => loadAdminPlayer(button.dataset.errorHolderId));
-    });
-  } catch (error) {
-    console.error('ERROR 보유 계정 조회 실패:', error);
-    list.innerHTML = `<span class="muted" style="color:#ff9ca7;">조회 실패: ${adminEscapeHtml(error.message || String(error))}</span>`;
-  }
+async function sendMailboxLetter(){
+  const r=document.querySelector('#mailRecipientInput')?.value?.trim()||'';
+  const m=document.querySelector('#mailMessageInput')?.value?.trim()||'';
+  const k=document.querySelector('#mailGiftKindSelect')?.value||'';
+  const key=document.querySelector('#mailGiftKeySelect')?.value||'';
+  const a=Math.max(0,Math.floor(Number(document.querySelector('#mailGiftAmountInput')?.value||0)));
+  if(!r){setMailStatus('받는 플레이어 아이디를 입력하세요.','error');return;}
+  if(!m&&!k){setMailStatus('메시지를 입력하거나 선물을 선택하세요.','error');return;}
+  if(k&&a<1){setMailStatus('선물 수량을 1개 이상 입력하세요.','error');return;}
+  if(k==='gems'&&a>Number(player?.gems||0)){setMailStatus('소환석이 부족합니다.','error');return;}
+  if(k==='dice'&&a>Number(player?.diceInventory?.[key]||0)){setMailStatus('선택한 주사위가 부족합니다.','error');return;}
+  if(k==='item'&&a>Number(player?.itemInventory?.[key]||0)){setMailStatus('선택한 아이템이 부족합니다.','error');return;}
+  const b=document.querySelector('#mailSendBtn');if(b)b.disabled=true;
+  setMailStatus('우편을 보내는 중...');
+  try{
+    const {data,error}=await supabaseClient.rpc('send_player_mail_v2',{p_recipient_username:r,p_message:m,p_gift_kind:k||null,p_gift_key:k?key:null,p_gift_amount:k?a:0});
+    if(error)throw error;
+    const sentGift=k?mailGiftLabel({giftKind:k,giftKey:key,giftAmount:a}):'';
+    setMailStatus(`${data?.recipient||r}에게 ${sentGift?`${sentGift} 선물과 우편을`:'우편을'} 보냈습니다.`,'good');
+    document.querySelector('#mailMessageInput').value='';
+    document.querySelector('#mailGiftKindSelect').value='';
+    document.querySelector('#mailGiftAmountInput').value='1';
+    await Promise.allSettled([syncServerWallet(),syncServerDiceInventory(),syncServerItemInventory()]);
+    updateMailGiftOptions();
+    renderMenu();
+  }catch(e){setMailStatus(`전송 실패: ${mailboxErrorText(e)}`,'error');}
+  finally{if(b)b.disabled=false;}
 }
 
-async function setAdminUserBan(banned) {
-  if (!adminSelectedUserId) {
-    setAdminStatus('먼저 관리할 유저를 선택하세요.', 'error');
-    return;
-  }
-  const reason = document.querySelector('#adminModerationReasonInput')?.value?.trim() || '관리자 계정 제재';
-  const label = banned ? '밴' : '밴 해제';
-  if (!confirm(`${adminSelectedUsernameValue} 계정을 ${label}하시겠습니까?`)) return;
-  try {
-    const { data, error } = await supabaseClient.rpc('admin_set_user_ban', {
-      p_user_id: adminSelectedUserId,
-      p_banned: Boolean(banned),
-      p_reason: reason
-    });
-    if (error) throw error;
-    setAdminStatus(`${adminSelectedUsernameValue} · ${banned ? '밴 완료' : '밴 해제 완료'}`, 'good');
-    await loadAdminPlayer(adminSelectedUserId);
-    await loadAdminLogs();
-  } catch (error) {
-    console.error('관리자 밴 변경 실패:', error);
-    setAdminStatus(`계정 ${label} 실패: ${error.message}`, 'error');
-  }
+async function setAdminPlayerTitle(grant=true){
+  if(!adminSelectedUserId){setAdminStatus('먼저 유저를 선택하세요.','error');return;}
+  const titleId=String(document.querySelector('#adminTitleSelect')?.value||'');
+  const reason=String(document.querySelector('#adminTitleReasonInput')?.value||'관리자 칭호 관리').trim();
+  const title=TITLE_DATA[titleId];
+  if(!title){setAdminStatus('칭호를 선택하세요.','error');return;}
+  const action=grant?'지급':'회수';
+  if(!confirm(`${adminSelectedUsernameValue}에게 [${title.name}] 칭호를 ${action}하시겠습니까?`)) return;
+  const {data,error}=await supabaseClient.rpc('admin_set_player_title_v1',{p_user_id:adminSelectedUserId,p_title_id:titleId,p_grant:Boolean(grant),p_reason:reason});
+  if(error){setAdminStatus(`칭호 ${action} 실패: ${error.message}`,'error');return;}
+  setAdminStatus(`${title.name} 칭호 ${action} 완료`,'good');
+  await loadAdminPlayer(adminSelectedUserId);
+  await loadAdminLogs();
+  const {data:{user}}=await supabaseClient.auth.getUser();
+  if(user?.id===adminSelectedUserId){await syncTitleStateFromServer(false);await savePlayer();}
+  return data;
 }
 
 async function zeroAdminUserGems() {
@@ -11469,7 +11606,9 @@ async function loadAdminLogs() {
   const actionNames = {
     adjust_gems: '소환석 조정',
     grant_unit: '유닛 지급',
-    close_multiplayer_room: '온라인 방 종료'
+    close_multiplayer_room: '온라인 방 종료',
+    grant_title: '칭호 지급',
+    revoke_title: '칭호 회수'
   };
 
   list.innerHTML = logs.map(log => {
@@ -13396,6 +13535,83 @@ function requestGachaDraw(count) {
     // 비주얼 품질은 그대로 유지하면서 그라디언트·수십 개의 장식 path 비용을 제거합니다.
     const battleStaticLayerCache = new Map();
 
+    // ===== AUTO BATTLE PERFORMANCE GOVERNOR =====
+    // 평소에는 기존 60fps/최고 품질을 유지하고, 실제 프레임 비용과 이펙트 수가 높을 때만
+    // 렌더링 빈도와 장식 효과를 단계적으로 줄입니다. 게임 시간/데미지 계산은 계속 60Hz로 유지합니다.
+    let battlePerfMode = 0; // 0=FULL, 1=BALANCED, 2=EMERGENCY
+    let battlePerfAvgRenderMs = 8;
+    let battlePerfRecoveryFrames = 0;
+    let battlePerfVisualTick = 0;
+    let battlePerfRunId = null;
+    const battleEnemyById = new Map();
+    const BATTLE_CRITICAL_FX = new Set([
+      'rainbowIssen','rainbowIssenReturn','rainbowSwordRain','rainbowSlash','rainbowSwordWave','sakuraIssen','sakuraUltimateCut',
+      'eclipseSpin','edenDeadeye','rainbowBossDash','dragonLaneSweep','poseidonWave',
+      'errorDelete','errorSystem','rainbowHornImpact'
+    ]);
+
+    function resetBattlePerformanceGovernor() {
+      battlePerfMode = 0;
+      battlePerfAvgRenderMs = 8;
+      battlePerfRecoveryFrames = 0;
+      battlePerfVisualTick = 0;
+    }
+
+    function updateBattlePerformanceGovernor(renderCostMs) {
+      if (!battle) return;
+      const cost = Math.max(0, Math.min(80, Number(renderCostMs || 0)));
+      battlePerfAvgRenderMs = battlePerfAvgRenderMs * .90 + cost * .10;
+
+      const enemyCount = Number(battle.enemies?.length || 0);
+      const shotCount = Number(battle.shots?.length || 0);
+      const unitCount = Number(battle.placedUnits?.length || 0);
+      const delayedCount = Number(battle.delayedAttacks?.length || 0);
+
+      let desired = 0;
+      if (
+        battlePerfAvgRenderMs > 24 || shotCount > 520 || delayedCount > 420 ||
+        enemyCount > 60 || unitCount > 34
+      ) desired = 2;
+      else if (
+        battlePerfAvgRenderMs > 15.8 || shotCount > 190 || delayedCount > 180 ||
+        enemyCount > 34 || unitCount > 18
+      ) desired = 1;
+
+      // 부하는 즉시 낮추고, 품질 복귀는 충분히 안정된 뒤 천천히 합니다.
+      if (desired > battlePerfMode) {
+        battlePerfMode = desired;
+        battlePerfRecoveryFrames = 0;
+      } else if (desired < battlePerfMode) {
+        battlePerfRecoveryFrames += 1;
+        if (battlePerfRecoveryFrames >= 90) {
+          battlePerfMode -= 1;
+          battlePerfRecoveryFrames = 0;
+        }
+      } else {
+        battlePerfRecoveryFrames = 0;
+      }
+
+      battle.performanceMode = battlePerfMode;
+      battle.performanceRenderMs = battlePerfAvgRenderMs;
+    }
+
+    function shouldRenderBattleFrame() {
+      battlePerfVisualTick += 1;
+      if (battlePerfMode <= 0) return true;          // 60fps
+      if (battlePerfMode === 1) return battlePerfVisualTick % 3 !== 0; // 약 40fps
+      return battlePerfVisualTick % 2 === 0;         // 약 30fps
+    }
+
+    function shouldRenderBattleShot(shot, index, total) {
+      if (battlePerfMode <= 0 || total < 180) return true;
+      if (BATTLE_CRITICAL_FX.has(String(shot?.effect || ''))) return true;
+      // 최신 이펙트를 우선 보존합니다. 오래된 작은 탄환은 부하 단계에 따라 샘플링합니다.
+      const ageRank = total - index;
+      if (ageRank <= 90) return true;
+      if (battlePerfMode === 1) return (index & 1) === 0;
+      return index % 3 === 0;
+    }
+
     // 전투 HUD는 캔버스와 달리 DOM이므로 매 프레임 같은 값을 다시 쓰지 않습니다.
     // 값이 실제로 바뀔 때만 text/class/disabled를 갱신해 레이아웃·스타일 재계산을 줄입니다.
     const battleUiMemo = Object.create(null);
@@ -14038,7 +14254,7 @@ function requestGachaDraw(count) {
     function infiniteWaveGemReward(wave) {
       const w = Math.max(1, Math.floor(Number(wave) || 1));
       // 무한모드 기본 웨이브 보상은 100 소환석에서 시작하고 적 HP와 같은 성장률을 사용합니다.
-      return Math.max(1, Math.round(100 * infiniteGrowthMultiplier(w)));
+      return applyTitleGemReward(Math.max(1, Math.round(100 * infiniteGrowthMultiplier(w))));
     }
 
     function infiniteThemeStageForWave(wave) {
@@ -14062,7 +14278,7 @@ function requestGachaDraw(count) {
       const stage = STAGE_CONFIG[themeStage] || STAGE_CONFIG[1];
       const baseReward = Math.max(0, Number(stage.stageBonus || 0) * 2);
       // 적 HP와 동일한 성장률: 10웨이브마다 x1.1 복리 + 50웨이브마다 추가 x1.5 복리
-      return Math.max(0, Math.round(baseReward * infiniteGrowthMultiplier(w)));
+      return applyTitleGemReward(Math.max(0, Math.round(baseReward * infiniteGrowthMultiplier(w))));
     }
 
     async function claimInfiniteWaveServerReward(wave) {
@@ -15324,7 +15540,7 @@ function requestGachaDraw(count) {
         rainbowMage: '🌈 오버 더 레인보우 · 20타마다 3초 동안 공격속도×2',
         rainbowLight: `🌈 스펙트럼 링크 · 0.01초 연속 광선 · 누적 5,000타마다 동시 링크 +1 (현재 ${1+Math.floor(Number(placed?.rainbowLightHits||0)/5000)}명)`,
         rainbowUnicornUnit: '🌈 레인보우 저지먼트 · 10타마다 사거리 전체 표식 · 3초 뒤 일반 적 즉사 / 보스 최대 HP 20% 피해',
-        rainbowBeyond: '🌈 무지개 세계 · 광석 설치 제거 · 근거리 120 전방 180° 왕검 베기 · 원거리 최대 7발 프리즘 검기 · 평타 20회마다 성에 가장 가까운 적을 재추적하며 20연속 이동 일섬(매 참격 끝점으로 직접 이동 후 그 자리에서 다음 일섬) · 20초마다 5초 전체 아군 공격력·공속×4',
+        rainbowBeyond: '🌈 무지개 세계 · 기절 면역 · 광석 설치 제거 · 근거리 180° 왕검 / 원거리 최대 7검기 · 평타 20회마다 20연속 일섬(각 ×2, 매번 사거리 끝까지 돌진) · 종료 시 설치 위치 귀환 + 모든 적에게 낙검 ×3 · 20초마다 5초 전체 아군 공격력·공속×4',
         astralChronomancer: '다중발사(2/3/4발) · 공전탄 최대 10발 · 각 탄환 20% 황금 시간기절 · 60회 공격마다 사거리 300 시간정지 5초'
       };
       return summaries[unit.id] || '기본 공격 유닛';
@@ -16221,11 +16437,13 @@ function requestGachaDraw(count) {
         if (bucket) bucket.length = 0;
       }
       battleEnemyGridUsedKeys.length = 0;
+      battleEnemyById.clear();
       if (!battle?.enemies?.length) return;
 
       for (let i = 0; i < battle.enemies.length; i += 1) {
         const enemy = battle.enemies[i];
         if (!enemy || enemy.dead) continue;
+        if (enemy.id != null) battleEnemyById.set(enemy.id, enemy);
         const cx = Math.floor(Number(enemy.x || 0) / BATTLE_ENEMY_GRID_CELL);
         const cy = Math.floor(Number(enemy.y || 0) / BATTLE_ENEMY_GRID_CELL);
         const key = cx + cy * 64;
@@ -17033,18 +17251,33 @@ function requestGachaDraw(count) {
 
     function getClosestEnemyToUnit(placed, maxRange = Infinity) {
       let closest = null;
-      let closestDistance = Infinity;
+      let closestDistanceSq = Infinity;
 
-      for (const enemy of battle.enemies) {
-        if (enemy.dead || enemy.soilPileState || enemy.type === 'rainbowFeverCore') continue;
-        const distance = Math.hypot(enemy.x - placed.x, enemy.y - placed.y);
-        if (distance <= maxRange && distance < closestDistance) {
+      const consider = enemy => {
+        if (!enemy || enemy.dead || enemy.soilPileState || enemy.type === 'rainbowFeverCore') return;
+        const dx = enemy.x - placed.x;
+        const dy = enemy.y - placed.y;
+        const distanceSq = dx * dx + dy * dy;
+        if (distanceSq < closestDistanceSq) {
           closest = enemy;
-          closestDistance = distance;
+          closestDistanceSq = distanceSq;
         }
+      };
+
+      if (Number.isFinite(maxRange)) {
+        const range = Math.max(0, Number(maxRange || 0));
+        const rangeSq = range * range;
+        forEachBattleEnemyNear(placed.x, placed.y, range, enemy => {
+          const dx = enemy.x - placed.x;
+          const dy = enemy.y - placed.y;
+          if (dx * dx + dy * dy > rangeSq) return;
+          consider(enemy);
+        });
+      } else {
+        for (let i = 0; i < battle.enemies.length; i += 1) consider(battle.enemies[i]);
       }
 
-      return closest ? { enemy: closest, distance: closestDistance } : null;
+      return closest ? { enemy: closest, distance: Math.sqrt(closestDistanceSq) } : null;
     }
 
     function isEnemyInsideCone(enemy, placed, facingAngle, range, halfAngle) {
@@ -17101,6 +17334,15 @@ function requestGachaDraw(count) {
 
     function triggerDelayedAttackCore(attack) {
       if (!battle || battle.ended) return;
+
+      if (attack.kind === 'rainbowSwordRainHit') {
+        const source=(battle.placedUnits||[]).find(unit=>unit.id===attack.sourceId);
+        const enemy=(battle.enemies||[]).find(e=>e.id===attack.enemyId);
+        if(!source||!enemy||enemy.dead||enemy.soilPileState||enemy.type==='rainbowFeverCore'||Number(enemy.reviveInvulnerableRemaining||0)>0)return;
+        applyTraitDamage(source,enemy,Math.max(1,Number(attack.damage||0)));
+        battle.shots.push({x1:Number(enemy.x||0),y1:Number(enemy.y||0),x2:Number(enemy.x||0),y2:Number(enemy.y||0),life:.34,maxLife:.34,effect:'rainbowSwordRainImpact',color:'#ffffff',seed:Number(attack.seed||Math.random()*1000),premium:true});
+        return;
+      }
 
       if (attack.kind === 'shadowCloneReplay') {
         const source=(battle.placedUnits||[]).find(unit=>unit.id===attack.sourceId);
@@ -18343,124 +18585,129 @@ function requestGachaDraw(count) {
 
     function startRainbowBeyondIssen(placed){
       const data=UNIT_DATA.rainbowBeyond;
+      if(!Number.isFinite(Number(placed.homeX))) placed.homeX=Number(placed.x||0);
+      if(!Number.isFinite(Number(placed.homeY))) placed.homeY=Number(placed.y||0);
       placed.rainbowIssenRemaining=Math.max(1,Math.floor(Number(data.rainbowIssenCount||20)));
       placed.rainbowIssenTimer=0;
       placed.rainbowIssenSequence=Number(placed.rainbowIssenSequence||0)+1;
+      placed.rainbowIssenFinishPending=false;
+      placed.rainbowIssenReturning=false;
+      placed.rainbowIssenDash=null;
       placed.attackMode='rainbowIssen';
-      setBattleMessage(`🌈 무지개 저편 · 무지개 일섬! 성에 가장 가까운 적을 추적하며 ${placed.rainbowIssenRemaining}연속 참격!`);
+      setBattleMessage(`🌈 무지개 저편 · 무지개 일섬! 사거리 끝까지 돌진하며 ${placed.rainbowIssenRemaining}연속 참격 · 각 평타 ×2!`);
     }
 
-    function clampRainbowBeyondIssenPoint(x,y){
+    function getRainbowBeyondIssenBoundaryEnd(startX,startY,angle,maxDistance){
       const margin=42;
-      return {
-        x:Math.max(margin,Math.min(canvas.width-margin,Number(x||0))),
-        y:Math.max(margin,Math.min(canvas.height-margin,Number(y||0)))
-      };
+      const ux=Math.cos(angle),uy=Math.sin(angle);
+      let allowed=Math.max(0,Number(maxDistance||0));
+      const limits=[];
+      if(ux>1e-6) limits.push((canvas.width-margin-startX)/ux);
+      else if(ux<-1e-6) limits.push((margin-startX)/ux);
+      if(uy>1e-6) limits.push((canvas.height-margin-startY)/uy);
+      else if(uy<-1e-6) limits.push((margin-startY)/uy);
+      for(const limit of limits){if(Number.isFinite(limit)&&limit>=0)allowed=Math.min(allowed,limit);}
+      allowed=Math.max(0,allowed);
+      return{x:startX+ux*allowed,y:startY+uy*allowed,distance:allowed};
     }
 
     function updateRainbowBeyondIssenDash(placed,dt){
       const dash=placed?.rainbowIssenDash;
-      if(!dash) return false;
+      if(!dash)return false;
       dash.elapsed=Math.max(0,Number(dash.elapsed||0))+Math.max(0,Number(dt||0));
       const duration=Math.max(.025,Number(dash.duration||.055));
       const t=Math.max(0,Math.min(1,dash.elapsed/duration));
-      // 초반에 빠르게 튀어나가고 끝에서 짧게 멈추는 일섬 이동.
-      const ease=1-Math.pow(1-t,4);
+      const ease=dash.kind==='return'?(t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2):(1-Math.pow(1-t,4));
       placed.x=Number(dash.fromX||0)+(Number(dash.toX||0)-Number(dash.fromX||0))*ease;
       placed.y=Number(dash.fromY||0)+(Number(dash.toY||0)-Number(dash.fromY||0))*ease;
       if(t>=1){
-        placed.x=Number(dash.toX||placed.x);
-        placed.y=Number(dash.toY||placed.y);
-        placed.rainbowIssenDash=null;
+        placed.x=Number(dash.toX||placed.x);placed.y=Number(dash.toY||placed.y);
+        const kind=dash.kind;placed.rainbowIssenDash=null;
+        if(kind==='return'){
+          placed.rainbowIssenReturning=false;placed.rainbowIssenFinishPending=false;
+          placed.attackMode='idle';placed.attackAnimation=0;placed.rainbowIssenTargetId=null;
+          setBattleMessage('🌈 무지개 저편 · 귀환 완료! 프리즘 낙검이 전장을 심판했습니다.');
+        }
         return false;
       }
       return true;
     }
 
-    function updateRainbowBeyondIssen(placed,dt){
-      const dashActive=updateRainbowBeyondIssenDash(placed,dt);
-      const remaining=Math.max(0,Math.floor(Number(placed.rainbowIssenRemaining||0)));
-      if(remaining<=0) return dashActive;
-      if(placed.stunRemaining>0) return true;
+    function triggerRainbowBeyondSwordRain(placed){
+      if(!battle||!placed)return 0;
+      const data=UNIT_DATA.rainbowBeyond;
+      const damage=Math.max(1,Number(placed.damage||data.damage||20000)*Math.max(0,Number(data.rainbowSwordRainDamageMultiplier||3)));
+      const fallTime=Math.max(.16,Number(data.rainbowSwordRainFallTime||.34));
+      const targets=(battle.enemies||[]).filter(enemy=>enemy&&!enemy.dead&&!enemy.soilPileState&&enemy.type!=='rainbowFeverCore'&&Number(enemy.reviveInvulnerableRemaining||0)<=0);
+      playUnitAttackSound('rainbowBeyond',{volume:1.12});
+      targets.forEach((enemy,index)=>{
+        const seed=Math.random()*1000+index*31;
+        battle.shots.push({x1:Number(enemy.x||0),y1:Number(enemy.y||0)-285,x2:Number(enemy.x||0),y2:Number(enemy.y||0),life:fallTime,maxLife:fallTime,effect:'rainbowSwordRain',color:'#ffffff',seed,targetId:enemy.id,premium:true});
+        scheduleDelayedAttack({kind:'rainbowSwordRainHit',timer:fallTime*.82,sourceId:placed.id,enemyId:enemy.id,damage,seed});
+      });
+      if(targets.length)setBattleMessage(`🌈 무지개 저편 · 천상 프리즘 낙검! 모든 적 ${targets.length}명에게 평타 ×3!`);
+      return targets.length;
+    }
 
+    function finishRainbowBeyondIssen(placed){
+      if(!placed||placed.rainbowIssenReturning)return;
+      const data=UNIT_DATA.rainbowBeyond;
+      const homeX=Number.isFinite(Number(placed.homeX))?Number(placed.homeX):Number(placed.x||0);
+      const homeY=Number.isFinite(Number(placed.homeY))?Number(placed.homeY):Number(placed.y||0);
+      const startX=Number(placed.x||0),startY=Number(placed.y||0);
+      placed.rainbowIssenReturning=true;placed.attackMode='rainbowIssenReturn';placed.attackAnimation=1;
+      triggerRainbowBeyondSwordRain(placed);
+      const duration=Math.max(.18,Number(data.rainbowIssenReturnDuration||.34));
+      battle.shots.push({x1:startX,y1:startY,x2:homeX,y2:homeY,life:duration,maxLife:duration,effect:'rainbowIssenReturn',color:'#ffffff',seed:Math.random()*1000,premium:true});
+      placed.rainbowIssenDash={kind:'return',fromX:startX,fromY:startY,toX:homeX,toY:homeY,elapsed:0,duration};
+    }
+
+    function updateRainbowBeyondIssen(placed,dt){
+      const wasReturning=Boolean(placed?.rainbowIssenReturning);
+      const dashActive=updateRainbowBeyondIssenDash(placed,dt);
+      if(dashActive)return true;
+      if(wasReturning&&!placed.rainbowIssenReturning)return false;
+      const remaining=Math.max(0,Math.floor(Number(placed.rainbowIssenRemaining||0)));
+      if(remaining<=0){
+        if(placed.rainbowIssenFinishPending){finishRainbowBeyondIssen(placed);return true;}
+        return false;
+      }
+      placed.stunRemaining=0;placed.rainbowBossStunRemaining=0;
       const data=UNIT_DATA.rainbowBeyond;
       const interval=Math.max(.045,Number(data.rainbowIssenInterval||.09));
       placed.rainbowIssenTimer=Number.isFinite(placed.rainbowIssenTimer)?placed.rainbowIssenTimer-dt:0;
       placed.attackAnimation=Math.max(0,Number(placed.attackAnimation||0)-dt*9.5);
-      if(placed.rainbowIssenTimer>0) return true;
-
-      // 다음 참격을 시작할 때 이전 일섬의 끝 위치를 정확히 시작점으로 확정합니다.
-      if(placed.rainbowIssenDash){
-        placed.x=Number(placed.rainbowIssenDash.toX||placed.x);
-        placed.y=Number(placed.rainbowIssenDash.toY||placed.y);
-        placed.rainbowIssenDash=null;
-      }
-
+      if(placed.rainbowIssenTimer>0)return true;
+      if(placed.rainbowIssenDash){placed.x=Number(placed.rainbowIssenDash.toX||placed.x);placed.y=Number(placed.rainbowIssenDash.toY||placed.y);placed.rainbowIssenDash=null;}
       const target=getRainbowBeyondIssenTarget();
-      if(!target){
-        placed.rainbowIssenRemaining=0;
-        placed.rainbowIssenTimer=0;
-        return false;
-      }
-
+      if(!target){placed.rainbowIssenRemaining=0;placed.rainbowIssenTimer=0;placed.rainbowIssenFinishPending=true;finishRainbowBeyondIssen(placed);return true;}
       const slashNumber=Math.max(1,Number(data.rainbowIssenCount||20)-remaining+1);
-      const startX=Number(placed.x||0);
-      const startY=Number(placed.y||0);
-      let dx=Number(target.x||0)-startX;
-      let dy=Number(target.y||0)-startY;
-      let distance=Math.hypot(dx,dy);
-      let angle;
-      if(distance<4){
-        // 바로 겹쳐 있어도 직전 진행 방향으로 관통해서 다음 일섬의 시작 위치가 달라지게 합니다.
-        angle=Number.isFinite(Number(placed.angle))?Number(placed.angle):0;
-        dx=Math.cos(angle);dy=Math.sin(angle);distance=1;
-      }else{
-        angle=Math.atan2(dy,dx);
-      }
-
-      // 적 중심을 지나 약 54px 뒤까지 관통합니다. 다음 일섬은 바로 이 끝점에서 시작합니다.
-      const overshoot=54;
-      const rawEndX=Number(target.x||0)+Math.cos(angle)*overshoot;
-      const rawEndY=Number(target.y||0)+Math.sin(angle)*overshoot;
-      const end=clampRainbowBeyondIssenPoint(rawEndX,rawEndY);
-
-      placed.angle=angle;
-      placed.attackMode='rainbowIssen';
-      placed.attackAnimation=1;
-      placed.rainbowIssenTargetId=target.id;
-
-      const damage=Math.max(1,Number(placed.damage||data.damage||20000)*Number(data.rainbowIssenDamageMultiplier||1));
+      const startX=Number(placed.x||0),startY=Number(placed.y||0);
+      let dx=Number(target.x||0)-startX,dy=Number(target.y||0)-startY,distance=Math.hypot(dx,dy);
+      let angle=distance<4?(Number.isFinite(Number(placed.angle))?Number(placed.angle):0):Math.atan2(dy,dx);
+      const maxDashDistance=Math.max(1,Number(placed.range||data.range||240));
+      let end=getRainbowBeyondIssenBoundaryEnd(startX,startY,angle,maxDashDistance);
+      if(end.distance<1){angle+=Math.PI;end=getRainbowBeyondIssenBoundaryEnd(startX,startY,angle,maxDashDistance);}
+      placed.angle=angle;placed.attackMode='rainbowIssen';placed.attackAnimation=1;placed.rainbowIssenTargetId=target.id;
+      const damage=Math.max(1,Number(placed.damage||data.damage||20000)*Number(data.rainbowIssenDamageMultiplier||2));
+      const lineWidth=Math.max(24,Number(data.rainbowIssenLineWidth||58));
       const seed=Math.random()*1000+slashNumber*47;
-      battle.shots.push({
-        x1:startX,y1:startY-4,x2:end.x,y2:end.y-4,
-        life:.30,maxLife:.30,effect:'rainbowIssen',color:'#ffffff',angle,
-        seed,issenIndex:slashNumber,issenTotal:Number(data.rainbowIssenCount||20),premium:true,
-        dashThroughTarget:true,targetX:Number(target.x||0),targetY:Number(target.y||0)
-      });
-
-      // 시각적으로 검선만 그리는 것이 아니라 유닛 본체가 일섬의 끝점까지 실제 이동합니다.
-      placed.rainbowIssenDash={
-        fromX:startX,fromY:startY,
-        toX:end.x,toY:end.y,
-        elapsed:0,
-        duration:Math.min(.065,Math.max(.035,interval*.62)),
-        index:slashNumber
-      };
-
-      applyTraitDamage(placed,target,damage);
-
-      placed.rainbowIssenRemaining=remaining-1;
-      placed.rainbowIssenTimer=interval;
-      if(placed.rainbowIssenRemaining<=0){
-        placed.rainbowIssenRemaining=0;
-        placed.rainbowIssenTargetId=null;
-        setBattleMessage('🌈 무지개 저편 · 20연속 이동 일섬 완료!');
+      battle.shots.push({x1:startX,y1:startY-4,x2:end.x,y2:end.y-4,life:.30,maxLife:.30,effect:'rainbowIssen',color:'#ffffff',angle,seed,issenIndex:slashNumber,issenTotal:Number(data.rainbowIssenCount||20),premium:true,dashThroughTarget:true,targetX:Number(target.x||0),targetY:Number(target.y||0),width:lineWidth});
+      placed.rainbowIssenDash={kind:'issen',fromX:startX,fromY:startY,toX:end.x,toY:end.y,elapsed:0,duration:Math.min(.07,Math.max(.038,interval*.64)),index:slashNumber};
+      for(const enemy of battle.enemies||[]){
+        if(!enemy||enemy.dead||enemy.soilPileState||enemy.type==='rainbowFeverCore'||Number(enemy.reviveInvulnerableRemaining||0)>0)continue;
+        const hitRadius=lineWidth*.5+Math.max(5,Number(enemy.radius||16)*.45);
+        if(distanceToSegment({x:Number(enemy.x||0),y:Number(enemy.y||0)},{x:startX,y:startY},{x:end.x,y:end.y})<=hitRadius)applyTraitDamage(placed,enemy,damage);
       }
+      placed.rainbowIssenRemaining=remaining-1;placed.rainbowIssenTimer=interval;
+      if(placed.rainbowIssenRemaining<=0){placed.rainbowIssenRemaining=0;placed.rainbowIssenTargetId=null;placed.rainbowIssenFinishPending=true;}
       return true;
     }
 
     function updateRainbowBeyondUnit(placed,dt){
-      if (!battle || placed.stunRemaining > 0) return Boolean(Number(placed.rainbowIssenRemaining||0)>0);
+      if (!battle) return false;
+      placed.stunRemaining=0;
+      placed.rainbowBossStunRemaining=0;
 
       // 광석 설치 스킬은 완전히 제거했습니다. 기존 전투 상태에 남은 아군 광석도 즉시 정리합니다.
       if(Array.isArray(battle.rainbowAllyOres) && battle.rainbowAllyOres.length) battle.rainbowAllyOres.length=0;
@@ -18528,7 +18775,7 @@ function requestGachaDraw(count) {
       }
       if (placed.unitId === 'rainbowBeyond') {
         // 왕검의 무게감이 느껴지도록 근접 베기는 크게/천천히, 검기 발사는 조금 더 빠르게 재생합니다.
-        animationSpeed = placed.attackMode === 'rainbowIssen' ? 8.8 : (placed.attackMode === 'rainbowSlash' ? 1.34 : 2.15);
+        animationSpeed = (placed.attackMode === 'rainbowIssen' || placed.attackMode === 'rainbowIssenReturn') ? 8.8 : (placed.attackMode === 'rainbowSlash' ? 1.34 : 2.15);
       }
       placed.attackAnimation = Math.max(0, placed.attackAnimation - dt * animationSpeed);
 
@@ -19020,7 +19267,7 @@ function requestGachaDraw(count) {
       }
 
       const difficulty = battle.difficulty || getDifficultyConfig(battle.difficultyKey);
-      const rewardAmount = Math.round(difficulty.waveReward * Number(battle.stageConfig?.rewardMultiplier || 1));
+      const rewardAmount = applyTitleGemReward(Math.round(difficulty.waveReward * Number(battle.stageConfig?.rewardMultiplier || 1)));
 
       waveState.rewardGranted = true;
       battle.earnedWaveGems += rewardAmount;
@@ -19217,13 +19464,15 @@ function requestGachaDraw(count) {
 
       // 정상 플레이에서는 도달하지 않는 높은 상한입니다. 특정 스킬/브라우저 오류로
       // 이펙트가 비정상 누적될 때만 오래된 효과를 정리하여 화면 전체 정지를 막습니다.
-      if (battle.shots.length > 1800) {
-        battle.shots.splice(0, battle.shots.length - 1800);
+      const dynamicShotHardCap = battlePerfMode >= 2 ? 900 : (battlePerfMode === 1 ? 1300 : 1800);
+      if (battle.shots.length > dynamicShotHardCap) {
+        battle.shots.splice(0, battle.shots.length - dynamicShotHardCap);
         battle.effectOverflowRecoveries = Number(battle.effectOverflowRecoveries || 0) + 1;
         if (battle.effectOverflowRecoveries <= 2) console.warn('과도한 전투 이펙트를 자동 정리했습니다.');
       }
-      if (Array.isArray(battle.delayedAttacks) && battle.delayedAttacks.length > 1200) {
-        battle.delayedAttacks.splice(0, battle.delayedAttacks.length - 1200);
+      const dynamicDelayedHardCap = battlePerfMode >= 2 ? 650 : (battlePerfMode === 1 ? 900 : 1200);
+      if (Array.isArray(battle.delayedAttacks) && battle.delayedAttacks.length > dynamicDelayedHardCap) {
+        battle.delayedAttacks.splice(0, battle.delayedAttacks.length - dynamicDelayedHardCap);
       }
 
       completeResolvedWaves();
@@ -21833,10 +22082,35 @@ function drawEnemy(enemy, time) {
 
       // 모든 적의 본체는 고품질 스프라이트 캐시를 사용합니다.
       // 접지 그림자/종류별 오라 → 본체 → 재질 하이라이트 순으로 그려 입체감과 이펙트 품질을 높입니다.
-      drawPremiumEnemyBackdrop(enemy, drawX, drawY, time);
-      drawCachedEnemyBase(enemy, drawX, drawY, time);
-      drawPremiumEnemyForeground(enemy, drawX, drawY, time);
+      if (battlePerfMode === 0 || isBoss || enemy.rainbowOre) {
+        drawPremiumEnemyBackdrop(enemy, drawX, drawY, time);
+        drawCachedEnemyBase(enemy, drawX, drawY, time);
+        drawPremiumEnemyForeground(enemy, drawX, drawY, time);
+      } else {
+        // 부하가 높을 때 일반 적은 캐시된 본체를 그대로 유지하고, 매 프레임의 광원/재질 장식만 생략합니다.
+        drawCachedEnemyBase(enemy, drawX, drawY, time);
+      }
 
+      // EMERGENCY 단계에서는 일반 적의 개별 파티클/상태 장식 대신 본체와 HP만 남겨
+      // 수십 개의 shadowBlur/radialGradient 호출을 제거합니다. 보스는 항상 최고 품질을 유지합니다.
+      if (battlePerfMode >= 2 && !isBoss && !enemy.rainbowOre) {
+        const barWidth = 44, barHeight = 5;
+        const barY = drawY - enemy.radius - 28;
+        const ratio = Math.max(0, Math.min(1, enemy.health / Math.max(1, enemy.maxHealth)));
+        ctx.fillStyle = '#202736';
+        ctx.fillRect(drawX - barWidth / 2, barY, barWidth, barHeight);
+        ctx.fillStyle = '#45df7d';
+        ctx.fillRect(drawX - barWidth / 2, barY, barWidth * ratio, barHeight);
+        if (Number(enemy.shield || 0) > 0) {
+          const sr=Math.max(0,Math.min(1,Number(enemy.shield||0)/Math.max(1,Number(enemy.shieldMax||enemy.shield||1))));
+          ctx.fillStyle='rgba(108,232,255,.92)';ctx.fillRect(drawX-barWidth/2,barY+barHeight+2,barWidth*sr,3);
+        }
+        ctx.strokeStyle = 'rgba(255,255,255,.24)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(drawX - barWidth / 2, barY, barWidth, barHeight);
+        ctx.restore();
+        return;
+      }
 
       if (Number(enemy.rainbowGuardDamageHalfRemaining||0) > 0) {
         ctx.save();ctx.translate(drawX,drawY);ctx.globalCompositeOperation='lighter';ctx.strokeStyle='rgba(255,245,180,.86)';ctx.lineWidth=4;ctx.setLineDash([8,5]);ctx.beginPath();ctx.arc(0,0,enemy.radius+13+Math.sin(time*.02)*3,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
@@ -25166,7 +25440,18 @@ function drawEnemy(enemy, time) {
         return { x, y, ux, uy, nx: -uy, ny: ux, angle: Math.atan2(ty, tx) };
       };
 
-      battle.shots.forEach(shot => {
+      const totalBattleShots = battle.shots.length;
+      battle.shots.forEach((shot, shotIndex) => {
+        if (shot.effect === 'rainbowSwordRain' && shot.targetId) {
+          const tracked = battleEnemyById.get(shot.targetId) || battle.enemies.find(enemy => enemy.id === shot.targetId);
+          if (tracked && !tracked.dead) {
+            shot.x1 = Number(tracked.x || 0);
+            shot.y1 = Number(tracked.y || 0) - 285;
+            shot.x2 = Number(tracked.x || 0);
+            shot.y2 = Number(tracked.y || 0);
+          }
+        }
+        if (!shouldRenderBattleShot(shot, shotIndex, totalBattleShots)) return;
         const progress = clamp01(1 - shot.life / shot.maxLife);
         const travel = 1 - Math.pow(1 - progress, 3);
         const dx = shot.x2 - shot.x1;
@@ -25370,6 +25655,29 @@ function drawEnemy(enemy, time) {
           ctx.save();ctx.translate(x,y);ctx.globalCompositeOperation='lighter';ctx.rotate(time*.004+Number(shot.seed||0));
           for(let ring=0;ring<3;ring++){ctx.strokeStyle=`hsla(${(time*.14+ring*105)%360},100%,75%,${(.72-ring*.15)*fade})`;ctx.lineWidth=2.3-ring*.35;ctx.beginPath();for(let i=0;i<6;i++){const a=i*Math.PI/3,rr=10+ring*4;const px=Math.cos(a)*rr,py=Math.sin(a)*rr;if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);}ctx.closePath();ctx.stroke();}
           const core=ctx.createRadialGradient(-2,-2,1,0,0,11);core.addColorStop(0,'#fff');core.addColorStop(.35,`hsl(${(time*.16)%360},100%,75%)`);core.addColorStop(1,'rgba(140,80,255,0)');ctx.fillStyle=core;ctx.beginPath();ctx.arc(0,0,11,0,Math.PI*2);ctx.fill();ctx.restore();
+        } else if (shot.effect === 'rainbowSwordRain') {
+          const p=Math.max(0,Math.min(1,progress)),eased=1-Math.pow(1-p,3.2);
+          const sx=shot.x1,sy=shot.y1,ex=shot.x2,ey=shot.y2,px=sx+(ex-sx)*eased,py=sy+(ey-sy)*eased;
+          ctx.save();ctx.translate(px,py);ctx.globalCompositeOperation='lighter';
+          // 이동 방향 뒤쪽으로 길게 남는 프리즘 낙하 궤적.
+          const trail=ctx.createLinearGradient(0,-150,0,-42);trail.addColorStop(0,'rgba(255,255,255,0)');trail.addColorStop(.42,`rgba(120,205,255,${.20*fade})`);trail.addColorStop(.72,`rgba(210,120,255,${.34*fade})`);trail.addColorStop(1,`rgba(255,255,255,${.72*fade})`);ctx.strokeStyle=trail;ctx.lineWidth=15;ctx.beginPath();ctx.moveTo(0,-150);ctx.lineTo(0,-43);ctx.stroke();
+          // 손잡이와 보석 장식.
+          ctx.shadowBlur=24;ctx.shadowColor=`hsl(${(time*.20+Number(shot.seed||0))%360},100%,72%)`;
+          ctx.fillStyle='#4b2778';ctx.fillRect(-4.5,-62,9,-25);ctx.fillStyle='#d8c3ff';ctx.beginPath();ctx.arc(0,-65,6,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
+          const guard=ctx.createLinearGradient(-25,-34,25,-28);guard.addColorStop(0,'#ff80b5');guard.addColorStop(.25,'#ffe56c');guard.addColorStop(.5,'#8cffb0');guard.addColorStop(.75,'#83d8ff');guard.addColorStop(1,'#bd8cff');ctx.fillStyle=guard;ctx.strokeStyle='rgba(255,255,255,.96)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-26,-33);ctx.lineTo(-9,-40);ctx.lineTo(0,-32);ctx.lineTo(9,-40);ctx.lineTo(26,-33);ctx.lineTo(10,-24);ctx.lineTo(0,-29);ctx.lineTo(-10,-24);ctx.closePath();ctx.fill();ctx.stroke();
+          // 아래를 향하는 왕검 칼날. 외곽 프리즘과 중앙 백색 코어를 분리해 입체감을 냅니다.
+          const blade=ctx.createLinearGradient(-10,-25,11,65);blade.addColorStop(0,'#b58cff');blade.addColorStop(.18,'#6fcfff');blade.addColorStop(.38,'#76f0a4');blade.addColorStop(.58,'#ffe16b');blade.addColorStop(.78,'#ff79b0');blade.addColorStop(1,'#ffffff');ctx.fillStyle=blade;ctx.strokeStyle='rgba(255,255,255,.98)';ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(-9,-26);ctx.lineTo(9,-26);ctx.lineTo(8,39);ctx.lineTo(0,70);ctx.lineTo(-8,39);ctx.closePath();ctx.fill();ctx.stroke();
+          const core=ctx.createLinearGradient(0,-20,0,60);core.addColorStop(0,'rgba(255,255,255,.30)');core.addColorStop(.45,'rgba(255,255,255,.92)');core.addColorStop(1,'rgba(255,255,255,.45)');ctx.fillStyle=core;ctx.beginPath();ctx.moveTo(-2,-20);ctx.lineTo(3,-20);ctx.lineTo(2,42);ctx.lineTo(0,61);ctx.lineTo(-2,42);ctx.closePath();ctx.fill();
+          // 칼날 내부 룬.
+          ctx.strokeStyle=`hsla(${(time*.18+Number(shot.seed||0))%360},100%,75%,.82)`;ctx.lineWidth=1.3;for(let i=0;i<4;i++){const yy=-10+i*13;ctx.beginPath();ctx.moveTo(-4,yy);ctx.lineTo(0,yy+5);ctx.lineTo(4,yy);ctx.stroke();}
+          ctx.restore();
+        } else if (shot.effect === 'rainbowSwordRainImpact') {
+          const pulse=Math.sin(Math.min(1,progress)*Math.PI),r=18+progress*72;ctx.save();ctx.translate(shot.x1,shot.y1);ctx.globalCompositeOperation='lighter';
+          for(let i=0;i<5;i++){ctx.strokeStyle=`hsla(${(time*.22+i*70+Number(shot.seed||0))%360},100%,76%,${pulse*(.82-i*.12)})`;ctx.lineWidth=6-i*.8;ctx.beginPath();ctx.arc(0,0,r+i*7,0,Math.PI*2);ctx.stroke();}
+          for(let i=0;i<12;i++){const a=Number(shot.seed||0)+i*Math.PI*2/12;ctx.strokeStyle=`hsla(${(time*.18+i*31)%360},100%,80%,${.76*pulse})`;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(Math.cos(a)*8,Math.sin(a)*8);ctx.lineTo(Math.cos(a)*(28+progress*62),Math.sin(a)*(28+progress*62));ctx.stroke();}ctx.restore();
+        } else if (shot.effect === 'rainbowIssenReturn') {
+          const p=Math.max(0,Math.min(1,progress)),flash=Math.max(0,1-p),dxr=shot.x2-shot.x1,dyr=shot.y2-shot.y1,lenr=Math.max(1,Math.hypot(dxr,dyr)),uxr=dxr/lenr,uyr=dyr/lenr,nxr=-uyr,nyr=uxr,head=1-Math.pow(1-p,3),hx=shot.x1+dxr*head,hy=shot.y1+dyr*head;
+          ctx.save();ctx.globalCompositeOperation='lighter';ctx.lineCap='round';for(let i=0;i<7;i++){const off=(i-3)*5;ctx.strokeStyle=i===3?`rgba(255,255,255,${.92*flash})`:`hsla(${(time*.2+i*48)%360},100%,74%,${Math.max(.12,.55-i*.045)*flash})`;ctx.lineWidth=Math.max(2,12-i);ctx.beginPath();ctx.moveTo(shot.x1+nxr*off,shot.y1+nyr*off);ctx.lineTo(hx+nxr*off,hy+nyr*off);ctx.stroke();}ctx.restore();
         } else if (shot.effect === 'rainbowIssen') {
           const p=Math.max(0,Math.min(1,progress));
           const flash=Math.max(0,1-p);
@@ -26187,7 +26495,7 @@ function drawEnemy(enemy, time) {
       // allied ores
       for(const ore of battle.rainbowAllyOres||[]){ctx.save();ctx.translate(ore.x,ore.y);ctx.shadowBlur=18;ctx.shadowColor='#bffcff';const rg=ctx.createLinearGradient(-23,-25,23,25);['#ff6fa8','#ffd95b','#69ef9b','#67c8ff','#b77cff'].forEach((c,i)=>rg.addColorStop(i/4,c));ctx.fillStyle=rg;ctx.strokeStyle='white';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-25);ctx.lineTo(20,-5);ctx.lineTo(15,23);ctx.lineTo(-16,24);ctx.lineTo(-22,-7);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='rgba(0,0,0,.72)';ctx.fillRect(-24,31,48,5);ctx.fillStyle='#89ffcf';ctx.fillRect(-24,31,48*Math.max(0,ore.hp/ore.maxHp),5);ctx.restore();}
       // rainbow light beams
-      for(const unit of battle.placedUnits||[]){if(unit.unitId!=='rainbowLight'||Number(unit.rainbowBeamFxRemaining||0)<=0)continue;for(const id of unit.rainbowBeamTargetIds||[]){const e=battle.enemies.find(x=>x.id===id&&!x.dead);if(!e)continue;ctx.save();ctx.globalCompositeOperation='lighter';for(let i=0;i<5;i++){ctx.strokeStyle=`hsla(${(time*.18+i*62)%360},100%,70%,${.25+i*.07})`;ctx.lineWidth=8-i*1.25;ctx.beginPath();ctx.moveTo(unit.x,unit.y-4);const nx=-(e.y-unit.y),ny=e.x-unit.x,len=Math.max(1,Math.hypot(nx,ny));const wave=Math.sin(time*.03+i)*5;ctx.quadraticCurveTo((unit.x+e.x)/2+nx/len*wave,(unit.y+e.y)/2+ny/len*wave,e.x,e.y);ctx.stroke();}ctx.restore();}}
+      for(const unit of battle.placedUnits||[]){if(unit.unitId!=='rainbowLight'||Number(unit.rainbowBeamFxRemaining||0)<=0)continue;for(const id of unit.rainbowBeamTargetIds||[]){const e=battleEnemyById.get(id);if(!e||e.dead)continue;ctx.save();ctx.globalCompositeOperation='lighter';for(let i=0;i<(battlePerfMode>=2?2:(battlePerfMode===1?3:5));i++){ctx.strokeStyle=`hsla(${(time*.18+i*62)%360},100%,70%,${.25+i*.07})`;ctx.lineWidth=8-i*1.25;ctx.beginPath();ctx.moveTo(unit.x,unit.y-4);const nx=-(e.y-unit.y),ny=e.x-unit.x,len=Math.max(1,Math.hypot(nx,ny));const wave=Math.sin(time*.03+i)*5;ctx.quadraticCurveTo((unit.x+e.x)/2+nx/len*wave,(unit.y+e.y)/2+ny/len*wave,e.x,e.y);ctx.stroke();}ctx.restore();}}
       // captain spears
       for(const spear of battle.rainbowBaseSpears||[]){const p=Math.max(0,Math.min(1,1-spear.life/spear.maxLife)),t=1-Math.pow(1-p,2),x=spear.x1+(spear.x2-spear.x1)*t,y=spear.y1+(spear.y2-spear.y1)*t,a=Math.atan2(spear.y2-spear.y1,spear.x2-spear.x1);ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.shadowBlur=16;ctx.shadowColor='#fff3a0';ctx.strokeStyle=`hsl(${(time*.16)%360},100%,75%)`;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-38,0);ctx.lineTo(16,0);ctx.stroke();ctx.fillStyle='#fff';ctx.beginPath();ctx.moveTo(30,0);ctx.lineTo(12,-8);ctx.lineTo(15,0);ctx.lineTo(12,8);ctx.closePath();ctx.fill();ctx.restore();}
       // dice drops: 3 sec hold then fly into HUD
@@ -26226,9 +26534,9 @@ function drawEnemy(enemy, time) {
           if (!unit._drawErrorLogged) { console.error(`유닛 렌더링 오류 · ${unit.unitId}`, error); unit._drawErrorLogged=true; }
         }
       }
-      drawTraitShields();
+      if (battlePerfMode < 2) drawTraitShields();
       drawEdenMinions(time);
-      battle.enemies.forEach(enemy => drawEnemy(enemy, time));
+      for (let enemyIndex=0; enemyIndex<battle.enemies.length; enemyIndex+=1) drawEnemy(battle.enemies[enemyIndex], time);
       drawShots(time);
       drawRainbowBattleEffects(time);
       drawStage4CactusCutscene(time);
@@ -26248,18 +26556,24 @@ function drawEnemy(enemy, time) {
     function gameLoop(time) {
       if (!battle) return;
 
+      if (battlePerfRunId !== battle.runId) {
+        battlePerfRunId = battle.runId;
+        resetBattlePerformanceGovernor();
+      }
+
       if (!previousTime) previousTime = time;
       const elapsedMs = Math.min(50, Math.max(0, time - previousTime));
       previousTime = time;
       battleFrameAccumulator += elapsedMs;
 
-      // 60Hz보다 빠른 디스플레이에서 불필요한 중복 프레임을 건너뜁니다.
+      // 60Hz보다 빠른 디스플레이에서 불필요한 중복 시뮬레이션을 건너뜁니다.
       if (battleFrameAccumulator + 0.05 < BATTLE_FRAME_MS) {
         animationId = requestAnimationFrame(gameLoop);
         return;
       }
 
-      // 고정 60Hz 시뮬레이션. 순간 프레임 드롭 때도 최대 2회만 따라잡아 spiral-of-death를 막습니다.
+      // 게임 판정은 항상 고정 60Hz입니다. 렉 완화를 위해 렌더링만 자동 샘플링하므로
+      // 공격속도/적 이동/일섬 타이밍/보상 계산은 성능 모드에서도 변하지 않습니다.
       let steps = 0;
       while (battleFrameAccumulator >= BATTLE_FRAME_MS && steps < 2) {
         try { updateBattle(BATTLE_FRAME_MS / 1000); }
@@ -26270,7 +26584,14 @@ function drawEnemy(enemy, time) {
       }
       if (battleFrameAccumulator > BATTLE_FRAME_MS * 2) battleFrameAccumulator = BATTLE_FRAME_MS;
 
-      try { drawBattle(time); } catch(error) { console.error('전투 렌더 오류 자동 복구:',error); battle.renderErrorCount=Number(battle.renderErrorCount||0)+1; }
+      const renderThisFrame = shouldRenderBattleFrame();
+      if (renderThisFrame) {
+        const renderStarted = performance.now();
+        try { drawBattle(time); }
+        catch(error) { console.error('전투 렌더 오류 자동 복구:',error); battle.renderErrorCount=Number(battle.renderErrorCount||0)+1; }
+        updateBattlePerformanceGovernor(performance.now() - renderStarted);
+      }
+
       animationId = requestAnimationFrame(gameLoop);
     }
 
@@ -26293,7 +26614,7 @@ function drawEnemy(enemy, time) {
 
       if (victory && battle.finalBossDefeated && !battle.bossEscaped) {
         const difficulty = battle.difficulty || getDifficultyConfig(battle.difficultyKey);
-        const stageBonus = getStageClearBonus(stageConfig, difficulty);
+        const stageBonus = applyTitleGemReward(getStageClearBonus(stageConfig, difficulty));
         player.gems += stageBonus;
         queueBattleReward('stage', battle.stage, null, difficulty.key);
         player.highestStage = Math.max(player.highestStage, battle.stage);
@@ -26315,8 +26636,11 @@ function drawEnemy(enemy, time) {
         );
       }
 
-      void savePlayer();
-      void flushPendingBattleRewards();
+      void (async()=>{
+        await savePlayer();
+        await syncTitleStateFromServer(true);
+        await flushPendingBattleRewards();
+      })();
     }
 
     function distanceToSegment(point, start, end) {
@@ -26441,6 +26765,8 @@ function drawEnemy(enemy, time) {
         unitId: unitData.id,
         x: point.x,
         y: point.y,
+        homeX: point.x,
+        homeY: point.y,
         baseDamage: getStageAdjustedUnitDamage(unitData),
         damage: getStageAdjustedUnitDamage(unitData),
         upgradeLevel: 0,
@@ -26638,6 +26964,8 @@ function drawEnemy(enemy, time) {
     document.querySelector('#adminGlobalDiceResetBtn')?.addEventListener('click', resetAllServerDiceOnly);
     document.querySelector('#adminGlobalUnitResetBtn')?.addEventListener('click', resetAllServerUnitsOnly);
     document.querySelector('#adminGlobalResetBtn')?.addEventListener('click', resetAllServerCurrencyItems);
+    document.querySelector('#adminTitleGrantBtn')?.addEventListener('click',()=>void setAdminPlayerTitle(true));
+    document.querySelector('#adminTitleRevokeBtn')?.addEventListener('click',()=>void setAdminPlayerTitle(false));
     document.querySelector('#adminUnitGrantBtn').addEventListener('click', grantAdminUnit);
     document.querySelector('#adminFragmentGrantBtn')?.addEventListener('click', grantAdminFragments);
     document.querySelector('#adminDiceGrantBtn').addEventListener('click', grantAdminDice);
@@ -32343,6 +32671,7 @@ function drawEnemy(enemy, time) {
     set('#profileGameId',`ID · ${currentUsername || '-'}`); set('#profileLevelText',`LEVEL ${info.level}`);
     set('#profileExpText',next?`${fmtExp(info.earned)} / ${fmtExp(info.needed)} EXP`:`${fmtExp(info.exp)} EXP · MAX`);
     set('#profileNextLevelText',next?`Lv.${info.level+1}까지 ${fmtExp(info.remaining)} EXP 남음 · 누적 ${fmtExp(info.exp)} EXP`:'최고 레벨에 도달했습니다.');
+    renderProfileTitles();
     if(!expBarAnimating && !pendingExpAnimation) setExpBarPct(info.pct,true);
     const input=document.querySelector('#nicknameInput'); if(input && document.activeElement!==input) input.value=nickname===currentUsername && !player.nickname?'':nickname;
     setTimeout(animatePendingExpGain,220);
@@ -32404,7 +32733,7 @@ function drawEnemy(enemy, time) {
         const serverExp=Number(socialProfile.exp||0), localExp=Number(player.exp||0);
         player.exp=Math.max(serverExp,localExp); player.level=getPlayerLevelFromExp(player.exp);
         if(socialProfile.nickname) player.nickname=socialProfile.nickname;
-        await syncProgress(); void savePlayer(); refreshSocialMenu();
+        await syncProgress(); await syncTitleStateFromServer(true); void savePlayer(); refreshSocialMenu();
         if(forcePrompt || !socialProfile.nickname) openSocial('profile',true);
         void refreshFriendData(true);
       }
@@ -32517,6 +32846,7 @@ function drawEnemy(enemy, time) {
   document.querySelector('#socialProfileTab')?.addEventListener('click',()=>switchTab('profile'));
   document.querySelector('#socialFriendsTab')?.addEventListener('click',()=>switchTab('friends'));
   document.querySelector('#saveNicknameBtn')?.addEventListener('click',()=>void saveNickname());
+  document.querySelector('#profileTitleClearBtn')?.addEventListener('click',()=>void selectProfileTitle(''));
   document.querySelector('#nicknameInput')?.addEventListener('compositionstart',()=>{nicknameImeComposing=true;});
   document.querySelector('#nicknameInput')?.addEventListener('compositionend',()=>{nicknameImeComposing=false;});
   document.querySelector('#nicknameInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing)void saveNickname();});

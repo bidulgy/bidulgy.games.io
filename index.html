@@ -28209,6 +28209,8 @@ function drawEnemy(enemy, time) {
       wave,
       x: MP_START_X,
       y: MP_PATH_Y + jitter,
+      _renderPrevX: MP_START_X,
+      _renderPrevY: MP_PATH_Y + jitter,
       hp: maxHp,
       maxHp,
       speed: Number(spec.speed || 55),
@@ -29905,7 +29907,16 @@ function drawEnemy(enemy, time) {
       const timeFieldFrozen = now < Number(enemy.timeFieldUntil || 0);
       const iceFrozen = now < Number(enemy.iceFreezeUntil || 0);
       if (!timeStunned && !iceFrozen) mpApplyBossAbility(enemy, target);
-      if (timeStunned || timeFieldFrozen || iceFrozen) continue;
+      if (timeStunned || timeFieldFrozen || iceFrozen) {
+        enemy._renderPrevX = Number(enemy.x || 0);
+        enemy._renderPrevY = Number(enemy.y || MP_PATH_Y);
+        continue;
+      }
+      // 판정 좌표는 60Hz 고정 스텝으로 유지하고, 렌더링에서는 이전 좌표와
+      // 현재 좌표 사이를 보간합니다. 고주사율 화면에서도 비둘기가 계단처럼
+      // 조금씩 끊겨 보이지 않도록 하기 위한 온라인 전용 시각 좌표입니다.
+      enemy._renderPrevX = Number(enemy.x || 0);
+      enemy._renderPrevY = Number(enemy.y || MP_PATH_Y);
       enemy.x += enemy.speed * mpEnemyStatusSpeedMultiplier(enemy) * dt;
       if (enemy.x >= MP_BASE_X - 18) mpDamageBase(target, enemy, sideKey);
     }
@@ -31024,16 +31035,21 @@ function drawEnemy(enemy, time) {
     const elapsedMs = Math.min(50, Math.max(0, time - mpPreviousTime));
     mpPreviousTime = time;
     mpFrameAccumulator += elapsedMs;
-    if (mpFrameAccumulator + 0.05 < MP_FRAME_MS) {
-      mpAnimationId = requestAnimationFrame(mpFrame);
-      return;
-    }
-    const dt = Math.min(.05, mpFrameAccumulator / 1000);
-    mpFrameAccumulator %= MP_FRAME_MS;
 
+    let hostStepped = false;
     if (mpRole === 'host') {
-      mpStepHost(dt);
-      if (!mpState.matchFinished || mpRoom.status !== 'finished') {
+      // 전투 판정은 고정 60Hz로 계산합니다. 프레임이 순간적으로 밀려도 최대
+      // 3스텝까지만 따라잡아 한 프레임에 과도한 계산이 몰리지 않게 합니다.
+      let steps = 0;
+      while (mpFrameAccumulator + .05 >= MP_FRAME_MS && steps < 3) {
+        mpStepHost(MP_FRAME_MS / 1000);
+        mpFrameAccumulator -= MP_FRAME_MS;
+        steps += 1;
+        hostStepped = true;
+      }
+      if (mpFrameAccumulator > MP_FRAME_MS * 2) mpFrameAccumulator = MP_FRAME_MS * 2;
+
+      if (hostStepped && (!mpState.matchFinished || mpRoom.status !== 'finished')) {
         void mpPublishState(false, mpState.matchFinished ? 'finished' : 'playing',
           mpState.winnerRole === 'host' ? mpRoom.host_id : mpState.winnerRole === 'guest' ? mpRoom.guest_id : null);
       }
@@ -31041,9 +31057,13 @@ function drawEnemy(enemy, time) {
         mpLastRewardCheckAt = time;
         void mpMaybeClaimRewards();
       }
+    } else {
+      // 게스트는 서버 스냅샷을 직접 보간하므로 누적 시간만 작은 범위로 유지합니다.
+      mpFrameAccumulator %= MP_FRAME_MS;
     }
 
-    // 캔버스는 매 프레임 유지하고 HUD/버튼 DOM 갱신만 10fps로 제한합니다.
+    // 화면은 모니터의 requestAnimationFrame 주사율 그대로 렌더링합니다.
+    // 120/144Hz에서 예전처럼 60Hz마다만 그려서 움직임이 끊겨 보이지 않습니다.
     mpDraw(time);
     if (!mpLastHudRefreshAt || time - mpLastHudRefreshAt >= MP_HUD_REFRESH_MS) {
       mpLastHudRefreshAt = time;
@@ -31913,7 +31933,18 @@ function drawEnemy(enemy, time) {
     const networkX = Number(enemy.x || 0);
     const networkY = Number(enemy.y || MP_PATH_Y);
 
-    if (mpRole === 'host') return { x: networkX, y: networkY };
+    // 방장도 판정은 60Hz 고정 스텝으로 계산하지만 화면은 rAF마다 그립니다.
+    // 이전 판정 좌표 -> 현재 판정 좌표를 보간해 120/144Hz 모니터에서도
+    // 이동이 미세하게 계단식으로 보이는 현상을 없앱니다.
+    if (mpRole === 'host') {
+      const prevX = Number.isFinite(Number(enemy._renderPrevX)) ? Number(enemy._renderPrevX) : networkX;
+      const prevY = Number.isFinite(Number(enemy._renderPrevY)) ? Number(enemy._renderPrevY) : networkY;
+      const alpha = mpClamp(mpFrameAccumulator / MP_FRAME_MS, 0, 1);
+      return {
+        x: prevX + (networkX - prevX) * alpha,
+        y: prevY + (networkY - prevY) * alpha
+      };
+    }
 
     const key = mpEnemyVisualKey(enemy, sideKey);
     let visual = mpEnemyVisuals.get(key);
@@ -31923,6 +31954,8 @@ function drawEnemy(enemy, time) {
         y: networkY,
         targetX: networkX,
         targetY: networkY,
+        velocityX: Math.max(0, Number(enemy.speed || 0)),
+        velocityY: 0,
         snapshotAt: time,
         lastFrameAt: time,
         lastSeenAt: time
@@ -31932,34 +31965,58 @@ function drawEnemy(enemy, time) {
     }
 
     if (networkX !== visual.targetX || networkY !== visual.targetY) {
+      const sampleDt = Math.max(.016, Math.min(.25, (time - visual.snapshotAt) / 1000));
+      const observedVX = (networkX - visual.targetX) / sampleDt;
+      const observedVY = (networkY - visual.targetY) / sampleDt;
+      // 서버 스냅샷에서 실제 이동 속도를 추정합니다. 둔화/빙결 직후에도
+      // 기본 speed만으로 예측해서 앞질렀다가 되돌아오는 흔들림을 방지합니다.
+      visual.velocityX = Number.isFinite(observedVX)
+        ? visual.velocityX * .42 + observedVX * .58
+        : visual.velocityX;
+      visual.velocityY = Number.isFinite(observedVY)
+        ? visual.velocityY * .42 + observedVY * .58
+        : visual.velocityY;
       visual.targetX = networkX;
       visual.targetY = networkY;
       visual.snapshotAt = time;
     }
 
-    const dt = Math.min(.05, Math.max(0, (time - visual.lastFrameAt) / 1000));
+    const dt = Math.min(.04, Math.max(0, (time - visual.lastFrameAt) / 1000));
     visual.lastFrameAt = time;
     visual.lastSeenAt = time;
 
     const now = Date.now();
-    const frozen = now < Number(enemy.timeStunUntil || 0) || now < Number(enemy.timeFieldUntil || 0) || now < Number(enemy.iceFreezeUntil || 0);
+    const frozen = now < Number(enemy.timeStunUntil || 0)
+      || now < Number(enemy.timeFieldUntil || 0)
+      || now < Number(enemy.iceFreezeUntil || 0);
     const snapshotAge = Math.min(MP_GUEST_PREDICTION_MS, Math.max(0, time - visual.snapshotAt)) / 1000;
-    const speed = Math.max(0, Number(enemy.speed || 0)) * mpEnemyStatusSpeedMultiplier(enemy);
 
     let targetX = visual.targetX;
+    let targetY = visual.targetY;
     if (!frozen && !enemy.dead) {
-      targetX += speed * snapshotAge * .88;
-      const maxAhead = Math.max(10, speed * .22);
-      targetX = Math.min(targetX, visual.targetX + maxAhead, MP_BASE_X - 18);
+      const maxSpeed = Math.max(24, Number(enemy.speed || 0) * 1.35);
+      const vx = mpClamp(Number(visual.velocityX || 0), -maxSpeed, maxSpeed);
+      const vy = mpClamp(Number(visual.velocityY || 0), -maxSpeed, maxSpeed);
+      targetX += vx * snapshotAge;
+      targetY += vy * snapshotAge;
+      const maxAhead = Math.max(8, Number(enemy.speed || 0) * .16);
+      targetX = mpClamp(targetX, visual.targetX - 4, Math.min(MP_BASE_X - 18, visual.targetX + maxAhead));
+      targetY = mpClamp(targetY, visual.targetY - 14, visual.targetY + 14);
     }
 
-    if (Math.abs(visual.x - visual.targetX) > 180 || Math.abs(visual.y - visual.targetY) > 90) {
+    const dx = visual.targetX - visual.x;
+    const dy = visual.targetY - visual.y;
+    if (Math.abs(dx) > 155 || Math.abs(dy) > 72) {
+      // 재접속/부활/강제 위치 변경처럼 큰 점프만 즉시 맞춥니다.
       visual.x = visual.targetX;
       visual.y = visual.targetY;
+      visual.velocityX = 0;
+      visual.velocityY = 0;
     } else {
-      const follow = 1 - Math.exp(-Math.max(.001, dt) * 15);
+      // 지수 보간보다 살짝 빠르게 따라가되 서버 위치를 앞질러 튕기지 않게 합니다.
+      const follow = 1 - Math.exp(-Math.max(.001, dt) * 20);
       visual.x += (targetX - visual.x) * follow;
-      visual.y += (visual.targetY - visual.y) * follow;
+      visual.y += (targetY - visual.y) * follow;
     }
 
     return { x: visual.x, y: visual.y };

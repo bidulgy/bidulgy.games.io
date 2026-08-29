@@ -28048,19 +28048,29 @@ function drawEnemy(enemy, time) {
     function drawBattle(time) {
       if (!battle) return;
       battle._lastRenderedAt = performance.now();
-      try { ctx.setTransform(1,0,0,1,0,0); ctx.globalAlpha=1; ctx.globalCompositeOperation='source-over'; } catch (_) {}
-      try { drawBattleStaticBase(); }
-      catch (error) {
-        console.error('정적 전투 맵 자동복구', error);
-        try { ctx.fillStyle=(battle?.stageConfig?.battlePalette?.ground||'#70a64b');ctx.fillRect(0,0,canvas.width,canvas.height);drawPath(); } catch (_) {}
-      }
-      // 한 장식 효과의 오류가 성/유닛/적 전체 렌더를 중단하지 않게 각 레이어를 분리합니다.
-      if(battlePerfMode<3){try{drawRainbowEventMapDecor(time)}catch(error){console.warn('무지개 맵 장식 생략',error)}}
-      if(battlePerfMode<3){try{drawStageTwoDirtAndEffects(time)}catch(error){console.warn('스테이지 장식 생략',error)}}
-      try { drawBaseCastle(time); }
-      catch (error) {
-        console.warn('성 렌더 fallback',error);
-        try { ctx.save();ctx.translate(BASE_POSITION.x,BASE_POSITION.y);ctx.fillStyle='#9eabb8';ctx.strokeStyle='#334150';ctx.lineWidth=3;ctx.fillRect(-42,-46,84,70);ctx.strokeRect(-42,-46,84,70);ctx.fillStyle='#6a4328';ctx.fillRect(-12,-7,24,31);ctx.restore(); } catch (_) {}
+      const pd3DMode = !!(window.PDGraphicsMode?.is3D?.());
+      try {
+        ctx.setTransform(1,0,0,1,0,0); ctx.globalAlpha=1; ctx.globalCompositeOperation='source-over';
+        if (pd3DMode) {
+          // 3D 모드에서는 2D 지형/길/성을 그리지 않습니다.
+          // 캔버스는 스킬/피격/배치 HUD 전용 투명 레이어로만 사용합니다.
+          ctx.clearRect(0,0,canvas.width,canvas.height);
+        }
+      } catch (_) {}
+      if (!pd3DMode) {
+        try { drawBattleStaticBase(); }
+        catch (error) {
+          console.error('정적 전투 맵 자동복구', error);
+          try { ctx.fillStyle=(battle?.stageConfig?.battlePalette?.ground||'#70a64b');ctx.fillRect(0,0,canvas.width,canvas.height);drawPath(); } catch (_) {}
+        }
+        // 2D 모드에서만 2D 지형 장식을 그립니다.
+        if(battlePerfMode<3){try{drawRainbowEventMapDecor(time)}catch(error){console.warn('무지개 맵 장식 생략',error)}}
+        if(battlePerfMode<3){try{drawStageTwoDirtAndEffects(time)}catch(error){console.warn('스테이지 장식 생략',error)}}
+        try { drawBaseCastle(time); }
+        catch (error) {
+          console.warn('성 렌더 fallback',error);
+          try { ctx.save();ctx.translate(BASE_POSITION.x,BASE_POSITION.y);ctx.fillStyle='#9eabb8';ctx.strokeStyle='#334150';ctx.lineWidth=3;ctx.fillRect(-42,-46,84,70);ctx.strokeRect(-42,-46,84,70);ctx.fillStyle='#6a4328';ctx.fillRect(-12,-7,24,31);ctx.restore(); } catch (_) {}
+        }
       }
       try{drawEclipseEffects(time)}catch(error){console.warn('일식 이펙트 생략',error)}
       try{drawSelectedPlacedUnitRange()}catch(_){}
@@ -36551,6 +36561,93 @@ html[data-pd-graphics-mode="3d"] #pdTrue3DCanvas,html[data-pd-graphics-mode="3d"
   sweep();setInterval(sweep,700);
   // 그래픽 모드 버튼이 DOM에 생긴 뒤 현재 상태를 즉시 반영합니다.
   const refresh=()=>window.PDGraphicsMode?.apply?.();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',refresh,{once:true});else refresh();setTimeout(refresh,500);
+})();
+</script>
+
+
+<style id="pdGraphicsSettingsAnd3DWorldV20Styles">
+/* 그래픽 모드 선택은 로그아웃 바로 아래의 작은 설정 메뉴 안에서만 노출합니다. */
+.menu-graphics-mode-setting,.battle-graphics-mode-setting{display:none!important}
+.pd-account-actions{display:flex;flex-direction:column;align-items:stretch;gap:5px;position:relative;z-index:120}
+.pd-account-actions #logoutBtn{width:100%;margin:0!important}
+.pd-settings-button{border:1px solid rgba(255,255,255,.18);background:rgba(8,19,30,.78);color:#dcecff;border-radius:8px;padding:5px 10px;font:800 11px/1.2 Arial,"Noto Sans KR",sans-serif;cursor:pointer;box-shadow:0 5px 12px rgba(0,0,0,.16)}
+.pd-settings-button:hover{background:rgba(18,38,55,.92)}
+.pd-settings-panel{position:absolute;right:0;top:calc(100% + 6px);width:180px;padding:10px;border-radius:12px;background:rgba(7,16,26,.97);border:1px solid rgba(139,213,255,.26);box-shadow:0 18px 45px rgba(0,0,0,.38);backdrop-filter:blur(14px);z-index:9999}
+.pd-settings-panel.hidden{display:none!important}
+.pd-settings-title{display:flex;align-items:center;justify-content:space-between;color:#e9f6ff;font:900 12px/1.2 Arial,"Noto Sans KR",sans-serif;margin-bottom:8px}
+.pd-settings-sub{color:#8fa9bc;font:700 10px/1.2 Arial,"Noto Sans KR",sans-serif;margin:0 0 7px}
+.pd-settings-panel .graphics-mode-buttons{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pd-settings-panel .graphics-mode-button{min-height:30px;border-radius:8px;border:1px solid rgba(255,255,255,.14);background:#18293b;color:#cfe9fb;font-weight:900;cursor:pointer}
+.pd-settings-panel .graphics-mode-button.active{background:linear-gradient(135deg,#2ea9ff,#5d7cff);color:#fff;border-color:#9be2ff;box-shadow:0 0 0 1px rgba(255,255,255,.12) inset,0 4px 14px rgba(46,169,255,.25)}
+/* 3D에서는 2D 캔버스의 배경색이 절대 비치지 않도록 투명화합니다. 내용은 효과/HUD만 그려집니다. */
+html[data-pd-graphics-mode="3d"] #gameCanvas{background:transparent!important;background-color:transparent!important}
+html[data-pd-graphics-mode="3d"] #pdTrue3DCanvas{display:block!important;visibility:visible!important;opacity:1!important}
+/* 구형 3D 월드들은 V20에서 사용하지 않습니다. */
+@media(max-width:760px){.pd-settings-panel{width:164px;right:-2px}.pd-settings-button{padding:5px 8px}}
+</style>
+<script id="pdGraphicsSettingsAnd3DWorldV20">
+(()=>{'use strict';
+ if(window.__pdGraphicsSettingsAnd3DWorldV20)return;window.__pdGraphicsSettingsAnd3DWorldV20=true;
+ const $=(q,r=document)=>r.querySelector(q);
+ function installSettings(){
+   const logout=$('#logoutBtn'); if(!logout||logout.closest('.pd-account-actions'))return;
+   const wrap=document.createElement('div');wrap.className='pd-account-actions';logout.parentNode.insertBefore(wrap,logout);wrap.appendChild(logout);
+   const btn=document.createElement('button');btn.id='pdSettingsBtn';btn.className='pd-settings-button';btn.type='button';btn.textContent='⚙ 설정';btn.setAttribute('aria-expanded','false');wrap.appendChild(btn);
+   const panel=document.createElement('div');panel.id='pdSettingsPanel';panel.className='pd-settings-panel hidden';
+   panel.innerHTML='<div class="pd-settings-title"><span>설정</span><span>🎮</span></div><p class="pd-settings-sub">그래픽 모드</p><div class="graphics-mode-buttons" role="radiogroup" aria-label="그래픽 모드"><button class="graphics-mode-button" type="button" data-pd-graphics-mode="2d" role="radio">2D</button><button class="graphics-mode-button" type="button" data-pd-graphics-mode="3d" role="radio">3D</button></div>';
+   wrap.appendChild(panel);
+   const sync=()=>window.PDGraphicsMode?.apply?.();
+   btn.addEventListener('click',e=>{e.stopPropagation();const open=panel.classList.toggle('hidden')===false;btn.setAttribute('aria-expanded',open?'true':'false');if(open)sync();});
+   panel.addEventListener('click',e=>e.stopPropagation());
+   document.addEventListener('click',()=>{panel.classList.add('hidden');btn.setAttribute('aria-expanded','false');});
+ }
+ function resetBattleViewport(){
+   try{history.scrollRestoration='manual'}catch(_){}
+   const run=()=>{try{document.activeElement?.blur?.()}catch(_){};try{window.scrollTo({top:0,left:0,behavior:'instant'})}catch(_){window.scrollTo(0,0)};try{document.documentElement.scrollTop=0;document.body.scrollTop=0}catch(_){};for(const q of ['#battleScreen','#mpBattleScreen']){const s=$(q);if(s){s.scrollTop=0;s.scrollLeft=0;}}};
+   run();requestAnimationFrame(run);setTimeout(run,60);setTimeout(run,220);
+ }
+ function watchBattleScreens(){
+   for(const q of ['#battleScreen','#mpBattleScreen']){const s=$(q);if(!s)continue;new MutationObserver(()=>{if(!s.classList.contains('hidden'))resetBattleViewport();}).observe(s,{attributes:true,attributeFilter:['class']});}
+   document.addEventListener('click',e=>{if(e.target.closest?.('#startBattleBtn,#startInfiniteBtn,#openRainbowEventBtn,#mpStartBtn,#mpReadyBtn'))setTimeout(resetBattleViewport,0);},true);
+ }
+ function stageId(){try{return Number(battle?.stageConfig?.id||battle?.stage||1)||1}catch(_){return 1}}
+ function mpStageId(){try{return Number(mpState?.stage||1)||1}catch(_){return 1}}
+ function color(stage,key){const P={1:{g:0x5b9744,r:0xaebc9c,e:0x334a30},2:{g:0x17253d,r:0x516b83,e:0x263750},3:{g:0x80543e,r:0xad8063,e:0x57372d},4:{g:0xc18d4d,r:0x8b633e,e:0x6b452d},5:{g:0x3d315c,r:0x71629b,e:0x514677}};return (P[stage]||P[1])[key];}
+ function mat(T,c,rough=.78,metal=.02){return new T.MeshStandardMaterial({color:c,roughness:rough,metalness:metal});}
+ function pos(layer,x,y,z){return new (window.THREE.Vector3)(Number(x)-layer.W/2,layer.H/2-Number(y),z)}
+ function addRoadSegment(T,g,layer,a,b,stage){
+   const dx=b.x-a.x,dy=b.y-a.y,len=Math.max(1,Math.hypot(dx,dy)),mid=pos(layer,(a.x+b.x)/2,(a.y+b.y)/2,-51),ang=-Math.atan2(dy,dx);
+   const base=new T.Mesh(new T.BoxGeometry(len+5,92,7),mat(T,color(stage,'e'),.88,.02));base.position.copy(mid);base.rotation.z=ang;base.name='pdV20RoadBase';g.add(base);
+   const top=new T.Mesh(new T.BoxGeometry(len+2,76,4),mat(T,color(stage,'r'),stage===2?.54:.72,stage===5?.12:.03));top.position.copy(mid);top.position.z=-46;top.rotation.z=ang;top.name='pdV20RoadTop';g.add(top);
+   const edgeMat=mat(T,stage===5?0xa99ac9:stage===2?0x7891a6:0xd1c7a9,.62,.05);
+   for(const side of [-1,1]){const curb=new T.Mesh(new T.BoxGeometry(len+3,5,7),edgeMat);curb.position.copy(mid);curb.position.x+=Math.sin(ang)*side*39;curb.position.y-=Math.cos(ang)*side*39;curb.position.z=-42;curb.rotation.z=ang;curb.name='pdV20RoadCurb';g.add(curb);}
+ }
+ function addJoint(T,g,layer,p,stage){const j=new T.Mesh(new T.CylinderGeometry(46,46,7,36),mat(T,color(stage,'e'),.86,.02));j.rotation.x=Math.PI/2;j.position.copy(pos(layer,p.x,p.y,-50));j.name='pdV20RoadJointBase';g.add(j);const t=new T.Mesh(new T.CylinderGeometry(38,38,4,36),mat(T,color(stage,'r'),.68,.02));t.rotation.x=Math.PI/2;t.position.copy(pos(layer,p.x,p.y,-45));t.name='pdV20RoadJointTop';g.add(t);}
+ function addLargeProps(T,g,layer,stage){
+   const pts=[[70,70],[225,445],[410,72],[625,450],[810,75]];
+   const rock=mat(T,stage===2?0x546a82:stage===4?0x9a6038:stage===5?0x6e61a1:0x6b705e,.9,.01);
+   for(let i=0;i<pts.length;i++){const [x,y]=pts[i],P=pos(layer,x,y,-39);if(stage===1){const trunk=new T.Mesh(new T.CylinderGeometry(5,7,31,10),mat(T,0x6b4a2f,.9));trunk.position.set(P.x,P.y,P.z+15);g.add(trunk);const crown=new T.Mesh(new T.ConeGeometry(22,46,10),mat(T,0x3d743a,.86));crown.position.set(P.x,P.y+3,P.z+45);g.add(crown);}else if(stage===2||stage===5){const c=new T.Mesh(new T.OctahedronGeometry(stage===5?18:15,1),mat(T,stage===5?[0xff6f9c,0xffd567,0x67e6a0,0x69cfff,0xa879ff][i%5]:[0x72e8ff,0x9e84ff][i%2],.26,.12));c.scale.set(.72,1.8,.65);c.position.set(P.x,P.y,P.z+22);g.add(c);}else{const r=new T.Mesh(new T.DodecahedronGeometry(stage===4?16:18,1),rock);r.scale.set(1.35,.7,.9);r.position.set(P.x,P.y,P.z+8);g.add(r);}}
+ }
+ function disableLegacy(layer){if(!layer?.scene)return;for(const key of ['_hqWorld','_pdV3World','_pdV8World','_pdV9World','_pdV10World']){const w=layer[key];if(w)w.visible=false;}layer.scene.traverse?.(o=>{const n=String(o?.name||'');if(/^pdV(?:3|8|9|10)World$|^hqWorld$|terrainGround|groundPlane|hqShadowReceiver/i.test(n))o.visible=false;});}
+ function buildWorld(layer,stage,isMulti){
+   const T=window.THREE;if(!T||!layer?.scene)return;disableLegacy(layer);if(layer._pdV20World&&layer._pdV20Stage===stage){layer._pdV20World.visible=true;layer._pdV20World.traverse?.(o=>{if(String(o?.name||'').startsWith('pdV20'))o.visible=true;});return;}if(layer._pdV20World){layer.scene.remove(layer._pdV20World);layer._pdV20World.traverse?.(o=>o.geometry?.dispose?.());}
+   const g=new T.Group();g.name='pdV20AuthoritativeWorld';layer._pdV20World=g;layer._pdV20Stage=stage;
+   const ground=new T.Mesh(new T.PlaneGeometry(layer.W+80,layer.H+80),mat(T,color(stage,'g'),.96,.0));ground.position.z=-70;ground.name='pdV20Ground';g.add(ground);
+   let pts=[];if(isMulti){const yy=typeof MP_PATH_Y!=='undefined'?Number(MP_PATH_Y):300;pts=[{x:-30,y:yy},{x:layer.W+30,y:yy}];}else{try{pts=(Array.isArray(path)?path:[]).map(p=>({x:Number(p.x),y:Number(p.y)}));}catch(_){pts=[];}}
+   if(pts.length>1){for(let i=0;i<pts.length-1;i++)addRoadSegment(T,g,layer,pts[i],pts[i+1],stage);for(let i=1;i<pts.length-1;i++)addJoint(T,g,layer,pts[i],stage);}
+   if(!isMulti)addLargeProps(T,g,layer,stage);
+   layer.scene.add(g);
+ }
+ function syncWorld(){const api=window.PDTrue3D;if(!api||!window.PDGraphicsMode?.is3D?.())return;try{if(api.single){buildWorld(api.single,stageId(),false);api.single.renderer?.setClearColor?.(0x000000,0);}}catch(e){console.warn('V20 3D 월드 복구',e)}try{if(api.multi){buildWorld(api.multi,mpStageId(),true);api.multi.renderer?.setClearColor?.(0x000000,0);}}catch(_){}
+ }
+ function drawCastleHud(){
+   let c=$('#pd3dCastleHud'),base=$('#gameCanvas'),shell=$('#battleScreen .battle-map-shell');if(!base||!shell)return;if(!c){c=document.createElement('canvas');c.id='pd3dCastleHud';c.style.cssText='position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none;background:transparent';shell.appendChild(c);}if(c.width!==base.width||c.height!==base.height){c.width=base.width;c.height=base.height;}const x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);if(!window.PDGraphicsMode?.is3D?.())return;try{if(!battle||battle.ended)return;const max=Math.max(1,Number(battle.baseMaxHp||BASE_MAX_HP||1)),hp=Math.max(0,Number(battle.lives||0)),r=Math.max(0,Math.min(1,hp/max)),cx=Number(BASE_POSITION.x),cy=Number(BASE_POSITION.y)-104,w=132,h=15;x.fillStyle='rgba(5,12,19,.9)';x.beginPath();x.roundRect(cx-w/2,cy,w,h,8);x.fill();x.fillStyle=r>.5?'#4fe08b':r>.22?'#ffd04a':'#ff6474';x.beginPath();x.roundRect(cx-w/2+3,cy+3,(w-6)*r,h-6,5);x.fill();x.strokeStyle='rgba(255,255,255,.42)';x.strokeRect(cx-w/2+.5,cy+.5,w-1,h-1);x.textAlign='center';x.textBaseline='bottom';x.font='900 12px Arial,"Noto Sans KR",sans-serif';x.lineWidth=3;x.strokeStyle='rgba(0,0,0,.8)';x.fillStyle='#fff';const label=`🏰 ${Math.ceil(hp).toLocaleString()} / ${Math.ceil(max).toLocaleString()}`;x.strokeText(label,cx,cy-5);x.fillText(label,cx,cy-5);}catch(_){}
+ }
+ function refineEnemies(){const api=window.PDTrue3D;if(!api)return;for(const layer of [api.single,api.multi])for(const m of layer?.enemyModels?.values?.()||[]){if(m.userData.pdV20Refined)continue;m.userData.pdV20Refined=true;const n=String(m.name||'').toLowerCase();try{if(n.includes('llama')){const body=m.getObjectByName('llamaBody');if(body)body.scale.set(1.72,.86,.80);const neck=m.getObjectByName('llamaNeck');if(neck){neck.scale.y=1.12;neck.rotation.z=-.15;}m.traverse(o=>{if(o.name==='enemyWalkLeg')o.scale.y=1.08;});}else if(n.includes('scorpion')){const a=m.getObjectByName('scorpionAbdomen');if(a)a.scale.set(1.48,.48,.96);m.traverse(o=>{if(o.name==='enemyScorpionLegRig')o.scale.set(1.12,1.06,1.08);});}else if(n.includes('golem')){const t=m.getObjectByName('golemTorso');if(t)t.scale.set(1.34,1.20,.80);}else{const b=m.getObjectByName('enemyBody');if(b)b.scale.set(1.62,.96,.82);const h=m.getObjectByName('enemyHead');if(h)h.scale.set(.98,.92,.88);}}catch(_){}}
+ }
+ function tick(){syncWorld();refineEnemies();drawCastleHud();requestAnimationFrame(tick)}
+ function init(){installSettings();watchBattleScreens();window.PDGraphicsMode?.apply?.();requestAnimationFrame(tick);setInterval(syncWorld,500)}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
 </script>
 

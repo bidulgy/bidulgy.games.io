@@ -9408,6 +9408,7 @@ function applyStagePreview(stageId = selectedStage) {
         cost: 200,
         damage: 0,
         range: 0,
+        placementRadius: 42,
         fireInterval: 1,
         incomeAmount: 15,
         incomeInterval: 1,
@@ -15444,6 +15445,7 @@ function requestGachaDraw(count) {
       if (!deck.length) { alert('덱에 캐릭터를 한 명 이상 넣어 주세요.'); openDeck(); return; }
       if (typeof resetLeaveBattleButton === 'function') resetLeaveBattleButton();
       void enterBattlePresentation(); ensureBattleAudio();
+      battleStaticLayerCache.clear();
       const base = STAGE_CONFIG[1];
       const stageConfig = {...base, id:1, name:'개인 무한모드 · 햇살 초원', maxWave:999999, stageBonus:0, rewardMultiplier:0, waveFactory:createInfiniteWaveQueue};
       const difficulty = DIFFICULTY_CONFIG.normal;
@@ -15497,6 +15499,7 @@ function requestGachaDraw(count) {
       closeRainbowEventModal();
       if (typeof resetLeaveBattleButton === 'function') resetLeaveBattleButton();
       void enterBattlePresentation(); ensureBattleAudio();
+      battleStaticLayerCache.clear();
       const stageConfig = RAINBOW_EVENT_STAGE_CONFIG;
       const difficulty = DIFFICULTY_CONFIG.normal;
       battle = {
@@ -15537,6 +15540,7 @@ function requestGachaDraw(count) {
 
       void enterBattlePresentation();
       ensureBattleAudio();
+      battleStaticLayerCache.clear();
       const bossAlert = document.querySelector('#bossSpawnAlert');
       if (bossAlert) bossAlert.classList.add('hidden');
 
@@ -26306,7 +26310,11 @@ function drawEnemy(enemy, time) {
       if (!data) return;
       const previewValid = preview.valid !== false;
 
-      drawRangeCircle(preview.x, preview.y, data.range, {
+      const previewAttackRange = Number(data.range || 0);
+      const previewDisplayRadius = previewAttackRange > 0
+        ? previewAttackRange
+        : Math.max(28, Number(data.placementRadius || data.footprintRadius || 42));
+      drawRangeCircle(preview.x, preview.y, previewDisplayRadius, {
         fill: previewValid ? 'rgba(66, 211, 146, .10)' : 'rgba(255, 68, 92, .09)',
         stroke: previewValid ? 'rgba(113, 255, 190, .92)' : 'rgba(255, 105, 124, .96)',
         lineWidth: 2.4,
@@ -26444,7 +26452,11 @@ function drawEnemy(enemy, time) {
       const valid = preview.valid !== false;
       const mainFill = valid ? 'rgba(44, 229, 160, .115)' : 'rgba(255, 55, 82, .105)';
       const mainStroke = valid ? 'rgba(103, 255, 194, .98)' : 'rgba(255, 92, 116, .98)';
-      drawBattleOverlayRangeCircle(octx, preview.x, preview.y, Number(data.range || 0), {
+      const attackRange = Number(data.range || 0);
+      const displayRange = attackRange > 0
+        ? attackRange
+        : Math.max(28, Number(data.placementRadius || data.footprintRadius || 42));
+      drawBattleOverlayRangeCircle(octx, preview.x, preview.y, displayRange, {
         fill: mainFill, stroke: mainStroke, lineWidth: 3, dashed: true
       });
 
@@ -26481,7 +26493,9 @@ function drawEnemy(enemy, time) {
       octx.stroke();
       octx.restore();
 
-      const label = valid ? `사거리 ${Math.round(Number(data.range || 0))}` : '배치 불가';
+      const label = valid
+        ? (attackRange > 0 ? `사거리 ${Math.round(attackRange)}` : '배치 가능')
+        : '배치 불가';
       octx.save();
       octx.font = '900 13px Arial, sans-serif';
       octx.textAlign = 'center';
@@ -35974,5 +35988,52 @@ tick();setInterval(tick,650);
 </script>
 
 <!-- ENEMY ART V13: clean stylized redesign, clutter passes disabled -->
+
+<style id="pdRenderSafetyV14CSS">
+/* V14 render-safety: the original 2D map is authoritative; WebGL must stay transparent. */
+#pdTrue3DCanvas,#pdTrue3DMpCanvas{background:transparent!important;opacity:1!important;mix-blend-mode:normal!important}
+#battleScreen #gameCanvas,#mpCanvas{visibility:visible!important;opacity:1!important}
+</style>
+<script id="pdRenderSafetyV14">
+(()=>{'use strict';
+const boot=()=>{
+  const API=window.PDTrue3D,T=window.THREE;
+  if(!API||!T||(!API.single&&!API.multi)){setTimeout(boot,220);return;}
+  if(API.renderSafetyV14)return;API.renderSafetyV14=true;
+  API.version=(API.version||'3D')+'+render-safety-v14';
+  function hideOpaqueFieldMeshes(layer){
+    if(!layer?.scene||!layer?.renderer)return;
+    try{layer.scene.background=null;layer.renderer.setClearColor(0x000000,0);layer.renderer.autoClear=true;}catch(_){}
+    layer.scene.traverse?.(o=>{
+      if(!o?.isMesh)return;
+      const name=String(o.name||'');
+      if(/pdV3Ground|pdV8Ground|hqShadowReceiver|terrainGround|groundPlane/i.test(name)){o.visible=false;return;}
+      const g=o.geometry;
+      if(!g)return;
+      try{
+        if(!g.boundingBox)g.computeBoundingBox?.();
+        const bb=g.boundingBox;if(!bb)return;
+        const sx=(bb.max.x-bb.min.x)*Math.abs(Number(o.scale?.x||1));
+        const sy=(bb.max.y-bb.min.y)*Math.abs(Number(o.scale?.y||1));
+        const huge=sx>Number(layer.W||900)*.82&&sy>Number(layer.H||520)*.82;
+        if(huge && (o.material?.isShadowMaterial || /ground|terrain|field|receiver/i.test(name)))o.visible=false;
+      }catch(_){}
+    });
+  }
+  function safety(layer){
+    if(!layer)return;
+    hideOpaqueFieldMeshes(layer);
+    const c=layer.renderer?.domElement;
+    if(c){c.style.background='transparent';c.style.mixBlendMode='normal';}
+  }
+  // Do not hide the proven 2D sprites until the 3D layer has actually produced live models.
+  API.shouldHideBattleSprites=()=>!!(API.enabled&&API.singleReady&&API.single?.renderer?.domElement?.style?.display!=='none'&&((API.single?.unitModels?.size||0)+(API.single?.enemyModels?.size||0)>0));
+  API.shouldHideMpSprites=()=>!!(API.enabled&&API.mpReady&&API.multi?.renderer?.domElement?.style?.display!=='none'&&((API.multi?.unitModels?.size||0)+(API.multi?.enemyModels?.size||0)>0));
+  API.isBattleActive=API.shouldHideBattleSprites;
+  safety(API.single);safety(API.multi);
+  setInterval(()=>{safety(API.single);safety(API.multi);},850);
+};boot();
+})();
+</script>
 </body>
 </html>

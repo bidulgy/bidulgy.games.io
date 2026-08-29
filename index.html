@@ -7422,7 +7422,7 @@ button {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.1/three.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js'"></script>
 <style id="pdTrue3DStyles">
 #pdTrue3DCanvas,#pdTrue3DMpCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;display:block}
-#battleRangeOverlay{position:absolute;inset:0;width:100%;height:100%;z-index:6;pointer-events:none;display:block}
+#battleRangeOverlay{position:absolute;inset:0;width:100%;height:100%;z-index:6;pointer-events:none;display:block;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important}
 #battleScreen .placement-range-toggle{display:inline-flex;align-items:center;gap:7px;margin-left:auto;padding:6px 10px;border:1px solid rgba(112,224,255,.28);border-radius:999px;background:rgba(9,20,32,.68);color:#dff8ff;font:800 11px/1 Arial,sans-serif;cursor:pointer;user-select:none;white-space:nowrap;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
 #battleScreen .placement-range-toggle input{width:15px;height:15px;margin:0;accent-color:#61e6b0;cursor:pointer}
 #battleScreen .placement-range-toggle:has(input:checked){border-color:rgba(94,239,184,.48);background:rgba(14,47,40,.72);box-shadow:0 0 18px rgba(72,239,178,.10),inset 0 1px 0 rgba(255,255,255,.10)}
@@ -7578,6 +7578,11 @@ body{background:#07111c;background-image:radial-gradient(circle at 15% 10%,rgba(
  #battleScreen .battle-result-card{padding:18px 20px;border-radius:20px}#battleScreen .battle-result-icon{font-size:38px}
  #battleScreen #battleResultTitle{font-size:clamp(34px,9vw,54px)}#battleScreen #battleResultReason{font-size:12px;margin:9px 0 5px}
 }
+</style>
+
+<style id="battleRangeOverlayTransparencyFixV16">
+/* Range preview is a transparent HUD canvas. Never inherit the global green canvas background. */
+#battleScreen #battleRangeOverlay{background:transparent!important;background-color:transparent!important;border:0!important;box-shadow:none!important;}
 </style>
 </head>
 
@@ -8057,6 +8062,36 @@ body{background:#07111c;background-image:radial-gradient(circle at 15% 10%,rgba(
       </div>
 
       <div class="admin-stack">
+        <div class="admin-card" style="border-color:rgba(103,232,249,.4);">
+          <div class="between">
+            <h3>🎉 서버 이벤트 관리</h3>
+            <button id="adminEventRefreshBtn" class="secondary" type="button">상태 새로고침</button>
+          </div>
+          <div id="adminEventStatusBox" class="admin-summary-grid" style="margin:10px 0 12px;">
+            <div class="admin-summary-tile"><span>소환석 이벤트</span><strong id="adminDoubleGemsState" style="color:#9aa8ba;">확인 중...</strong></div>
+            <div class="admin-summary-tile"><span>배율</span><strong id="adminDoubleGemsMultiplier">×1</strong></div>
+          </div>
+
+          <div class="admin-action-box" style="margin-bottom:12px;">
+            <strong>💎 소환석 2배 이벤트</strong>
+            <input id="adminEventReasonInput" type="text" maxlength="120" value="관리자 소환석 2배 이벤트" placeholder="사유" />
+            <div class="admin-action-row">
+              <button id="adminDoubleGemsOnBtn" type="button">2배 이벤트 ON</button>
+              <button id="adminDoubleGemsOffBtn" class="secondary" type="button">2배 이벤트 OFF</button>
+            </div>
+            <span class="muted">일반 스테이지 · 무한모드 · 온라인 소환석 보상에 서버에서 즉시 적용됩니다.</span>
+          </div>
+
+          <div class="admin-action-box">
+            <strong>🎁 모든 유저에게 유닛 뿌리기</strong>
+            <select id="adminEventUnitSelect"></select>
+            <input id="adminEventUnitCountInput" type="number" inputmode="numeric" min="1" max="100" step="1" value="1" />
+            <input id="adminEventUnitReasonInput" type="text" maxlength="120" value="관리자 전체 유닛 지급 이벤트" placeholder="사유 (필수)" />
+            <button id="adminEventGrantUnitAllBtn" type="button">선택 유닛을 모든 유저에게 지급</button>
+            <span class="muted">현재 게임 저장 데이터가 있는 모든 계정에 기존 보유 수량을 유지한 채 추가 지급합니다.</span>
+          </div>
+        </div>
+
         <div class="admin-card">
           <div class="between">
             <h3>🌐 현재 온라인 방</h3>
@@ -10860,6 +10895,100 @@ function populateAdminUnitSelect() {
   });
 }
 
+function populateAdminEventUnitSelect() {
+  const select = document.querySelector('#adminEventUnitSelect');
+  if (!select) return;
+  select.innerHTML = '';
+  const priorityUnitIds = ['rainbowBeyond','rainbowUnicornUnit','rainbowLight','rainbowMage','rainbowSoldier','moneyTree','eclipse'];
+  const units = Object.values(UNIT_DATA).sort((a,b)=>{
+    const ai=priorityUnitIds.indexOf(a.id), bi=priorityUnitIds.indexOf(b.id);
+    if(ai!==-1||bi!==-1){if(ai===-1)return 1;if(bi===-1)return -1;return ai-bi;}
+    return String(a.name||'').localeCompare(String(b.name||''),'ko');
+  });
+  units.forEach(unit=>{
+    const option=document.createElement('option');
+    option.value=unit.id;
+    option.textContent=`${unit.icon} ${unit.name} · ${unit.rarity}`;
+    select.appendChild(option);
+  });
+}
+
+async function loadAdminEventState() {
+  const stateEl=document.querySelector('#adminDoubleGemsState');
+  const multEl=document.querySelector('#adminDoubleGemsMultiplier');
+  if(stateEl) stateEl.textContent='확인 중...';
+  try {
+    const {data,error}=await supabaseClient.rpc('get_game_event_state_v1');
+    if(error) throw error;
+    const enabled=Boolean(data?.summonStoneDouble);
+    const mult=Math.max(1,Number(data?.summonStoneMultiplier||1));
+    if(stateEl){
+      stateEl.textContent=enabled?'ON':'OFF';
+      stateEl.style.color=enabled?'#74f6a7':'#aab6c7';
+    }
+    if(multEl){
+      multEl.textContent=`×${mult.toLocaleString('ko-KR')}`;
+      multEl.style.color=enabled?'#ffd86a':'#d8e2ef';
+    }
+    return data||{};
+  } catch(error) {
+    console.error('이벤트 상태 조회 실패:',error);
+    if(stateEl){stateEl.textContent='조회 실패';stateEl.style.color='#ff7f8d';}
+    if(multEl) multEl.textContent='-';
+    return null;
+  }
+}
+
+async function setAdminDoubleGemsEvent(enabled) {
+  const allowed=await refreshAdminAccess(true);
+  if(!allowed){setAdminStatus('관리자 권한이 없습니다.','error');return;}
+  const reason=String(document.querySelector('#adminEventReasonInput')?.value||'관리자 소환석 2배 이벤트').trim();
+  if(!confirm(`소환석 2배 이벤트를 ${enabled?'켜기':'끄기'} 하시겠습니까?\n서버 보상에 즉시 적용됩니다.`)) return;
+  const onBtn=document.querySelector('#adminDoubleGemsOnBtn');
+  const offBtn=document.querySelector('#adminDoubleGemsOffBtn');
+  if(onBtn) onBtn.disabled=true;if(offBtn) offBtn.disabled=true;
+  try {
+    const {data,error}=await supabaseClient.rpc('admin_set_summon_stone_double_v1',{p_enabled:Boolean(enabled),p_reason:reason});
+    if(error) throw error;
+    setAdminStatus(`소환석 2배 이벤트 ${enabled?'ON':'OFF'} 완료`,'good');
+    await loadAdminEventState();
+    await loadAdminLogs();
+  } catch(error) {
+    console.error('소환석 2배 이벤트 변경 실패:',error);
+    setAdminStatus(`이벤트 변경 실패: ${error.message}`,'error');
+  } finally {
+    if(onBtn) onBtn.disabled=false;if(offBtn) offBtn.disabled=false;
+  }
+}
+
+async function grantAdminUnitToAll() {
+  const allowed=await refreshAdminAccess(true);
+  if(!allowed){setAdminStatus('관리자 권한이 없습니다.','error');return;}
+  const unitId=document.querySelector('#adminEventUnitSelect')?.value;
+  const count=Math.trunc(Number(document.querySelector('#adminEventUnitCountInput')?.value||0));
+  const reason=String(document.querySelector('#adminEventUnitReasonInput')?.value||'').trim();
+  const unit=UNIT_DATA[unitId];
+  if(!unit||!Number.isFinite(count)||count<1||count>100){setAdminStatus('지급 유닛과 1~100 사이의 수량을 확인하세요.','error');return;}
+  if(reason.length<2){setAdminStatus('지급 사유를 2자 이상 입력하세요.','error');return;}
+  if(!confirm(`모든 유저에게 ${unit.name} ${count}개를 지급하시겠습니까?\n현재 게임 저장 데이터가 있는 모든 계정에 즉시 추가됩니다.`)) return;
+  const button=document.querySelector('#adminEventGrantUnitAllBtn');
+  if(button) button.disabled=true;
+  try {
+    const {data,error}=await supabaseClient.rpc('admin_grant_unit_to_all_v1',{p_unit_id:unitId,p_count:count,p_reason:reason});
+    if(error) throw error;
+    const affected=Math.max(0,Number(data?.affectedUsers||0));
+    setAdminStatus(`${unit.name} ${count}개 전체 지급 완료 · ${affected.toLocaleString()}개 계정 반영`,'good');
+    await loadAdminLogs();
+    const {data:{user}}=await supabaseClient.auth.getUser();
+    if(user) await loadPlayer(user);
+  } catch(error) {
+    console.error('전체 유닛 지급 실패:',error);
+    setAdminStatus(`전체 유닛 지급 실패: ${error.message}`,'error');
+  } finally {
+    if(button) button.disabled=false;
+  }
+}
+
 function populateAdminFragmentGrantSelect(ownedUnits = {}) {
   const select = document.querySelector('#adminFragmentUnitSelect');
   if (!select) return;
@@ -10969,12 +11098,14 @@ async function openAdminPanel() {
   }
 
   populateAdminUnitSelect();
+  populateAdminEventUnitSelect();
   populateAdminTitleSelect();
   populateAdminDiceGrantSelect();
   populateAdminGlobalSelectiveResetSelects();
   showScreen('admin');
   setAdminStatus('서버에서 관리자 권한이 확인되었습니다.', 'good');
   await Promise.all([
+    loadAdminEventState(),
     loadAdminRooms(),
     loadAdminLogs(),
     loadAdminGlobalItemTypes(),
@@ -15462,6 +15593,7 @@ function requestGachaDraw(count) {
       document.querySelector('#stageMapInfoPanel')?.classList.add('hidden');
       document.querySelector('#stageMapInfoBtn')?.setAttribute('aria-expanded','false');
       renderSelectedPanel(); updateOrientationGuard(); launchWave(1); updateBattleUi();
+      try { drawBattle(performance.now()); } catch (error) { console.warn('초기 전투 렌더 fallback', error); }
       previousTime=performance.now(); battleFrameAccumulator=0; battleLastUiRefreshAt=0; cancelAnimationFrame(animationId); animationId=requestAnimationFrame(gameLoop);
     }
 
@@ -15515,6 +15647,7 @@ function requestGachaDraw(count) {
       renderBattleDeck(); showScreen('battle'); resetBattleResultOverlay(); updateStageMapInfo();
       document.querySelector('#stageMapInfoPanel')?.classList.add('hidden'); document.querySelector('#stageMapInfoBtn')?.setAttribute('aria-expanded','false');
       renderSelectedPanel(); updateOrientationGuard(); launchWave(1); updateBattleUi(true);
+      try { drawBattle(performance.now()); } catch (error) { console.warn('초기 무지개 전투 렌더 fallback', error); }
       previousTime=performance.now(); battleFrameAccumulator=0; battleLastUiRefreshAt=0; cancelAnimationFrame(animationId); animationId=requestAnimationFrame(gameLoop);
     }
 
@@ -15604,6 +15737,7 @@ function requestGachaDraw(count) {
       updateOrientationGuard();
       launchWave(1);
       updateBattleUi();
+      try { drawBattle(performance.now()); } catch (error) { console.warn('초기 전투 렌더 fallback', error); }
 
       previousTime = performance.now();
       battleFrameAccumulator = 0;
@@ -20795,13 +20929,17 @@ function requestGachaDraw(count) {
       const visualStage = battle?.isInfinite ? Number(battle.infiniteThemeStage || 1) : Number(battle?.stage || 1);
       const palette = battle?.stageConfig?.battlePalette || STAGE_CONFIG[visualStage]?.battlePalette || STAGE_CONFIG[1].battlePalette;
       const cacheKey = [
-        visualStage,
-        canvas.width,
-        canvas.height,
-        palette?.ground || '',
-        palette?.path || '',
-        palette?.pathEdge || ''
+        battle?.runId || '', visualStage, canvas.width, canvas.height,
+        palette?.ground || '', palette?.path || '', palette?.pathEdge || ''
       ].join('|');
+
+      // 누적된 3D/이펙트 패치가 Canvas 상태를 남겨도 정적 맵은 항상 정상 좌표에서 시작합니다.
+      try {
+        ctx.setTransform(1,0,0,1,0,0);
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.setLineDash([]);
+      } catch (_) {}
 
       const cached = battleStaticLayerCache.get(cacheKey);
       if (cached) {
@@ -20809,22 +20947,60 @@ function requestGachaDraw(count) {
         return;
       }
 
-      // 첫 프레임은 기존 고품질 렌더러를 그대로 사용하고 결과만 복사합니다.
-      drawBackground();
-      draw3DStaticTerrain(visualStage);
-      drawPath();
-      const layer = document.createElement('canvas');
-      layer.width = canvas.width;
-      layer.height = canvas.height;
-      const layerCtx = layer.getContext('2d', { alpha: false });
-      layerCtx.imageSmoothingEnabled = true;
-      try { layerCtx.imageSmoothingQuality = 'high'; } catch (_) {}
-      layerCtx.drawImage(canvas, 0, 0);
-      battleStaticLayerCache.set(cacheKey, layer);
-      if (battleStaticLayerCache.size > 8) {
-        const oldestKey = battleStaticLayerCache.keys().next().value;
-        battleStaticLayerCache.delete(oldestKey);
+      // 배경/장식/길을 각각 격리합니다. 장식 하나가 실패해도 길까지 사라지지 않습니다.
+      try {
+        drawBackground();
+      } catch (error) {
+        console.warn('전투 배경 fallback', error);
+        ctx.fillStyle = palette?.ground || '#70a64b';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
+
+      try { draw3DStaticTerrain(visualStage); }
+      catch (error) { console.warn('전투 지형 장식 생략', error); }
+
+      let pathOk = false;
+      try { drawPath(); pathOk = true; }
+      catch (error) { console.warn('전투 길 fallback', error); }
+
+      if (!pathOk) {
+        // 최후 안전 길: 어떤 고급 렌더러가 실패해도 진행 경로 자체는 반드시 보입니다.
+        try {
+          ctx.save();
+          ctx.setTransform(1,0,0,1,0,0);
+          ctx.globalAlpha = 1;
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.lineJoin = 'round';
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(path[0].x, path[0].y);
+          for (let i=1;i<path.length;i+=1) ctx.lineTo(path[i].x,path[i].y);
+          ctx.strokeStyle = 'rgba(0,0,0,.28)'; ctx.lineWidth = 86; ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(path[0].x,path[0].y);
+          for (let i=1;i<path.length;i+=1) ctx.lineTo(path[i].x,path[i].y);
+          ctx.strokeStyle = palette?.path || '#c9a06a'; ctx.lineWidth = 72; ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(path[0].x,path[0].y);
+          for (let i=1;i<path.length;i+=1) ctx.lineTo(path[i].x,path[i].y);
+          ctx.strokeStyle = palette?.pathEdge || '#f0cf96'; ctx.lineWidth = 3; ctx.stroke();
+          ctx.restore();
+        } catch (_) {}
+      }
+
+      // 완성된 정적 맵만 캐시합니다.
+      try {
+        const layer = document.createElement('canvas');
+        layer.width = canvas.width;
+        layer.height = canvas.height;
+        const layerCtx = layer.getContext('2d', { alpha: false });
+        layerCtx.imageSmoothingEnabled = true;
+        try { layerCtx.imageSmoothingQuality = 'high'; } catch (_) {}
+        layerCtx.drawImage(canvas, 0, 0);
+        battleStaticLayerCache.set(cacheKey, layer);
+        if (battleStaticLayerCache.size > 6) {
+          const oldestKey = battleStaticLayerCache.keys().next().value;
+          battleStaticLayerCache.delete(oldestKey);
+        }
+      } catch (error) { console.warn('전투 정적 캐시 생략', error); }
     }
 
     function drawBaseCastle(time) {
@@ -27820,15 +27996,26 @@ function drawEnemy(enemy, time) {
     }
 
     function drawBattle(time) {
-      drawBattleStaticBase();
-      // 극심한 부하에서는 정적 배경 위의 순수 장식 레이어만 생략합니다.
-      if(battlePerfMode<3)drawRainbowEventMapDecor(time);
-      if(battlePerfMode<3)drawStageTwoDirtAndEffects(time);
-      drawBaseCastle(time);
-      drawEclipseEffects(time);
-      drawSelectedPlacedUnitRange();
-      drawPlacementPreview(time);
-      drawBattleRangeOverlay();
+      if (!battle) return;
+      battle._lastRenderedAt = performance.now();
+      try { ctx.setTransform(1,0,0,1,0,0); ctx.globalAlpha=1; ctx.globalCompositeOperation='source-over'; } catch (_) {}
+      try { drawBattleStaticBase(); }
+      catch (error) {
+        console.error('정적 전투 맵 자동복구', error);
+        try { ctx.fillStyle=(battle?.stageConfig?.battlePalette?.ground||'#70a64b');ctx.fillRect(0,0,canvas.width,canvas.height);drawPath(); } catch (_) {}
+      }
+      // 한 장식 효과의 오류가 성/유닛/적 전체 렌더를 중단하지 않게 각 레이어를 분리합니다.
+      if(battlePerfMode<3){try{drawRainbowEventMapDecor(time)}catch(error){console.warn('무지개 맵 장식 생략',error)}}
+      if(battlePerfMode<3){try{drawStageTwoDirtAndEffects(time)}catch(error){console.warn('스테이지 장식 생략',error)}}
+      try { drawBaseCastle(time); }
+      catch (error) {
+        console.warn('성 렌더 fallback',error);
+        try { ctx.save();ctx.translate(BASE_POSITION.x,BASE_POSITION.y);ctx.fillStyle='#9eabb8';ctx.strokeStyle='#334150';ctx.lineWidth=3;ctx.fillRect(-42,-46,84,70);ctx.strokeRect(-42,-46,84,70);ctx.fillStyle='#6a4328';ctx.fillRect(-12,-7,24,31);ctx.restore(); } catch (_) {}
+      }
+      try{drawEclipseEffects(time)}catch(error){console.warn('일식 이펙트 생략',error)}
+      try{drawSelectedPlacedUnitRange()}catch(_){}
+      try{drawPlacementPreview(time)}catch(_){}
+      try{drawBattleRangeOverlay()}catch(_){}
       for (let unitIndex=0; unitIndex<battle.placedUnits.length; unitIndex+=1) {
         const unit=battle.placedUnits[unitIndex];
         try { drawPlacedUnit(unit, time); }
@@ -28296,6 +28483,10 @@ function drawEnemy(enemy, time) {
     document.querySelector('#mailRefreshBtn')?.addEventListener('click',loadMailbox);
     document.querySelector('#mailSendBtn')?.addEventListener('click',sendMailboxLetter);
     document.querySelector('#mailGiftKindSelect')?.addEventListener('change',updateMailGiftOptions);
+    document.querySelector('#adminEventRefreshBtn')?.addEventListener('click',()=>void loadAdminEventState());
+    document.querySelector('#adminDoubleGemsOnBtn')?.addEventListener('click',()=>void setAdminDoubleGemsEvent(true));
+    document.querySelector('#adminDoubleGemsOffBtn')?.addEventListener('click',()=>void setAdminDoubleGemsEvent(false));
+    document.querySelector('#adminEventGrantUnitAllBtn')?.addEventListener('click',()=>void grantAdminUnitToAll());
     document.querySelector('#adminGlobalGemsResetBtn')?.addEventListener('click', resetAllServerGemsOnly);
     document.querySelector('#adminGlobalItemResetBtn')?.addEventListener('click', resetSpecificServerItem);
     document.querySelector('#adminGlobalDiceTypeResetBtn')?.addEventListener('click', resetSpecificServerDiceType);
@@ -36015,8 +36206,10 @@ const boot=()=>{
         const bb=g.boundingBox;if(!bb)return;
         const sx=(bb.max.x-bb.min.x)*Math.abs(Number(o.scale?.x||1));
         const sy=(bb.max.y-bb.min.y)*Math.abs(Number(o.scale?.y||1));
-        const huge=sx>Number(layer.W||900)*.82&&sy>Number(layer.H||520)*.82;
-        if(huge && (o.material?.isShadowMaterial || /ground|terrain|field|receiver/i.test(name)))o.visible=false;
+        const sz=(bb.max.z-bb.min.z)*Math.abs(Number(o.scale?.z||1));
+        const huge=sx>Number(layer.W||900)*.80&&sy>Number(layer.H||520)*.80;
+        const flatHuge=huge && (sz<24 || /PlaneGeometry/i.test(String(g.type||'')));
+        if(flatHuge || (huge && (o.material?.isShadowMaterial || /ground|terrain|field|receiver/i.test(name))))o.visible=false;
       }catch(_){}
     });
   }
@@ -36033,6 +36226,22 @@ const boot=()=>{
   safety(API.single);safety(API.multi);
   setInterval(()=>{safety(API.single);safety(API.multi);},850);
 };boot();
+})();
+</script>
+
+<script id="pdBattleRenderWatchdogV15">
+(()=>{'use strict';
+  if(window.__pdBattleRenderWatchdogV15)return;window.__pdBattleRenderWatchdogV15=true;
+  setInterval(()=>{
+    try{
+      if(typeof battle==='undefined'||!battle||battle.ended||document.querySelector('#battleScreen')?.classList.contains('hidden'))return;
+      const now=performance.now();
+      if(!Number(battle._lastRenderedAt)||now-Number(battle._lastRenderedAt)>750){
+        try{if(typeof drawBattle==='function')drawBattle(now)}catch(e){console.warn('전투 화면 watchdog 렌더 복구',e)}
+        try{if(typeof gameLoop==='function'){cancelAnimationFrame(animationId);previousTime=performance.now();battleFrameAccumulator=0;animationId=requestAnimationFrame(gameLoop)}}catch(_){}
+      }
+    }catch(_){}
+  },500);
 })();
 </script>
 </body>

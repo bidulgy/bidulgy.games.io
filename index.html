@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="ko">
 <head>
@@ -7335,12 +7336,80 @@ button {
 
 
 <style id="stageBgmStyles">
-  .battle-bgm-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;max-width:min(52vw,520px)}
-  .battle-bgm-toggle{min-width:92px;padding:8px 11px;border-radius:999px;font-weight:900;border:1px solid rgba(255,255,255,.18);background:rgba(9,18,34,.74);color:#f7fbff;box-shadow:0 6px 20px rgba(0,0,0,.18)}
-  .battle-bgm-toggle.off{opacity:.58;filter:saturate(.55)}
-  .battle-bgm-track{max-width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px;color:#d9e7ff;font-weight:800}
-  .battle-bgm-volume{width:92px;accent-color:#77d7ff;cursor:pointer}
-  @media(max-width:720px){.battle-topbar{gap:8px;align-items:flex-start}.battle-bgm-controls{max-width:46vw;gap:5px}.battle-bgm-track{display:none}.battle-bgm-volume{width:70px}.battle-bgm-toggle{min-width:72px;padding:7px 9px;font-size:12px}}
+  /* 전투 BGM 패널은 스테이지/웨이브 HUD와 분리된 우측 상단의 작은 컨트롤로 고정 */
+  #battleScreen .battle-bgm-controls{
+    position:fixed !important;
+    z-index:58;
+    top:max(10px,env(safe-area-inset-top));
+    right:max(12px,env(safe-area-inset-right));
+    left:auto !important;
+    bottom:auto !important;
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    flex-wrap:nowrap;
+    gap:6px;
+    width:auto !important;
+    max-width:190px !important;
+    min-width:0 !important;
+    margin:0 !important;
+    padding:5px 7px !important;
+    border:1px solid rgba(255,255,255,.16) !important;
+    border-radius:12px !important;
+    background:rgba(7,16,29,.72) !important;
+    box-shadow:0 7px 22px rgba(0,0,0,.22) !important;
+    backdrop-filter:blur(9px);
+    pointer-events:auto !important;
+  }
+  #battleScreen .battle-bgm-toggle{
+    min-width:78px;
+    min-height:30px;
+    margin:0;
+    padding:6px 9px;
+    border-radius:999px;
+    font-size:11px;
+    line-height:1;
+    font-weight:900;
+    border:1px solid rgba(255,255,255,.18);
+    background:rgba(9,18,34,.82);
+    color:#f7fbff;
+    box-shadow:none;
+    white-space:nowrap;
+  }
+  #battleScreen .battle-bgm-toggle.off{opacity:.58;filter:saturate(.55)}
+  #battleScreen .battle-bgm-track{display:none !important}
+  #battleScreen .battle-bgm-volume{
+    width:78px;
+    min-width:0;
+    height:18px;
+    margin:0;
+    accent-color:#77d7ff;
+    cursor:pointer;
+  }
+  @media(max-width:760px){
+    #battleScreen .battle-bgm-controls{
+      top:max(6px,env(safe-area-inset-top));
+      right:max(6px,env(safe-area-inset-right));
+      max-width:78px !important;
+      padding:4px !important;
+      border-radius:10px !important;
+    }
+    #battleScreen .battle-bgm-volume{display:none}
+    #battleScreen .battle-bgm-toggle{
+      min-width:68px;
+      min-height:28px;
+      padding:5px 6px;
+      font-size:10px;
+    }
+  }
+  @media(orientation:landscape) and (max-height:390px){
+    #battleScreen .battle-bgm-controls{
+      top:max(3px,env(safe-area-inset-top));
+      right:max(3px,env(safe-area-inset-right));
+      transform:scale(.92);
+      transform-origin:top right;
+    }
+  }
 </style>
 </head>
 
@@ -9415,11 +9484,11 @@ function applyStagePreview(stageId = selectedStage) {
     };
 
     const RAINBOW_DICE_UNIT_POOL = Object.freeze([
-      { id:'rainbowSoldier', weight:50.84 },
+      { id:'rainbowSoldier', weight:50.885 },
       { id:'rainbowMage', weight:47 },
       { id:'rainbowLight', weight:2 },
       { id:'rainbowUnicornUnit', weight:.1 },
-      { id:'rainbowBeyond', weight:.05 }
+      { id:'rainbowBeyond', weight:.005 }
     ]);
 
     const RAINBOW_FRAGMENT_ITEM = Object.freeze({
@@ -20709,21 +20778,40 @@ function requestGachaDraw(count) {
       ctx.strokeStyle = 'rgba(255,255,255,.30)';
       ctx.strokeRect(-barWidth / 2, barY, barWidth, 17);
 
-      ctx.fillStyle = '#ffffff';
+      // 성 체력 텍스트는 매 프레임 안전한 정수로 한 번만 렌더링합니다.
+      // 기존의 작은 한글 텍스트와 피격 숫자가 겹치면서 뭉개져 보이던 현상을 방지합니다.
+      const castleMaxHp = Math.max(1, Math.round(Number(battle.baseMaxHp || BASE_MAX_HP) || BASE_MAX_HP));
+      const castleHp = Math.max(0, Math.min(castleMaxHp, Math.ceil(Number(battle.lives) || 0)));
+      const castleHpLabel = `HP ${castleHp.toLocaleString()} / ${castleMaxHp.toLocaleString()}`;
+      const labelY = barY - 8;
+
+      ctx.save();
       ctx.textAlign = 'center';
-      ctx.font = 'bold 12px sans-serif';
-      ctx.fillText(
-        `거점 ${Math.max(0, Math.ceil(battle.lives))} / ${battle.baseMaxHp}`,
-        0,
-        barY - 6
-      );
+      ctx.textBaseline = 'bottom';
+      ctx.font = '900 13px Arial, sans-serif';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = 'rgba(4, 11, 16, .92)';
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeText(castleHpLabel, 0, labelY);
+      ctx.fillText(castleHpLabel, 0, labelY);
+      ctx.restore();
 
       if (battle.baseDamageTextTimer > 0 && battle.baseDamageText > 0) {
         const alpha = Math.min(1, battle.baseDamageTextTimer * 1.8);
-        const rise = (1.15 - battle.baseDamageTextTimer) * 20;
+        const rise = (1.15 - battle.baseDamageTextTimer) * 24;
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
         ctx.fillStyle = `rgba(255, 90, 72, ${alpha})`;
-        ctx.font = 'bold 22px sans-serif';
-        ctx.fillText(`-${battle.baseDamageText}`, 0, -124 - rise);
+        ctx.strokeStyle = `rgba(64, 8, 6, ${alpha * .82})`;
+        ctx.lineWidth = 5;
+        ctx.font = '900 24px Arial, sans-serif';
+        const damageLabel = `-${Math.max(0, Math.round(Number(battle.baseDamageText) || 0)).toLocaleString()}`;
+        // 체력 라벨과 충분히 떨어뜨려 숫자가 서로 겹치지 않도록 합니다.
+        ctx.strokeText(damageLabel, 0, -151 - rise);
+        ctx.fillText(damageLabel, 0, -151 - rise);
+        ctx.restore();
       }
 
       ctx.restore();

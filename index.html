@@ -23437,6 +23437,17 @@ function drawEnemy(enemy, time) {
       // EMERGENCY 단계에서는 일반 적의 개별 파티클/상태 장식 대신 본체와 HP만 남겨
       // 수십 개의 shadowBlur/radialGradient 호출을 제거합니다. 보스는 항상 최고 품질을 유지합니다.
       if (battlePerfMode >= 3 && !isBoss && !enemy.rainbowOre) {
+        // CRITICAL 성능 모드에서도 적 HP는 반드시 보이도록 유지합니다.
+        const barWidth = 44, barHeight = 5;
+        const barY = drawY - enemy.radius - 28;
+        const ratio = Math.max(0, Math.min(1, Number(enemy.health || 0) / Math.max(1, Number(enemy.maxHealth || enemy.health || 1))));
+        ctx.fillStyle = '#17202b';
+        ctx.fillRect(drawX - barWidth / 2, barY, barWidth, barHeight);
+        ctx.fillStyle = ratio > .55 ? '#45df7d' : ratio > .25 ? '#f6c945' : '#ff5a67';
+        ctx.fillRect(drawX - barWidth / 2, barY, barWidth * ratio, barHeight);
+        ctx.strokeStyle = 'rgba(255,255,255,.38)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(drawX - barWidth / 2, barY, barWidth, barHeight);
         ctx.restore();
         return;
       }
@@ -36244,5 +36255,129 @@ const boot=()=>{
   },500);
 })();
 </script>
+
+
+<style id="pdRoadAndEnemyHpStabilityV17">
+/* WebGL 적보다 항상 위에서 HP가 보이도록 전용 투명 HUD를 사용합니다. */
+#enemyHpOverlay{
+  position:absolute;inset:0;width:100%;height:100%;z-index:5;
+  pointer-events:none;display:block;background:transparent!important;
+  border:0!important;border-radius:0!important;box-shadow:none!important;
+}
+</style>
+<script id="pdRoadAndEnemyHpStabilityV17Script">
+(()=>{'use strict';
+  if(window.__pdRoadAndEnemyHpStabilityV17)return;
+  window.__pdRoadAndEnemyHpStabilityV17=true;
+
+  // 1) 도로 치지직(z-fighting) 제거:
+  // 누적된 HQ/V8/V9 WebGL 도로가 서로 같은 깊이에 겹쳐 있었습니다.
+  // 전투 판정에 쓰이는 2D 고품질 도로 하나를 authoritative road로 유지하고
+  // WebGL의 중복 도로 메시만 숨깁니다. 유닛/적/성/환경 3D 모델은 그대로 유지됩니다.
+  const roadNameRe=/(?:^|_)(?:hq)?road|paver|curbstone|roadcurb|roadjoint|roadtop|roadedge|roadsurface|roadwet|roadwear|roadcrack/i;
+  function hideRoadObjects(root){
+    if(!root||root.__pdStableRoadV17)return;
+    try{
+      root.traverse?.(o=>{
+        const n=String(o?.name||'');
+        if(roadNameRe.test(n))o.visible=false;
+      });
+      root.__pdStableRoadV17=true;
+    }catch(_){}
+  }
+  function stabilizeLayer(layer){
+    if(!layer)return;
+    const refs=[layer._hqWorld,layer._pdV8World,layer._pdV9World,layer._pdV3World];
+    for(const r of refs)hideRoadObjects(r);
+  }
+  function stabilizeRoads(){
+    try{
+      const api=window.PDTrue3D;
+      if(!api)return;
+      stabilizeLayer(api.single);stabilizeLayer(api.multi);
+    }catch(_){}
+  }
+  stabilizeRoads();
+  setInterval(stabilizeRoads,420);
+
+  // 2) 적 HP는 WebGL보다 위의 별도 canvas에서 그립니다.
+  let overlay=null,octx=null,lastDraw=0;
+  function ensureOverlay(){
+    const shell=document.querySelector('#battleScreen .battle-map-shell');
+    const base=document.querySelector('#gameCanvas');
+    if(!shell||!base)return false;
+    if(!overlay||!overlay.isConnected){
+      overlay=document.createElement('canvas');
+      overlay.id='enemyHpOverlay';overlay.setAttribute('aria-hidden','true');
+      shell.appendChild(overlay);octx=overlay.getContext('2d');
+    }
+    if(overlay.width!==base.width||overlay.height!==base.height){
+      overlay.width=base.width;overlay.height=base.height;
+    }
+    overlay.style.background='transparent';
+    return !!octx;
+  }
+  function enemyPosition(e){
+    let ox=0,oy=0;
+    try{
+      if(e?.type==='brother' && typeof BROTHER_FORMATION!=='undefined'){
+        const f=BROTHER_FORMATION?.[e.groupIndex];if(f){ox=Number(f.x||0);oy=Number(f.y||0)}
+      }
+    }catch(_){}
+    return {x:Number(e?.x||0)+ox,y:Number(e?.y||0)+oy};
+  }
+  function hpColor(r,e){
+    if(e?.type==='awakenedKing')return '#ef4444';
+    if(e?.type==='king')return '#facc15';
+    if(/rainbow/i.test(String(e?.type||'')+' '+String(e?.variant||'')))return `hsl(${(performance.now()*.05)%360},92%,62%)`;
+    return r>.55?'#45df7d':r>.25?'#f4c84a':'#ff5868';
+  }
+  function drawEnemyHp(now){
+    requestAnimationFrame(drawEnemyHp);
+    if(now-lastDraw<33)return; // 약 30fps: HP HUD는 충분히 부드럽고 가볍습니다.
+    lastDraw=now;
+    if(!ensureOverlay())return;
+    octx.setTransform(1,0,0,1,0,0);octx.clearRect(0,0,overlay.width,overlay.height);
+    try{
+      if(typeof battle==='undefined'||!battle||battle.ended||document.querySelector('#battleScreen')?.classList.contains('hidden'))return;
+      const enemies=Array.isArray(battle.enemies)?battle.enemies:[];
+      for(const e of enemies){
+        if(!e||e.dead||e.rainbowFeverCoreUntargetable)continue;
+        const pos=enemyPosition(e),x=pos.x,y=pos.y,radius=Math.max(12,Number(e.radius||22));
+        if(x<-80||y<-80||x>overlay.width+80||y>overlay.height+80)continue;
+        const max=Math.max(1,Number(e.maxHealth||e.health||1));
+        const hp=Math.max(0,Number(e.health||0));
+        const ratio=Math.max(0,Math.min(1,hp/max));
+        const boss=e.type!=='normal'&&!e.rainbowOre;
+        const w=boss?108:48,h=boss?8:6,by=y-radius-(boss?42:30);
+        octx.save();
+        octx.lineJoin='round';
+        octx.shadowColor='rgba(0,0,0,.55)';octx.shadowBlur=4;octx.shadowOffsetY=2;
+        octx.fillStyle='rgba(9,16,25,.90)';
+        octx.fillRect(x-w/2-2,by-2,w+4,h+4);
+        octx.shadowBlur=0;octx.shadowOffsetY=0;
+        octx.fillStyle='#263342';octx.fillRect(x-w/2,by,w,h);
+        octx.fillStyle=hpColor(ratio,e);octx.fillRect(x-w/2,by,w*ratio,h);
+        octx.strokeStyle='rgba(245,250,255,.72)';octx.lineWidth=1;octx.strokeRect(x-w/2,by,w,h);
+        if(Number(e.shield||0)>0){
+          const sr=Math.max(0,Math.min(1,Number(e.shield||0)/Math.max(1,Number(e.shieldMax||e.shield||1))));
+          octx.fillStyle='rgba(92,224,255,.95)';octx.fillRect(x-w/2,by+h+2,w*sr,3);
+        }
+        if(boss){
+          octx.font='800 11px Arial,"Noto Sans KR",sans-serif';octx.textAlign='center';octx.textBaseline='bottom';
+          octx.fillStyle='#fff';octx.strokeStyle='rgba(0,0,0,.72)';octx.lineWidth=3;
+          const label=String(e.name||'BOSS');octx.strokeText(label,x,by-4);octx.fillText(label,x,by-4);
+          octx.font='800 9px Arial,sans-serif';octx.textBaseline='top';
+          const num=`${Math.ceil(hp).toLocaleString()} / ${Math.ceil(max).toLocaleString()}`;
+          octx.strokeText(num,x,by+h+4);octx.fillText(num,x,by+h+4);
+        }
+        octx.restore();
+      }
+    }catch(err){console.warn('적 HP 오버레이 fallback',err)}
+  }
+  requestAnimationFrame(drawEnemyHp);
+})();
+</script>
+
 </body>
 </html>

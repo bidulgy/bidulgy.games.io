@@ -7584,6 +7584,23 @@ body{background:#07111c;background-image:radial-gradient(circle at 15% 10%,rgba(
 /* Range preview is a transparent HUD canvas. Never inherit the global green canvas background. */
 #battleScreen #battleRangeOverlay{background:transparent!important;background-color:transparent!important;border:0!important;box-shadow:none!important;}
 </style>
+
+<style id="pdGraphicsModeSettingsStyles">
+.graphics-mode-setting{display:flex;align-items:center;justify-content:center;gap:10px;padding:8px 11px;border:1px solid rgba(165,205,244,.24);border-radius:14px;background:rgba(7,18,31,.78);box-shadow:0 8px 20px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(9px);color:#eaf6ff;font:800 12px/1.1 Arial,"Noto Sans KR",sans-serif}
+.graphics-mode-setting>span{white-space:nowrap;color:#dceeff}
+.graphics-mode-buttons{display:flex;gap:4px;padding:3px;border-radius:10px;background:rgba(0,0,0,.24)}
+.graphics-mode-button{min-width:48px;padding:7px 11px;border:1px solid transparent;border-radius:8px;background:transparent;color:#9fb4c9;font:900 11px/1 Arial,"Noto Sans KR",sans-serif;cursor:pointer;transition:.15s ease}
+.graphics-mode-button:hover{background:rgba(255,255,255,.08);color:#fff}
+.graphics-mode-button.active{border-color:rgba(104,225,255,.68);background:linear-gradient(145deg,rgba(48,188,222,.34),rgba(75,116,220,.34));color:#fff;box-shadow:0 0 0 1px rgba(104,225,255,.13) inset,0 0 14px rgba(78,203,255,.15)}
+.menu-graphics-mode-setting{width:max-content;max-width:100%;margin:8px auto 14px}
+.battle-graphics-mode-setting{padding:5px 8px;border-radius:11px;background:rgba(8,20,34,.72)}
+.battle-graphics-mode-setting .graphics-mode-button{min-width:42px;padding:6px 8px}
+html[data-pd-graphics-mode="2d"] #pdTrue3DCanvas,html[data-pd-graphics-mode="2d"] #pdTrue3DMpCanvas,html[data-pd-graphics-mode="2d"] #pdMenuEnemy3D{display:none!important;visibility:hidden!important;opacity:0!important}
+html[data-pd-graphics-mode="2d"] #menuScreen .enemy-logo-area.pd-menu-3d-active .enemy-pigeon{display:block!important;opacity:1!important;visibility:visible!important}
+html[data-pd-graphics-mode="3d"] #menuScreen .enemy-logo-area.pd-menu-3d-active .enemy-pigeon{opacity:0!important;visibility:hidden!important}
+html[data-pd-graphics-mode="2d"] #enemyHpOverlay{display:none!important}
+@media(max-width:760px){.graphics-mode-setting{gap:6px;padding:6px 8px}.graphics-mode-button{min-width:42px;padding:6px 8px}.menu-graphics-mode-setting{margin:6px auto 10px}}
+</style>
 </head>
 
 <body>
@@ -23394,6 +23411,9 @@ function drawEnemy(enemy, time) {
       draw3DEnemyFoundation(enemy,drawX,drawY,time,ctx);
       const isBoss = enemy.type !== 'normal';
       const isGolem = isStageTwoBattle() || Boolean(enemy.variant?.includes('Golem')) || /Golem/i.test(enemy.type || '');
+      const pdEnemy3DMode = window.PDGraphicsMode
+        ? window.PDGraphicsMode.is3D()
+        : !!(window.PDTrue3D && window.PDTrue3D.shouldHideBattleSprites && window.PDTrue3D.shouldHideBattleSprites());
 
       ctx.save();
 
@@ -23437,6 +23457,7 @@ function drawEnemy(enemy, time) {
       // EMERGENCY 단계에서는 일반 적의 개별 파티클/상태 장식 대신 본체와 HP만 남겨
       // 수십 개의 shadowBlur/radialGradient 호출을 제거합니다. 보스는 항상 최고 품질을 유지합니다.
       if (battlePerfMode >= 3 && !isBoss && !enemy.rainbowOre) {
+        if (pdEnemy3DMode) { ctx.restore(); return; }
         // CRITICAL 성능 모드에서도 적 HP는 반드시 보이도록 유지합니다.
         const barWidth = 44, barHeight = 5;
         const barY = drawY - enemy.radius - 28;
@@ -23452,6 +23473,7 @@ function drawEnemy(enemy, time) {
         return;
       }
       if (battlePerfMode >= 2 && !isBoss && !enemy.rainbowOre) {
+        if (pdEnemy3DMode) { ctx.restore(); return; }
         const barWidth = 44, barHeight = 5;
         const barY = drawY - enemy.radius - 28;
         const ratio = Math.max(0, Math.min(1, enemy.health / Math.max(1, enemy.maxHealth)));
@@ -23611,6 +23633,10 @@ function drawEnemy(enemy, time) {
         for(let i=0;i<flakes;i+=1){const a=i*Math.PI*2/flakes+time*.0007,rr=enemy.radius+13;ctx.fillStyle='#e8fbff';ctx.beginPath();ctx.moveTo(Math.cos(a)*rr,Math.sin(a)*rr-4);ctx.lineTo(Math.cos(a)*rr+3,Math.sin(a)*rr+3);ctx.lineTo(Math.cos(a)*rr-3,Math.sin(a)*rr+3);ctx.closePath();ctx.fill();}
         ctx.restore();
       }
+
+      // 3D 모드에서는 전용 최상단 HP HUD가 체력바를 담당합니다.
+      // 여기서 2D 체력바까지 다시 그리면 두 개가 겹쳐 보이므로 생략합니다.
+      if (pdEnemy3DMode) { ctx.restore(); return; }
 
       const barWidth = isBoss ? 100 : 44;
       const barHeight = isBoss ? 8 : 5;
@@ -35305,6 +35331,7 @@ function drawEnemy(enemy, time) {
     }
 
     function syncSingle(time){
+      if(!API.enabled){if(single)single.renderer.domElement.style.display='none';return;}
       if(!single||typeof battle==='undefined'||!battle||document.querySelector('#battleScreen')?.classList.contains('hidden')){if(single)single.renderer.domElement.style.display='none';return;}
       single.renderer.domElement.style.display='block';const liveU=new Set(),liveE=new Set();
       for(const u of battle.placedUnits||[]){const key=entityId(u,'u:');liveU.add(key);let m=single.unitModels.get(key);if(!m){m=cloneUnit(u.unitId);single.unitModels.set(key,m);single.root.add(m);}m.visible=true;let rp={x:u.x,y:u.y};try{if(u.unitId==='cherrySamurai'&&typeof getSamuraiRenderPosition==='function')rp=getSamuraiRenderPosition(u,time);}catch(_){}
@@ -35321,6 +35348,7 @@ function drawEnemy(enemy, time) {
 
     function mpVisibleState(){if(typeof mpState==='undefined'||!mpState)return null;let units=[],enemies=[];let viewRole=typeof mpGetViewedSideRole==='function'?mpGetViewedSideRole():mpRole;if(mpState.mode==='coop'){units=mpState.shared?.units||[];enemies=mpState.shared?.enemies||[];}else{const side=mpState.sides?.[viewRole];units=side?.units||[];enemies=side?.enemies||[];}return{units,enemies,viewRole};}
     function syncMulti(time){
+      if(!API.enabled){if(multi)multi.renderer.domElement.style.display='none';return;}
       if(!multi||typeof mpState==='undefined'||!mpState||document.querySelector('#mpBattleScreen')?.classList.contains('hidden')){if(multi)multi.renderer.domElement.style.display='none';return;}multi.renderer.domElement.style.display='block';const st=mpVisibleState();if(!st)return;const liveU=new Set(),liveE=new Set();
       for(const u of st.units){const key=entityId(u,'mu:');liveU.add(key);let m=multi.unitModels.get(key);if(!m){m=cloneUnit(u.unitId);multi.unitModels.set(key,m);multi.root.add(m);}let x=Number(u.x||0),y=Number(u.y||0);try{if(u.unitId==='cherrySamurai'&&typeof mpSamuraiRenderPosition==='function'){const p=mpSamuraiRenderPosition(u,Date.now());x=p.x;y=p.y;}}catch(_){}if(mpState.mode==='coop'&&typeof mpDisplayY==='function')y=mpDisplayY(y);const sc=unitScale(u.unitId);orientUnitUpright(m,Number(u.angle||0),sc,u.unitId);setLogicalPositionW(m,x,y,multi.W,multi.H,22+y*.018);animateCommon(m,u,time,false);}
       for(const [k,m] of multi.unitModels){if(!liveU.has(k)){multi.root.remove(m);multi.unitModels.delete(k);}}
@@ -35985,7 +36013,7 @@ const wait=()=>{
   function makeMenuModel(stage){return stage===2?menuGolem():stage===3?menuLlama():stage===4?menuScorpion():stage===5?menuRainbowSoldier():menuPigeon();}
   function initMenu(){const host=document.querySelector('#menuScreen .enemy-logo-area');if(!host||host.querySelector('#pdMenuEnemy3D'))return;const r=new T.WebGLRenderer({alpha:true,antialias:true,powerPreference:'high-performance'});r.domElement.id='pdMenuEnemy3D';r.setClearColor(0x000000,0);r.setPixelRatio(Math.min(devicePixelRatio||1,mobile?0.9:1.2));r.outputColorSpace=T.SRGBColorSpace;r.toneMapping=T.ACESFilmicToneMapping;r.toneMappingExposure=1.15;r.shadowMap.enabled=false;r.shadowMap.type=T.PCFSoftShadowMap;host.appendChild(r.domElement);host.classList.add('pd-menu-3d-active');const s=new T.Scene(),cam=new T.PerspectiveCamera(28,1,1,800);cam.position.set(0,35,155);cam.lookAt(0,8,0);s.add(new T.HemisphereLight(0xeef8ff,0x28314a,1.65));const key=new T.DirectionalLight(0xfff1dc,3.3);key.position.set(-80,110,140);key.castShadow=true;key.shadow.mapSize.set(mobile?512:1024,mobile?512:1024);key.shadow.bias=-.00025;key.shadow.normalBias=.018;s.add(key);const rim=new T.DirectionalLight(0x75dfff,2.1);rim.position.set(120,-20,90);s.add(rim);const fill=new T.PointLight(0xffc675,22,280,2);fill.position.set(-45,-20,80);s.add(fill);const jewel=new T.PointLight(0x8eeaff,15,230,2);jewel.position.set(65,28,72);s.add(jewel);const warm=new T.PointLight(0xff9b62,10,180,2);warm.position.set(-58,35,55);s.add(warm);const pedestalMat=menuMat('#172131',{m:.58,r:.16,cc:1,e:'#193c5a',ei:.08});const pedestal=M(new T.CylinderGeometry(43,50,8,64),pedestalMat,0,-36,-2);pedestal.receiveShadow=true;pedestal.castShadow=true;s.add(pedestal);const ring=M(new T.TorusGeometry(39,1.35,12,72),menuMat('#8beaff',{m:.42,r:.04,cc:1,e:'#58dfff',ei:.82}),0,-31.6,0,Math.PI/2,0,0);s.add(ring);const floor=M(new T.CircleGeometry(49,80),new T.ShadowMaterial({color:0x000000,transparent:true,opacity:.34}),0,-31,-2,-Math.PI/2,0,0,1,1,1);floor.receiveShadow=true;s.add(floor);menu={host,renderer:r,scene:s,camera:cam,model:null,stage:0,last:0,ring};API.menuShowcase=menu;const resize=()=>{const q=host.getBoundingClientRect(),w=Math.max(2,Math.round(q.width)),h=Math.max(2,Math.round(q.height));r.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();};resize();new ResizeObserver(resize).observe(host);rebuildMenu();const badge=document.querySelector('#menuStageBadge');if(badge)new MutationObserver(()=>rebuildMenu()).observe(badge,{childList:true,characterData:true,subtree:true});requestAnimationFrame(menuLoop);}
   function rebuildMenu(){if(!menu)return;const st=menuStage();if(menu.stage===st&&menu.model)return;if(menu.model)menu.scene.remove(menu.model);menu.model=makeMenuModel(st);menu.stage=st;menu.model.position.set(0,-1,0);menu.model.scale.setScalar(st===4?.9:st===2?.92:1);menu.scene.add(menu.model);API.menuShowcase=menu;}
-  function menuLoop(t){requestAnimationFrame(menuLoop);if(document.hidden||!document.querySelector('#menuScreen:not(.hidden)'))return;if(!menu||t-menu.last<(mobile?80:50))return;menu.last=t;const m=menu.model;if(!m)return;if(menu.ring){menu.ring.rotation.z=t*.00022;const pulse=1+Math.sin(t*.0018)*.018;menu.ring.scale.set(pulse,pulse,pulse);}const st=menu.stage,walk=Math.sin(t*.005);m.position.y=-1+Math.sin(t*.0022)*1.0;m.rotation.y=Math.sin(t*.00055)*.10;m.rotation.z=0;if(st===1){for(const n of ['menuWingL','menuWingR']){const w=m.getObjectByName(n);if(w){if(w.userData.baseRx==null)w.userData.baseRx=w.rotation.x;w.rotation.x=w.userData.baseRx+Math.sin(t*.007+(n.endsWith('L')?0:Math.PI))*.16;}}}m.traverse(o=>{if(o.name==='menuLeg'){if(o.userData.baseRz==null)o.userData.baseRz=o.rotation.z;o.rotation.z=o.userData.baseRz+Math.sin(t*.007+Number(o.userData.walkPhase||0))*.14;}});if(st===4)m.children.filter(o=>o.name==='menuTail').forEach(o=>{if(o.userData.baseY==null)o.userData.baseY=o.position.y;o.position.y=o.userData.baseY+Math.sin(t*.0035+(o.userData.idx||0)*.45)*.35;});const sw=m.getObjectByName('menuSword');if(sw)sw.rotation.z=-.16+Math.sin(t*.0025)*.05;menu.renderer.render(menu.scene,menu.camera);}
+  function menuLoop(t){requestAnimationFrame(menuLoop);if(document.hidden||!document.querySelector('#menuScreen:not(.hidden)'))return;if(!menu)return;if(window.PDGraphicsMode&&!window.PDGraphicsMode.is3D()){menu.renderer.domElement.style.display='none';return;}menu.renderer.domElement.style.display='block';if(t-menu.last<(mobile?80:50))return;menu.last=t;const m=menu.model;if(!m)return;if(menu.ring){menu.ring.rotation.z=t*.00022;const pulse=1+Math.sin(t*.0018)*.018;menu.ring.scale.set(pulse,pulse,pulse);}const st=menu.stage,walk=Math.sin(t*.005);m.position.y=-1+Math.sin(t*.0022)*1.0;m.rotation.y=Math.sin(t*.00055)*.10;m.rotation.z=0;if(st===1){for(const n of ['menuWingL','menuWingR']){const w=m.getObjectByName(n);if(w){if(w.userData.baseRx==null)w.userData.baseRx=w.rotation.x;w.rotation.x=w.userData.baseRx+Math.sin(t*.007+(n.endsWith('L')?0:Math.PI))*.16;}}}m.traverse(o=>{if(o.name==='menuLeg'){if(o.userData.baseRz==null)o.userData.baseRz=o.rotation.z;o.rotation.z=o.userData.baseRz+Math.sin(t*.007+Number(o.userData.walkPhase||0))*.14;}});if(st===4)m.children.filter(o=>o.name==='menuTail').forEach(o=>{if(o.userData.baseY==null)o.userData.baseY=o.position.y;o.position.y=o.userData.baseY+Math.sin(t*.0035+(o.userData.idx||0)*.45)*.35;});const sw=m.getObjectByName('menuSword');if(sw)sw.rotation.z=-.16+Math.sin(t*.0025)*.05;menu.renderer.render(menu.scene,menu.camera);}
   initMenu();
 
   let last=0;function tick(t){requestAnimationFrame(tick);if(t-last<(mobile?900:750))return;last=t;try{sync(API.single,stageSingle(),false,t)}catch(e){console.warn('visual master v8 single fallback',e)}try{sync(API.multi,stageMulti(),true,t)}catch(e){console.warn('visual master v8 multi fallback',e)}}requestAnimationFrame(tick);
@@ -36265,119 +36293,97 @@ const boot=()=>{
   border:0!important;border-radius:0!important;box-shadow:none!important;
 }
 </style>
-<script id="pdRoadAndEnemyHpStabilityV17Script">
+<script id="pdRoadAndEnemyHpStabilityV18Script">
 (()=>{'use strict';
-  if(window.__pdRoadAndEnemyHpStabilityV17)return;
-  window.__pdRoadAndEnemyHpStabilityV17=true;
+  if(window.__pdRoadAndEnemyHpStabilityV18)return;
+  window.__pdRoadAndEnemyHpStabilityV18=true;
 
-  // 1) 도로 치지직(z-fighting) 제거:
-  // 누적된 HQ/V8/V9 WebGL 도로가 서로 같은 깊이에 겹쳐 있었습니다.
-  // 전투 판정에 쓰이는 2D 고품질 도로 하나를 authoritative road로 유지하고
-  // WebGL의 중복 도로 메시만 숨깁니다. 유닛/적/성/환경 3D 모델은 그대로 유지됩니다.
+  // 중복 WebGL 도로는 계속 숨겨 z-fighting을 막습니다.
   const roadNameRe=/(?:^|_)(?:hq)?road|paver|curbstone|roadcurb|roadjoint|roadtop|roadedge|roadsurface|roadwet|roadwear|roadcrack/i;
   function hideRoadObjects(root){
-    if(!root||root.__pdStableRoadV17)return;
-    try{
-      root.traverse?.(o=>{
-        const n=String(o?.name||'');
-        if(roadNameRe.test(n))o.visible=false;
-      });
-      root.__pdStableRoadV17=true;
-    }catch(_){}
-  }
-  function stabilizeLayer(layer){
-    if(!layer)return;
-    const refs=[layer._hqWorld,layer._pdV8World,layer._pdV9World,layer._pdV3World];
-    for(const r of refs)hideRoadObjects(r);
+    if(!root)return;
+    try{root.traverse?.(o=>{if(roadNameRe.test(String(o?.name||'')))o.visible=false;});}catch(_){}
   }
   function stabilizeRoads(){
-    try{
-      const api=window.PDTrue3D;
-      if(!api)return;
-      stabilizeLayer(api.single);stabilizeLayer(api.multi);
-    }catch(_){}
+    try{const api=window.PDTrue3D;if(!api)return;for(const layer of [api.single,api.multi]){if(!layer)continue;for(const root of [layer._hqWorld,layer._pdV8World,layer._pdV9World,layer._pdV3World])hideRoadObjects(root);}}catch(_){}
   }
-  stabilizeRoads();
-  setInterval(stabilizeRoads,420);
+  stabilizeRoads();setInterval(stabilizeRoads,650);
 
-  // 2) 적 HP는 WebGL보다 위의 별도 canvas에서 그립니다.
   let overlay=null,octx=null,lastDraw=0;
+  const is3D=()=>window.PDGraphicsMode?window.PDGraphicsMode.is3D():!!window.PDTrue3D?.enabled;
   function ensureOverlay(){
-    const shell=document.querySelector('#battleScreen .battle-map-shell');
-    const base=document.querySelector('#gameCanvas');
+    const shell=document.querySelector('#battleScreen .battle-map-shell'),base=document.querySelector('#gameCanvas');
     if(!shell||!base)return false;
-    if(!overlay||!overlay.isConnected){
-      overlay=document.createElement('canvas');
-      overlay.id='enemyHpOverlay';overlay.setAttribute('aria-hidden','true');
-      shell.appendChild(overlay);octx=overlay.getContext('2d');
-    }
-    if(overlay.width!==base.width||overlay.height!==base.height){
-      overlay.width=base.width;overlay.height=base.height;
-    }
-    overlay.style.background='transparent';
+    if(!overlay||!overlay.isConnected){overlay=document.createElement('canvas');overlay.id='enemyHpOverlay';overlay.setAttribute('aria-hidden','true');shell.appendChild(overlay);octx=overlay.getContext('2d');}
+    if(overlay.width!==base.width||overlay.height!==base.height){overlay.width=base.width;overlay.height=base.height;}
+    overlay.style.background='transparent';overlay.style.display=is3D()?'block':'none';
     return !!octx;
   }
-  function enemyPosition(e){
-    let ox=0,oy=0;
-    try{
-      if(e?.type==='brother' && typeof BROTHER_FORMATION!=='undefined'){
-        const f=BROTHER_FORMATION?.[e.groupIndex];if(f){ox=Number(f.x||0);oy=Number(f.y||0)}
-      }
-    }catch(_){}
-    return {x:Number(e?.x||0)+ox,y:Number(e?.y||0)+oy};
-  }
-  function hpColor(r,e){
-    if(e?.type==='awakenedKing')return '#ef4444';
-    if(e?.type==='king')return '#facc15';
-    if(/rainbow/i.test(String(e?.type||'')+' '+String(e?.variant||'')))return `hsl(${(performance.now()*.05)%360},92%,62%)`;
-    return r>.55?'#45df7d':r>.25?'#f4c84a':'#ff5868';
+  function enemyPosition(e){let ox=0,oy=0;try{if(e?.type==='brother'&&typeof BROTHER_FORMATION!=='undefined'){const f=BROTHER_FORMATION?.[e.groupIndex];if(f){ox=Number(f.x||0);oy=Number(f.y||0)}}}catch(_){}return{x:Number(e?.x||0)+ox,y:Number(e?.y||0)+oy};}
+  function hpColor(r,e){if(e?.type==='awakenedKing')return'#ef4444';if(e?.type==='king')return'#facc15';if(/rainbow/i.test(String(e?.type||'')+' '+String(e?.variant||'')))return`hsl(${(performance.now()*.045)%360},88%,60%)`;return r>.55?'#42dc7a':r>.25?'#f2c94c':'#ff5968';}
+  function roundedRect(g,x,y,w,h,r){const rr=Math.min(r,h/2,w/2);g.beginPath();g.moveTo(x+rr,y);g.arcTo(x+w,y,x+w,y+h,rr);g.arcTo(x+w,y+h,x,y+h,rr);g.arcTo(x,y+h,x,y,rr);g.arcTo(x,y,x+w,y,rr);g.closePath();}
+  function drawBar(g,x,y,w,h,ratio,color){
+    g.save();g.shadowColor='rgba(0,0,0,.48)';g.shadowBlur=5;g.shadowOffsetY=2;roundedRect(g,x-w/2,y,w,h,4);g.fillStyle='rgba(8,15,23,.92)';g.fill();g.shadowBlur=0;g.shadowOffsetY=0;
+    const ix=x-w/2+2,iy=y+2,iw=w-4,ih=h-4;roundedRect(g,ix,iy,iw,ih,Math.max(2,ih/2));g.fillStyle='rgba(50,63,75,.72)';g.fill();
+    if(ratio>0){g.save();roundedRect(g,ix,iy,iw,ih,Math.max(2,ih/2));g.clip();g.fillStyle=color;g.fillRect(ix,iy,iw*ratio,ih);const grad=g.createLinearGradient(0,iy,0,iy+ih);grad.addColorStop(0,'rgba(255,255,255,.28)');grad.addColorStop(.45,'rgba(255,255,255,.05)');grad.addColorStop(1,'rgba(0,0,0,.10)');g.fillStyle=grad;g.fillRect(ix,iy,iw*ratio,ih);g.restore();}
+    g.strokeStyle='rgba(237,248,255,.68)';g.lineWidth=1;roundedRect(g,x-w/2+.5,y+.5,w-1,h-1,4);g.stroke();g.restore();
   }
   function drawEnemyHp(now){
-    requestAnimationFrame(drawEnemyHp);
-    if(now-lastDraw<33)return; // 약 30fps: HP HUD는 충분히 부드럽고 가볍습니다.
-    lastDraw=now;
-    if(!ensureOverlay())return;
-    octx.setTransform(1,0,0,1,0,0);octx.clearRect(0,0,overlay.width,overlay.height);
+    requestAnimationFrame(drawEnemyHp);if(now-lastDraw<33)return;lastDraw=now;
+    if(!ensureOverlay())return;octx.setTransform(1,0,0,1,0,0);octx.clearRect(0,0,overlay.width,overlay.height);
+    if(!is3D()){overlay.style.display='none';return;}overlay.style.display='block';
     try{
       if(typeof battle==='undefined'||!battle||battle.ended||document.querySelector('#battleScreen')?.classList.contains('hidden'))return;
-      const enemies=Array.isArray(battle.enemies)?battle.enemies:[];
-      for(const e of enemies){
+      for(const e of (Array.isArray(battle.enemies)?battle.enemies:[])){
         if(!e||e.dead||e.rainbowFeverCoreUntargetable)continue;
-        const pos=enemyPosition(e),x=pos.x,y=pos.y,radius=Math.max(12,Number(e.radius||22));
-        if(x<-80||y<-80||x>overlay.width+80||y>overlay.height+80)continue;
-        const max=Math.max(1,Number(e.maxHealth||e.health||1));
-        const hp=Math.max(0,Number(e.health||0));
-        const ratio=Math.max(0,Math.min(1,hp/max));
-        const boss=e.type!=='normal'&&!e.rainbowOre;
-        const w=boss?108:48,h=boss?8:6,by=y-radius-(boss?42:30);
-        octx.save();
-        octx.lineJoin='round';
-        octx.shadowColor='rgba(0,0,0,.55)';octx.shadowBlur=4;octx.shadowOffsetY=2;
-        octx.fillStyle='rgba(9,16,25,.90)';
-        octx.fillRect(x-w/2-2,by-2,w+4,h+4);
-        octx.shadowBlur=0;octx.shadowOffsetY=0;
-        octx.fillStyle='#263342';octx.fillRect(x-w/2,by,w,h);
-        octx.fillStyle=hpColor(ratio,e);octx.fillRect(x-w/2,by,w*ratio,h);
-        octx.strokeStyle='rgba(245,250,255,.72)';octx.lineWidth=1;octx.strokeRect(x-w/2,by,w,h);
-        if(Number(e.shield||0)>0){
-          const sr=Math.max(0,Math.min(1,Number(e.shield||0)/Math.max(1,Number(e.shieldMax||e.shield||1))));
-          octx.fillStyle='rgba(92,224,255,.95)';octx.fillRect(x-w/2,by+h+2,w*sr,3);
-        }
+        const pos=enemyPosition(e),x=pos.x,y=pos.y,radius=Math.max(12,Number(e.radius||22));if(x<-90||y<-100||x>overlay.width+90||y>overlay.height+90)continue;
+        const max=Math.max(1,Number(e.maxHealth||e.health||1)),hp=Math.max(0,Number(e.health||0)),ratio=Math.max(0,Math.min(1,hp/max));
+        const boss=String(e.type||'normal')!=='normal'&&!e.rainbowOre;
+        const w=boss?122:56,h=boss?11:8;
+        // 3D 모델의 머리 위쪽으로 충분히 띄워 모델/이름과 겹치지 않게 합니다.
+        const lift=boss?Math.max(78,radius*2.15):Math.max(50,radius*1.72);
+        const by=y-lift;
+        drawBar(octx,x,by,w,h,ratio,hpColor(ratio,e));
+        if(Number(e.shield||0)>0){const sr=Math.max(0,Math.min(1,Number(e.shield||0)/Math.max(1,Number(e.shieldMax||e.shield||1))));drawBar(octx,x,by+h+3,w,5,sr,'#61dff5');}
         if(boss){
-          octx.font='800 11px Arial,"Noto Sans KR",sans-serif';octx.textAlign='center';octx.textBaseline='bottom';
-          octx.fillStyle='#fff';octx.strokeStyle='rgba(0,0,0,.72)';octx.lineWidth=3;
-          const label=String(e.name||'BOSS');octx.strokeText(label,x,by-4);octx.fillText(label,x,by-4);
-          octx.font='800 9px Arial,sans-serif';octx.textBaseline='top';
-          const num=`${Math.ceil(hp).toLocaleString()} / ${Math.ceil(max).toLocaleString()}`;
-          octx.strokeText(num,x,by+h+4);octx.fillText(num,x,by+h+4);
+          const label=String(e.name||'BOSS');octx.save();octx.textAlign='center';octx.textBaseline='bottom';octx.font='900 11px Arial,"Noto Sans KR",sans-serif';octx.lineWidth=3;octx.strokeStyle='rgba(0,0,0,.78)';octx.fillStyle='#fff';octx.strokeText(label,x,by-5);octx.fillText(label,x,by-5);
+          octx.textBaseline='middle';octx.font='900 8px Arial,sans-serif';const num=`${Math.ceil(hp).toLocaleString()} / ${Math.ceil(max).toLocaleString()}`;octx.strokeStyle='rgba(0,0,0,.72)';octx.lineWidth=2.5;octx.strokeText(num,x,by+h/2);octx.fillText(num,x,by+h/2);octx.restore();
         }
-        octx.restore();
       }
-    }catch(err){console.warn('적 HP 오버레이 fallback',err)}
+    }catch(err){console.warn('3D 적 HP HUD fallback',err)}
   }
   requestAnimationFrame(drawEnemyHp);
 })();
 </script>
 
+
+<script id="pdGraphicsModeControllerV18">
+(()=>{'use strict';
+  if(window.__pdGraphicsModeControllerV18)return;window.__pdGraphicsModeControllerV18=true;
+  const KEY='pdGraphicsMode';
+  let mode=localStorage.getItem(KEY)==='2d'?'2d':'3d';
+  function is3D(){return mode==='3d';}
+  function refreshButtons(){document.querySelectorAll('[data-pd-graphics-mode]').forEach(b=>{const on=b.dataset.pdGraphicsMode===mode;b.classList.toggle('active',on);b.setAttribute('aria-checked',on?'true':'false');});}
+  function apply(){
+    document.documentElement.dataset.pdGraphicsMode=mode;
+    refreshButtons();
+    const api=window.PDTrue3D;
+    if(api){
+      api.enabled=is3D();
+      try{if(is3D())api.enable?.();else api.disable?.();}catch(_){}
+      for(const layer of [api.single,api.multi]){const c=layer?.renderer?.domElement;if(c)c.style.display=is3D()?'block':'none';}
+      const mc=api.menuShowcase?.renderer?.domElement;if(mc)mc.style.display=is3D()?'block':'none';
+    }
+    const hp=document.getElementById('enemyHpOverlay');if(hp)hp.style.display=is3D()?'block':'none';
+    try{if(typeof drawBattle==='function'&&typeof battle!=='undefined'&&battle)drawBattle(performance.now());}catch(_){}
+  }
+  function setMode(next,announce=true){next=next==='2d'?'2d':'3d';if(mode===next){apply();return;}mode=next;localStorage.setItem(KEY,mode);apply();if(announce&&typeof setBattleMessage==='function'&&typeof battle!=='undefined'&&battle)setBattleMessage(`그래픽 모드를 ${mode.toUpperCase()}로 변경했습니다.`);}
+  window.PDGraphicsMode={get mode(){return mode;},is3D,setMode,apply};
+  document.addEventListener('click',e=>{const b=e.target.closest?.('[data-pd-graphics-mode]');if(!b)return;e.preventDefault();setMode(b.dataset.pdGraphicsMode,true);});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply,{once:true});else apply();
+  // Three.js가 늦게 로드되어도 현재 모드를 다시 적용합니다.
+  let tries=0;const timer=setInterval(()=>{apply();if(++tries>20||window.PDTrue3D?.single)clearInterval(timer);},300);
+})();
+</script>
 </body>
 </html>

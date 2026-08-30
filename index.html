@@ -7701,6 +7701,11 @@ html[data-pd-graphics-mode="2d"] #enemyHpOverlay{display:none!important}
   </header>
 
   <main class="invasion-content">
+    <div class="pd-menu-enemy-showcase" aria-label="현재 스테이지 대표 적">
+      <div class="enemy-logo-area">
+        <div class="enemy-pigeon" aria-label="현재 스테이지 적"></div>
+      </div>
+    </div>
     <div class="stage-choice-row">
     <div class="stage-preview-card" aria-live="polite">
       <button id="prevStageBtn" class="stage-nav-button" type="button" aria-label="이전 스테이지">‹</button>
@@ -35119,123 +35124,188 @@ function drawEnemy(enemy, time) {
       g.add(M(new T.SphereGeometry(.18*scale,10,8),hi,x+1.86*scale,y+.28*scale,z+.18*scale,0,0,0,1,1,.5,'realEyeGlint'));
     }
 
+    // PHOTO ENEMY V23 — organic silhouettes, physical materials, no toy-like micro-ovals.
+    const pdPhotoMatCache = new Map();
+    function pdPhotoMat(color,kind='soft',opts={}){
+      const key=[color,kind,opts.rough??'',opts.metal??'',opts.clearcoat??'',opts.sheen??'',opts.emissive||'',opts.ei||0].join('|');
+      if(pdPhotoMatCache.has(key)) return pdPhotoMatCache.get(key);
+      const tex=pdRealEnemyTexture(kind);
+      let m;
+      if(kind==='chitin'){
+        m=new T.MeshPhysicalMaterial({color:colorHex(color),roughness:opts.rough??.30,metalness:opts.metal??.08,clearcoat:opts.clearcoat??.72,clearcoatRoughness:.24,emissive:colorHex(opts.emissive||'#000000'),emissiveIntensity:Number(opts.ei||0)});
+      }else if(kind==='fur'){
+        m=new T.MeshPhysicalMaterial({color:colorHex(color),roughness:opts.rough??.88,metalness:0,sheen:opts.sheen??.42,sheenRoughness:.82,sheenColor:colorHex(opts.sheenColor||'#f4efe6'),emissive:colorHex(opts.emissive||'#000000'),emissiveIntensity:Number(opts.ei||0)});
+      }else if(kind==='feather'){
+        m=new T.MeshPhysicalMaterial({color:colorHex(color),roughness:opts.rough??.56,metalness:opts.metal??.01,sheen:opts.sheen??.26,sheenRoughness:.58,sheenColor:colorHex(opts.sheenColor||'#91b4c8'),clearcoat:.05,emissive:colorHex(opts.emissive||'#000000'),emissiveIntensity:Number(opts.ei||0)});
+      }else{
+        m=new T.MeshStandardMaterial({color:colorHex(color),roughness:opts.rough??(kind==='rock'?.92:.55),metalness:opts.metal??0,emissive:colorHex(opts.emissive||'#000000'),emissiveIntensity:Number(opts.ei||0)});
+      }
+      m.map=tex;m.bumpMap=tex;m.bumpScale=kind==='rock'?.72:kind==='chitin'?.18:kind==='fur'?.10:kind==='feather'?.075:.08;
+      if(tex){tex.anisotropy=Math.max(tex.anisotropy||1,4);}
+      pdPhotoMatCache.set(key,m);return m;
+    }
+    function pdHashNoise(x,y,z,seed=1){
+      const q=Math.sin(x*12.9898+y*78.233+z*37.719+seed*19.19)*43758.5453123;return q-Math.floor(q);
+    }
+    function pdOrganicGeo(r,sx=1,sy=1,sz=1,seed=1,amount=.035,seg=36,rings=24){
+      const geo=new T.SphereGeometry(r,seg,rings),a=geo.attributes.position;
+      for(let i=0;i<a.count;i++){
+        let x=a.getX(i),y=a.getY(i),z=a.getZ(i);const len=Math.hypot(x,y,z)||1;
+        const n=1+(pdHashNoise(x/r*2.1,y/r*2.1,z/r*2.1,seed)-.5)*amount;
+        x=x/len*r*n*sx;y=y/len*r*n*sy;z=z/len*r*n*sz;a.setXYZ(i,x,y,z);
+      }
+      a.needsUpdate=true;geo.computeVertexNormals();return geo;
+    }
+    function pdRockGeo(r,sx=1,sy=1,sz=1,seed=1){
+      const geo=new T.IcosahedronGeometry(r,3),a=geo.attributes.position;
+      for(let i=0;i<a.count;i++){
+        let x=a.getX(i),y=a.getY(i),z=a.getZ(i);const len=Math.hypot(x,y,z)||1;
+        const coarse=pdHashNoise(x/r*1.5,y/r*1.5,z/r*1.5,seed);
+        const fine=pdHashNoise(x/r*4.1,y/r*4.1,z/r*4.1,seed+17);
+        const n=.88+coarse*.20+(fine-.5)*.07;
+        a.setXYZ(i,x/len*r*n*sx,y/len*r*n*sy,z/len*r*n*sz);
+      }
+      a.needsUpdate=true;geo.computeVertexNormals();return geo;
+    }
+    function pdBone(p1,p2,r1,r2,mat,name=''){
+      const a=new T.Vector3(...p1),b=new T.Vector3(...p2),d=b.clone().sub(a),len=d.length();
+      const mesh=new T.Mesh(new T.CylinderGeometry(r2,r1,len,12,1,false),mat);mesh.name=name;
+      mesh.position.copy(a.clone().add(b).multiplyScalar(.5));mesh.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),d.normalize());return mesh;
+    }
+    function pdWingGeometry(scale=1){
+      const sh=new T.Shape();
+      sh.moveTo(7*scale,7*scale);sh.bezierCurveTo(0*scale,13*scale,-13*scale,13*scale,-25*scale,4*scale);
+      sh.bezierCurveTo(-29*scale,-2*scale,-20*scale,-10*scale,-6*scale,-11*scale);
+      sh.bezierCurveTo(1*scale,-10*scale,6*scale,-5*scale,7*scale,7*scale);
+      const geo=new T.ExtrudeGeometry(sh,{depth:1.4*scale,bevelEnabled:true,bevelThickness:.28*scale,bevelSize:.35*scale,bevelSegments:2,curveSegments:18});geo.center();return geo;
+    }
+    function pdFeatherShape(scale=1){
+      const sh=new T.Shape();sh.moveTo(8*scale,0);sh.quadraticCurveTo(0,2.1*scale,-10*scale,1.25*scale);sh.quadraticCurveTo(-15*scale,0,-10*scale,-1.25*scale);sh.quadraticCurveTo(0,-2.1*scale,8*scale,0);
+      const geo=new T.ExtrudeGeometry(sh,{depth:.8*scale,bevelEnabled:true,bevelThickness:.15*scale,bevelSize:.18*scale,bevelSegments:1,curveSegments:12});geo.center();return geo;
+    }
+    function pdPhotoFlags(g){
+      Object.assign(g.userData,{photoEnemyV23:true,pdV20Refined:true,cleanEnemyV15:true,cleanEnemyV13:true,hqAugmented:true,pdCinematicEnemy:true,pdVisualV3:true,pdV8:true,pdV9:true,pdV10:true,pdV11Enemy:true});
+      return g;
+    }
     function makePremiumPigeon(color='#8797a7',boss=false,role='normal'){
-      const g=pdRealEnemyFlags(G('enemy:'+role)); addShadow(g,boss?32:24,boss?9:6.5); g.userData.enemyRole=role;
-      const s=boss?1.12:1;
-      const body=pdRealEnemyMat(role==='awakenedKing'?'#6f5862':'#8698aa','feather',.58,.015);
-      const breast=pdRealEnemyMat('#b9c5d0','feather',.64,.01);
-      const neck=pdRealEnemyMat(role==='awakenedKing'?'#65425e':'#456f73','feather',.40,.04,{emissive:role==='awakenedKing'?'#6f1f3a':'#133f3d',ei:.05});
-      const wing=pdRealEnemyMat('#748697','feather',.63,.01); const stripe=pdRealEnemyMat('#28323c','feather',.54,.02);
-      const beak=pdRealEnemyMat('#4a555d','soft',.48,.02); const feet=pdRealEnemyMat('#c8857a','soft',.58,0);
-      // Real pigeon silhouette: compact breast, tapered back, neck and small head.
-      g.add(M(new T.SphereGeometry(15*s,40,28),body,-4,-1,0,0,0,0,1.56,1.00,.86,'enemyBody'));
-      g.add(M(new T.SphereGeometry(11*s,36,24),breast,7,-5,0,0,0,0,1.14,1.04,.82,'enemyBreast'));
-      g.add(M(new T.CylinderGeometry(5.8*s,8.2*s,18*s,28),neck,8,10,0,0,0,-.34,1,1,1,'enemyNeck'));
-      g.add(M(new T.SphereGeometry(8.1*s,36,24),body,18,18,0,0,0,0,1.02,.94,.91,'enemyHead'));
-      // Beak has upper/lower taper instead of a giant cone.
-      g.add(M(new T.ConeGeometry(2.5*s,9*s,10),beak,29,16,0,0,0,-Math.PI/2,1,.72,1,'enemyBeak'));
-      g.add(M(new T.SphereGeometry(2.0*s,20,12),pdRealEnemyMat('#d9e1e5','soft',.4),24,17,0,0,0,0,1.05,.55,.55,'enemyCere'));
-      pdRealEye(g,22.2*s,21*s,5.9*s,'#1b1b1b','#a8342d',.84*s); pdRealEye(g,22.2*s,21*s,-5.9*s,'#1b1b1b','#a8342d',.84*s);
-      // Layered aerodynamic wings with two dark bars like the reference pigeon.
+      const g=pdPhotoFlags(G('enemy:'+role));g.userData.enemyRole=role;const s=boss?1.10:1;
+      const body=pdPhotoMat(role==='awakenedKing'?'#74636c':'#8799aa','feather',{rough:.60,sheen:.22});
+      const breast=pdPhotoMat('#b9c4cd','feather',{rough:.64,sheen:.18});
+      const wing=pdPhotoMat('#748493','feather',{rough:.61});
+      const bars=pdPhotoMat('#27313a','feather',{rough:.55});
+      const neck=pdPhotoMat(role==='awakenedKing'?'#614657':'#416f70','feather',{rough:.43,sheen:.50,sheenColor:role==='awakenedKing'?'#a85c90':'#4ad6ba'});
+      const beak=pdPhotoMat('#49545b','soft',{rough:.48}),feet=pdPhotoMat('#c17a72','soft',{rough:.62});
+      // Reference-like proportions: deep breast, tapered back, short neck transition, small head.
+      g.add(M(pdOrganicGeo(15*s,1.55,1.02,.88,31,.022,46,30),body,-5,-1,0,0,0,-.03,1,1,1,'enemyBody'));
+      g.add(M(pdOrganicGeo(10.4*s,1.18,1.10,.86,32,.018,40,28),breast,7,-4,0,0,0,.03,1,1,1,'enemyBreast'));
+      g.add(M(pdOrganicGeo(8.5*s,.78,1.30,.82,33,.018,36,24),neck,10,10,0,0,0,-.16,1,1,1,'enemyNeck'));
+      g.add(M(pdOrganicGeo(7.6*s,1.04,.96,.92,34,.014,40,28),body,19,18,0,0,0,0,1,1,1,'enemyHead'));
+      // folded wings are single sculpted surfaces rather than rows of bead-like ellipses
       for(const side of [-1,1]){
-        const wg=G(side<0?'enemyWingFar':'enemyWingNear'); wg.userData.baseRx=0;
-        wg.add(M(new T.SphereGeometry(11.5*s,32,20),wing,-8,2,side*9.3,0,0,side*.10,1.48,.45,.61,'enemyWingPanel'));
-        for(let i=0;i<5;i++) wg.add(M(new T.SphereGeometry((5.3-i*.28)*s,20,12),wing,-14-i*3.2,-1+i*.55,side*(10.1+i*.34),0,0,-.12+i*.035,1.55,.28,.44,'realPrimaryFeather'));
-        for(const ox of [-6,-12]) wg.add(M(new T.BoxGeometry(3.1*s,14*s,1.3*s),stripe,ox,2,side*12.0,0,0,-.60,1,1,1,'realWingBar'));
+        const wg=G(side<0?'enemyWingFar':'enemyWingNear');wg.userData.baseRx=0;
+        const w=new T.Mesh(pdWingGeometry(s),wing);w.name='photoWingSurface';w.position.set(-7,2,side*8.5);w.rotation.y=side<0?Math.PI:0;wg.add(w);
+        for(let i=0;i<2;i++){const bar=new T.Mesh(new T.BoxGeometry(2.2*s,13*s,.65*s),bars);bar.position.set(-9-i*6,2.4,side*9.4);bar.rotation.z=-.76;wg.add(bar);}
         g.add(wg);
       }
-      // Tail fan.
-      for(let i=-2;i<=2;i++) g.add(M(new T.BoxGeometry(18*s,3.2*s,2.0*s),i%2?stripe:wing,-22,-4+i*.55,i*2.5,0,0,-.06+i*.025,1,1,1,'realTailFeather'));
-      // Two legs and three forward toes per foot.
-      for(const z of [-4.2,4.2]){
-        const r=G('enemyWalkLeg');r.position.set(-1,-15,z);r.userData.walkPhase=z>0?Math.PI:0;
-        r.add(M(new T.CylinderGeometry(1.05*s,1.25*s,8*s,10),feet,0,-4,0));
-        for(let toe=-1;toe<=1;toe++) r.add(M(new T.CylinderGeometry(.42*s,.55*s,5.2*s,8),feet,3.3+Math.abs(toe)*.4,-8.6,toe*1.45,0,0,Math.PI/2+(toe*.12),1,1,1,'realPigeonToe'));
-        g.add(r);
-      }
+      // tail fan: broad tapered feathers, only five large pieces
+      for(let i=-2;i<=2;i++){const f=new T.Mesh(pdFeatherShape(1.0*s),i===0?body:wing);f.name='photoTailFeather';f.position.set(-24,-4,i*2.35);f.rotation.z=(i*.025)-.04;g.add(f);}
+      // compact wedge beak + pale cere
+      g.add(M(new T.ConeGeometry(2.35*s,8.2*s,10),beak,29.2,16.4,0,0,0,-Math.PI/2,1,.76,1,'enemyBeak'));
+      g.add(M(pdOrganicGeo(1.8*s,1.10,.62,.70,35,.01,22,14),pdPhotoMat('#dce2e4','soft',{rough:.42}),24.8,17.2,0,0,0,0,1,1,1,'enemyCere'));
+      const eye= pdPhotoMat('#b43a31','soft',{rough:.24}), pupil=pdPhotoMat('#080909','soft',{rough:.18});
+      for(const z of [-5.7,5.7]){g.add(M(new T.SphereGeometry(1.15*s,18,12),eye,22.2,21.1,z));g.add(M(new T.SphereGeometry(.64*s,16,10),pupil,23.0,21.2,z));}
+      // two natural legs, slim shank + toes
+      for(const z of [-4.2,4.2]){const r=G('enemyWalkLeg');r.userData.walkPhase=z>0?Math.PI:0;r.position.set(-1,-13.6,z);r.add(pdBone([0,0,0],[0,-8,0],1.1*s,.85*s,feet,'photoPigeonShank'));for(let t=-1;t<=1;t++){const toe=pdBone([0,-8,0],[5.5,-9.0,t*1.45],.48*s,.28*s,feet,'photoPigeonToe');r.add(toe);}g.add(r);}
       if(role==='knight'||role==='king'||role==='awakenedKing'){
-        const plate=pdRealEnemyMat(role==='awakenedKing'?'#64323b':'#aebbc7','soft',.25,.72); const leather=pdRealEnemyMat('#493b32','soft',.56,.04);
-        g.add(M(new T.SphereGeometry(12.5*s,32,20),plate,1,1,0,0,0,0,1.12,.68,.92,'realPigeonArmor'));
-        g.add(M(new T.BoxGeometry(4*s,17*s,19*s),leather,4,-1,0,0,0,0,1,1,1,'realArmorStrap'));
-        addEnemyArmorSword(g,boss?1.0:.82,false);addEnemyArmorShield(g,boss?.92:.76,false);
+        const plate=pdPhotoMat(role==='awakenedKing'?'#63373f':'#aebac5','soft',{rough:.24,metal:.62});
+        g.add(M(pdOrganicGeo(12.0*s,1.14,.70,.94,38,.012,34,22),plate,0,1,0,0,0,0,1,1,1,'photoPigeonBreastplate'));
+        addEnemyArmorSword(g,boss?.95:.78,false);addEnemyArmorShield(g,boss?.88:.72,false);
       }
-      if(role==='king'||role==='awakenedKing'){addCrown(g,role==='awakenedKing'?'#d85b67':'#e7bf5d',boss?.82:.68);addEnemyCape(g,role==='awakenedKing'?'#4b242c':'#4b3953',boss?.82:.72);}
+      if(role==='king'||role==='awakenedKing'){addCrown(g,role==='awakenedKing'?'#d15b68':'#dfbd62',boss?.76:.64);addEnemyCape(g,role==='awakenedKing'?'#4b252d':'#44384f',boss?.78:.68);}
       return g;
     }
     function makeGolem(color='#77756b',boss=false,type='golem'){
-      const g=pdRealEnemyFlags(G('enemy:'+type)); addShadow(g,boss?39:28,boss?12:8);
-      const s=boss?1.16:1; const rock=pdRealEnemyMat('#77786f','rock',.93,.01), rock2=pdRealEnemyMat('#5f625c','rock',.96,.01), moss=pdRealEnemyMat('#596b3b','rock',.88,.01);
-      const eyeColor=type==='crystalGolemBoss'?'#7cefff':'#c1a56a'; const eye=pdRealEnemyMat(eyeColor,'rock',.28,.08,{emissive:eyeColor,ei:type==='crystalGolemBoss'?.48:.14});
-      // Humanoid stone giant: broad shoulders, narrower waist, long heavy arms and planted legs.
-      g.add(M(new T.DodecahedronGeometry(18*s,2),rock,0,8,0,0,0,.05,1.25,1.18,.78,'golemTorso'));
-      g.add(M(new T.DodecahedronGeometry(12*s,2),rock2,2,29,0,0,0,-.04,1.05,.83,.86,'golemHead'));
-      g.add(M(new T.DodecahedronGeometry(7*s,1),rock,-5,26,6,0,0,.18,1.0,.7,.55,'golemBrow'));
-      for(const z of [-7.0,7.0]) g.add(M(new T.SphereGeometry(1.3*s,18,12),eye,10,31,z,0,0,0,1,.72,.55,'golemEye'));
+      const g=pdPhotoFlags(G('enemy:'+type));const s=boss?1.13:1;
+      const rock=pdPhotoMat('#77796f','rock',{rough:.96}),dark=pdPhotoMat('#5f625b','rock',{rough:.98}),deep=pdPhotoMat('#444842','rock',{rough:1});
+      const crystal=type==='crystalGolemBoss'?pdPhotoMat('#9af3ff','rock',{rough:.28,emissive:'#4bd9ff',ei:.25}):null;
+      // One coherent humanoid rock anatomy, with large irregular slabs instead of a pile of round stones.
+      g.add(M(pdRockGeo(20*s,1.24,1.17,.72,100),rock,0,8,0,0,0,.02,1,1,1,'golemTorso'));
+      g.add(M(pdRockGeo(13*s,1.12,.78,.78,101),dark,2,30,0,0,0,-.06,1,1,1,'golemHead'));
+      g.add(M(pdRockGeo(8.5*s,1.30,.46,.72,102),deep,3,26,0,0,0,.05,1,1,1,'golemFacePlane'));
+      // brow ridge / eye sockets are dark recesses, not glowing cartoon eyes
+      g.add(M(pdRockGeo(7.8*s,1.10,.30,.88,103),rock,5,34,0,0,0,.02,1,1,1,'golemBrow'));
+      for(const z of [-5.4,5.4])g.add(M(new T.SphereGeometry(1.0*s,14,10),type==='crystalGolemBoss'?crystal:deep,10.0,31.5,z));
       for(const side of [-1,1]){
-        const shoulder=M(new T.DodecahedronGeometry(10*s,2),rock,side*20,15,0,0,0,side*.06,1.18,.96,.86,'golemShoulder');g.add(shoulder);
-        const arm=G('golemArm');arm.position.set(side*22,8,0);arm.add(M(new T.DodecahedronGeometry(8.8*s,2),rock2,side*3,-4,0,0,0,side*.08,1.0,1.28,.82,'golemUpperArm'));arm.add(M(new T.DodecahedronGeometry(7.1*s,2),rock,side*6,-18,0,0,0,side*.12,.86,1.35,.76,'golemForearm'));arm.add(M(new T.DodecahedronGeometry(6.7*s,1),rock2,side*7,-30,0,0,0,side*.08,1.08,.75,.95,'golemHand'));g.add(arm);
-        const leg=G('enemyWalkLeg');leg.position.set(side*9,-12,0);leg.userData.walkPhase=side>0?Math.PI:0;leg.add(M(new T.DodecahedronGeometry(8.2*s,2),rock2,0,-6,0,0,0,0,.88,1.25,.82,'golemThigh'));leg.add(M(new T.DodecahedronGeometry(6.8*s,2),rock,1,-18,0,0,0,0,.82,1.28,.78,'golemShin'));leg.add(M(new T.DodecahedronGeometry(7.7*s,1),rock2,4,-29,2,0,0,0,1.22,.55,1.05,'golemFoot'));g.add(leg);
+        g.add(M(pdRockGeo(10.5*s,1.25,.88,.82,110+(side>0)),rock,side*20,17,0,0,0,side*.08,1,1,1,'golemShoulder'));
+        const arm=G('golemArm');arm.position.set(side*20,13,0);
+        arm.add(M(pdRockGeo(8.5*s,.86,1.34,.76,120+(side>0)),dark,side*3,-7,0,0,0,side*.10,1,1,1,'golemUpperArm'));
+        arm.add(M(pdRockGeo(7.5*s,.78,1.42,.72,122+(side>0)),rock,side*6,-21,0,0,0,side*.10,1,1,1,'golemForearm'));
+        arm.add(M(pdRockGeo(6.8*s,1.15,.65,.92,124+(side>0)),dark,side*7,-34,1,0,0,side*.07,1,1,1,'golemHand'));g.add(arm);
+        const leg=G('enemyWalkLeg');leg.userData.walkPhase=side>0?Math.PI:0;leg.position.set(side*9,-10,0);
+        leg.add(M(pdRockGeo(9.0*s,.88,1.38,.82,130+(side>0)),dark,0,-7,0,0,0,0,1,1,1,'golemThigh'));
+        leg.add(M(pdRockGeo(7.1*s,.78,1.40,.78,132+(side>0)),rock,1,-21,0,0,0,0,1,1,1,'golemShin'));
+        leg.add(M(pdRockGeo(7.9*s,1.28,.52,1.05,134+(side>0)),dark,5,-33,2,0,0,0,1,1,1,'golemFoot'));g.add(leg);
       }
-      // Sparse moss patches make the surface read as natural rock, not a toy.
-      for(const [x,y,z,sc] of [[-10,20,12,1],[14,9,13,.8],[-17,6,9,.65],[5,-5,13,.7]])g.add(M(new T.DodecahedronGeometry(3.6*s*sc,1),moss,x,y,z,0,0,.2,1.5,.35,1.0,'golemMoss'));
-      if(type==='crystalGolemBoss'){const crystal=pdRealEnemyMat('#bdf9ff','rock',.18,.22,{emissive:'#69e9ff',ei:.38});for(const [x,y,z] of [[-15,22,6],[15,18,4],[2,38,0]])g.add(M(new T.OctahedronGeometry(4.2*s,1),crystal,x,y,z,0,0,.15,1,.7,1.8,'golemCrystal'));}
-      if(type==='combinedSoilGolemBoss') for(const [x,y,z] of [[-12,24,8],[10,18,10],[-5,2,14]])g.add(M(new T.DodecahedronGeometry(3.8*s,1),moss,x,y,z,0,0,.2,1.5,.4,1,'golemMossBoss'));
+      // Reference-like broad collar rocks integrate head into shoulders.
+      g.add(M(pdRockGeo(9*s,1.42,.44,.86,145),rock,-8,25,0,0,0,-.16,1,1,1,'golemClavicleL'));
+      g.add(M(pdRockGeo(9*s,1.42,.44,.86,146),dark,12,24,0,0,0,.14,1,1,1,'golemClavicleR'));
+      if(crystal){for(const [x,y,z,sc] of [[-15,23,5,.9],[15,20,4,.75],[1,40,0,.82]])g.add(M(new T.OctahedronGeometry(4.8*s*sc,1),crystal,x,y,z,0,0,.12,1,.72,1.45,'golemCrystal'));}
       return g;
     }
     function makeLlama(color='#ece7dd',boss=false,type='llama'){
-      const g=pdRealEnemyFlags(G('enemy:'+type)); addShadow(g,boss?39:29,boss?12:8);g.userData.isPremiumLlama=true;
-      const s=boss?1.14:1; const fur=pdRealEnemyMat('#e9e6dc','fur',.92,0), furShade=pdRealEnemyMat('#d7d3c8','fur',.94,0), skin=pdRealEnemyMat('#8c7668','soft',.68,0), hoof=pdRealEnemyMat('#3f3834','soft',.72,.02);
-      // Natural llama proportions: barrel chest, long neck, small head, slender four legs.
-      g.add(M(new T.SphereGeometry(15*s,40,26),fur,-7,1,0,0,0,0,1.62,.92,.85,'llamaBody'));
-      g.add(M(new T.SphereGeometry(10.5*s,34,22),furShade,6,3,0,0,0,0,1.05,1.04,.82,'llamaChest'));
-      g.add(M(new T.CylinderGeometry(4.0*s,6.5*s,34*s,24),fur,14,20,0,0,0,-.20,1,1,1,'llamaNeck'));
-      g.add(M(new T.SphereGeometry(8.1*s,34,22),fur,23,38,0,0,0,0,1.13,.88,.78,'llamaHead'));
-      g.add(M(new T.SphereGeometry(5.0*s,28,18),skin,31,34,0,0,0,0,1.25,.62,.68,'llamaMuzzle'));
-      g.add(M(new T.SphereGeometry(1.0*s,16,10),pdRealEnemyMat('#302c29','soft',.42),35.5,35,0,0,0,0,1.2,.5,.7,'llamaNose'));
-      // Tall curved ears.
-      for(const z of [-5.2,5.2]){const ear=G('llamaEar');ear.position.set(19,49,z);ear.rotation.z=z<0?.10:-.10;ear.add(M(new T.ConeGeometry(2.0*s,12*s,12),fur,0,0,0));ear.add(M(new T.ConeGeometry(1.0*s,8*s,10),pdRealEnemyMat('#bda096','soft',.72),.4,.2,z<0?.15:-.15));g.add(ear);}
-      pdRealEye(g,28.0*s,41*s,5.0*s,'#171512',null,.76*s);pdRealEye(g,28.0*s,41*s,-5.0*s,'#171512',null,.76*s);
-      // Four articulated legs, front/back pairs and diagonal gait.
-      const legs=[[-14,-5.8,0],[-14,5.8,Math.PI],[7,-5.8,Math.PI],[7,5.8,0]];
-      legs.forEach(([x,z,ph],idx)=>{const r=G('enemyWalkLeg');r.position.set(x*s,-10*s,z*s);r.userData.walkPhase=ph;r.userData.legIndex=idx;
-        r.add(M(new T.CylinderGeometry(2.25*s,2.7*s,15*s,14),furShade,0,-6,0));r.add(M(new T.SphereGeometry(2.5*s,16,10),furShade,.5,-14.1,0,0,0,0,1,.72,.9,'llamaKnee'));r.add(M(new T.CylinderGeometry(1.45*s,1.9*s,13*s,12),fur,.9,-20,0));r.add(M(new T.BoxGeometry(5.8*s,3.0*s,4.8*s),hoof,2.5,-27.2,0,0,0,0,1,1,1,'llamaHoof'));g.add(r);
+      const g=pdPhotoFlags(G('enemy:'+type));g.userData.isPremiumLlama=true;const s=boss?1.12:1;
+      const fur=pdPhotoMat('#eeeae2','fur',{rough:.92,sheen:.48}),shade=pdPhotoMat('#d8d3ca','fur',{rough:.94,sheen:.35}),skin=pdPhotoMat('#8c7668','soft',{rough:.70}),hoof=pdPhotoMat('#3a3431','soft',{rough:.76});
+      // Long-backed compact body with a tall, slender neck like the supplied alpaca/llama photo.
+      g.add(M(pdOrganicGeo(15*s,1.58,.92,.82,201,.028,44,30),fur,-7,1,0,0,0,-.01,1,1,1,'llamaBody'));
+      g.add(M(pdOrganicGeo(10*s,1.02,1.05,.82,202,.024,38,26),shade,6,4,0,0,0,.03,1,1,1,'llamaChest'));
+      const neckCurve=new T.CatmullRomCurve3([new T.Vector3(8,8,0),new T.Vector3(12,21,0),new T.Vector3(16,35,0)]);
+      const neckMesh=new T.Mesh(new T.TubeGeometry(neckCurve,28,4.35*s,14,false),fur);neckMesh.name='llamaNeck';g.add(neckMesh);
+      g.add(M(pdOrganicGeo(7.6*s,1.18,.86,.76,203,.020,38,26),fur,24,40,0,0,0,-.02,1,1,1,'llamaHead'));
+      g.add(M(pdOrganicGeo(4.9*s,1.34,.60,.66,204,.012,30,20),skin,32,36,0,0,0,0,1,1,1,'llamaMuzzle'));
+      g.add(M(pdOrganicGeo(.95*s,1.25,.45,.65,205,.006,18,12),pdPhotoMat('#292725','soft',{rough:.45}),36.4,36.8,0,0,0,0,1,1,1,'llamaNose'));
+      // Tall pointed ears with a darker inner surface.
+      for(const z of [-4.8,4.8]){const ear=G('llamaEar');ear.position.set(21,50,z);ear.rotation.z=z<0?.10:-.10;const outer=M(new T.ConeGeometry(2.0*s,12*s,14),fur,0,0,0,0,0,0,1,1,.48,'photoLlamaEar');const inner=M(new T.ConeGeometry(.95*s,8.0*s,12),pdPhotoMat('#b78f87','soft',{rough:.74}),.3,.2,z<0?.35:-.35,0,0,0,1,1,.34,'photoLlamaEarInner');ear.add(outer,inner);g.add(ear);}
+      const eye=pdPhotoMat('#151412','soft',{rough:.18});for(const z of [-4.8,4.8])g.add(M(new T.SphereGeometry(.92*s,16,10),eye,28.7,42.0,z));
+      // Four long legs: two clean tapered bones per leg, no bead-like knee balls.
+      const specs=[[-14,-5.7,0],[-14,5.7,Math.PI],[7,-5.7,Math.PI],[7,5.7,0]];
+      specs.forEach(([x,z,ph],idx)=>{const r=G('enemyWalkLeg');r.position.set(x,-8,z);r.userData.walkPhase=ph;r.userData.legIndex=idx;
+        r.add(pdBone([0,0,0],[.4,-15,0],2.45*s,1.65*s,shade,'photoLlamaUpperLeg'));
+        r.add(pdBone([.4,-15,0],[1.2,-28,0],1.55*s,1.05*s,fur,'photoLlamaLowerLeg'));
+        const h=new T.Mesh(new T.BoxGeometry(5.4*s,2.7*s,4.3*s),hoof);h.name='llamaHoof';h.position.set(3.1,-29.5,0);r.add(h);g.add(r);
       });
-      const tail=G('llamaTail');tail.position.set(-24,7,0);tail.rotation.z=.55;tail.add(M(new T.SphereGeometry(4.2*s,18,12),fur,-2,3,0,0,0,0,1.25,.62,.75,'llamaTailWool'));g.add(tail);
-      if(type==='pirateLlamaBoss'){const hat=pdRealEnemyMat('#262429','soft',.58,.02);g.add(M(new T.CylinderGeometry(9*s,9*s,2.4*s,28),hat,20,50,0));g.add(M(new T.CylinderGeometry(6*s,6.8*s,7*s,24),hat,20,54,0));}
-      else if(type==='auraLlamaBoss'){const ring=material('#b47cff',{metal:.12,rough:.1,emissive:'#8f50d8',emissiveIntensity:.28});const rr=M(new T.TorusGeometry(31*s,1.0*s,10,56),ring,-3,12,-2);rr.name='spinRing';g.add(rr);}
-      else if(type==='deadlyLlamaBoss'){const harness=pdRealEnemyMat('#63323a','soft',.42,.18);g.add(M(new T.BoxGeometry(29*s,5*s,20*s),harness,-7,9,0,0,0,0,1,1,1,'llamaBossHarness'));}
+      // short natural tail
+      const tail=M(pdOrganicGeo(4.2*s,1.28,.70,.72,206,.02,24,16),fur,-25,7,0,0,0,.55,1,1,1,'llamaTail');g.add(tail);
+      if(type==='pirateLlamaBoss'){const hat=pdPhotoMat('#252329','soft',{rough:.58});g.add(M(new T.CylinderGeometry(9*s,9*s,2.2*s,30),hat,21,51,0));g.add(M(new T.CylinderGeometry(5.8*s,6.8*s,6.8*s,28),hat,21,55,0));}
+      else if(type==='auraLlamaBoss'){const ring=material('#b47cff',{metal:.12,rough:.1,emissive:'#8f50d8',emissiveIntensity:.28});const rr=M(new T.TorusGeometry(30*s,.9*s,10,56),ring,-3,12,-2);rr.name='spinRing';g.add(rr);}
+      else if(type==='deadlyLlamaBoss'){const harness=pdPhotoMat('#63323a','soft',{rough:.42,metal:.14});g.add(M(new T.BoxGeometry(28*s,4.5*s,19*s),harness,-7,9,0,0,0,0,1,1,1,'llamaBossHarness'));}
       return g;
     }
     function makeScorpion(color='#24272a',boss=false,type='scorpion'){
-      const g=pdRealEnemyFlags(G('enemy:'+type)); addShadow(g,boss?40:29,boss?12:8);
-      const s=boss?1.15:1; const shell=pdRealEnemyMat(type==='venomScorpionBoss'?'#252d25':'#25282b','chitin',.36,.22), dark=pdRealEnemyMat('#111315','chitin',.42,.18), joint=pdRealEnemyMat('#34383b','chitin',.40,.18);
-      const venom=pdRealEnemyMat(type==='venomScorpionBoss'?'#4d763e':'#343536','chitin',.30,.18,{emissive:type==='venomScorpionBoss'?'#315c27':'#000000',ei:type==='venomScorpionBoss'?.18:0});
-      // Low, wide scorpion body with visible dorsal plates.
-      g.add(M(new T.SphereGeometry(13*s,36,24),shell,-4,0,0,0,0,0,1.40,.55,.92,'scorpionAbdomen'));
-      g.add(M(new T.SphereGeometry(9.5*s,32,22),dark,14,1,0,0,0,0,1.15,.58,.88,'scorpionThorax'));
-      for(let i=0;i<6;i++)g.add(M(new T.BoxGeometry(6.2*s,2.4*s,18*s),i%2?shell:joint,-15+i*5.2,4,0,0,0,(i-2.5)*.04,1,1,1,'realScorpionPlate'));
-      // Exactly eight long articulated legs, three slim segments each.
-      let li=0;for(const side of [-1,1])for(let i=0;i<4;i++){
-        const rig=G('enemyScorpionLegRig');rig.position.set(7-i*5.2,-3+i*1.4,side*(7.5+i*1.5));rig.userData.walkPhase=(li++%2?Math.PI:0)+i*.28;
-        rig.add(M(new T.CylinderGeometry(.9*s,1.25*s,11*s,10),shell,1,0,side*4,0,0,side*.92));
-        rig.add(M(new T.CylinderGeometry(.7*s,.95*s,13*s,10),joint,7,-3,side*9,0,0,side*1.08));
-        rig.add(M(new T.CylinderGeometry(.45*s,.65*s,11*s,8),dark,14,-7,side*13.5,0,0,side*1.20));g.add(rig);
+      const g=pdPhotoFlags(G('enemy:'+type));const s=boss?1.13:1;
+      const shell=pdPhotoMat(type==='venomScorpionBoss'?'#202821':'#171a1c','chitin',{rough:.28,clearcoat:.82}),joint=pdPhotoMat('#292d30','chitin',{rough:.34,clearcoat:.66}),deep=pdPhotoMat('#090a0b','chitin',{rough:.38,clearcoat:.50});
+      const venom=pdPhotoMat(type==='venomScorpionBoss'?'#395a34':'#1d2021','chitin',{rough:.26,clearcoat:.72,emissive:type==='venomScorpionBoss'?'#23451f':'#000',ei:type==='venomScorpionBoss'?.10:0});
+      // Flat prosoma + segmented abdomen, matching an emperor-scorpion silhouette.
+      g.add(M(pdOrganicGeo(12.5*s,1.32,.48,.90,301,.016,40,24),shell,11,1,0,0,0,0,1,1,1,'scorpionThorax'));
+      for(let i=0;i<6;i++){const seg=M(pdOrganicGeo((10.8-i*.45)*s,1.10,.50,.90,310+i,.012,30,20),i%2?joint:shell,-1-i*6.1,1.0+i*.2,0,0,0,(i-2)*.018,1,1,1,'scorpionAbdomenSegment');g.add(seg);}
+      // exactly eight legs; each leg is a single smooth bent tube (fewer draw calls and more natural shape)
+      let n=0;for(const side of [-1,1])for(let i=0;i<4;i++){
+        const x=12-i*5.2,z=side*(6.2+i*1.7);const rig=G('enemyScorpionLegRig');rig.position.set(x,-2,z);rig.userData.walkPhase=(n++%2?Math.PI:0)+i*.23;
+        const pts=[new T.Vector3(0,0,0),new T.Vector3(2,-2,side*(5.2+i*.55)),new T.Vector3(9,-5,side*(10.4+i*.85)),new T.Vector3(16,-7,side*(13.5+i*1.05))];
+        const curve=new T.CatmullRomCurve3(pts);const leg=new T.Mesh(new T.TubeGeometry(curve,20,.72*s,8,false),i<2?shell:joint);leg.name='photoScorpionLeg';rig.add(leg);g.add(rig);
       }
-      // Pincers: slim arms, oval palms and paired fingers.
-      for(const side of [-1,1]){
-        const c=G('scorpionClaw');c.position.set(23,-2,side*9);
-        c.add(M(new T.CylinderGeometry(1.3*s,1.8*s,13*s,10),joint,-4,1,side*2,0,0,-.78));
-        c.add(M(new T.SphereGeometry(5.2*s,24,16),shell,5,-2,side*3,0,0,0,1.25,.52,.76,'realClawPalm'));
-        c.add(M(new T.ConeGeometry(1.7*s,11*s,8),shell,11,1,side*6,0,0,-1.10));
-        c.add(M(new T.ConeGeometry(1.5*s,10*s,8),shell,10,-5,-side*2,0,0,-1.38));g.add(c);
+      // muscular pedipalps and broad pincers like the photo
+      for(const side of [-1,1]){const c=G('scorpionClaw');
+        c.add(pdBone([20,0,side*6],[29,-2,side*12],1.9*s,1.45*s,joint,'photoScorpionArm'));
+        c.add(pdBone([29,-2,side*12],[38,-3,side*14],1.6*s,1.25*s,shell,'photoScorpionForearm'));
+        c.add(M(pdOrganicGeo(5.8*s,1.28,.50,.78,350+(side>0),.012,30,18),shell,42,-3,side*14,0,0,0,1,1,1,'photoScorpionPalm'));
+        c.add(pdBone([45,-1,side*15],[54,2,side*18],1.35*s,.62*s,shell,'photoPincerFingerUpper'));
+        c.add(pdBone([45,-5,side*13],[53,-8,side*16],1.25*s,.55*s,shell,'photoPincerFingerLower'));g.add(c);
       }
-      // Segmented metasoma curves upward and forward like the reference animal.
-      const pts=[[-13,5,0],[-20,10,-1],[-27,17,-2],[-33,25,-3],[-37,34,-4],[-37,43,-4],[-32,51,-3]];
-      pts.forEach(([x,y,z],i)=>{const seg=M(new T.SphereGeometry((5.2-i*.32)*s,24,16),i%2?shell:joint,x,y,z,0,0,0,1.0,.62,.72,'scorpionTail');seg.userData.tailIndex=i;g.add(seg);});
-      g.add(M(new T.SphereGeometry(4.2*s,20,14),venom,-27,55,-3,0,0,0,1,.72,.8,'venomBulb'));
-      g.add(M(new T.ConeGeometry(2.0*s,10*s,10),venom,-21,59,-3,0,0,-1.08,1,1,1,'scorpionStinger'));
-      // Small lateral eyes rather than oversized cartoon eyes.
-      const eye=pdRealEnemyMat('#090a0a','soft',.18,.12);for(const z of [-3.4,3.4])g.add(M(new T.SphereGeometry(.8*s,14,10),eye,22,5,z));
+      // seven articulated tail segments curve upward; large segments only, no decorative spikes
+      const pts=[[-34,5,0],[-39,12,0],[-42,20,-.5],[-42,29,-1],[-39,38,-1.5],[-33,47,-1.5],[-24,53,-1]];
+      pts.forEach(([x,y,z],i)=>{const seg=M(pdOrganicGeo((5.3-i*.35)*s,1.05,.66,.76,370+i,.012,28,18),i%2?shell:joint,x,y,z,0,0,0,1,1,1,'scorpionTail');seg.userData.tailIndex=i;g.add(seg);});
+      g.add(M(pdOrganicGeo(4.0*s,1.0,.72,.80,380,.01,24,16),venom,-18,56,-1,0,0,0,1,1,1,'venomBulb'));
+      g.add(M(new T.ConeGeometry(1.65*s,9.5*s,10),venom,-12,58,-1,0,0,-1.10,1,1,1,'scorpionStinger'));
       return g;
     }
     function makeCactus(color='#53a95d',boss=false,type='cactus'){
@@ -35377,10 +35447,10 @@ function drawEnemy(enemy, time) {
       const weapon=model.getObjectByName('weapon');
       if(weapon){if(weapon.userData.baseRz==null)weapon.userData.baseRz=weapon.rotation.z;const atk=Math.max(0,Math.min(1,Number(entity?.attackAnimation||0)));const aim=Math.max(-.72,Math.min(.72,Number(model.userData.localAimAngle||0)*.72));weapon.rotation.z=weapon.userData.baseRz-aim-Math.sin(atk*Math.PI)*.72;}
       if(isEnemy){
-        model.position.y+=Math.abs(walk)*.62;
+        model.position.y+=Math.abs(walk)*(model.userData.photoEnemyV23?.16:.62);
         let idx=0;model.traverse(o=>{const n=String(o.name||'');
           if(n==='enemyWalkLeg'||n==='enemyScorpionLegRig'){
-            if(o.userData.walkBaseRz==null)o.userData.walkBaseRz=o.rotation.z;const ph=Number(o.userData.walkPhase||((idx++%2)?Math.PI:0));o.rotation.z=o.userData.walkBaseRz+Math.sin(time*.0085+phase+ph)*.16;
+            if(o.userData.walkBaseRz==null)o.userData.walkBaseRz=o.rotation.z;const ph=Number(o.userData.walkPhase||((idx++%2)?Math.PI:0));o.rotation.z=o.userData.walkBaseRz+Math.sin(time*.0085+phase+ph)*(model.userData.photoEnemyV23?.085:.16);
           }else if(/wormSegment/i.test(n)){
             if(o.userData.walkBaseY==null)o.userData.walkBaseY=o.position.y;const wi=Number(o.userData.walkIndex||0);o.position.y=o.userData.walkBaseY+Math.sin(time*.007+phase+wi*.58)*1.1;
           }else if(/scorpionTail/i.test(n)){
@@ -35429,7 +35499,7 @@ function drawEnemy(enemy, time) {
       }
       for(const [k,m] of single.unitModels){if(!liveU.has(k)){single.root.remove(m);single.unitModels.delete(k);}}
       for(const [k,m] of single.shadowModels){if(!liveS.has(k)){single.root.remove(m);single.shadowModels.delete(k);}}
-      for(const e of battle.enemies||[]){if(e?.dead)continue;const key=entityId(e,'e:');liveE.add(key);let m=single.enemyModels.get(key);if(!m){m=cloneEnemy(e);single.enemyModels.set(key,m);single.root.add(m);}const formation=(e.type==='brother'&&typeof BROTHER_FORMATION!=='undefined')?(BROTHER_FORMATION[e.groupIndex]||{x:0,y:0}):{x:0,y:0};const x=Number(e.x||0)+Number(formation.x||0),y=Number(e.y||0)+Number(formation.y||0);const boss=String(e.type||'normal')!=='normal';const sc=(Number(e.radius||22)/22)*(boss?1.08:1);resetScalePreserve(m,sc);setLogicalPositionW(m,x,y,single.W,single.H,20+y*.02);m.position.y+=Math.sin(time*.006+Number(e.wingPhase||0))*1.2;m.rotation.z=-Number(e.heading||0);animateCommon(m,e,time,true);
+      for(const e of battle.enemies||[]){if(e?.dead)continue;const key=entityId(e,'e:');liveE.add(key);let m=single.enemyModels.get(key);if(!m){m=cloneEnemy(e);single.enemyModels.set(key,m);single.root.add(m);}const formation=(e.type==='brother'&&typeof BROTHER_FORMATION!=='undefined')?(BROTHER_FORMATION[e.groupIndex]||{x:0,y:0}):{x:0,y:0};const x=Number(e.x||0)+Number(formation.x||0),y=Number(e.y||0)+Number(formation.y||0);const boss=String(e.type||'normal')!=='normal';const sc=(Number(e.radius||22)/22)*(boss?1.08:1);resetScalePreserve(m,sc);setLogicalPositionW(m,x,y,single.W,single.H,20+y*.02);m.position.y+=Math.sin(time*.006+Number(e.wingPhase||0))*(m.userData.photoEnemyV23?.18:1.2);m.rotation.z=-Number(e.heading||0);animateCommon(m,e,time,true);
       }
       for(const [k,m] of single.enemyModels){if(!liveE.has(k)){single.root.remove(m);single.enemyModels.delete(k);}}
       if(!single.castle){single.castle=makeCastle();single.root.add(single.castle);}if(typeof BASE_POSITION!=='undefined'){resetScalePreserve(single.castle,1);setLogicalPositionW(single.castle,BASE_POSITION.x,BASE_POSITION.y+9,single.W,single.H,12+BASE_POSITION.y*.02);const flag=single.castle.getObjectByName('castleFlag');if(flag)flag.rotation.y=Math.sin(time*.003)*.22;}
@@ -36628,7 +36698,7 @@ html[data-pd-graphics-mode="3d"] #pdTrue3DCanvas{display:block!important;visibil
  function drawCastleHud(){
    let c=$('#pd3dCastleHud'),base=$('#gameCanvas'),shell=$('#battleScreen .battle-map-shell');if(!base||!shell)return;if(!c){c=document.createElement('canvas');c.id='pd3dCastleHud';c.style.cssText='position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none;background:transparent';shell.appendChild(c);}if(c.width!==base.width||c.height!==base.height){c.width=base.width;c.height=base.height;}const x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);if(!window.PDGraphicsMode?.is3D?.())return;try{if(!battle||battle.ended)return;const max=Math.max(1,Number(battle.baseMaxHp||BASE_MAX_HP||1)),hp=Math.max(0,Number(battle.lives||0)),r=Math.max(0,Math.min(1,hp/max)),cx=Number(BASE_POSITION.x),cy=Number(BASE_POSITION.y)-104,w=132,h=15;x.fillStyle='rgba(5,12,19,.9)';x.beginPath();x.roundRect(cx-w/2,cy,w,h,8);x.fill();x.fillStyle=r>.5?'#4fe08b':r>.22?'#ffd04a':'#ff6474';x.beginPath();x.roundRect(cx-w/2+3,cy+3,(w-6)*r,h-6,5);x.fill();x.strokeStyle='rgba(255,255,255,.42)';x.strokeRect(cx-w/2+.5,cy+.5,w-1,h-1);x.textAlign='center';x.textBaseline='bottom';x.font='900 12px Arial,"Noto Sans KR",sans-serif';x.lineWidth=3;x.strokeStyle='rgba(0,0,0,.8)';x.fillStyle='#fff';const label=`🏰 ${Math.ceil(hp).toLocaleString()} / ${Math.ceil(max).toLocaleString()}`;x.strokeText(label,cx,cy-5);x.fillText(label,cx,cy-5);}catch(_){}
  }
- function refineEnemies(){const api=window.PDTrue3D;if(!api)return;for(const layer of [api.single,api.multi])for(const m of layer?.enemyModels?.values?.()||[]){if(m.userData.pdV20Refined)continue;m.userData.pdV20Refined=true;const n=String(m.name||'').toLowerCase();try{if(n.includes('llama')){const body=m.getObjectByName('llamaBody');if(body)body.scale.set(1.72,.86,.80);const neck=m.getObjectByName('llamaNeck');if(neck){neck.scale.y=1.12;neck.rotation.z=-.15;}m.traverse(o=>{if(o.name==='enemyWalkLeg')o.scale.y=1.08;});}else if(n.includes('scorpion')){const a=m.getObjectByName('scorpionAbdomen');if(a)a.scale.set(1.48,.48,.96);m.traverse(o=>{if(o.name==='enemyScorpionLegRig')o.scale.set(1.12,1.06,1.08);});}else if(n.includes('golem')){const t=m.getObjectByName('golemTorso');if(t)t.scale.set(1.34,1.20,.80);}else{const b=m.getObjectByName('enemyBody');if(b)b.scale.set(1.62,.96,.82);const h=m.getObjectByName('enemyHead');if(h)h.scale.set(.98,.92,.88);}}catch(_){}}
+ function refineEnemies(){const api=window.PDTrue3D;if(!api)return;for(const layer of [api.single,api.multi])for(const m of layer?.enemyModels?.values?.()||[]){if(m.userData.photoEnemyV23||m.userData.pdV20Refined)continue;m.userData.pdV20Refined=true;const n=String(m.name||'').toLowerCase();try{if(n.includes('llama')){const body=m.getObjectByName('llamaBody');if(body)body.scale.set(1.72,.86,.80);const neck=m.getObjectByName('llamaNeck');if(neck){neck.scale.y=1.12;neck.rotation.z=-.15;}m.traverse(o=>{if(o.name==='enemyWalkLeg')o.scale.y=1.08;});}else if(n.includes('scorpion')){const a=m.getObjectByName('scorpionAbdomen');if(a)a.scale.set(1.48,.48,.96);m.traverse(o=>{if(o.name==='enemyScorpionLegRig')o.scale.set(1.12,1.06,1.08);});}else if(n.includes('golem')){const t=m.getObjectByName('golemTorso');if(t)t.scale.set(1.34,1.20,.80);}else{const b=m.getObjectByName('enemyBody');if(b)b.scale.set(1.62,.96,.82);const h=m.getObjectByName('enemyHead');if(h)h.scale.set(.98,.92,.88);}}catch(_){}}
  }
  function tick(){syncWorld();refineEnemies();drawCastleHud();requestAnimationFrame(tick)}
  function init(){installSettings();watchBattleScreens();window.PDGraphicsMode?.apply?.();requestAnimationFrame(tick);setInterval(syncWorld,500)}
@@ -36940,5 +37010,67 @@ html[data-pd-graphics-mode="3d"] #gameCanvas{background:transparent!important;ba
 })();
 </script>
 
+
+<!-- PD V24 menu background flow + compact enemy showcase -->
+<style id="pdMenuFlowV24Styles">
+/* A previous global #menuScreen>* rule accidentally put the scenery in normal flow.
+   Keep scenery purely decorative so it never consumes a viewport of layout height. */
+#menuScreen > .stage-scenery{
+  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+  min-height:0!important;max-height:none!important;margin:0!important;padding:0!important;
+  overflow:hidden!important;z-index:0!important;pointer-events:none!important;
+}
+#menuScreen > .warning-light,#menuScreen > .enemy-flock{position:absolute!important;pointer-events:none!important}
+#menuScreen > .invasion-topbar,#menuScreen > .invasion-content{position:relative!important;z-index:5!important}
+#menuScreen:not(.hidden){
+  padding-top:max(10px,env(safe-area-inset-top))!important;
+  align-content:start!important;
+}
+#menuScreen .invasion-topbar{flex:0 0 auto!important;margin:0 auto!important}
+#menuScreen .invasion-content{margin:10px auto 0!important;padding-top:0!important}
+#menuScreen .pd-menu-enemy-showcase{
+  position:relative;display:grid;place-items:center;width:100%;height:clamp(170px,24vh,245px);
+  margin:0 auto 10px;overflow:visible;pointer-events:none;
+}
+#menuScreen .pd-menu-enemy-showcase .enemy-logo-area{
+  width:clamp(170px,20vw,235px)!important;height:clamp(170px,20vw,235px)!important;aspect-ratio:1!important;
+  border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;
+  overflow:visible!important;transform:none!important;filter:none!important;
+}
+#menuScreen .pd-menu-enemy-showcase .enemy-logo-area::before,
+#menuScreen .pd-menu-enemy-showcase .enemy-logo-area::after{display:none!important}
+#menuScreen .pd-menu-enemy-showcase .enemy-pigeon{display:block;position:absolute;inset:0;z-index:2}
+#menuScreen .pd-menu-enemy-showcase #pdMenuEnemy3D{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;z-index:3!important;pointer-events:none!important}
+@media(max-width:760px){
+  #menuScreen:not(.hidden){padding-top:max(6px,env(safe-area-inset-top))!important}
+  #menuScreen .invasion-content{margin-top:6px!important}
+  #menuScreen .pd-menu-enemy-showcase{height:150px;margin-bottom:6px}
+  #menuScreen .pd-menu-enemy-showcase .enemy-logo-area{width:150px!important;height:150px!important}
+}
+</style>
+<script id="pdMenuFlowV24">
+(()=>{'use strict';
+ if(window.__pdMenuFlowV24)return;window.__pdMenuFlowV24=true;
+ const fix=()=>{
+   const menu=document.getElementById('menuScreen');if(!menu||menu.classList.contains('hidden'))return;
+   const scenery=menu.querySelector(':scope > .stage-scenery');
+   if(scenery){scenery.style.position='absolute';scenery.style.inset='0';scenery.style.height='100%';}
+   try{menu.scrollTop=0;menu.scrollLeft=0;window.scrollTo(0,0)}catch(_){}
+   /* If the 3D menu renderer initialized before this repair, force a resize after layout settles. */
+   const resize=()=>{try{window.PDTrue3D?.menuShowcase?.renderer?.setSize?.(
+     Math.max(2,Math.round(menu.querySelector('.enemy-logo-area')?.clientWidth||180)),
+     Math.max(2,Math.round(menu.querySelector('.enemy-logo-area')?.clientHeight||180)),false)}catch(_){}};
+   requestAnimationFrame(resize);setTimeout(resize,120);
+ };
+ const start=()=>{const menu=document.getElementById('menuScreen');if(!menu){setTimeout(start,80);return}
+   new MutationObserver(()=>{if(!menu.classList.contains('hidden')){fix();requestAnimationFrame(fix);setTimeout(fix,100)}}).observe(menu,{attributes:true,attributeFilter:['class']});
+   fix();
+ };
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+})();
+</script>
+
+
+<script id="pdPhotoEnemyV23Marker">window.PD_ENEMY_ART_VERSION='23.0-photo-organic';</script>
 </body>
 </html>

@@ -7670,10 +7670,12 @@ body{background:#07111c;background-image:radial-gradient(circle at 15% 10%,rgba(
 }
 .pd-loader-mascot-wrap{height:210px;display:grid;place-items:center;position:relative;margin:8px 0 2px}
 .pd-loader-mascot{
-  width:204px;height:164px;overflow:visible;
+  width:232px;height:184px;overflow:visible;
   animation:pdPigeonBob .66s cubic-bezier(.45,.02,.55,.98) infinite alternate;
-  filter:drop-shadow(0 15px 10px rgba(0,0,0,.28));
+  filter:drop-shadow(0 16px 11px rgba(0,0,0,.32));
 }
+.pd-loader-feather-highlight{animation:pdFeatherShimmer 1.45s ease-in-out infinite alternate}
+@keyframes pdFeatherShimmer{from{opacity:.34}to{opacity:.72}}
 .pd-loader-wing{transform-box:fill-box;transform-origin:24% 48%;animation:pdWingFlap .23s ease-in-out infinite alternate}
 .pd-loader-leg-left{transform-box:fill-box;transform-origin:center top;animation:pdLegRun .28s ease-in-out infinite alternate}
 .pd-loader-leg-right{transform-box:fill-box;transform-origin:center top;animation:pdLegRun .28s ease-in-out infinite alternate-reverse}
@@ -7718,7 +7720,7 @@ body{background:#07111c;background-image:radial-gradient(circle at 15% 10%,rgba(
 @media(max-width:560px){
   .pd-loading-panel{padding:26px 18px 24px;border-radius:25px}
   .pd-loader-mascot-wrap{height:180px}
-  .pd-loader-mascot{width:174px;height:140px}
+  .pd-loader-mascot{width:198px;height:157px}
   .pd-loading-tip{font-size:11px;max-width:74%}
 }
 @media(prefers-reduced-motion:reduce){
@@ -7772,44 +7774,122 @@ body{background:#07111c;background-image:radial-gradient(circle at 15% 10%,rgba(
 
     <div class="pd-loader-mascot-wrap" aria-hidden="true">
       <div class="pd-loader-shadow"></div>
-      <svg class="pd-loader-mascot" viewBox="0 0 240 190" role="img" aria-label="달리는 비둘기">
+      <svg class="pd-loader-mascot" viewBox="0 0 270 205" role="img" aria-label="달리는 고퀄리티 비둘기">
         <defs>
-          <linearGradient id="pdLoadBody" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#d8e2e7"/>
-            <stop offset=".48" stop-color="#9baeb8"/>
-            <stop offset="1" stop-color="#657985"/>
+          <linearGradient id="pdLoadBodyV34" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#eef3f5"/>
+            <stop offset=".32" stop-color="#c4d0d6"/>
+            <stop offset=".70" stop-color="#8598a2"/>
+            <stop offset="1" stop-color="#536873"/>
           </linearGradient>
-          <linearGradient id="pdLoadNeck" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#66e3c0"/>
-            <stop offset=".42" stop-color="#558ba8"/>
-            <stop offset="1" stop-color="#8b61b6"/>
+          <linearGradient id="pdLoadWingV34" x1="0" y1="0" x2=".9" y2="1">
+            <stop offset="0" stop-color="#b8c7ce"/>
+            <stop offset=".55" stop-color="#718791"/>
+            <stop offset="1" stop-color="#465d68"/>
           </linearGradient>
+          <linearGradient id="pdLoadNeckV34" x1=".15" y1="0" x2=".9" y2="1">
+            <stop offset="0" stop-color="#40d6af"/>
+            <stop offset=".27" stop-color="#2a9d91"/>
+            <stop offset=".53" stop-color="#556fa5"/>
+            <stop offset=".76" stop-color="#8b55a7"/>
+            <stop offset="1" stop-color="#4b5e77"/>
+          </linearGradient>
+          <radialGradient id="pdLoadHeadV34" cx=".38" cy=".28" r=".8">
+            <stop offset="0" stop-color="#f3f6f7"/>
+            <stop offset=".58" stop-color="#b9c5ca"/>
+            <stop offset="1" stop-color="#788991"/>
+          </radialGradient>
+          <radialGradient id="pdLoadEyeV34" cx=".38" cy=".35" r=".7">
+            <stop offset="0" stop-color="#fff3a8"/>
+            <stop offset=".42" stop-color="#ff9a45"/>
+            <stop offset=".73" stop-color="#d94f22"/>
+            <stop offset="1" stop-color="#6b2415"/>
+          </radialGradient>
+          <linearGradient id="pdLoadBeakV34" x1="0" y1="0" x2="1" y2=".7">
+            <stop offset="0" stop-color="#f1c5a0"/>
+            <stop offset=".55" stop-color="#cf8d69"/>
+            <stop offset="1" stop-color="#9d5f49"/>
+          </linearGradient>
+          <clipPath id="pdLoadWingClipV34">
+            <path d="M121 93 C91 73 57 79 39 105 C52 107 65 119 73 139 C90 143 112 132 127 111 C130 103 128 97 121 93Z"/>
+          </clipPath>
         </defs>
-        <g transform="translate(8 3)">
+
+        <g transform="translate(5 1)">
+          <!-- legs and detailed feet -->
           <g class="pd-loader-leg-left">
-            <path d="M115 137 L108 164" stroke="#d77b59" stroke-width="8" stroke-linecap="round"/>
-            <path d="M108 164 l-15 7 M108 164 l8 8" stroke="#d77b59" stroke-width="6" stroke-linecap="round"/>
+            <path d="M126 145 C123 156 120 168 119 177" stroke="#c87559" stroke-width="7" stroke-linecap="round" fill="none"/>
+            <path d="M119 177 C111 179 104 183 98 188 M119 177 C119 184 121 189 124 192 M119 177 C127 178 133 181 138 185"
+                  stroke="#cf8062" stroke-width="4.7" stroke-linecap="round" fill="none"/>
           </g>
           <g class="pd-loader-leg-right">
-            <path d="M148 138 L157 164" stroke="#d77b59" stroke-width="8" stroke-linecap="round"/>
-            <path d="M157 164 l-11 9 M157 164 l15 4" stroke="#d77b59" stroke-width="6" stroke-linecap="round"/>
+            <path d="M157 145 C161 157 165 168 166 178" stroke="#c87559" stroke-width="7" stroke-linecap="round" fill="none"/>
+            <path d="M166 178 C158 182 153 186 149 191 M166 178 C169 185 173 189 177 191 M166 178 C175 178 182 181 188 184"
+                  stroke="#cf8062" stroke-width="4.7" stroke-linecap="round" fill="none"/>
           </g>
-          <ellipse cx="121" cy="105" rx="62" ry="43" fill="url(#pdLoadBody)" stroke="#485e69" stroke-width="5"/>
+
+          <!-- separated tail feathers -->
+          <g>
+            <path d="M186 112 C207 103 220 94 236 82 C230 105 214 122 187 133Z" fill="#4b626d" stroke="#344a55" stroke-width="3.5"/>
+            <path d="M183 116 C207 113 225 107 246 99 C235 120 214 133 185 137Z" fill="#627884" stroke="#3d535e" stroke-width="3.2"/>
+            <path d="M180 120 C201 124 216 124 236 122 C222 139 204 145 181 141Z" fill="#82949d" stroke="#4c626d" stroke-width="3"/>
+          </g>
+
+          <!-- body -->
+          <path d="M58 119 C58 84 91 65 130 70 C169 72 199 91 198 119
+                   C198 151 170 165 132 164 C94 164 61 151 58 119Z"
+                fill="url(#pdLoadBodyV34)" stroke="#405761" stroke-width="4.5"/>
+          <path class="pd-loader-feather-highlight"
+                d="M72 104 C95 82 127 78 158 86 C130 87 105 96 87 113 C80 120 74 118 72 104Z"
+                fill="rgba(255,255,255,.43)"/>
+
+          <!-- animated wing with individual feather rows -->
           <g class="pd-loader-wing">
-            <path d="M112 90 C79 73 54 85 42 113 C61 104 82 111 96 131 C107 120 115 106 112 90Z"
-                  fill="#758b97" stroke="#425762" stroke-width="5"/>
-            <path d="M92 96 C73 92 61 99 53 108 M94 109 C78 107 67 112 61 119"
-                  fill="none" stroke="#b5c4cc" stroke-width="4" stroke-linecap="round" opacity=".72"/>
+            <path d="M121 93 C91 73 57 79 39 105 C52 107 65 119 73 139 C90 143 112 132 127 111 C130 103 128 97 121 93Z"
+                  fill="url(#pdLoadWingV34)" stroke="#3f5661" stroke-width="4.2"/>
+            <g clip-path="url(#pdLoadWingClipV34)" fill="none" stroke-linecap="round">
+              <path d="M45 102 C67 96 86 102 107 118" stroke="#d7e0e4" stroke-width="4" opacity=".78"/>
+              <path d="M47 112 C69 106 88 113 105 127" stroke="#c0cdd2" stroke-width="3.5" opacity=".72"/>
+              <path d="M53 123 C71 118 86 123 96 135" stroke="#aabac1" stroke-width="3.3" opacity=".65"/>
+              <path d="M66 91 L53 127 M80 87 L67 135 M95 88 L82 139 M109 92 L96 134"
+                    stroke="#526b76" stroke-width="2.2" opacity=".58"/>
+            </g>
+            <path d="M98 97 C88 91 74 91 64 96 M106 108 C89 101 73 104 60 112 M102 121 C87 116 75 120 67 128"
+                  fill="none" stroke="rgba(242,248,250,.55)" stroke-width="2.2" stroke-linecap="round"/>
           </g>
-          <path d="M166 105 C181 101 193 94 204 86 C197 107 185 119 167 124Z"
-                fill="#546b77" stroke="#425762" stroke-width="5"/>
-          <path d="M153 81 C157 48 170 31 190 34 C208 37 215 55 206 72 C195 94 175 98 154 97Z"
-                fill="url(#pdLoadNeck)" stroke="#425762" stroke-width="5"/>
-          <circle cx="195" cy="52" r="16" fill="#c8d4db" stroke="#425762" stroke-width="5"/>
-          <circle cx="200" cy="49" r="5.3" fill="#ff884f"/>
-          <circle cx="201" cy="48" r="2.3" fill="#1a1d23"/>
-          <path d="M208 59 L230 66 L208 73 Z" fill="#efa56d" stroke="#8d5a3e" stroke-width="3" stroke-linejoin="round"/>
-          <path d="M75 116 C90 128 110 136 133 136" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="5" stroke-linecap="round"/>
+
+          <!-- chest + iridescent neck -->
+          <path d="M151 94 C157 63 169 45 191 42 C211 39 225 52 224 72
+                   C222 98 203 111 181 111 C170 111 160 104 151 94Z"
+                fill="url(#pdLoadNeckV34)" stroke="#405760" stroke-width="4.2"/>
+          <path d="M157 82 C171 71 190 69 210 78" fill="none" stroke="rgba(115,255,218,.42)" stroke-width="4" stroke-linecap="round"/>
+          <path d="M160 91 C177 82 195 83 211 91" fill="none" stroke="rgba(217,132,255,.34)" stroke-width="3.3" stroke-linecap="round"/>
+
+          <!-- head -->
+          <path d="M187 49 C191 31 207 22 224 27 C242 31 251 45 247 62
+                   C243 79 228 88 211 84 C195 81 184 67 187 49Z"
+                fill="url(#pdLoadHeadV34)" stroke="#405760" stroke-width="4"/>
+          <path d="M194 42 C203 33 216 30 228 35" fill="none" stroke="rgba(255,255,255,.52)" stroke-width="4" stroke-linecap="round"/>
+
+          <!-- eye with ring/highlight -->
+          <circle cx="228" cy="48" r="8.7" fill="#f4e5c8" stroke="#6e5947" stroke-width="2"/>
+          <circle cx="228" cy="48" r="6.4" fill="url(#pdLoadEyeV34)"/>
+          <circle cx="229" cy="48" r="3" fill="#121518"/>
+          <circle cx="226.5" cy="45.5" r="1.5" fill="#ffffff"/>
+
+          <!-- cere + beak -->
+          <path d="M239 55 C244 51 249 52 252 57 C250 62 245 64 239 62Z" fill="#d8d2c5" stroke="#887f72" stroke-width="1.5"/>
+          <path d="M245 58 L265 66 L246 73 C248 68 248 63 245 58Z"
+                fill="url(#pdLoadBeakV34)" stroke="#895a47" stroke-width="2.4" stroke-linejoin="round"/>
+          <path d="M248 66 L261 66" stroke="#6d4336" stroke-width="1.2" stroke-linecap="round"/>
+
+          <!-- fine body feather contours -->
+          <g fill="none" stroke="rgba(64,86,97,.34)" stroke-width="1.7" stroke-linecap="round">
+            <path d="M113 82 C127 88 138 97 145 108"/>
+            <path d="M128 80 C142 87 153 96 160 107"/>
+            <path d="M145 84 C157 90 166 98 173 107"/>
+            <path d="M104 144 C119 149 136 151 153 148"/>
+          </g>
         </g>
       </svg>
     </div>
@@ -7825,6 +7905,91 @@ body{background:#07111c;background-image:radial-gradient(circle at 15% 10%,rgba(
     <div class="pd-loading-version">GACHA TOWER DEFENSE · LOADING</div>
   </div>
 </section>
+
+
+<script id="pdLoginLoadingScriptV34">
+(() => {
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+  let pulseTimer = null;
+  let progress = 8;
+  let entrancePromise = null;
+  const tips = [
+    '팁: 같은 유닛도 특성에 따라 전투 방식이 달라집니다.',
+    '팁: 무지개 주사위 유닛의 특성은 무지개의 조각 5개를 사용합니다.',
+    '팁: 길목이 겹치는 곳에 유닛을 배치하면 효율이 높습니다.',
+    '팁: 공격속도와 사거리를 함께 보면 배치가 더 쉬워집니다.',
+    '팁: 보스 웨이브 전에 소환석을 조금 남겨 두는 것도 좋습니다.'
+  ];
+
+  function els() {
+    return {
+      root: document.querySelector('#pdLoginLoading'),
+      fill: document.querySelector('#pdLoadingFill'),
+      percent: document.querySelector('#pdLoadingPercent'),
+      status: document.querySelector('#pdLoadingStatus'),
+      tip: document.querySelector('#pdLoadingTip')
+    };
+  }
+  function setProgress(value,statusText){
+    const e=els(); progress=Math.max(0,Math.min(100,Number(value)||0));
+    if(e.fill)e.fill.style.width=`${progress}%`;
+    if(e.percent)e.percent.textContent=`${Math.round(progress)}%`;
+    if(statusText&&e.status)e.status.textContent=statusText;
+  }
+  function show(status='계정 정보를 확인하는 중...',start=8){
+    const e=els(); if(!e.root)return;
+    e.root.classList.remove('hidden','pd-loading-exit');e.root.setAttribute('aria-hidden','false');
+    if(e.tip){const tip=tips[Math.floor(Math.random()*tips.length)];e.tip.innerHTML=`<span class="pd-loading-dice">🎲</span>${tip}`;}
+    setProgress(start,status);clearInterval(pulseTimer);
+    pulseTimer=setInterval(()=>{if(progress<68)setProgress(progress+(progress<35?2.4:1.15));},105);
+  }
+  async function hide(){
+    const e=els();clearInterval(pulseTimer);pulseTimer=null;if(!e.root)return;
+    e.root.classList.add('pd-loading-exit');await sleep(360);e.root.classList.add('hidden');
+    e.root.classList.remove('pd-loading-exit');e.root.setAttribute('aria-hidden','true');
+  }
+  async function finishEntrance({autoLogin=false}={}){
+    if(entrancePromise)return entrancePromise;
+    entrancePromise=(async()=>{
+      show(autoLogin?'자동 로그인 완료 · 게임을 준비하는 중...':'플레이어 데이터를 적용하는 중...',autoLogin?38:18);
+      const started=performance.now();
+      setProgress(Math.max(progress,58),'보유 유닛과 재화를 동기화하는 중...');await sleep(150);
+      setProgress(76,'주사위와 특성 데이터를 확인하는 중...');await sleep(150);
+      setProgress(89,'스테이지와 방어선을 준비하는 중...');
+      const minimum=autoLogin?820:1050,elapsed=performance.now()-started;
+      if(elapsed<minimum)await sleep(minimum-elapsed);
+      setProgress(100,'준비 완료! 메뉴로 이동합니다.');await sleep(210);
+      openMenu();await hide();return true;
+    })();
+    try{return await entrancePromise;}finally{entrancePromise=null;}
+  }
+  async function loadPlayerAndEnter(user){
+    if(entrancePromise)return entrancePromise;
+    entrancePromise=(async()=>{
+      show('로그인 성공 · 플레이어 데이터를 불러오는 중...',10);
+      try{
+        const loaded=await loadPlayer(user);
+        if(!loaded){setProgress(100,'데이터를 불러오지 못했습니다.');await sleep(420);await hide();return false;}
+        setProgress(Math.max(progress,68),'플레이어 데이터 확인 완료');
+        await sleep(120);
+        setProgress(82,'주사위와 특성 데이터를 준비하는 중...');await sleep(150);
+        setProgress(94,'방어선을 준비하는 중...');await sleep(260);
+        setProgress(100,'준비 완료! 메뉴로 이동합니다.');await sleep(210);
+        openMenu();await hide();return true;
+      }catch(error){
+        console.error('로그인 로딩 중 오류:',error);setProgress(100,'입장 준비 중 오류가 발생했습니다.');
+        await sleep(500);await hide();return false;
+      }
+    })();
+    try{return await entrancePromise;}finally{entrancePromise=null;}
+  }
+
+  window.pdLoadPlayerAndEnter=loadPlayerAndEnter;
+  window.pdEnterLoadedPlayer=finishEntrance;
+  window.pdShowLoginLoading=show;
+  window.pdHideLoginLoading=hide;
+})();
+</script>
 
 
 <section id="menuScreen" class="screen hidden invasion-menu" data-stage-theme="meadow">
@@ -12471,23 +12636,60 @@ async function logout() {
 }
 
   async function restoreSession() {
-  const {
-    data: { session },
-    error
-  } = await supabaseClient.auth.getSession();
+  if (window.__pdRestoreSessionPromise) return window.__pdRestoreSessionPromise;
 
-  if (error || !session) {
-    showScreen('auth');
-    return;
-  }
+  window.__pdRestoreSessionPromise = (async () => {
+    let session = null;
+    let lastError = null;
 
-  const loaded = (typeof window.pdLoadPlayerAndEnter === 'function')
-    ? await window.pdLoadPlayerAndEnter(session.user)
-    : await loadPlayer(session.user);
+    // 브라우저 시작 직후 Supabase 저장 세션을 두 번까지 확인합니다.
+    // 로딩 연출은 세션 복구/데이터 로드가 끝난 뒤 실행하므로 자동 로그인을 방해하지 않습니다.
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const result = await supabaseClient.auth.getSession();
+        lastError = result.error || null;
+        session = result.data?.session || null;
+        if (session) break;
+      } catch (error) {
+        lastError = error;
+      }
+      if (attempt === 0) await new Promise(resolve => setTimeout(resolve, 260));
+    }
 
-  if (loaded) {
-    if (typeof window.pdLoadPlayerAndEnter !== 'function') openMenu();
-    if (typeof initializeSocialProfile === 'function') void initializeSocialProfile(false);
+    if (!session) {
+      if (lastError) console.warn('자동 로그인 세션 복구 실패:', lastError);
+      showScreen('auth');
+      return false;
+    }
+
+    try {
+      // 중요: 플레이어 데이터 로드가 로그인 로딩 애니메이션보다 항상 먼저 끝납니다.
+      const loaded = await loadPlayer(session.user);
+      if (!loaded) {
+        showScreen('auth');
+        return false;
+      }
+
+      if (typeof window.pdEnterLoadedPlayer === 'function') {
+        await window.pdEnterLoadedPlayer({ autoLogin: true });
+      } else {
+        openMenu();
+      }
+
+      if (typeof initializeSocialProfile === 'function') void initializeSocialProfile(false);
+      return true;
+    } catch (error) {
+      console.error('자동 로그인 복구 중 오류:', error);
+      showScreen('auth');
+      return false;
+    }
+  })();
+
+  try {
+    return await window.__pdRestoreSessionPromise;
+  } finally {
+    // 현재 부팅 중 중복 호출만 막고, 로그아웃 후 재로그인은 가능하게 합니다.
+    setTimeout(() => { window.__pdRestoreSessionPromise = null; }, 0);
   }
 }
 
@@ -12916,7 +13118,27 @@ async function logout() {
     }
 
 
-    function traitRarityCost(unit){ return Number(TRAIT_RARITY_COST[unit?.rarityKey] || 0); }
+    const RAINBOW_TRAIT_UNIT_IDS = new Set(['rainbowSoldier','rainbowMage','rainbowLight','rainbowUnicornUnit','rainbowBeyond']);
+    function isRainbowTraitUnit(unitOrId){
+      const id = typeof unitOrId === 'string' ? unitOrId : unitOrId?.id;
+      return RAINBOW_TRAIT_UNIT_IDS.has(id);
+    }
+    function traitRarityCost(unit){
+      const base = Number(TRAIT_RARITY_COST[unit?.rarityKey] || 0);
+      return base * (isRainbowTraitUnit(unit) ? 10 : 1);
+    }
+    function traitFragmentCost(unitOrId){ return isRainbowTraitUnit(unitOrId) ? 5 : 1; }
+    function traitFragmentBalance(unitId){
+      if(isRainbowTraitUnit(unitId)) return Math.max(0,Math.floor(Number(player?.itemInventory?.rainbowFragment||0)));
+      return Math.max(0,Math.floor(Number(player?.ownedUnits?.[unitId]?.fragments||0)));
+    }
+    function traitFragmentCostLabel(unitOrId){
+      return isRainbowTraitUnit(unitOrId) ? '🌈💠5' : '💠1';
+    }
+    function traitFragmentBalanceLabel(unitId){
+      const n=traitFragmentBalance(unitId);
+      return isRainbowTraitUnit(unitId) ? `🌈💠${n}` : `💠${n}`;
+    }
     function traitSpecialChanceText(unitId){ return unitId==='royalGuardian' ? '전용 특수 1%' : unitId==='iceQueen' ? '전용 특수 0.8%' : ''; }
     function traitAutoAllowedTargets(unitId){
       const ids=[...TRAIT_NORMAL_TARGET_IDS];
@@ -12962,7 +13184,7 @@ async function logout() {
       const list=document.querySelector('#traitUnitList'), detail=document.querySelector('#traitDetailCard');
       if(!list||!detail) return;
       const ids=getOwnedUnitIds().filter(id=>UNIT_DATA[id] && TRAIT_RARITY_COST[UNIT_DATA[id].rarityKey]);
-      list.innerHTML=ids.map(id=>{const u=UNIT_DATA[id], fr=Math.floor(Number(player.ownedUnits?.[id]?.fragments||0)); return `<button type="button" class="trait-unit-button ${activeTraitUnitId===id?'active':''}" data-trait-unit="${id}"><span class="trait-unit-icon">${u.icon}</span><span><strong>${u.name}</strong><small class="${u.rarityClass}">${u.rarity}</small></span><b>💠${fr}</b></button>`}).join('') || '<p class="muted">보유 유닛이 없습니다.</p>';
+      list.innerHTML=ids.map(id=>{const u=UNIT_DATA[id]; return `<button type="button" class="trait-unit-button ${activeTraitUnitId===id?'active':''}" data-trait-unit="${id}"><span class="trait-unit-icon">${u.icon}</span><span><strong>${u.name}</strong><small class="${u.rarityClass}">${u.rarity}</small></span><b>${traitFragmentBalanceLabel(id)}</b></button>`}).join('') || '<p class="muted">보유 유닛이 없습니다.</p>';
       list.querySelectorAll('[data-trait-unit]').forEach(btn=>btn.addEventListener('click',()=>{
         if(activeTraitUnitId!==btn.dataset.traitUnit && traitAutoRunning) stopTraitAutoRoll('유닛을 변경해 자동 뽑기를 중지했습니다.');
         activeTraitUnitId=btn.dataset.traitUnit;
@@ -12972,23 +13194,23 @@ async function logout() {
         renderTraitScreen();
       }));
       if(!activeTraitUnitId || !UNIT_DATA[activeTraitUnitId]){detail.innerHTML='<p class="muted">유닛을 선택하세요.</p>';return;}
-      const u=UNIT_DATA[activeTraitUnitId], owned=player.ownedUnits[activeTraitUnitId], slots=normalizeTraitSlots(owned?.traits), cost=traitRarityCost(u), fr=Math.floor(Number(owned?.fragments||0));
+      const u=UNIT_DATA[activeTraitUnitId], owned=player.ownedUnits[activeTraitUnitId], slots=normalizeTraitSlots(owned?.traits), cost=traitRarityCost(u), fr=traitFragmentBalance(activeTraitUnitId), fragmentCost=traitFragmentCost(u), fragmentCostLabel=traitFragmentCostLabel(u), rainbowTrait=isRainbowTraitUnit(u);
       // 획득한 특성만 실제 '특성 칸'에 표시합니다. 비어 있는 슬롯은 칸을 만들지 않습니다.
       const slotHtml=slots.map((id,i)=>{
         const t=TRAIT_DATA[id];
         if(!id || !t) return '';
         const selected=traitAutoEnabled && traitAutoSlot===i;
-        const disabled=fr<1||player.gems<cost||traitAutoRunning||(traitAutoEnabled&&!selected);
+        const disabled=fr<fragmentCost||player.gems<cost||traitAutoRunning||(traitAutoEnabled&&!selected);
         const btnLabel=traitAutoEnabled ? (selected ? '▶ 1회 뽑고 자동 시작' : `SLOT ${i+1} 선택 필요`) : '🎲 다시 뽑기';
-        return `<div class="trait-slot ${t?.special?'special':''} ${selected?'auto-selected':''}" data-trait-slot-card="${i}"><small>SLOT ${i+1}</small><div class="trait-slot-name">${getTraitDisplayName(id,u.id)}</div><div class="trait-slot-desc">${getTraitDescription(id,u.id)}</div><button class="trait-roll-btn" data-trait-roll-slot="${i}" ${disabled?'disabled':''}>${btnLabel} · 💠1 + 💎${cost.toLocaleString()}</button></div>`;
+        return `<div class="trait-slot ${t?.special?'special':''} ${selected?'auto-selected':''}" data-trait-slot-card="${i}"><small>SLOT ${i+1}</small><div class="trait-slot-name">${getTraitDisplayName(id,u.id)}</div><div class="trait-slot-desc">${getTraitDescription(id,u.id)}</div><button class="trait-roll-btn" data-trait-roll-slot="${i}" ${disabled?'disabled':''}>${btnLabel} · ${fragmentCostLabel} + 💎${cost.toLocaleString()}</button></div>`;
       }).join('');
       // 아직 획득하지 않은 슬롯은 특성 칸 대신 별도의 '새 특성 획득' 버튼만 보여줍니다.
       const acquireHtml=slots.map((id,i)=>{
         if(id && TRAIT_DATA[id]) return '';
         const selected=traitAutoEnabled && traitAutoSlot===i;
-        const disabled=fr<1||player.gems<cost||traitAutoRunning||(traitAutoEnabled&&!selected);
+        const disabled=fr<fragmentCost||player.gems<cost||traitAutoRunning||(traitAutoEnabled&&!selected);
         const btnLabel=traitAutoEnabled ? (selected ? `▶ SLOT ${i+1} 1회 뽑고 자동 시작` : `SLOT ${i+1} 선택 필요`) : `🎲 SLOT ${i+1} 새 특성 뽑기`;
-        return `<button class="trait-roll-btn trait-acquire-btn ${selected?'selected':''}" data-trait-roll-slot="${i}" ${disabled?'disabled':''}>${btnLabel} · 💠1 + 💎${cost.toLocaleString()}</button>`;
+        return `<button class="trait-roll-btn trait-acquire-btn ${selected?'selected':''}" data-trait-roll-slot="${i}" ${disabled?'disabled':''}>${btnLabel} · ${fragmentCostLabel} + 💎${cost.toLocaleString()}</button>`;
       }).join('');
       const allowedTargets=traitAutoAllowedTargets(u.id);
       const targetHtml=allowedTargets.map(id=>{
@@ -12997,7 +13219,7 @@ async function logout() {
       }).join('');
       const autoStatus=traitAutoRunning ? `자동 뽑기 진행 중 · ${traitAutoRollCount}회 · 최근 ${traitAutoLastTrait?getTraitDisplayName(traitAutoLastTrait,u.id):'-'}` : (traitAutoEnabled ? `대상 슬롯: SLOT ${traitAutoSlot+1} · 멈춤 조건 ${traitAutoTargetIds.size}개 선택` : '자동 뽑기 OFF');
       const autoPanel=`<div class="trait-auto-panel"><div class="trait-auto-head"><div><b>⚡ 자동 특성 뽑기</b><div class="muted" style="font-size:11px;margin-top:2px;">0.3초마다 실제 특성을 뽑고, 선택한 특성이 나오면 즉시 멈춥니다.</div></div><button id="traitAutoToggle" class="${traitAutoEnabled?'danger':'secondary'}">${traitAutoEnabled?'자동 뽑기 끄기':'자동 뽑기 켜기'}</button></div>${traitAutoEnabled?`<div class="trait-auto-targets">${targetHtml}</div><div class="trait-auto-status ${traitAutoRunning?'running':''}">${autoStatus}</div><div class="trait-auto-actions">${traitAutoRunning?'<button id="traitAutoStop" class="danger">■ 지금 중지</button>':''}<span class="muted" style="font-size:11px;">멈출 특성은 여러 개 선택할 수 있습니다. 슬롯을 누르면 노란색 테두리로 선택됩니다.</span></div>`:`<div class="trait-auto-status">${autoStatus}</div>`}</div>`;
-      detail.innerHTML=`<div class="trait-selected-head"><div class="big-icon">${u.icon}</div><div><small class="${u.rarityClass}">${u.rarity}</small><h3>${u.name}</h3><small>조각 ${fr}개 · 최대 2특성</small></div><div class="trait-cost"><span>1회 비용</span><strong>💠1 + 💎${cost.toLocaleString()}</strong></div></div>${autoPanel}${slotHtml?`<div class="trait-slots">${slotHtml}</div>`:''}${acquireHtml?`<div class="trait-acquire-panel"><small>🔒 획득 전 특성은 특성 칸에 표시되지 않습니다.</small><div class="trait-acquire-actions">${acquireHtml}</div></div>`:''}<div class="trait-probability"><b>일반 특성 확률</b><br>신속 36% · 공격적 36% · 싼 설치비용 20% · 특가세일 3% · 빛 2% · 어둠 2% · 그림자분신술 1%${traitSpecialChanceText(u.id)?`<br><span class="trait-special-note">${traitSpecialChanceText(u.id)} · 일반 특성보다 먼저 별도 판정</span>`:''}<br><span class="muted">돈나무에서는 공격적→비싼으로 표시되고 일부 효과가 수입 능력으로 변환됩니다.</span></div><div id="traitResult" class="trait-result">${traitLastResultText||''}</div>`;
+      detail.innerHTML=`<div class="trait-selected-head"><div class="big-icon">${u.icon}</div><div><small class="${u.rarityClass}">${u.rarity}</small><h3>${u.name}</h3><small>${rainbowTrait?'무지개의 조각':'유닛 조각'} ${fr}개 · 최대 2특성</small></div><div class="trait-cost"><span>1회 비용${rainbowTrait?' · 무지개 유닛':''}</span><strong>${fragmentCostLabel} + 💎${cost.toLocaleString()}</strong>${rainbowTrait?'<small style="display:block;margin-top:3px;color:#ffe9a8;">등급 기본 소환석 ×10</small>':''}</div></div>${autoPanel}${slotHtml?`<div class="trait-slots">${slotHtml}</div>`:''}${acquireHtml?`<div class="trait-acquire-panel"><small>🔒 획득 전 특성은 특성 칸에 표시되지 않습니다.</small><div class="trait-acquire-actions">${acquireHtml}</div></div>`:''}<div class="trait-probability"><b>일반 특성 확률</b><br>신속 36% · 공격적 36% · 싼 설치비용 20% · 특가세일 3% · 빛 2% · 어둠 2% · 그림자분신술 1%${traitSpecialChanceText(u.id)?`<br><span class="trait-special-note">${traitSpecialChanceText(u.id)} · 일반 특성보다 먼저 별도 판정</span>`:''}${rainbowTrait?'<br><span class="trait-special-note">🌈 무지개 주사위 유닛: 무지개의 조각 5개 + 해당 등급 소환석 비용의 10배</span>':''}<br><span class="muted">돈나무에서는 공격적→비싼으로 표시되고 일부 효과가 수입 능력으로 변환됩니다.</span></div><div id="traitResult" class="trait-result">${traitLastResultText||''}</div>`;
       detail.querySelector('#traitAutoToggle')?.addEventListener('click',()=>setTraitAutoEnabled(!traitAutoEnabled));
       detail.querySelector('#traitAutoStop')?.addEventListener('click',()=>{stopTraitAutoRoll('자동 특성 뽑기를 사용자가 중지했습니다.');renderTraitScreen();});
       detail.querySelectorAll('[data-trait-auto-target]').forEach(input=>input.addEventListener('change',()=>{
@@ -13029,6 +13251,8 @@ async function logout() {
         const traitId=String(r?.trait_id||''); if(!TRAIT_DATA[traitId]) throw new Error('서버가 알 수 없는 특성을 반환했습니다.');
         player.ownedUnits[unitId].fragments=Math.max(0,Number(r.fragments??player.ownedUnits[unitId].fragments));
         player.ownedUnits[unitId].traits=normalizeTraitSlots(r.traits);
+        player.itemInventory ||= {};
+        if(Number.isFinite(Number(r.rainbow_fragments))) player.itemInventory.rainbowFragment=Math.max(0,Math.floor(Number(r.rainbow_fragments)));
         if(Number.isFinite(Number(r.gems))) player.gems=Number(r.gems);
         document.querySelector('#menuGems') && (document.querySelector('#menuGems').textContent=player.gems.toLocaleString());
         traitAutoLastTrait=traitId;
@@ -13055,8 +13279,8 @@ async function logout() {
       traitAutoRunning=true;traitAutoRollCount=0;const token=++traitAutoToken;traitLastResultText='자동 뽑기 시작 · 첫 뽑기를 실행합니다.';renderTraitScreen();
       while(traitAutoRunning && token===traitAutoToken){
         if(screens.traits?.classList.contains('hidden') || activeTraitUnitId!==unitId || traitAutoSlot!==slot){stopTraitAutoRoll('화면/유닛/슬롯이 변경되어 자동 뽑기를 중지했습니다.');break;}
-        const unit=UNIT_DATA[unitId], owned=player.ownedUnits?.[unitId], cost=traitRarityCost(unit);
-        if(!owned || Number(owned.fragments||0)<1){stopTraitAutoRoll('조각이 부족해서 자동 특성 뽑기가 멈췄습니다.');break;}
+        const unit=UNIT_DATA[unitId], owned=player.ownedUnits?.[unitId], cost=traitRarityCost(unit), fragmentCost=traitFragmentCost(unit), fragmentBalance=traitFragmentBalance(unitId);
+        if(!owned || fragmentBalance<fragmentCost){stopTraitAutoRoll(`${isRainbowTraitUnit(unit)?'무지개의 조각':'유닛 조각'}이 부족해서 자동 특성 뽑기가 멈췄습니다.`);break;}
         if(Number(player.gems||0)<cost){stopTraitAutoRoll('소환석이 부족해서 자동 특성 뽑기가 멈췄습니다.');break;}
         const started=performance.now();
         try{
@@ -34714,110 +34938,6 @@ function drawEnemy(enemy, time) {
 
 
 
-<script id="pdLoginLoadingScriptV31">
-(() => {
-  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-  let pulseTimer = null;
-  let progress = 8;
-  const tips = [
-    '팁: 같은 유닛도 특성에 따라 전투 방식이 달라집니다.',
-    '팁: 길목이 겹치는 곳에 유닛을 배치하면 효율이 높습니다.',
-    '팁: 무지개 조각은 특별한 유닛 성장에 사용할 수 있습니다.',
-    '팁: 공격속도와 사거리를 함께 보면 배치가 더 쉬워집니다.',
-    '팁: 보스 웨이브 전에 소환석을 조금 남겨 두는 것도 좋습니다.'
-  ];
-
-  function els() {
-    return {
-      root: document.querySelector('#pdLoginLoading'),
-      fill: document.querySelector('#pdLoadingFill'),
-      percent: document.querySelector('#pdLoadingPercent'),
-      status: document.querySelector('#pdLoadingStatus'),
-      tip: document.querySelector('#pdLoadingTip')
-    };
-  }
-
-  function setProgress(value, statusText) {
-    const e = els();
-    progress = Math.max(0, Math.min(100, Number(value) || 0));
-    if (e.fill) e.fill.style.width = `${progress}%`;
-    if (e.percent) e.percent.textContent = `${Math.round(progress)}%`;
-    if (statusText && e.status) e.status.textContent = statusText;
-  }
-
-  function show() {
-    const e = els();
-    if (!e.root) return;
-    e.root.classList.remove('hidden', 'pd-loading-exit');
-    e.root.setAttribute('aria-hidden', 'false');
-    if (e.tip) {
-      const tip = tips[Math.floor(Math.random() * tips.length)];
-      e.tip.innerHTML = `<span class="pd-loading-dice">🎲</span>${tip}`;
-    }
-    setProgress(8, '로그인 정보를 확인하는 중...');
-    clearInterval(pulseTimer);
-    pulseTimer = setInterval(() => {
-      if (progress < 66) setProgress(progress + (progress < 35 ? 2.4 : 1.25));
-    }, 105);
-  }
-
-  async function hide() {
-    const e = els();
-    clearInterval(pulseTimer);
-    pulseTimer = null;
-    if (!e.root) return;
-    e.root.classList.add('pd-loading-exit');
-    await sleep(390);
-    e.root.classList.add('hidden');
-    e.root.classList.remove('pd-loading-exit');
-    e.root.setAttribute('aria-hidden', 'true');
-  }
-
-  async function loadPlayerAndEnter(user) {
-    show();
-    const startedAt = performance.now();
-    try {
-      setProgress(14, '플레이어 데이터를 불러오는 중...');
-      const loaded = await loadPlayer(user);
-      if (!loaded) {
-        setProgress(100, '데이터를 불러오지 못했습니다.');
-        await sleep(500);
-        await hide();
-        return false;
-      }
-
-      setProgress(Math.max(progress, 72), '소환석과 주사위를 정리하는 중...');
-      await sleep(180);
-      setProgress(84, '보유 유닛을 방어선에 배치하는 중...');
-      await sleep(180);
-      setProgress(93, '스테이지 정보를 준비하는 중...');
-
-      const minDuration = 1550;
-      const elapsed = performance.now() - startedAt;
-      if (elapsed < minDuration) await sleep(minDuration - elapsed);
-
-      setProgress(100, '준비 완료! 전장으로 이동합니다.');
-      await sleep(280);
-
-      // 메뉴는 로딩 화면 아래에서 먼저 완성한 뒤 페이드아웃합니다.
-      openMenu();
-      await hide();
-      return true;
-    } catch (error) {
-      console.error('로그인 로딩 중 오류:', error);
-      setProgress(100, '입장 준비 중 오류가 발생했습니다.');
-      await sleep(650);
-      await hide();
-      return false;
-    }
-  }
-
-  window.pdLoadPlayerAndEnter = loadPlayerAndEnter;
-  window.pdShowLoginLoading = show;
-  window.pdHideLoginLoading = hide;
-})();
-</script>
-
 <script id="pdDisableServiceWorkerV30">
 (async () => {
   try {
@@ -34838,5 +34958,12 @@ function drawEnemy(enemy, time) {
 <!-- V32 EDEN/ERROR PERFORMANCE
 Gameplay damage/cooldowns unchanged. Heavy per-frame gradients, blur, particles,
 Eden minion array sort/allocation, and redundant visual FX were reduced. -->
+
+<!-- V34 COMBINED FIX
+1) Rainbow dice units can roll traits using 5 rainbow fragments + rarity gem cost x10.
+2) Auto-login restores the Supabase session and player data BEFORE playing the loading animation.
+3) Loading pigeon upgraded with layered feathers, iridescent neck, detailed eye/beak/feet.
+Server roll_unit_trait_v1 was migrated to enforce the same rainbow costs. -->
+
 </body>
 </html>

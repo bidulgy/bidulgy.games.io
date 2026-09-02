@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="ko">
 <head>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
   <!-- PERF-V2 2026-08-22: memoized HUD, in-place hot arrays, squared targeting, WSS retained, full visual detail retained -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
@@ -14684,7 +14687,7 @@ function requestGachaDraw(count) {
 
       window.addEventListener('load', () => {
         navigator.serviceWorker
-          .register('./service-worker.js?v=20260817-eden-minions-scroll-2', { updateViaCache: 'none' })
+          .register('./service-worker.js?v=20260902-v29-menu-placement-fix', { updateViaCache: 'none' })
           .then(registration => registration.update())
           .catch(error => console.error('서비스 워커 등록 실패:', error));
       });
@@ -34721,7 +34724,14 @@ function drawEnemy(enemy, time) {
 
 <style id="pdMenuPhotoEnemy2DStyles">
 #menuScreen .enemy-logo-area{position:relative!important}
-#pdMenuEnemyPhoto2D{position:absolute;inset:-8%;width:116%;height:116%;z-index:4;pointer-events:none;filter:drop-shadow(0 18px 14px rgba(0,0,0,.28))}
+#pdMenuEnemyPhoto2D{
+  position:absolute!important;inset:auto!important;left:50%!important;top:50%!important;
+  width:100%!important;height:100%!important;transform:translate(-50%,-50%)!important;
+  z-index:4!important;pointer-events:none!important;
+  background:transparent!important;background-color:transparent!important;
+  border:0!important;border-radius:0!important;box-shadow:none!important;
+  filter:drop-shadow(0 16px 13px rgba(0,0,0,.30))!important;
+}
 #menuScreen .enemy-logo-area.pd-photo2d-ready>.enemy-pigeon{opacity:0!important;visibility:hidden!important}
 </style>
 <script id="pdMenuPhotoEnemy2D">
@@ -34736,12 +34746,12 @@ function drawEnemy(enemy, time) {
     let c=document.getElementById('pdMenuEnemyPhoto2D');
     if(!c){c=document.createElement('canvas');c.id='pdMenuEnemyPhoto2D';c.setAttribute('aria-hidden','true');area.appendChild(c);}
     const g=c.getContext('2d',{alpha:true});let last=0;
-    const resize=()=>{const rect=area.getBoundingClientRect(),dpr=Math.min(2,Math.max(1,window.devicePixelRatio||1));const w=Math.max(180,Math.round(rect.width*1.16)),h=Math.max(180,Math.round(rect.height*1.16));c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);c.style.width=w+'px';c.style.height=h+'px';c.style.left='50%';c.style.top='50%';c.style.inset='auto';c.style.transform='translate(-50%,-50%)';c._pdDpr=dpr;c._pdW=w;c._pdH=h;};
+    const resize=()=>{const rect=area.getBoundingClientRect(),dpr=Math.min(2,Math.max(1,window.devicePixelRatio||1));const w=Math.max(150,Math.round(rect.width)),h=Math.max(140,Math.round(rect.height));c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);c.style.inset='auto';c.style.left='50%';c.style.top='50%';c.style.width=w+'px';c.style.height=h+'px';c.style.transform='translate(-50%,-50%)';c.style.background='transparent';c._pdDpr=dpr;c._pdW=w;c._pdH=h;};
     resize();try{new ResizeObserver(resize).observe(area)}catch(_){window.addEventListener('resize',resize)}
     area.classList.add('pd-photo2d-ready');
     const frame=(t)=>{requestAnimationFrame(frame);if(t-last<33)return;last=t;const menu=document.getElementById('menuScreen');if(!menu||menu.classList.contains('hidden'))return;
       const dpr=c._pdDpr||1,w=c._pdW||280,h=c._pdH||280;g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,c.width,c.height);g.setTransform(dpr,0,0,dpr,0,0);g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
-      const hero=area.querySelector('.enemy-pigeon');const sid=Math.max(1,Math.min(4,Number(hero?.dataset.enemyStage||1)));const r=Math.min(w,h)*(sid===4?.125:.145);const e={radius:r,wingPhase:.4,heading:0,type:'normal',variant:'',speed:50,maxHealth:100,health:100};
+      const hero=area.querySelector('.enemy-pigeon');const sid=Math.max(1,Math.min(4,Number(hero?.dataset.enemyStage||1)));const r=Math.min(w,h)*(sid===4?.155:(sid===2||sid===3?.18:.17));const e={radius:r,wingPhase:.4,heading:0,type:'normal',variant:'',speed:50,maxHealth:100,health:100};
       if(sid===2){e.variant='Golem';drawCanvasGolem(e,w/2,h/2+4,t,g);if(typeof pdApplyPhotoEnemyFinish==='function')pdApplyPhotoEnemyFinish(g,e,'golem',w/2,h/2+4,r);}
       else if(sid===3){e.variant='llama';drawCanvasLlama(e,w/2,h/2+8,t,g);if(typeof pdApplyPhotoEnemyFinish==='function')pdApplyPhotoEnemyFinish(g,e,'llama',w/2,h/2+8,r);}
       else if(sid===4){e.variant='scorpion';drawCanvasScorpion(e,w/2,h/2+5,t,g);if(typeof pdApplyPhotoEnemyFinish==='function')pdApplyPhotoEnemyFinish(g,e,'scorpion',w/2,h/2+5,r);}
@@ -34758,5 +34768,125 @@ function drawEnemy(enemy, time) {
      Gameplay attack ranges remain unchanged. -->
 
 <!-- V28: placement/range input fix + original retro chiptune + HQ maps + Rainbow World + Rainbow Beyond allied soldiers -->
+
+<style id="pdMenuAndPlacementAuthoritativeFixV29">
+/* V29 - authoritative menu/enemy preview + placement interaction fix. */
+#menuScreen .pd-original-menu-hero{
+  position:relative!important;
+  z-index:1!important;
+  gap:clamp(24px,5vw,58px)!important;
+  margin:10px auto 18px!important;
+}
+/* The old circular target looked like a unit range indicator and is not part of the enemy art. */
+#menuScreen .pd-original-menu-hero .target-ring,
+#menuScreen .pd-original-menu-hero .alert-symbol{
+  display:none!important;visibility:hidden!important;opacity:0!important;
+}
+/* Remove the oversized target circle/card: only the enemy itself remains. */
+#menuScreen .pd-original-menu-hero .enemy-logo-area{
+  width:clamp(170px,20vw,225px)!important;
+  height:clamp(145px,17vw,190px)!important;
+  aspect-ratio:auto!important;
+  border:0!important;border-radius:0!important;
+  background:transparent!important;background-color:transparent!important;
+  box-shadow:none!important;backdrop-filter:none!important;
+  filter:none!important;overflow:visible!important;isolation:isolate!important;
+  animation:none!important;
+}
+#menuScreen .pd-original-menu-hero .enemy-logo-area::before,
+#menuScreen .pd-original-menu-hero .enemy-logo-area::after{
+  content:none!important;display:none!important;
+}
+#menuScreen #pdMenuEnemyPhoto2D{
+  display:block!important;
+  position:absolute!important;
+  inset:auto!important;left:50%!important;top:50%!important;
+  width:100%!important;height:100%!important;
+  transform:translate(-50%,-50%)!important;
+  background:transparent!important;background-color:transparent!important;
+  border:0!important;border-radius:0!important;box-shadow:none!important;
+  pointer-events:none!important;
+}
+#menuScreen .enemy-pigeon{
+  background:transparent!important;background-color:transparent!important;
+  border:0!important;box-shadow:none!important;
+}
+/* Stage selector must always stay above the hero artwork. */
+#menuScreen .stage-choice-row{position:relative!important;z-index:8!important;isolation:isolate!important}
+#menuScreen .stage-preview-card,#menuScreen .limited-event-stage-card{position:relative!important;z-index:9!important}
+
+/* Battle input: only the real game canvas may receive placement input. */
+#battleScreen .battle-map-shell{position:relative!important;isolation:isolate!important}
+#battleScreen .battle-map-shell::before,
+#battleScreen .battle-map-shell::after{pointer-events:none!important}
+#battleScreen #gameCanvas{
+  position:relative!important;z-index:2!important;
+  pointer-events:auto!important;touch-action:none!important;
+  cursor:crosshair!important;
+}
+#battleScreen #battleRangeOverlay,
+#battleScreen #enemyHpOverlay,
+#battleScreen canvas:not(#gameCanvas){pointer-events:none!important}
+#battleScreen #battleRangeOverlay{display:none!important;visibility:hidden!important;opacity:0!important}
+
+@media(max-width:760px){
+  #menuScreen .pd-original-menu-hero .enemy-logo-area{width:145px!important;height:125px!important;flex:0 0 145px!important}
+}
+</style>
+<script id="pdMenuAndPlacementAuthoritativeFixV29Script">
+(()=>{
+  'use strict';
+  window.PD_BUILD='2026-09-02-v29-menu-placement-fix';
+
+  // Make stale overlay canvases harmless even if an older patch recreates them.
+  const sanitizeBattleOverlays=()=>{
+    const game=document.getElementById('gameCanvas');
+    if(game){game.style.pointerEvents='auto';game.style.touchAction='none';}
+    document.querySelectorAll('#battleScreen canvas:not(#gameCanvas)').forEach(el=>{el.style.pointerEvents='none';});
+    const range=document.getElementById('battleRangeOverlay');
+    if(range){range.style.display='none';range.style.pointerEvents='none';}
+  };
+
+  // Correct any inline style left by the historical menu preview renderer.
+  const sanitizeMenuEnemy=()=>{
+    const c=document.getElementById('pdMenuEnemyPhoto2D');
+    if(!c)return;
+    c.style.setProperty('inset','auto','important');
+    c.style.setProperty('left','50%','important');
+    c.style.setProperty('top','50%','important');
+    c.style.setProperty('width','100%','important');
+    c.style.setProperty('height','100%','important');
+    c.style.setProperty('transform','translate(-50%,-50%)','important');
+    c.style.setProperty('background','transparent','important');
+    c.style.setProperty('background-color','transparent','important');
+    c.style.setProperty('pointer-events','none','important');
+  };
+
+  const boot=()=>{
+    sanitizeBattleOverlays();sanitizeMenuEnemy();
+    try{new MutationObserver(()=>{sanitizeBattleOverlays();sanitizeMenuEnemy();}).observe(document.body,{childList:true,subtree:true});}catch(_){}
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
+</script>
+
+
+<script id="pdDisableServiceWorkerV30">
+(async () => {
+  try {
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+  } catch (_) {}
+  try {
+    if ('caches' in window) {
+      const names = await caches.keys();
+      await Promise.all(names.map(n => caches.delete(n)));
+    }
+  } catch (_) {}
+})();
+</script>
+
 </body>
 </html>

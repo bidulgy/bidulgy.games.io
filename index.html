@@ -7729,6 +7729,8 @@ body{background:#07111c;background-image:radial-gradient(circle at 15% 10%,rgba(
 }
 </style>
 
+
+
 </head>
 
 <body>
@@ -8279,7 +8281,7 @@ body{background:#07111c;background-image:radial-gradient(circle at 15% 10%,rgba(
       <div class="profile-hero">
         <div id="profileAvatarLarge" class="profile-avatar-large">P</div>
         <div class="profile-identity">
-          <div class="profile-title-slot"><small>CURRENT TITLE</small><span id="profileCurrentTitleBadge" class="player-title-badge title-none">칭호 없음</span></div>
+          <div id="profileTitleSlot" class="profile-title-slot" style="display:none"><small>CURRENT TITLE</small><span id="profileCurrentTitleBadge" class="player-title-badge title-none">칭호 미장착</span></div>
           <h2 id="profileNicknameTitle">플레이어</h2><p id="profileGameId">ID · -</p>
         </div>
       </div>
@@ -8288,7 +8290,7 @@ body{background:#07111c;background-image:radial-gradient(circle at 15% 10%,rgba(
         <div class="profile-exp-track"><i id="profileExpFill"></i></div>
         <small id="profileNextLevelText">다음 레벨까지 100 EXP</small>
       </div>
-      <div class="profile-title-panel">
+      <div id="profileTitlePanel" class="profile-title-panel" style="display:none">
         <div class="profile-title-panel-head"><div><strong>🏷️ 칭호</strong><br><small>장착한 칭호에 따라 전투 소환석 보상이 증가합니다.</small></div><button id="profileTitleClearBtn" class="secondary profile-title-clear" type="button">칭호 해제</button></div>
         <div id="profileTitleGrid" class="profile-title-grid"></div>
         <p id="profileTitleStatus" class="social-status"></p>
@@ -10360,25 +10362,44 @@ function applyStagePreview(stageId = selectedStage) {
 
     function renderProfileTitles(){
       if(!player) return;
-      const current=currentTitleData();
+
+      // 미획득 칭호는 이름/잠금/획득 조건을 포함해 플레이어 UI에 아예 노출하지 않습니다.
+      const titles=Object.values(TITLE_DATA)
+        .filter(d=>titleOwned(d.id))
+        .sort((a,b)=>a.sort-b.sort);
+      const hasOwnedTitle=titles.length>0;
+
+      const titleSlot=document.querySelector('#profileTitleSlot');
+      const titlePanel=document.querySelector('#profileTitlePanel');
+      if(titleSlot) titleSlot.style.display=hasOwnedTitle?'flex':'none';
+      if(titlePanel) titlePanel.style.display=hasOwnedTitle?'':'none';
+
       const badge=document.querySelector('#profileCurrentTitleBadge');
+      const current=currentTitleData();
       if(badge){
-        badge.textContent=current?.name||'칭호 없음';
+        badge.textContent=current?.name||(hasOwnedTitle?'칭호 미장착':'');
         badge.className=`player-title-badge ${current?.className||'title-none'}`;
-        badge.title=current?`${current.name} · ${titleBuffLabel(current)}`:'장착한 칭호 없음';
+        badge.title=current?`${current.name} · ${titleBuffLabel(current)}`:(hasOwnedTitle?'장착한 칭호 없음':'');
       }
+
       const grid=document.querySelector('#profileTitleGrid');
       if(!grid) return;
-      const titles=Object.values(TITLE_DATA).sort((a,b)=>a.sort-b.sort);
+      if(!hasOwnedTitle){
+        grid.innerHTML='';
+        return;
+      }
+
       grid.innerHTML=titles.map(d=>{
-        const owned=titleOwned(d.id), selected=String(player.currentTitle||'')===d.id;
-        return `<button class="profile-title-card ${selected?'current':''}" type="button" data-profile-title="${d.id}" ${owned?'':'disabled'}>
-          <span class="title-card-top">${titleBadgeHtml(d.id)}<b>${selected?'장착 중':owned?'보유':'잠김'}</b></span>
+        const selected=String(player.currentTitle||'')===d.id;
+        return `<button class="profile-title-card ${selected?'current':''}" type="button" data-profile-title="${d.id}">
+          <span class="title-card-top">${titleBadgeHtml(d.id)}<b>${selected?'장착 중':'보유'}</b></span>
           <span class="buff">버프 · ${titleBuffLabel(d)}</span>
-          <small>${d.unlockText}${d.id==='alphaTester'?' · 붉은색/노란색 한정 디자인':''}</small>
         </button>`;
       }).join('');
-      grid.querySelectorAll('[data-profile-title]:not(:disabled)').forEach(btn=>btn.addEventListener('click',()=>void selectProfileTitle(btn.dataset.profileTitle)));
+
+      grid.querySelectorAll('[data-profile-title]').forEach(btn=>
+        btn.addEventListener('click',()=>void selectProfileTitle(btn.dataset.profileTitle))
+      );
     }
 
     async function selectProfileTitle(titleId=''){
@@ -18660,10 +18681,18 @@ function requestGachaDraw(count) {
     }
     function applyTraitDamage(placed,enemy,damage){
       const killedHp=Math.max(1,Number(enemy?.maxHealth||enemy?.health||1));
+      const beforeHp=Math.max(0,Number(enemy?.health||0));
       const killed=applyDamageToEnemy(enemy,damage);
-      if(killed&&placed?.unitId==='rainbowBeyond'){
-        placed._rainbowLastKillHp=killedHp;
-        placed._rainbowAttackKillHp=Math.max(Number(placed._rainbowAttackKillHp||0),killedHp);
+      const afterHp=enemy?.dead?0:Math.max(0,Number(enemy?.health||0));
+      const actualDamage=Math.max(0,beforeHp-afterHp);
+      if(placed?.unitId==='rainbowBeyond'){
+        if(killed){
+          placed._rainbowLastKillHp=killedHp;
+          placed._rainbowAttackKillHp=Math.max(Number(placed._rainbowAttackKillHp||0),killedHp);
+        }
+        if(placed._rainbowCountDamageForSoldier){
+          placed._rainbowBasicAttackDamage=Math.max(0,Number(placed._rainbowBasicAttackDamage||0))+actualDamage;
+        }
       }
       if(!enemy?.dead)applyTraitHitEffects(placed,enemy);
       return killed;
@@ -20308,40 +20337,264 @@ function requestGachaDraw(count) {
     }
 
     function spawnRainbowBeyondSoldier(placed,fallbackEnemy=null){
-      if(!battle)return;const hp=Math.max(1,Math.round(Number(placed?._rainbowAttackKillHp||placed?._rainbowLastKillHp||fallbackEnemy?.maxHealth||fallbackEnemy?.health||1)));
+      if(!battle)return;
+      const accumulated=Math.max(0,Number(placed?._rainbowSoldierDamageBank||0));
+      const fallback=Math.max(1,Number(placed?._rainbowAttackKillHp||placed?._rainbowLastKillHp||fallbackEnemy?.health||fallbackEnemy?.maxHealth||1));
+      const hp=Math.max(1,Math.round(accumulated>0?accumulated:fallback));
       if(!Array.isArray(battle.rainbowAlliedSoldiers))battle.rainbowAlliedSoldiers=[];
-      battle.rainbowAlliedSoldiers.push({id:`rainbow_ally_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`,x:BASE_POSITION.x-8,y:BASE_POSITION.y,hp,maxHp:hp,speed:112,pathIndex:Math.max(0,path.length-2),heading:Math.PI,dead:false,spawnedAt:performance.now()});
+      battle.rainbowAlliedSoldiers.push({
+        id:`rainbow_ally_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`,
+        x:BASE_POSITION.x-8,y:BASE_POSITION.y,
+        hp,maxHp:hp,speed:112,pathIndex:Math.max(0,path.length-2),
+        heading:Math.PI,facing:-1,dead:false,spawnedAt:performance.now(),
+        hitFlash:0,stepSeed:Math.random()*Math.PI*2
+      });
       if(battle.rainbowAlliedSoldiers.length>24)battle.rainbowAlliedSoldiers.splice(0,battle.rainbowAlliedSoldiers.length-24);
       battle.shots.push({x1:BASE_POSITION.x,y1:BASE_POSITION.y,x2:BASE_POSITION.x,y2:BASE_POSITION.y,life:.55,maxLife:.55,effect:'rainbowSigil',color:'#ffffff',radius:42,seed:Math.random()*1000});
-      setBattleMessage(`🌈 무지개 저편 · 무지개 병사 출진! HP ${hp.toLocaleString()} · 충돌 피해 ${hp.toLocaleString()}`);
+      setBattleMessage(`🌈 무지개 저편 · 프리즘 근위병 출진! 10회 누적 피해 = HP ${hp.toLocaleString()}`);
     }
+
     function maybeSpawnRainbowBeyondSoldier(placed,fallbackEnemy){
       const every=Math.max(1,Number(UNIT_DATA.rainbowBeyond.rainbowSoldierSummonEvery||10));
-      if(Number(placed.attackCount||0)%every!==0)return;spawnRainbowBeyondSoldier(placed,fallbackEnemy);placed._rainbowAttackKillHp=0;
+      if(Number(placed.attackCount||0)%every!==0)return;
+      spawnRainbowBeyondSoldier(placed,fallbackEnemy);
+      placed._rainbowAttackKillHp=0;
+      placed._rainbowSoldierDamageBank=0;
+      placed._rainbowBasicAttackDamage=0;
     }
+
     function updateRainbowAlliedSoldiers(dt){
       if(!battle||!Array.isArray(battle.rainbowAlliedSoldiers))return;
-      for(const s of battle.rainbowAlliedSoldiers){if(!s||s.dead)continue;
-        const targetPoint=path[Math.max(0,Number(s.pathIndex||0))]||path[0],dx=targetPoint.x-s.x,dy=targetPoint.y-s.y,dist=Math.hypot(dx,dy),move=Math.max(0,Number(s.speed||112))*dt;
-        if(dist<=move){s.x=targetPoint.x;s.y=targetPoint.y;if(s.pathIndex>0)s.pathIndex-=1;else{s.dead=true;continue}}else if(dist>0){s.heading=Math.atan2(dy,dx);s.x+=dx/dist*move;s.y+=dy/dist*move;}
-        let hit=null,best=Infinity;for(const e of battle.enemies||[]){if(!e||e.dead||e.soilPileState||e.type==='rainbowFeverCore'||e.rainbowOre)continue;const d=Math.hypot(e.x-s.x,e.y-s.y),limit=18+Math.max(8,Number(e.radius||18)*.70);if(d<=limit&&d<best){best=d;hit=e}}
-        if(hit){const dmg=Math.max(1,Number(s.hp||1));applyDamageToEnemy(hit,dmg);battle.shots.push({x1:s.x,y1:s.y,x2:hit.x,y2:hit.y,life:.42,maxLife:.42,effect:'rainbowHornImpact',color:'#fff',radius:34,seed:Math.random()*1000});s.dead=true;}
+      for(const s of battle.rainbowAlliedSoldiers){
+        if(!s||s.dead)continue;
+        s.hitFlash=Math.max(0,Number(s.hitFlash||0)-dt);
+
+        const targetPoint=path[Math.max(0,Number(s.pathIndex||0))]||path[0];
+        const dx=targetPoint.x-s.x,dy=targetPoint.y-s.y,dist=Math.hypot(dx,dy);
+        const move=Math.max(0,Number(s.speed||112))*dt;
+
+        if(dist<=move){
+          s.x=targetPoint.x;s.y=targetPoint.y;
+          if(s.pathIndex>0)s.pathIndex-=1;
+          else{s.dead=true;continue;}
+        }else if(dist>0){
+          s.heading=Math.atan2(dy,dx);
+          if(Math.abs(dx)>2)s.facing=dx>=0?1:-1;
+          s.x+=dx/dist*move;s.y+=dy/dist*move;
+        }
+
+        let hit=null,best=Infinity;
+        for(const e of battle.enemies||[]){
+          if(!e||e.dead||e.soilPileState||e.type==='rainbowFeverCore'||e.rainbowOre)continue;
+          const ddx=Number(e.x||0)-s.x,ddy=Number(e.y||0)-s.y;
+          const d2=ddx*ddx+ddy*ddy;
+          const limit=18+Math.max(8,Number(e.radius||18)*.70);
+          if(d2<=limit*limit&&d2<best){best=d2;hit=e;}
+        }
+
+        if(hit){
+          const soldierHp=Math.max(0,Number(s.hp||0));
+          const enemyHp=Math.max(0,Number(hit.health||0));
+          if(soldierHp<=0){s.dead=true;continue;}
+
+          if(enemyHp<soldierHp){
+            applyDamageToEnemy(hit,Math.max(enemyHp,1));
+            if(hit.dead){
+              s.hp=Math.max(0,soldierHp-enemyHp);
+              s.hitFlash=.22;
+              battle.shots.push({
+                x1:s.x,y1:s.y,x2:hit.x,y2:hit.y,
+                life:.38,maxLife:.38,effect:'rainbowHornImpact',
+                color:'#fff',radius:32,seed:Math.random()*1000
+              });
+            }else{
+              applyDamageToEnemy(hit,soldierHp);
+              s.hp=0;s.dead=true;
+            }
+          }else{
+            applyDamageToEnemy(hit,soldierHp);
+            s.hp=0;s.dead=true;
+            battle.shots.push({
+              x1:s.x,y1:s.y,x2:hit.x,y2:hit.y,
+              life:.42,maxLife:.42,effect:'rainbowHornImpact',
+              color:'#fff',radius:36,seed:Math.random()*1000
+            });
+          }
+        }
       }
-      let w=0;for(const s of battle.rainbowAlliedSoldiers)if(s&&!s.dead)battle.rainbowAlliedSoldiers[w++]=s;battle.rainbowAlliedSoldiers.length=w;
+
+      let w=0;
+      for(const s of battle.rainbowAlliedSoldiers){
+        if(s&&!s.dead&&Number(s.hp||0)>0)battle.rainbowAlliedSoldiers[w++]=s;
+      }
+      battle.rainbowAlliedSoldiers.length=w;
     }
+
     function drawRainbowAlliedSoldiers(time){
-      if(!battle||!Array.isArray(battle.rainbowAlliedSoldiers))return;for(const s of battle.rainbowAlliedSoldiers){if(!s||s.dead)continue;ctx.save();ctx.translate(s.x,s.y);ctx.rotate(Number(s.heading||Math.PI));ctx.scale(.78,.78);
-        ctx.fillStyle='rgba(0,0,0,.25)';ctx.beginPath();ctx.ellipse(-2,22,25,7,0,0,Math.PI*2);ctx.fill();
-        const armor=ctx.createLinearGradient(-20,-25,24,25);armor.addColorStop(0,'#fff6c7');armor.addColorStop(.16,'#ff6f9d');armor.addColorStop(.38,'#ffd75d');armor.addColorStop(.60,'#72ec9b');armor.addColorStop(.80,'#68caff');armor.addColorStop(1,'#b47cff');ctx.fillStyle=armor;ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(-15,-18,30,40,9);ctx.fill();ctx.stroke();
-        // friendly silver helmet + blue visor clearly separates it from hostile rainbow enemies
-        const helm=ctx.createLinearGradient(-13,-31,14,-10);helm.addColorStop(0,'#ffffff');helm.addColorStop(.55,'#c8dcf2');helm.addColorStop(1,'#7188a4');ctx.fillStyle=helm;ctx.beginPath();ctx.arc(0,-24,14,Math.PI,Math.PI*2);ctx.lineTo(14,-17);ctx.lineTo(-14,-17);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#57d8ff';ctx.shadowBlur=7;ctx.shadowColor='#57d8ff';ctx.fillRect(-8,-23,16,4);ctx.shadowBlur=0;
-        // shield marked as ally
-        ctx.fillStyle='#e9f8ff';ctx.strokeStyle='#6edcff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-17,-7);ctx.quadraticCurveTo(-31,-4,-27,14);ctx.quadraticCurveTo(-18,26,-9,13);ctx.lineTo(-9,-4);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#39bff0';ctx.font='900 10px Arial';ctx.textAlign='center';ctx.fillText('A',-19,10);
-        // forward spear
-        ctx.strokeStyle='#f8f0c2';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(6,7);ctx.lineTo(35,-4);ctx.stroke();ctx.fillStyle=armor;ctx.beginPath();ctx.moveTo(42,-7);ctx.lineTo(31,-10);ctx.lineTo(34,-1);ctx.closePath();ctx.fill();
+      if(!battle||!Array.isArray(battle.rainbowAlliedSoldiers))return;
+      const t=time*.001;
+
+      for(const s of battle.rainbowAlliedSoldiers){
+        if(!s||s.dead)continue;
+        const facing=Number(s.facing||-1)>=0?1:-1;
+        const run=Math.sin(t*10.5+Number(s.stepSeed||0));
+        const bob=Math.abs(run)*1.35;
+        const flash=Math.min(1,Number(s.hitFlash||0)*4.5);
+
+        ctx.save();
+        ctx.translate(s.x,s.y-bob);
+
+        // 캐릭터는 항상 똑바로 유지하고 좌우 방향만 미러링.
+        ctx.scale(facing*.82,.82);
+
+        // 바닥 그림자
+        ctx.save();ctx.scale(1,.34);ctx.fillStyle='rgba(0,0,0,.28)';
+        ctx.beginPath();ctx.ellipse(-2,65,29,9,0,0,Math.PI*2);ctx.fill();ctx.restore();
+
+        // 프리즘 망토
+        const cape=ctx.createLinearGradient(-18,-25,-40,37);
+        cape.addColorStop(0,'rgba(88,55,160,.92)');
+        cape.addColorStop(.34,'rgba(77,126,220,.90)');
+        cape.addColorStop(.68,'rgba(63,212,190,.86)');
+        cape.addColorStop(1,'rgba(29,46,95,.94)');
+        ctx.fillStyle=cape;ctx.strokeStyle='rgba(211,236,255,.72)';ctx.lineWidth=1.5;
+        ctx.beginPath();
+        ctx.moveTo(-11,-22);ctx.bezierCurveTo(-27,-16,-32,4,-38,29+run*2.2);
+        ctx.lineTo(-20,24);ctx.lineTo(-7,13);ctx.closePath();ctx.fill();ctx.stroke();
+
+        // 달리는 다리
+        for(const side of [-1,1]){
+          const phase=run*side,hipX=side*7;
+          ctx.strokeStyle='#263748';ctx.lineWidth=7;ctx.lineCap='round';
+          ctx.beginPath();ctx.moveTo(hipX,17);ctx.lineTo(hipX+phase*5,35);ctx.lineTo(hipX+phase*10+5,48);ctx.stroke();
+          const boot=ctx.createLinearGradient(hipX,38,hipX+14,53);
+          boot.addColorStop(0,'#b8e5ff');boot.addColorStop(.42,'#5b7896');boot.addColorStop(1,'#1b2838');
+          ctx.strokeStyle=boot;ctx.lineWidth=8;
+          ctx.beginPath();ctx.moveTo(hipX+phase*10+5,47);ctx.lineTo(hipX+phase*13+14,49);ctx.stroke();
+        }
+
+        // 다층 프리즘 흉갑
+        const armor=ctx.createLinearGradient(-21,-26,23,27);
+        armor.addColorStop(0,'#ffffff');armor.addColorStop(.15,'#c8ecff');
+        armor.addColorStop(.31,'#ff9fc3');armor.addColorStop(.46,'#ffe178');
+        armor.addColorStop(.60,'#91f3b5');armor.addColorStop(.76,'#73cfff');
+        armor.addColorStop(.91,'#b18dff');armor.addColorStop(1,'#536582');
+        ctx.fillStyle=armor;ctx.strokeStyle='rgba(255,255,255,.96)';ctx.lineWidth=2;
+        ctx.beginPath();
+        ctx.moveTo(-16,-18);ctx.lineTo(-22,-4);ctx.lineTo(-17,19);
+        ctx.lineTo(0,28);ctx.lineTo(17,19);ctx.lineTo(22,-4);
+        ctx.lineTo(16,-18);ctx.lineTo(0,-24);ctx.closePath();ctx.fill();ctx.stroke();
+
+        // 흉갑 분절
+        ctx.strokeStyle='rgba(46,63,94,.46)';ctx.lineWidth=1.4;
+        ctx.beginPath();ctx.moveTo(0,-23);ctx.lineTo(0,25);
+        ctx.moveTo(-18,-3);ctx.lineTo(18,-3);ctx.moveTo(-15,10);ctx.lineTo(15,10);ctx.stroke();
+
+        // 어깨 갑옷
+        for(const side of [-1,1]){
+          const shoulder=ctx.createLinearGradient(side*7,-24,side*27,-11);
+          shoulder.addColorStop(0,'#f9ffff');
+          shoulder.addColorStop(.45,side>0?'#76d8ff':'#ff8fc3');
+          shoulder.addColorStop(1,'#5e5b9d');
+          ctx.fillStyle=shoulder;ctx.strokeStyle='#eaf8ff';ctx.lineWidth=1.4;
+          ctx.beginPath();ctx.moveTo(side*10,-20);ctx.lineTo(side*25,-19);
+          ctx.lineTo(side*30,-10);ctx.lineTo(side*17,-6);ctx.lineTo(side*9,-11);
+          ctx.closePath();ctx.fill();ctx.stroke();
+        }
+
+        // 목 가드
+        ctx.fillStyle='#40566d';ctx.strokeStyle='#dff7ff';ctx.lineWidth=1.3;
+        ctx.beginPath();ctx.roundRect(-10,-29,20,12,4);ctx.fill();ctx.stroke();
+
+        // 투구
+        const helm=ctx.createLinearGradient(-17,-49,18,-20);
+        helm.addColorStop(0,'#ffffff');helm.addColorStop(.28,'#d8ebf7');
+        helm.addColorStop(.55,'#91a9bf');helm.addColorStop(.80,'#526b84');
+        helm.addColorStop(1,'#25384e');
+        ctx.fillStyle=helm;ctx.strokeStyle='rgba(246,253,255,.96)';ctx.lineWidth=1.8;
+        ctx.beginPath();ctx.moveTo(-16,-31);ctx.quadraticCurveTo(-15,-51,0,-55);
+        ctx.quadraticCurveTo(15,-51,16,-31);ctx.lineTo(13,-22);ctx.lineTo(-13,-22);
+        ctx.closePath();ctx.fill();ctx.stroke();
+
+        // 무지개 투구 깃
+        ctx.fillStyle='#d9f3ff';ctx.beginPath();ctx.moveTo(-3,-54);ctx.lineTo(0,-65);ctx.lineTo(4,-54);ctx.closePath();ctx.fill();
+        for(let i=0;i<5;i++){
+          ctx.strokeStyle=`hsl(${(time*.035+i*58)%360},100%,70%)`;
+          ctx.lineWidth=3.1-i*.25;ctx.lineCap='round';
+          ctx.beginPath();ctx.moveTo(0,-58);ctx.quadraticCurveTo(-8-i*2,-68-i*2,-13-i*4,-61+i);ctx.stroke();
+        }
+
+        // 아군 청색 바이저
+        const visor=ctx.createLinearGradient(-11,-35,12,-29);
+        visor.addColorStop(0,'#aef6ff');visor.addColorStop(.45,'#37cfff');visor.addColorStop(1,'#2a70e8');
+        ctx.fillStyle=visor;ctx.shadowBlur=7;ctx.shadowColor='#45d8ff';
+        ctx.beginPath();ctx.roundRect(-11,-36,22,7,3);ctx.fill();ctx.shadowBlur=0;
+        ctx.fillStyle='rgba(255,255,255,.8)';ctx.fillRect(-7,-34,7,1.5);
+
+        // 프리즘 방패
+        const shield=ctx.createLinearGradient(-34,-13,-10,26);
+        shield.addColorStop(0,'#effcff');shield.addColorStop(.30,'#84dfff');
+        shield.addColorStop(.58,'#7a8fff');shield.addColorStop(.82,'#c281ff');shield.addColorStop(1,'#3b5477');
+        ctx.fillStyle=shield;ctx.strokeStyle='#eaffff';ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(-18,-12);ctx.quadraticCurveTo(-36,-10,-34,9);
+        ctx.quadraticCurveTo(-31,27,-18,35);ctx.quadraticCurveTo(-6,27,-4,9);
+        ctx.quadraticCurveTo(-3,-9,-18,-12);ctx.closePath();ctx.fill();ctx.stroke();
+
+        // 방패 별 문장
+        ctx.save();ctx.translate(-19,9);ctx.rotate(t*.7);
+        ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=1.6;ctx.beginPath();
+        for(let i=0;i<8;i++){
+          const a=i*Math.PI/4,rr=i%2?5:10,x=Math.cos(a)*rr,y=Math.sin(a)*rr;
+          if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+        }
+        ctx.closePath();ctx.stroke();ctx.restore();
+
+        // 창을 든 팔
+        ctx.strokeStyle='#697f95';ctx.lineWidth=7;ctx.lineCap='round';
+        ctx.beginPath();ctx.moveTo(13,-8);ctx.lineTo(22,7+run*.7);ctx.stroke();
+
+        // 긴 프리즘 창
+        const spear=ctx.createLinearGradient(13,5,69,-8);
+        spear.addColorStop(0,'#52657a');spear.addColorStop(.45,'#f6fbff');
+        spear.addColorStop(.72,'#86dfff');spear.addColorStop(1,'#ffffff');
+        ctx.strokeStyle=spear;ctx.lineWidth=4.5;
+        ctx.beginPath();ctx.moveTo(12,10);ctx.lineTo(61,-7);ctx.stroke();
+
+        const spearHead=ctx.createLinearGradient(58,-14,78,-2);
+        spearHead.addColorStop(0,'#fff');spearHead.addColorStop(.28,'#ff8fc4');
+        spearHead.addColorStop(.52,'#ffe379');spearHead.addColorStop(.72,'#6ce4c0');
+        spearHead.addColorStop(1,'#6ebdff');
+        ctx.fillStyle=spearHead;ctx.strokeStyle='#fff';ctx.lineWidth=1.3;
+        ctx.beginPath();ctx.moveTo(79,-13);ctx.lineTo(59,-15);ctx.lineTo(64,-6);ctx.lineTo(61,3);
+        ctx.closePath();ctx.fill();ctx.stroke();
+
+        // 궤도 프리즘 입자
+        ctx.globalCompositeOperation='lighter';
+        for(let i=0;i<4;i++){
+          const a=t*1.5+i*Math.PI/2+Number(s.stepSeed||0);
+          const rr=27+(i%2)*8,px=Math.cos(a)*rr,py=-8+Math.sin(a)*rr*.5;
+          ctx.fillStyle=`hsla(${(time*.03+i*85)%360},100%,78%,.55)`;
+          ctx.beginPath();ctx.arc(px,py,1.3,0,Math.PI*2);ctx.fill();
+        }
+        if(flash>0){
+          ctx.globalAlpha=flash*.55;ctx.fillStyle='#fff';
+          ctx.beginPath();ctx.arc(0,-8,42,0,Math.PI*2);ctx.fill();
+        }
         ctx.restore();
-        const ratio=Math.max(0,Math.min(1,Number(s.hp||0)/Math.max(1,Number(s.maxHp||1))));ctx.save();ctx.fillStyle='rgba(0,0,0,.58)';ctx.fillRect(s.x-22,s.y-36,44,5);const hpgr=ctx.createLinearGradient(s.x-22,0,s.x+22,0);hpgr.addColorStop(0,'#ff71a6');hpgr.addColorStop(.5,'#74f1a4');hpgr.addColorStop(1,'#76caff');ctx.fillStyle=hpgr;ctx.fillRect(s.x-22,s.y-36,44*ratio,5);ctx.restore();
-      }}
+
+        // HP 바는 화면 기준으로 항상 똑바르게 표시.
+        const ratio=Math.max(0,Math.min(1,Number(s.hp||0)/Math.max(1,Number(s.maxHp||1))));
+        ctx.save();
+        ctx.fillStyle='rgba(0,0,0,.64)';ctx.fillRect(s.x-27,s.y-58,54,7);
+        const hpgr=ctx.createLinearGradient(s.x-27,0,s.x+27,0);
+        hpgr.addColorStop(0,'#ff6fa8');hpgr.addColorStop(.48,'#72f0a4');hpgr.addColorStop(1,'#6fc8ff');
+        ctx.fillStyle=hpgr;ctx.fillRect(s.x-27,s.y-58,54*ratio,7);
+        ctx.strokeStyle='rgba(255,255,255,.72)';ctx.lineWidth=1;ctx.strokeRect(s.x-27,s.y-58,54,7);
+        ctx.font='900 9px Arial';ctx.textAlign='center';ctx.fillStyle='#fff';
+        ctx.fillText(Math.max(0,Math.round(Number(s.hp||0))).toLocaleString(),s.x,s.y-62);
+        ctx.restore();
+      }
+    }
 
     function updateRainbowBeyondUnit(placed,dt){
       if (!battle) return false;
@@ -20536,6 +20789,8 @@ function requestGachaDraw(count) {
         placed.attackCount = Number(placed.attackCount||0)+1;
         placed.rainbowBasicAttackCount = Number(placed.rainbowBasicAttackCount||0)+1;
         placed._rainbowAttackKillHp = 0;
+        placed._rainbowBasicAttackDamage = 0;
+        placed._rainbowCountDamageForSoldier = true;
         const triggerIssen = placed.rainbowBasicAttackCount % Math.max(1,Number(data.rainbowIssenEvery||20)) === 0;
         const dmg = Math.max(1,Number(placed.damage||data.damage||20000));
 
@@ -20557,6 +20812,8 @@ function requestGachaDraw(count) {
             angle:placed.angle,radius:meleeRange,visualRadius:104,coneAngle:134,compact:false,
             seed:Math.random()*1000,premium:true
           });
+          placed._rainbowCountDamageForSoldier=false;
+          placed._rainbowSoldierDamageBank=Math.max(0,Number(placed._rainbowSoldierDamageBank||0))+Math.max(0,Number(placed._rainbowBasicAttackDamage||0));
           maybeSpawnRainbowBeyondSoldier(placed,target);
           if(triggerIssen) startRainbowBeyondIssen(placed);
           return;
@@ -20590,6 +20847,8 @@ function requestGachaDraw(count) {
           });
           applyTraitDamage(placed,enemy,dmg);
         });
+        placed._rainbowCountDamageForSoldier=false;
+        placed._rainbowSoldierDamageBank=Math.max(0,Number(placed._rainbowSoldierDamageBank||0))+Math.max(0,Number(placed._rainbowBasicAttackDamage||0));
         maybeSpawnRainbowBeyondSoldier(placed,targets[0]||target);
         if(triggerIssen) startRainbowBeyondIssen(placed);
         return;
@@ -23440,7 +23699,7 @@ function requestGachaDraw(count) {
     const enemySpriteCache = new Map();
     let enemySpriteCacheTheme = -1;
     const ENEMY_SPRITE_CACHE_LIMIT = 280;
-    const ENEMY_SPRITE_CACHE_SCALE = Math.min(2.05, Math.max(1.35, Number(window.devicePixelRatio || 1) * 1.08));
+    const ENEMY_SPRITE_CACHE_SCALE = Math.min(2.20, Math.max(1.50, Number(window.devicePixelRatio || 1) * 1.10));
     const ENEMY_SPRITE_FRAMES = 24;
 
     function enemySpriteCanvas(width, height) {
@@ -23573,6 +23832,277 @@ function requestGachaDraw(count) {
       return proxy;
     }
 
+
+    // ===== PHOTO ENEMY RIG V37 =====
+    // 기본 실루엣 위에 관절/재질/세부 광택을 추가합니다.
+    // 이 함수는 적 스프라이트 캐시를 만들 때만 실행되므로 전투 매 프레임 비용은 작습니다.
+    function pdDrawPhotographicEnemyRigV37(g, enemy, kind, cx, cy, radius) {
+      const r=Math.max(10,Number(radius||enemy?.radius||22));
+      const time=Number(enemy?._pdRenderTime||0);
+      const type=String(enemy?.type||'normal');
+      const variant=String(enemy?.variant||'');
+      g.save();
+
+      if(kind==='pigeon'){
+        // 비둘기: 실제 걷는 다리 + 발가락 + 날개깃 분리.
+        // 캐시 프레임의 시간값을 사용해 좌/우 다리가 교대로 앞으로 나갑니다.
+        const phase=time*.014+Number(enemy?.wingPhase||0);
+        const gait=Math.sin(phase), gait2=Math.sin(phase+Math.PI);
+        const lift1=Math.max(0,Math.sin(phase+Math.PI*.20));
+        const lift2=Math.max(0,Math.sin(phase+Math.PI*1.20));
+
+        // 뒤쪽 다리 먼저
+        function leg(x0,p,lift,far){
+          const hipY=cy+r*.34;
+          const kneeX=x0+p*r*.12;
+          const kneeY=hipY+r*(.24-lift*.05);
+          const ankleX=x0+p*r*.22;
+          const ankleY=hipY+r*(.47-lift*.10);
+
+          g.save();
+          if(far)g.globalAlpha=.72;
+          const lg=g.createLinearGradient(x0,hipY,ankleX,ankleY);
+          lg.addColorStop(0,'#b45a46');lg.addColorStop(.50,'#d98265');lg.addColorStop(1,'#9b493b');
+          g.strokeStyle=lg;g.lineCap='round';g.lineJoin='round';
+          g.lineWidth=Math.max(2,r*.115);
+          g.beginPath();g.moveTo(x0,hipY);g.quadraticCurveTo(kneeX,kneeY,ankleX,ankleY);g.stroke();
+
+          // 발목 비늘
+          g.strokeStyle='rgba(255,210,185,.34)';g.lineWidth=Math.max(.6,r*.025);
+          for(let k=0;k<3;k++){
+            const yy=ankleY-r*.11+k*r*.055;
+            g.beginPath();g.moveTo(ankleX-r*.045,yy);g.lineTo(ankleX+r*.045,yy);g.stroke();
+          }
+
+          // 세 앞발가락 + 뒷발가락
+          const toeBaseY=ankleY+r*.015;
+          const toeSpread=r*.25;
+          const forward= p*r*.15;
+          g.strokeStyle='#b85d49';g.lineWidth=Math.max(1.1,r*.055);
+          for(const s of [-1,0,1]){
+            g.beginPath();
+            g.moveTo(ankleX,toeBaseY);
+            g.quadraticCurveTo(
+              ankleX+forward+toeSpread*.45,
+              toeBaseY+r*(.05+Math.abs(s)*.02),
+              ankleX+forward+toeSpread,
+              toeBaseY+s*r*.115+r*.07
+            );
+            g.stroke();
+          }
+          g.beginPath();
+          g.moveTo(ankleX,toeBaseY);
+          g.quadraticCurveTo(ankleX-r*.14,toeBaseY+r*.01,ankleX-r*.24,toeBaseY-r*.05);
+          g.stroke();
+
+          // 작은 검은 발톱
+          g.fillStyle='rgba(48,33,30,.78)';
+          for(const s of [-1,0,1]){
+            const tx=ankleX+forward+toeSpread;
+            const ty=toeBaseY+s*r*.115+r*.07;
+            g.beginPath();g.arc(tx,ty,Math.max(.7,r*.022),0,Math.PI*2);g.fill();
+          }
+          g.restore();
+        }
+        leg(cx-r*.16,gait2,lift2,true);
+        leg(cx+r*.12,gait,lift1,false);
+
+        // 날개깃: 몸체 위에 겹쳐 보이는 2차/1차 깃의 밝고 어두운 층.
+        const flap=Math.sin(time*.0155);
+        g.save();
+        g.translate(cx-r*.14,cy-r*.09);
+        g.rotate(-.10+flap*.13);
+        const wingGrad=g.createLinearGradient(-r*.82,-r*.20,r*.50,r*.30);
+        wingGrad.addColorStop(0,'rgba(50,62,72,.84)');
+        wingGrad.addColorStop(.35,'rgba(88,103,114,.84)');
+        wingGrad.addColorStop(.70,'rgba(152,165,174,.74)');
+        wingGrad.addColorStop(1,'rgba(224,232,236,.58)');
+        g.fillStyle=wingGrad;
+        g.beginPath();
+        g.moveTo(r*.35,-r*.14);
+        g.bezierCurveTo(-r*.12,-r*.42,-r*.58,-r*.33,-r*.98,r*.04);
+        g.bezierCurveTo(-r*.66,r*.27,-r*.23,r*.35,r*.42,r*.13);
+        g.closePath();g.fill();
+
+        for(let i=0;i<7;i++){
+          const q=i/6;
+          const bx=-r*(.16+q*.44), by=-r*(.12-q*.13);
+          const tx=-r*(.54+q*.57), ty=r*(.04+q*.17+flap*.025*i);
+          const feather=g.createLinearGradient(bx,by,tx,ty);
+          feather.addColorStop(0,i%2?'rgba(144,158,167,.65)':'rgba(111,126,137,.76)');
+          feather.addColorStop(1,'rgba(43,54,63,.88)');
+          g.fillStyle=feather;
+          g.beginPath();
+          g.moveTo(bx,by);
+          g.quadraticCurveTo((bx+tx)*.52,ty-r*.11,tx,ty);
+          g.quadraticCurveTo((bx+tx)*.53,ty+r*.07,bx+r*.14,by+r*.13);
+          g.closePath();g.fill();
+          g.strokeStyle='rgba(225,235,240,.23)';g.lineWidth=Math.max(.45,r*.017);
+          g.beginPath();g.moveTo(bx+r*.03,by+r*.03);g.lineTo(tx-r*.04,ty);g.stroke();
+        }
+        g.restore();
+
+        // 가슴의 볼륨을 살리는 반투명 솜털 층.
+        const breast=g.createRadialGradient(cx+r*.17,cy+r*.03,2,cx+r*.04,cy+r*.10,r*.88);
+        breast.addColorStop(0,'rgba(255,255,255,.19)');
+        breast.addColorStop(.48,'rgba(227,235,239,.08)');
+        breast.addColorStop(1,'rgba(0,0,0,0)');
+        g.fillStyle=breast;g.beginPath();g.ellipse(cx+r*.02,cy+r*.10,r*.72,r*.58,.05,0,Math.PI*2);g.fill();
+
+        // 목 구조색: 실제 비둘기처럼 녹색→청록→보라의 얇은 반사.
+        g.globalCompositeOperation='screen';
+        const neck=g.createLinearGradient(cx+r*.30,cy-r*.72,cx+r*.72,cy-r*.12);
+        neck.addColorStop(0,'rgba(36,224,156,.10)');
+        neck.addColorStop(.30,'rgba(36,189,165,.22)');
+        neck.addColorStop(.58,'rgba(68,100,205,.15)');
+        neck.addColorStop(.82,'rgba(180,65,184,.16)');
+        neck.addColorStop(1,'rgba(255,255,255,0)');
+        g.fillStyle=neck;
+        g.beginPath();g.ellipse(cx+r*.44,cy-r*.36,r*.34,r*.52,-.28,0,Math.PI*2);g.fill();
+        g.globalCompositeOperation='source-over';
+
+        // 눈: 광택 있는 홍채 + 동공 + 반사점.
+        const eyeX=cx+r*.76, eyeY=cy-r*.55;
+        const eyeOuter=g.createRadialGradient(eyeX-r*.025,eyeY-r*.02,1,eyeX,eyeY,r*.15);
+        eyeOuter.addColorStop(0,'#ffdc8a');eyeOuter.addColorStop(.42,'#e9843e');
+        eyeOuter.addColorStop(.72,'#a83e26');eyeOuter.addColorStop(1,'#301b1a');
+        g.fillStyle='rgba(236,241,242,.88)';
+        g.beginPath();g.arc(eyeX,eyeY,r*.145,0,Math.PI*2);g.fill();
+        g.fillStyle=eyeOuter;g.beginPath();g.arc(eyeX,eyeY,r*.105,0,Math.PI*2);g.fill();
+        g.fillStyle='#07090a';g.beginPath();g.arc(eyeX+r*.012,eyeY,r*.052,0,Math.PI*2);g.fill();
+        g.fillStyle='rgba(255,255,255,.96)';g.beginPath();g.arc(eyeX-r*.03,eyeY-r*.035,r*.022,0,Math.PI*2);g.fill();
+
+        // 부리의 각질 하이라이트.
+        const beak=g.createLinearGradient(cx+r*.86,cy-r*.45,cx+r*1.27,cy-r*.35);
+        beak.addColorStop(0,'rgba(228,201,181,.78)');
+        beak.addColorStop(.50,'rgba(194,139,111,.90)');
+        beak.addColorStop(1,'rgba(116,77,65,.88)');
+        g.fillStyle=beak;
+        g.beginPath();
+        g.moveTo(cx+r*.86,cy-r*.47);g.lineTo(cx+r*1.25,cy-r*.36);
+        g.lineTo(cx+r*.88,cy-r*.28);g.closePath();g.fill();
+        g.strokeStyle='rgba(74,46,42,.60)';g.lineWidth=Math.max(.5,r*.02);
+        g.beginPath();g.moveTo(cx+r*.91,cy-r*.36);g.lineTo(cx+r*1.18,cy-r*.36);g.stroke();
+
+      } else if(kind==='golem'){
+        // 돌틈의 AO + 이끼 + 광물 결정을 더해 실제 암석 느낌 강화.
+        g.save();g.globalCompositeOperation='multiply';
+        for(let i=0;i<12;i++){
+          const a=i*.91+time*.0002, rr=r*(.22+(i%4)*.18);
+          g.strokeStyle=`rgba(22,25,24,${.06+(i%3)*.018})`;
+          g.lineWidth=Math.max(.7,r*.027);
+          g.beginPath();
+          g.moveTo(cx+Math.cos(a)*rr,cy+Math.sin(a)*rr*.95);
+          g.lineTo(cx+Math.cos(a+.44)*rr*1.35,cy+Math.sin(a+.44)*rr*1.12);
+          g.stroke();
+        }
+        g.restore();
+        g.fillStyle='rgba(69,92,55,.18)';
+        for(let i=0;i<8;i++){
+          const a=i*2.13+1.4;
+          g.beginPath();g.ellipse(cx+Math.cos(a)*r*.62,cy+Math.sin(a)*r*.58,r*.10,r*.05,a,0,Math.PI*2);g.fill();
+        }
+        g.globalCompositeOperation='screen';
+        g.fillStyle='rgba(197,231,255,.18)';
+        for(let i=0;i<5;i++){
+          const a=i*1.7+.4, px=cx+Math.cos(a)*r*.58,py=cy+Math.sin(a)*r*.55;
+          g.beginPath();g.moveTo(px,py-r*.08);g.lineTo(px+r*.045,py);g.lineTo(px,py+r*.09);g.lineTo(px-r*.04,py);g.closePath();g.fill();
+        }
+        g.globalCompositeOperation='source-over';
+
+      } else if(kind==='llama'){
+        // 긴 털 다발: 실루엣 바깥까지 살짝 튀어나오도록 하여 사진 같은 털 가장자리 생성.
+        const phase=time*.010;
+        g.lineCap='round';
+        for(let i=0;i<56;i++){
+          const a=(i/56)*Math.PI*2;
+          const px=cx+Math.cos(a)*r*(.78+.10*Math.sin(i*2.7));
+          const py=cy+Math.sin(a)*r*(.58+.08*Math.cos(i*1.9));
+          const len=r*(.08+(i%5)*.012);
+          const sway=Math.sin(phase+i*.73)*r*.025;
+          g.strokeStyle=i%3===0?'rgba(255,246,225,.40)':'rgba(113,83,64,.20)';
+          g.lineWidth=Math.max(.5,r*.022);
+          g.beginPath();g.moveTo(px,py);g.quadraticCurveTo(px+sway,py+len*.45,px+sway*.5,py+len);g.stroke();
+        }
+        // 코/눈 주변의 촉촉한 반사.
+        g.globalCompositeOperation='screen';
+        g.fillStyle='rgba(255,255,255,.20)';
+        g.beginPath();g.ellipse(cx+r*.68,cy-r*.26,r*.18,r*.08,-.15,0,Math.PI*2);g.fill();
+        g.globalCompositeOperation='source-over';
+
+      } else if(kind==='scorpion'){
+        // 관절마다 갑각 하이라이트, 다리 끝은 실제 보행처럼 위아래 변화.
+        const p=time*.018;
+        g.lineCap='round';
+        for(let side of [-1,1]){
+          for(let i=0;i<4;i++){
+            const gait=Math.sin(p+i*1.15+(side<0?Math.PI:0));
+            const rootX=cx-r*.12+i*r*.13, rootY=cy+side*r*(.22+i*.045);
+            const midX=rootX-r*(.25+i*.035), midY=rootY+side*r*(.15+gait*.035);
+            const tipX=midX-r*(.24+i*.04), tipY=midY+side*r*(.11-gait*.06);
+            g.strokeStyle='rgba(55,27,20,.82)';g.lineWidth=Math.max(1.3,r*.065);
+            g.beginPath();g.moveTo(rootX,rootY);g.lineTo(midX,midY);g.lineTo(tipX,tipY);g.stroke();
+            g.strokeStyle='rgba(255,205,153,.22)';g.lineWidth=Math.max(.45,r*.018);
+            g.beginPath();g.moveTo(rootX,rootY-r*.02*side);g.lineTo(midX,midY-r*.02*side);g.stroke();
+          }
+        }
+        // 단단한 등판의 점광원 반사.
+        g.globalCompositeOperation='screen';
+        const hi=g.createLinearGradient(cx-r*.55,cy-r*.38,cx+r*.55,cy+r*.15);
+        hi.addColorStop(0,'rgba(255,235,204,.20)');
+        hi.addColorStop(.42,'rgba(255,175,116,.08)');
+        hi.addColorStop(1,'rgba(255,255,255,0)');
+        g.fillStyle=hi;g.beginPath();g.ellipse(cx,cy-r*.06,r*.68,r*.43,-.1,0,Math.PI*2);g.fill();
+        g.globalCompositeOperation='source-over';
+
+      } else if(kind==='sandworm'){
+        // 젖은 가죽성 표피와 각 체절의 밝은 윗면/어두운 아랫면.
+        for(let i=0;i<8;i++){
+          const yy=cy-r*.62+i*r*.18;
+          g.strokeStyle=i%2?'rgba(255,218,163,.19)':'rgba(89,42,25,.24)';
+          g.lineWidth=Math.max(1,r*.055);
+          g.beginPath();g.ellipse(cx,yy,r*(.58+i*.035),r*.105,0,0,Math.PI*2);g.stroke();
+        }
+        g.globalCompositeOperation='screen';
+        const wet=g.createLinearGradient(cx-r*.7,cy-r*.9,cx+r*.3,cy+r*.5);
+        wet.addColorStop(0,'rgba(255,240,200,.18)');
+        wet.addColorStop(.45,'rgba(255,165,110,.07)');
+        wet.addColorStop(1,'rgba(255,255,255,0)');
+        g.fillStyle=wet;g.beginPath();g.ellipse(cx-r*.10,cy-r*.12,r*.72,r*.92,0,0,Math.PI*2);g.fill();
+        g.globalCompositeOperation='source-over';
+
+      } else if(kind==='cactus'){
+        // 왁스성 표피, 실제 세로 능선, 가시 그림자.
+        for(let i=-4;i<=4;i++){
+          const xx=cx+i*r*.105;
+          g.strokeStyle=i%2?'rgba(205,240,146,.22)':'rgba(22,73,35,.18)';
+          g.lineWidth=Math.max(.7,r*.028);
+          g.beginPath();g.moveTo(xx,cy-r*.93);g.quadraticCurveTo(xx+i*r*.008,cy,xx,cy+r*.65);g.stroke();
+        }
+        for(let i=0;i<18;i++){
+          const a=i*2.17,px=cx+Math.sin(a)*r*.31,py=cy-r*.78+(i%7)*r*.22;
+          g.strokeStyle='rgba(252,238,185,.78)';g.lineWidth=Math.max(.5,r*.016);
+          g.beginPath();g.moveTo(px,py);g.lineTo(px+Math.cos(a)*r*.11,py+Math.sin(a)*r*.07);g.stroke();
+          g.strokeStyle='rgba(30,52,26,.16)';g.beginPath();g.moveTo(px+r*.018,py+r*.025);g.lineTo(px+r*.09,py+r*.08);g.stroke();
+        }
+
+      } else if(kind==='rainbow'){
+        // 무지개 적: 장난감 플라스틱 대신 금속/유리 프리즘 재질.
+        g.globalCompositeOperation='screen';
+        const prism=g.createLinearGradient(cx-r,cy-r,cx+r,cy+r);
+        prism.addColorStop(0,'rgba(255,116,160,.15)');
+        prism.addColorStop(.22,'rgba(255,220,100,.15)');
+        prism.addColorStop(.44,'rgba(110,245,176,.13)');
+        prism.addColorStop(.67,'rgba(100,200,255,.16)');
+        prism.addColorStop(.86,'rgba(187,125,255,.15)');
+        prism.addColorStop(1,'rgba(255,255,255,.04)');
+        g.fillStyle=prism;g.fillRect(cx-r*1.45,cy-r*1.45,r*2.9,r*2.9);
+        g.globalCompositeOperation='source-over';
+      }
+
+      g.restore();
+    }
+
     // ===== 2D PHOTO MATERIAL FINISH V1 =====
     // 기존 적 실루엣은 유지하면서, 캐시 스프라이트 위에 종류별 미세 질감과
     // 방향성 조명을 합성해 종이/카툰 느낌을 줄이고 사진 같은 표면감을 만듭니다.
@@ -23586,109 +24116,160 @@ function requestGachaDraw(count) {
     }
 
     function pdApplyPhotoEnemyFinish(g, enemy, kind, cx, cy, radius) {
-      const r = Math.max(10, Number(radius || enemy?.radius || 22));
-      let seed = pdEnemyPhotoSeed(`${kind}|${enemy?.type||'normal'}|${enemy?.variant||''}|${Math.round(r)}`);
-      const rnd = () => {
-        seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
-        return seed / 4294967296;
-      };
-      const span = r * (kind === 'scorpion' ? 2.7 : kind === 'sandworm' ? 2.45 : 2.15);
+      const r=Math.max(10,Number(radius||enemy?.radius||22));
+      // Render-time is attached temporarily so articulated details can match cached animation frame.
+      enemy._pdRenderTime=Number(enemy._pdRenderTime||0);
+      pdDrawPhotographicEnemyRigV37(g,enemy,kind,cx,cy,r);
+
+      let seed=pdEnemyPhotoSeed(`${kind}|${enemy?.type||'normal'}|${enemy?.variant||''}|${Math.round(r)}`);
+      const rnd=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+      const span=r*(kind==='scorpion'?2.9:kind==='sandworm'?2.65:kind==='pigeon'?2.55:2.35);
 
       g.save();
-      // 이미 그려진 적 픽셀 안에서만 작동합니다. 투명 배경은 건드리지 않습니다.
-      g.globalCompositeOperation = 'source-atop';
 
-      // 왼쪽 위에서 들어오는 부드러운 자연광 + 오른쪽 아래의 접촉 음영.
-      const light = g.createLinearGradient(cx-span, cy-span, cx+span, cy+span);
-      light.addColorStop(0, 'rgba(255,255,255,.20)');
-      light.addColorStop(.34, 'rgba(255,255,255,.045)');
-      light.addColorStop(.62, 'rgba(31,39,45,.015)');
-      light.addColorStop(1, 'rgba(7,10,14,.20)');
-      g.fillStyle = light;
-      g.fillRect(cx-span, cy-span, span*2, span*2);
+      // 1) Ambient-occlusion edge shading.
+      g.globalCompositeOperation='source-atop';
+      const ao=g.createRadialGradient(cx-r*.18,cy-r*.22,r*.12,cx,cy,r*1.62);
+      ao.addColorStop(0,'rgba(0,0,0,0)');
+      ao.addColorStop(.52,'rgba(0,0,0,.015)');
+      ao.addColorStop(.79,'rgba(12,15,18,.10)');
+      ao.addColorStop(1,'rgba(4,6,8,.26)');
+      g.fillStyle=ao;g.fillRect(cx-span,cy-span,span*2,span*2);
 
-      // 아주 미세한 필름 그레인. 캐시 생성 때 한 번만 계산되므로 전투 중 부담이 작습니다.
-      const grainCount = kind === 'golem' ? 150 : kind === 'llama' ? 170 : kind === 'pigeon' ? 145 : 120;
-      for (let i = 0; i < grainCount; i += 1) {
-        const px = cx + (rnd()-.5) * span * 1.65;
-        const py = cy + (rnd()-.5) * span * 1.65;
-        const bright = rnd() > .48;
-        const a = .018 + rnd() * .045;
-        g.fillStyle = bright ? `rgba(255,255,255,${a})` : `rgba(8,10,12,${a*.82})`;
-        const sz = .45 + rnd() * 1.15;
-        g.fillRect(px, py, sz, sz);
+      // 2) Soft daylight from upper-left.
+      g.globalCompositeOperation='screen';
+      const light=g.createLinearGradient(cx-span,cy-span,cx+span,cy+span);
+      light.addColorStop(0,'rgba(255,255,255,.30)');
+      light.addColorStop(.25,'rgba(255,247,231,.12)');
+      light.addColorStop(.53,'rgba(212,229,238,.035)');
+      light.addColorStop(1,'rgba(255,255,255,0)');
+      g.fillStyle=light;g.fillRect(cx-span,cy-span,span*2,span*2);
+
+      // 3) Lower-right contact shadow for volume.
+      g.globalCompositeOperation='multiply';
+      const shade=g.createLinearGradient(cx-r*.15,cy-r*.25,cx+r*1.25,cy+r*1.35);
+      shade.addColorStop(0,'rgba(255,255,255,0)');
+      shade.addColorStop(.54,'rgba(45,50,55,.02)');
+      shade.addColorStop(1,'rgba(20,23,28,.21)');
+      g.fillStyle=shade;g.fillRect(cx-span,cy-span,span*2,span*2);
+
+      // 4) Micro texture / sensor grain. Cached once per animation frame.
+      g.globalCompositeOperation='source-atop';
+      const grainCount =
+        kind==='pigeon'?300:
+        kind==='llama'?260:
+        kind==='golem'?220:
+        kind==='scorpion'?210:
+        kind==='sandworm'?180:
+        kind==='cactus'?170:190;
+      for(let i=0;i<grainCount;i++){
+        const px=cx+(rnd()-.5)*span*1.72,py=cy+(rnd()-.5)*span*1.72;
+        const a=.012+rnd()*.050, bright=rnd()>.53;
+        g.fillStyle=bright?`rgba(255,255,255,${a})`:`rgba(5,7,9,${a*.82})`;
+        const sz=.35+rnd()*1.08;
+        g.fillRect(px,py,sz,sz);
       }
 
-      if (kind === 'pigeon') {
-        // 짧은 깃털 결: 몸통 방향으로 흐르는 섬세한 바브 패턴.
+      if(kind==='pigeon'){
+        // Body contour feathers: many short curved barbs instead of flat fill.
         g.lineCap='round';
-        for (let i=0;i<74;i+=1) {
-          const px=cx+(rnd()-.56)*r*2.35, py=cy+(rnd()-.5)*r*1.55;
-          const len=r*(.10+rnd()*.23), bend=(rnd()-.5)*r*.08;
-          g.strokeStyle=rnd()>.34?'rgba(238,244,248,.095)':'rgba(25,32,38,.075)';
-          g.lineWidth=.45+rnd()*.75;
-          g.beginPath();g.moveTo(px,py);g.quadraticCurveTo(px-len*.46,py+bend,px-len,py+bend*.34);g.stroke();
+        for(let i=0;i<165;i++){
+          const px=cx+(rnd()-.60)*r*2.45,py=cy+(rnd()-.48)*r*1.72;
+          const len=r*(.07+rnd()*.18),curve=(rnd()-.5)*r*.07;
+          g.strokeStyle=rnd()>.36?'rgba(246,250,252,.105)':'rgba(23,29,34,.085)';
+          g.lineWidth=.35+rnd()*.65;
+          g.beginPath();g.moveTo(px,py);
+          g.quadraticCurveTo(px-len*.48,py+curve,px-len,py+curve*.28);g.stroke();
         }
-        // 목의 녹색/보라색 구조색을 아주 얕게 합성.
-        const ir=g.createRadialGradient(cx+r*.45,cy-r*.48,1,cx+r*.38,cy-r*.42,r*.68);
-        ir.addColorStop(0,'rgba(75,205,168,.15)');ir.addColorStop(.42,'rgba(92,104,205,.07)');ir.addColorStop(1,'rgba(0,0,0,0)');
-        g.fillStyle=ir;g.fillRect(cx-r*.3,cy-r*1.25,r*1.7,r*1.55);
-      } else if (kind === 'llama') {
-        // 불규칙한 짧은 털 다발. 완전한 직선보다 미세하게 휘게 합니다.
+
+        // Wing coverts: overlapping scalloped feather edges.
+        for(let row=0;row<4;row++){
+          for(let col=0;col<7;col++){
+            const px=cx-r*(.12+col*.11),py=cy-r*(.19-row*.105);
+            g.strokeStyle=`rgba(245,249,251,${.07+row*.014})`;
+            g.lineWidth=.6;
+            g.beginPath();g.arc(px,py,r*(.13-row*.012),Math.PI*.12,Math.PI*.92);g.stroke();
+          }
+        }
+
+        // Iridescent neck micro-bars.
+        g.globalCompositeOperation='screen';
+        for(let i=0;i<36;i++){
+          const a=i/35*Math.PI*2;
+          const px=cx+r*.42+Math.cos(a)*r*(.20+rnd()*.08);
+          const py=cy-r*.38+Math.sin(a)*r*(.35+rnd()*.08);
+          const hue=i%3===0?155:(i%3===1?205:292);
+          g.strokeStyle=`hsla(${hue},80%,63%,${.035+rnd()*.075})`;
+          g.lineWidth=.55+rnd()*.55;
+          g.beginPath();g.moveTo(px-r*.05,py);g.lineTo(px+r*.05,py+r*.025);g.stroke();
+        }
+        g.globalCompositeOperation='source-atop';
+
+      } else if(kind==='llama'){
         g.lineCap='round';
-        for (let i=0;i<105;i+=1) {
-          const px=cx+(rnd()-.52)*r*2.2, py=cy+(rnd()-.53)*r*2.45;
-          const len=r*(.07+rnd()*.18), sway=(rnd()-.5)*r*.12;
-          g.strokeStyle=rnd()>.30?'rgba(255,250,238,.12)':'rgba(91,67,53,.07)';
-          g.lineWidth=.5+rnd()*.9;
-          g.beginPath();g.moveTo(px,py);g.quadraticCurveTo(px+sway,py+len*.48,px+sway*.55,py+len);g.stroke();
+        for(let i=0;i<180;i++){
+          const px=cx+(rnd()-.52)*r*2.25,py=cy+(rnd()-.52)*r*2.48;
+          const len=r*(.055+rnd()*.16),sway=(rnd()-.5)*r*.10;
+          g.strokeStyle=rnd()>.32?'rgba(255,250,239,.13)':'rgba(83,61,49,.075)';
+          g.lineWidth=.4+rnd()*.85;
+          g.beginPath();g.moveTo(px,py);g.quadraticCurveTo(px+sway,py+len*.45,px+sway*.48,py+len);g.stroke();
         }
-      } else if (kind === 'golem') {
-        // 돌 표면의 작은 균열과 광물 입자.
-        g.lineCap='butt';g.lineJoin='miter';
-        for (let i=0;i<34;i+=1) {
-          const px=cx+(rnd()-.5)*r*1.85, py=cy+(rnd()-.47)*r*2.0;
-          const len=r*(.16+rnd()*.35), ang=rnd()*Math.PI*2;
-          const mx=px+Math.cos(ang)*len*.54, my=py+Math.sin(ang)*len*.54;
-          const ex=mx+Math.cos(ang+(rnd()-.5)*1.15)*len*.55, ey=my+Math.sin(ang+(rnd()-.5)*1.15)*len*.55;
-          g.strokeStyle='rgba(23,25,23,.15)';g.lineWidth=.65+rnd()*1.1;
+
+      } else if(kind==='golem'){
+        for(let i=0;i<58;i++){
+          const px=cx+(rnd()-.5)*r*1.95,py=cy+(rnd()-.48)*r*2.08;
+          const len=r*(.11+rnd()*.27),ang=rnd()*Math.PI*2;
+          const mx=px+Math.cos(ang)*len*.50,my=py+Math.sin(ang)*len*.50;
+          const ex=mx+Math.cos(ang+(rnd()-.5)*1.10)*len*.55,ey=my+Math.sin(ang+(rnd()-.5)*1.10)*len*.55;
+          g.strokeStyle='rgba(19,22,20,.17)';g.lineWidth=.5+rnd()*1.0;
           g.beginPath();g.moveTo(px,py);g.lineTo(mx,my);g.lineTo(ex,ey);g.stroke();
-          if(rnd()>.62){g.fillStyle='rgba(230,234,224,.11)';g.fillRect(px-1,py-1,1.5+rnd()*1.7,1.5+rnd()*1.7);}
+          if(rnd()>.66){g.fillStyle='rgba(232,238,228,.12)';g.fillRect(px,py,.8+rnd()*1.8,.8+rnd()*1.8);}
         }
-      } else if (kind === 'scorpion') {
-        // 검은 갑각의 얇고 강한 반사광.
-        g.lineCap='round';
-        for (let i=0;i<48;i+=1) {
-          const px=cx+(rnd()-.48)*r*2.7, py=cy+(rnd()-.5)*r*2.0;
-          const len=r*(.08+rnd()*.18);
-          g.strokeStyle=rnd()>.22?'rgba(255,221,188,.10)':'rgba(255,255,255,.055)';
-          g.lineWidth=.45+rnd()*.8;
-          g.beginPath();g.moveTo(px,py);g.lineTo(px+len,py-len*.16);g.stroke();
+
+      } else if(kind==='scorpion'){
+        for(let i=0;i<88;i++){
+          const px=cx+(rnd()-.48)*r*2.85,py=cy+(rnd()-.5)*r*2.10;
+          const len=r*(.05+rnd()*.14);
+          g.strokeStyle=rnd()>.20?'rgba(255,224,193,.115)':'rgba(255,255,255,.06)';
+          g.lineWidth=.35+rnd()*.70;
+          g.beginPath();g.moveTo(px,py);g.lineTo(px+len,py-len*.14);g.stroke();
         }
-      } else if (kind === 'sandworm') {
-        // 가죽성 주름과 모래 마모.
-        for(let i=0;i<30;i+=1){
-          const py=cy-r*.85+i*(r*1.7/29)+(rnd()-.5)*r*.05;
-          g.strokeStyle='rgba(82,43,24,.105)';g.lineWidth=.6+rnd()*.9;
-          g.beginPath();g.moveTo(cx-r*1.45,py);g.quadraticCurveTo(cx,py+(rnd()-.5)*r*.13,cx+r*1.25,py);g.stroke();
+
+      } else if(kind==='sandworm'){
+        for(let i=0;i<44;i++){
+          const py=cy-r*.88+i*(r*1.78/43)+(rnd()-.5)*r*.035;
+          g.strokeStyle='rgba(73,39,25,.105)';g.lineWidth=.5+rnd()*.75;
+          g.beginPath();g.moveTo(cx-r*1.42,py);
+          g.quadraticCurveTo(cx,py+(rnd()-.5)*r*.11,cx+r*1.32,py);g.stroke();
         }
-      } else if (kind === 'cactus') {
-        // 선인장 세로 골과 표피 점묘.
-        for(let i=-4;i<=4;i+=1){
-          g.strokeStyle=i%2?'rgba(224,242,169,.085)':'rgba(16,74,37,.09)';g.lineWidth=.65;
-          g.beginPath();g.moveTo(cx+i*r*.13,cy-r*1.16);g.quadraticCurveTo(cx+i*r*.15,cy,cx+i*r*.12,cy+r*.85);g.stroke();
+
+      } else if(kind==='cactus'){
+        for(let i=-5;i<=5;i++){
+          g.strokeStyle=i%2?'rgba(230,246,182,.10)':'rgba(13,68,32,.11)';
+          g.lineWidth=.55;
+          g.beginPath();g.moveTo(cx+i*r*.11,cy-r*1.18);
+          g.quadraticCurveTo(cx+i*r*.13,cy,cx+i*r*.10,cy+r*.87);g.stroke();
         }
-      } else if (kind === 'rainbow') {
-        // 무지개 적도 플라스틱처럼 보이지 않도록 작은 표면 스크래치를 추가합니다.
-        for(let i=0;i<44;i+=1){
-          const px=cx+(rnd()-.5)*r*2.2,py=cy+(rnd()-.5)*r*2.1,len=r*(.04+rnd()*.10);
-          g.strokeStyle='rgba(255,255,255,.085)';g.lineWidth=.5;
-          g.beginPath();g.moveTo(px,py);g.lineTo(px+len,py-len*.22);g.stroke();
+
+      } else if(kind==='rainbow'){
+        for(let i=0;i<70;i++){
+          const px=cx+(rnd()-.5)*r*2.35,py=cy+(rnd()-.5)*r*2.20,len=r*(.03+rnd()*.085);
+          g.strokeStyle='rgba(255,255,255,.095)';g.lineWidth=.45;
+          g.beginPath();g.moveTo(px,py);g.lineTo(px+len,py-len*.18);g.stroke();
         }
       }
-      g.restore();
-    }
 
+      // 5) Crisp photographic rim light without cartoon outline.
+      g.globalCompositeOperation='screen';
+      const rim=g.createLinearGradient(cx-r*1.1,cy-r*1.2,cx+r*.3,cy+r*.8);
+      rim.addColorStop(0,'rgba(255,255,255,.12)');
+      rim.addColorStop(.34,'rgba(210,237,250,.045)');
+      rim.addColorStop(1,'rgba(255,255,255,0)');
+      g.fillStyle=rim;g.fillRect(cx-span,cy-span,span*2,span*2);
+
+      g.restore();
+      try{delete enemy._pdRenderTime;}catch(_){}
+    }
     function renderEnemySpriteBase(g, proxy, kind, cx, cy, renderTime) {
       if (kind === 'rainbow') drawCanvasRainbowEnemy(proxy, cx, cy, renderTime, g);
       else if (kind === 'golem') drawCanvasGolem(proxy, cx, cy, renderTime, g);
@@ -23719,6 +24300,7 @@ function requestGachaDraw(count) {
       const logicalSize = half * 2;
       const { surface, g } = enemySpriteCanvas(logicalSize, logicalSize);
       const proxy = enemySpriteProxy(enemy, kind, data.facing);
+      proxy._pdRenderTime = data.info.renderTime;
       renderEnemySpriteBase(g, proxy, kind, half, half, data.info.renderTime);
       pdApplyPhotoEnemyFinish(g, proxy, kind, half, half, data.radius);
       let bitmap=null;
@@ -23804,7 +24386,7 @@ function drawPremiumEnemyBackdrop(enemy, drawX, drawY, time) {
       if (moving) {
         ctx.globalCompositeOperation = 'lighter';
         if (kind === 'pigeon') {
-          for (let i=0;i<3;i++) {
+          for (let i=0;i<1;i++) {
             const y=-r*.15+i*r*.24+Math.sin(t*5+i)*2;
             ctx.strokeStyle=`rgba(205,235,255,${.16+i*.045})`;ctx.lineWidth=1.4+i*.35;
             ctx.beginPath();ctx.moveTo(-r*.55-i*4,y);ctx.quadraticCurveTo(-r*1.05-i*7,y-3,-r*1.55-i*8,y+1);ctx.stroke();
@@ -34817,7 +35399,7 @@ function drawEnemy(enemy, time) {
     area.classList.add('pd-photo2d-ready');
     const frame=(t)=>{requestAnimationFrame(frame);if(t-last<33)return;last=t;const menu=document.getElementById('menuScreen');if(!menu||menu.classList.contains('hidden'))return;
       const dpr=c._pdDpr||1,w=c._pdW||280,h=c._pdH||280;g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,c.width,c.height);g.setTransform(dpr,0,0,dpr,0,0);g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
-      const hero=area.querySelector('.enemy-pigeon');const sid=Math.max(1,Math.min(4,Number(hero?.dataset.enemyStage||1)));const r=Math.min(w,h)*(sid===4?.155:(sid===2||sid===3?.18:.17));const e={radius:r,wingPhase:.4,heading:0,type:'normal',variant:'',speed:50,maxHealth:100,health:100};
+      const hero=area.querySelector('.enemy-pigeon');const sid=Math.max(1,Math.min(4,Number(hero?.dataset.enemyStage||1)));const r=Math.min(w,h)*(sid===4?.155:(sid===2||sid===3?.18:.17));const e={radius:r,wingPhase:.4,heading:0,type:'normal',variant:'',speed:50,maxHealth:100,health:100,_pdRenderTime:t};
       if(sid===2){e.variant='Golem';drawCanvasGolem(e,w/2,h/2+4,t,g);if(typeof pdApplyPhotoEnemyFinish==='function')pdApplyPhotoEnemyFinish(g,e,'golem',w/2,h/2+4,r);}
       else if(sid===3){e.variant='llama';drawCanvasLlama(e,w/2,h/2+8,t,g);if(typeof pdApplyPhotoEnemyFinish==='function')pdApplyPhotoEnemyFinish(g,e,'llama',w/2,h/2+8,r);}
       else if(sid===4){e.variant='scorpion';drawCanvasScorpion(e,w/2,h/2+5,t,g);if(typeof pdApplyPhotoEnemyFinish==='function')pdApplyPhotoEnemyFinish(g,e,'scorpion',w/2,h/2+5,r);}
@@ -34964,6 +35546,734 @@ Eden minion array sort/allocation, and redundant visual FX were reduced. -->
 2) Auto-login restores the Supabase session and player data BEFORE playing the loading animation.
 3) Loading pigeon upgraded with layered feathers, iridescent neck, detailed eye/beak/feet.
 Server roll_unit_trait_v1 was migrated to enforce the same rainbow costs. -->
+
+
+<!-- V35 LOBBY UI REWORK
+Original Pigeon Defense lobby inspired by the compact hierarchy of dice/luck-defense games:
+status bar + stage card + large play CTA + icon menu dock. Existing IDs and game actions are preserved. -->
+
+<style id="pdLobbyUIV35">
+:root{
+  --pd-lobby-bg:#07111f;
+  --pd-lobby-panel:#0d1b2e;
+  --pd-lobby-panel-2:#13243b;
+  --pd-lobby-line:rgba(183,218,255,.18);
+  --pd-lobby-blue:#43c6ff;
+  --pd-lobby-blue2:#2b73ff;
+  --pd-lobby-yellow:#ffd74a;
+  --pd-lobby-orange:#ff9d32;
+  --pd-lobby-text:#f7fbff;
+  --pd-lobby-muted:#91a9c1;
+}
+
+/* ===== V35 GAME LOBBY — Random-dice / luck-defense inspired structure, original Pigeon Defense skin ===== */
+#menuScreen.invasion-menu{
+  min-height:100dvh!important;
+  height:100dvh!important;
+  padding:0!important;
+  overflow:hidden!important;
+  color:var(--pd-lobby-text)!important;
+  background:
+    radial-gradient(circle at 50% -10%,rgba(55,163,255,.28),transparent 34%),
+    radial-gradient(circle at 12% 76%,rgba(43,115,255,.13),transparent 28%),
+    linear-gradient(180deg,#0a1728 0%,#07101d 53%,#050b14 100%)!important;
+}
+#menuScreen.invasion-menu::before{
+  content:""!important;position:absolute!important;inset:0!important;z-index:0!important;pointer-events:none!important;
+  background:
+    linear-gradient(rgba(102,173,234,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(102,173,234,.035) 1px,transparent 1px)!important;
+  background-size:44px 44px!important;
+  mask-image:linear-gradient(to bottom,rgba(0,0,0,.9),rgba(0,0,0,.16))!important;
+}
+#menuScreen .stage-scenery{opacity:.26!important;filter:saturate(.72) brightness(.72) blur(.2px)!important;z-index:0!important}
+#menuScreen .warning-light,#menuScreen .enemy-flock{display:none!important}
+
+/* Top status bar */
+#menuScreen .invasion-topbar{
+  position:relative!important;z-index:30!important;
+  height:82px!important;min-height:82px!important;
+  max-width:none!important;margin:0!important;padding:12px clamp(14px,2.4vw,34px)!important;
+  display:flex!important;align-items:center!important;justify-content:space-between!important;gap:14px!important;
+  border:0!important;border-bottom:1px solid rgba(188,220,255,.13)!important;border-radius:0!important;
+  background:linear-gradient(180deg,rgba(8,19,33,.96),rgba(8,18,31,.83))!important;
+  box-shadow:0 12px 34px rgba(0,0,0,.24)!important;backdrop-filter:blur(18px)!important;
+}
+#menuScreen .menu-social-cluster{display:flex!important;align-items:center!important;gap:9px!important;min-width:0!important}
+#menuScreen .menu-profile-button{
+  height:56px!important;min-width:min(320px,38vw)!important;max-width:400px!important;padding:6px 14px 6px 7px!important;
+  border:1px solid rgba(154,205,255,.19)!important;border-radius:15px!important;
+  background:linear-gradient(135deg,#13263d,#0d1b2e)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important;
+}
+#menuScreen .menu-profile-avatar{
+  width:43px!important;height:43px!important;flex:0 0 43px!important;border-radius:12px!important;
+  background:linear-gradient(145deg,#52d4ff,#2d72ff)!important;border:2px solid rgba(229,248,255,.8)!important;
+  box-shadow:0 4px 13px rgba(38,123,255,.32)!important;color:#fff!important;font-size:19px!important;
+}
+#menuScreen .menu-profile-copy strong{font-size:14px!important;color:#fff!important}
+#menuScreen .menu-profile-copy small{font-size:10px!important;color:#9eb6ce!important}
+#menuScreen .menu-exp-track{height:4px!important;background:#07101d!important;border:0!important}
+#menuScreen .menu-exp-track i{background:linear-gradient(90deg,#47d9ff,#67ffbc)!important}
+#menuScreen .menu-friends-button{
+  width:62px!important;height:56px!important;padding:6px!important;border-radius:15px!important;border:1px solid rgba(154,205,255,.17)!important;
+  background:#102136!important;color:#dcecff!important;display:grid!important;place-items:center!important;gap:0!important;
+}
+#menuScreen .menu-friends-button span{font-size:22px!important;line-height:1!important}
+#menuScreen .menu-friends-button strong{font-size:9px!important}
+#menuScreen .invasion-resources{display:flex!important;align-items:center!important;gap:8px!important}
+#menuScreen .invasion-resource{
+  min-width:128px!important;height:47px!important;padding:7px 11px!important;display:flex!important;align-items:center!important;gap:7px!important;
+  border:1px solid rgba(155,197,238,.17)!important;border-radius:13px!important;background:#0e1d30!important;color:#9eb4ca!important;font-size:10px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06)!important;
+}
+#menuScreen .invasion-resource strong{margin-left:auto!important;color:#fff!important;font-size:14px!important}
+#menuScreen .invasion-resource:first-child strong{color:#8ee8ff!important}
+#menuScreen .invasion-logout{
+  width:44px!important;height:44px!important;padding:0!important;border-radius:12px!important;font-size:0!important;border:1px solid rgba(255,120,120,.2)!important;
+  background:rgba(89,23,34,.42)!important;color:#ffb3b8!important;
+}
+#menuScreen .invasion-logout::before{content:"↪";font-size:20px;font-weight:1000}
+
+/* Main lobby composition */
+#menuScreen .invasion-content{
+  position:relative!important;z-index:5!important;
+  height:calc(100dvh - 82px)!important;max-width:1280px!important;width:min(1280px,100%)!important;margin:0 auto!important;
+  padding:18px clamp(14px,2vw,28px) 16px!important;box-sizing:border-box!important;overflow:auto!important;
+  display:grid!important;grid-template-columns:minmax(0,1.55fr) minmax(300px,.78fr)!important;
+  grid-template-areas:
+    "stage stage"
+    "hero difficulty"
+    "hero start"
+    "hero status"
+    "menus menus"
+    "install install"
+    "warning warning"!important;
+  grid-template-rows:auto minmax(165px,1fr) auto auto auto auto auto!important;gap:11px 14px!important;
+  align-content:start!important;
+}
+#menuScreen .stage-choice-row{grid-area:stage!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(210px,.33fr)!important;gap:10px!important;margin:0!important}
+#menuScreen .stage-preview-card{
+  min-height:66px!important;margin:0!important;padding:8px 12px!important;border-radius:17px!important;border:1px solid rgba(113,191,255,.27)!important;
+  background:linear-gradient(135deg,rgba(23,50,80,.94),rgba(12,29,50,.95))!important;box-shadow:0 10px 28px rgba(0,0,0,.19),inset 0 1px 0 rgba(255,255,255,.08)!important;
+}
+#menuScreen .stage-preview-badge{
+  border-radius:9px!important;padding:6px 9px!important;background:linear-gradient(135deg,#36bfff,#3475ff)!important;color:white!important;font-size:10px!important;
+  box-shadow:0 5px 13px rgba(45,116,255,.26)!important;
+}
+#menuScreen .stage-preview-copy strong{font-size:17px!important;color:#fff!important}
+#menuScreen .stage-preview-copy small{font-size:10px!important;color:#9fb4c8!important}
+#menuScreen .stage-nav-button{width:36px!important;height:36px!important;border-radius:10px!important;background:#172b43!important;border-color:rgba(150,205,255,.25)!important;color:#dff5ff!important}
+#menuScreen .limited-event-stage-card{
+  min-height:66px!important;margin:0!important;padding:8px 12px!important;border-radius:17px!important;border:1px solid rgba(255,220,95,.31)!important;
+  background:linear-gradient(125deg,rgba(60,32,90,.92),rgba(17,39,75,.96))!important;box-shadow:0 10px 28px rgba(0,0,0,.18)!important;
+}
+#menuScreen .limited-event-stage-card .event-icon{font-size:28px!important}
+#menuScreen .limited-event-stage-card strong{font-size:14px!important}
+#menuScreen .limited-event-stage-card small{font-size:9px!important}
+
+/* Big center card */
+#menuScreen .invasion-hero{
+  grid-area:hero!important;position:relative!important;min-height:325px!important;height:100%!important;margin:0!important;padding:26px 30px!important;overflow:hidden!important;
+  border:1px solid rgba(141,200,255,.23)!important;border-radius:24px!important;
+  background:
+    radial-gradient(circle at 72% 36%,rgba(72,184,255,.21),transparent 32%),
+    linear-gradient(145deg,rgba(18,44,72,.97),rgba(8,22,39,.98))!important;
+  box-shadow:0 18px 46px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.09)!important;backdrop-filter:none!important;
+}
+#menuScreen .invasion-hero::before{
+  content:"CURRENT ENEMY";position:absolute;right:20px;top:17px;padding:5px 9px;border-radius:999px;
+  background:rgba(65,193,255,.11);border:1px solid rgba(98,207,255,.22);color:#83dcff;font-size:8px;font-weight:1000;letter-spacing:.16em;
+}
+#menuScreen .invasion-title-area{position:absolute!important;left:30px!important;top:29px!important;z-index:5!important;text-align:left!important;width:43%!important}
+#menuScreen .invasion-subtitle{font-size:10px!important;letter-spacing:.27em!important;color:#5dd9ff!important;font-weight:1000!important}
+#menuScreen .invasion-title-area h1{
+  margin:8px 0 0!important;font-size:clamp(35px,4.1vw,59px)!important;line-height:.91!important;letter-spacing:-.065em!important;text-align:left!important;
+  color:#fff!important;text-shadow:0 6px 20px rgba(0,0,0,.35)!important;
+}
+#menuScreen .invasion-title-area h1::after{
+  content:"PIGEON DEFENSE";display:block;margin-top:15px;color:#7993ab;font:900 9px/1 sans-serif;letter-spacing:.27em;
+}
+#menuScreen .enemy-logo-area{
+  position:absolute!important;z-index:4!important;left:auto!important;right:5%!important;top:50%!important;transform:translateY(-48%)!important;
+  width:52%!important;height:80%!important;display:grid!important;place-items:center!important;
+}
+#menuScreen .enemy-pigeon{width:min(250px,25vw)!important;height:min(250px,25vw)!important;max-width:250px!important;max-height:250px!important;filter:drop-shadow(0 24px 22px rgba(0,0,0,.34))!important}
+#menuScreen .enemy-pigeon canvas,#menuScreen .enemy-pigeon img,#menuScreen .enemy-pigeon svg{max-width:100%!important;max-height:100%!important}
+#menuScreen .alert-symbol,#menuScreen .target-ring{display:none!important}
+
+/* Difficulty as compact selector card */
+#menuScreen .difficulty-panel{
+  grid-area:difficulty!important;margin:0!important;padding:14px!important;border-radius:20px!important;border:1px solid rgba(164,202,240,.18)!important;
+  background:linear-gradient(150deg,#10233a,#0c1a2d)!important;box-shadow:0 13px 34px rgba(0,0,0,.2)!important;backdrop-filter:none!important;
+}
+#menuScreen .difficulty-heading{margin-bottom:9px!important}
+#menuScreen .difficulty-heading strong{font-size:13px!important;color:#fff!important}
+#menuScreen .difficulty-heading small{font-size:9px!important;color:#849cb4!important}
+#menuScreen .difficulty-buttons{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
+#menuScreen .difficulty-button{
+  min-height:51px!important;padding:7px!important;border-radius:12px!important;border:1px solid rgba(151,190,229,.14)!important;background:#14273e!important;color:#b8c8d9!important;
+}
+#menuScreen .difficulty-button span{font-size:11px!important;font-weight:1000!important}
+#menuScreen .difficulty-button small{font-size:8px!important;color:#8297aa!important;line-height:1.2!important}
+#menuScreen .difficulty-button.active{
+  color:#fff!important;border-color:#65ceff!important;background:linear-gradient(135deg,#1c6aa7,#2253a8)!important;box-shadow:0 0 0 2px rgba(77,196,255,.10),0 7px 17px rgba(25,100,200,.26)!important;
+}
+#menuScreen .difficulty-button.active small{color:#d6efff!important}
+#menuScreen .difficulty-summary{display:none!important}
+
+/* Big play CTA */
+#menuScreen .invasion-start-button{
+  grid-area:start!important;min-height:82px!important;margin:0!important;padding:12px 17px!important;border-radius:18px!important;border:2px solid #ffe47a!important;
+  background:linear-gradient(180deg,#ffe15a 0%,#ffb72e 100%)!important;color:#172035!important;
+  box-shadow:0 8px 0 #b86418,0 15px 30px rgba(255,165,29,.26),inset 0 1px 0 #fff5b8!important;
+  transform:none!important;transition:transform .14s ease,filter .14s ease!important;
+}
+#menuScreen .invasion-start-button:hover{transform:translateY(-2px)!important;filter:brightness(1.05)!important}
+#menuScreen .invasion-start-button:active{transform:translateY(4px)!important;box-shadow:0 4px 0 #b86418,0 8px 19px rgba(255,165,29,.2)!important}
+#menuScreen .start-button-icon{width:47px!important;height:47px!important;border-radius:13px!important;background:#17253a!important;color:white!important;display:grid!important;place-items:center!important;font-size:23px!important}
+#menuScreen .start-button-text strong{font-size:19px!important;color:#151e2e!important}
+#menuScreen .start-button-text small{font-size:10px!important;color:#60461b!important}
+#menuScreen .start-button-arrow{font-size:23px!important;color:#182237!important}
+
+#menuScreen .stage-status-note{
+  grid-area:status!important;margin:0!important;min-height:37px!important;padding:9px 12px!important;border-radius:12px!important;border:1px solid rgba(118,190,255,.13)!important;
+  background:#0d1b2d!important;color:#879db1!important;font-size:9px!important;box-shadow:none!important;backdrop-filter:none!important;
+}
+
+/* Bottom menu — game icon bar */
+#menuScreen .defense-menu-grid{
+  grid-area:menus!important;position:relative!important;margin:1px 0 0!important;padding:28px 9px 9px!important;
+  display:grid!important;grid-template-columns:repeat(10,minmax(72px,1fr))!important;gap:7px!important;
+  border:1px solid rgba(158,198,236,.14)!important;border-radius:20px!important;background:rgba(8,19,33,.92)!important;
+  box-shadow:0 14px 35px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.05)!important;
+}
+#menuScreen .defense-menu-grid::before{
+  content:"GAME MENU";position:absolute;left:14px;top:9px;color:#647e98;font-size:8px;font-weight:1000;letter-spacing:.18em;
+}
+#menuScreen .defense-menu-card{
+  min-width:0!important;min-height:74px!important;margin:0!important;padding:7px 4px!important;border-radius:13px!important;border:1px solid rgba(145,187,228,.12)!important;
+  background:linear-gradient(180deg,#13253b,#0e1b2e)!important;color:#dce9f5!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)!important;
+  display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:4px!important;text-align:center!important;
+  transition:transform .14s ease,border-color .14s ease,background .14s ease!important;
+}
+#menuScreen .defense-menu-card:hover{
+  transform:translateY(-3px)!important;border-color:rgba(86,204,255,.45)!important;background:linear-gradient(180deg,#18324e,#112842)!important;
+}
+#menuScreen .defense-card-icon{font-size:25px!important;line-height:1!important;filter:drop-shadow(0 4px 6px rgba(0,0,0,.24))!important}
+#menuScreen .defense-menu-card strong{font-size:10px!important;line-height:1.1!important;color:#edf7ff!important}
+#menuScreen .defense-menu-card small{display:none!important}
+#menuScreen .trade-menu-badge{right:4px!important;top:4px!important;min-width:17px!important;height:17px!important;font-size:8px!important}
+#menuScreen #openGachaBtn{border-color:rgba(255,213,74,.27)!important}
+#menuScreen #openGachaBtn .defense-card-icon{filter:drop-shadow(0 0 8px rgba(255,204,58,.25))!important}
+#menuScreen #openDeckBtn,#menuScreen #openCollectionBtn{border-color:rgba(82,199,255,.20)!important}
+#menuScreen #openTraitsBtn{border-color:rgba(201,107,255,.24)!important}
+#menuScreen #openMultiplayerBtn{border-color:rgba(80,255,189,.20)!important}
+#menuScreen #adminPanelBtn{border-color:rgba(255,99,99,.27)!important}
+
+#menuScreen .install-app-button{grid-area:install!important;margin:0!important;border-radius:13px!important;min-height:44px!important;background:#0e1e31!important;border-color:rgba(119,186,244,.15)!important}
+#menuScreen .invasion-warning{grid-area:warning!important;margin:0!important;padding:4px!important;background:transparent!important;border:0!important;color:#526a82!important;font-size:8px!important}
+
+/* Persistent three-button dock becomes compact and does not fight the lobby */
+.persistent-game-dock{
+  border-radius:17px 17px 0 0!important;background:rgba(7,16,29,.96)!important;border-color:rgba(148,199,247,.15)!important;box-shadow:0 -10px 30px rgba(0,0,0,.28)!important;
+}
+.persistent-game-dock button{border-radius:12px!important}
+
+/* Secondary screens share the same card language without touching battle canvas */
+body>.screen:not(#menuScreen):not(#battleScreen):not(#multiplayerBattleScreen):not(#authScreen):not(#pdLoginLoading){
+  --panel:rgba(13,27,46,.96);--panel2:rgba(18,38,61,.96);
+}
+body>.screen:not(#menuScreen):not(#battleScreen):not(#multiplayerBattleScreen):not(#authScreen) .card,
+body>.screen:not(#menuScreen):not(#battleScreen):not(#multiplayerBattleScreen):not(#authScreen) .inventory-panel,
+body>.screen:not(#menuScreen):not(#battleScreen):not(#multiplayerBattleScreen):not(#authScreen) .shop-shell{
+  border-color:rgba(135,190,238,.15)!important;box-shadow:0 15px 34px rgba(0,0,0,.18)!important;
+}
+
+@media(max-width:1020px){
+  #menuScreen .invasion-content{grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr)!important}
+  #menuScreen .defense-menu-grid{grid-template-columns:repeat(5,minmax(74px,1fr))!important}
+  #menuScreen .enemy-pigeon{width:min(220px,29vw)!important;height:min(220px,29vw)!important}
+  #menuScreen .invasion-resource{min-width:105px!important}
+}
+@media(max-width:760px){
+  #menuScreen.invasion-menu{overflow:auto!important}
+  #menuScreen .invasion-topbar{height:70px!important;min-height:70px!important;padding:8px 10px!important}
+  #menuScreen .menu-profile-button{height:50px!important;min-width:0!important;width:min(250px,56vw)!important;padding-right:8px!important}
+  #menuScreen .menu-profile-avatar{width:38px!important;height:38px!important;flex-basis:38px!important}
+  #menuScreen .menu-friends-button{width:48px!important;height:50px!important}
+  #menuScreen .invasion-resource{min-width:0!important;width:52px!important;height:45px!important;padding:5px!important;display:grid!important;place-items:center!important;font-size:0!important}
+  #menuScreen .invasion-resource strong{margin:0!important;font-size:11px!important}
+  #menuScreen .invasion-resource:first-child::before{content:"💎";font-size:13px}
+  #menuScreen .invasion-resource:nth-child(2)::before{content:"🏆";font-size:13px}
+  #menuScreen .invasion-logout{display:none!important}
+  #menuScreen .invasion-content{
+    height:auto!important;min-height:calc(100dvh - 70px)!important;padding:11px 9px 88px!important;
+    grid-template-columns:1fr!important;grid-template-areas:"stage" "hero" "start" "difficulty" "status" "menus" "install" "warning"!important;
+    grid-template-rows:auto!important;gap:9px!important;overflow:visible!important;
+  }
+  #menuScreen .stage-choice-row{grid-template-columns:1fr!important}
+  #menuScreen .limited-event-stage-card{display:none!important}
+  #menuScreen .stage-preview-card{min-height:57px!important}
+  #menuScreen .stage-preview-copy small{display:none!important}
+  #menuScreen .invasion-hero{min-height:280px!important;height:280px!important;border-radius:20px!important;padding:20px!important}
+  #menuScreen .invasion-title-area{left:20px!important;top:22px!important;width:46%!important}
+  #menuScreen .invasion-title-area h1{font-size:clamp(31px,11vw,47px)!important}
+  #menuScreen .enemy-logo-area{right:1%!important;width:55%!important}
+  #menuScreen .enemy-pigeon{width:min(190px,48vw)!important;height:min(190px,48vw)!important}
+  #menuScreen .difficulty-panel{padding:11px!important}
+  #menuScreen .difficulty-buttons{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:5px!important}
+  #menuScreen .difficulty-button{min-height:46px!important;padding:5px 2px!important}
+  #menuScreen .difficulty-button small{display:none!important}
+  #menuScreen .invasion-start-button{min-height:70px!important;position:sticky!important;bottom:7px!important;z-index:40!important}
+  #menuScreen .defense-menu-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important;padding:26px 6px 7px!important;gap:5px!important;border-radius:17px!important}
+  #menuScreen .defense-menu-card{min-height:66px!important;border-radius:11px!important}
+  #menuScreen .defense-card-icon{font-size:22px!important}
+  #menuScreen .defense-menu-card strong{font-size:9px!important}
+}
+@media(max-width:430px){
+  #menuScreen .menu-profile-button{width:49vw!important}
+  #menuScreen .menu-profile-copy small{display:none!important}
+  #menuScreen .menu-exp-track{margin-top:4px!important}
+  #menuScreen .menu-friends-button{display:none!important}
+  #menuScreen .invasion-hero{height:250px!important;min-height:250px!important}
+  #menuScreen .invasion-title-area h1{font-size:36px!important}
+  #menuScreen .invasion-title-area h1::after{font-size:7px!important;letter-spacing:.18em!important}
+  #menuScreen .enemy-pigeon{width:165px!important;height:165px!important}
+  #menuScreen .defense-menu-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+}
+</style>
+
+<!-- V36 RAINBOW BEYOND SUMMON FIX
+Summon stays upright, mirrors left/right, uses 10-basic-attack actual damage as HP,
+subtracts enemy HP on successful kill and keeps moving with remaining HP,
+and uses a higher-detail prism guard model.
+-->
+
+
+<!-- V37 PHOTO ENEMIES
+All enemy materials upgraded with cached photographic lighting/texture.
+Pigeon focus: articulated walking legs/toes, layered flapping wing feathers,
+iridescent neck, realistic eye/beak and dense feather micro-texture.
+Other enemies retain their gameplay but receive more realistic fur/stone/chitin/leather/cactus/prism materials.
+-->
+
+
+<!-- V38 HIDDEN TITLES
+Player-facing title UI is completely hidden while the player owns zero titles.
+After the first title is obtained, only titles actually owned by that player are shown.
+Unowned title names, locked cards, buffs and unlock conditions are never rendered in the player profile.
+Admin title-management UI remains available to administrators.
+-->
+
+
+<style id="pdMobileBattleViewportFixV39">
+/* ===== V39 MOBILE BATTLE VIEWPORT / HUD SAFE AREA =====
+   모바일에서는 전투 UI를 맵 위에 얹지 않고 별도 안전영역으로 분리합니다.
+   V29의 position:relative!important를 이 규칙이 최종적으로 덮습니다.
+*/
+@media (pointer:coarse) and (max-height:700px) {
+  #battleScreen:not(.hidden){
+    --pd-mobile-top-safe:68px;
+    --pd-mobile-bottom-safe:58px;
+    width:100dvw!important;
+    height:100dvh!important;
+    inset:0!important;
+    overflow:hidden!important;
+    background:#060b12!important;
+  }
+
+  /* 위/아래 컨트롤 전용 레터박스. 실제 맵은 이 영역을 침범하지 않음. */
+  #battleScreen::before{
+    content:"";
+    position:absolute;
+    z-index:24;
+    left:0;right:0;top:0;
+    height:var(--pd-mobile-top-safe);
+    pointer-events:none;
+    background:
+      linear-gradient(180deg,rgba(5,11,19,.99),rgba(8,18,30,.97) 72%,rgba(8,18,30,.90));
+    border-bottom:1px solid rgba(158,197,234,.16);
+    box-shadow:0 5px 14px rgba(0,0,0,.20);
+  }
+  #battleScreen::after{
+    content:"";
+    position:absolute;
+    z-index:24;
+    left:0;right:0;bottom:0;
+    height:var(--pd-mobile-bottom-safe);
+    pointer-events:none;
+    background:linear-gradient(0deg,rgba(4,10,18,.99),rgba(7,16,27,.96));
+    border-top:1px solid rgba(158,197,234,.14);
+  }
+
+  #battleScreen .battle-layout,
+  #battleScreen .battle-map-shell{
+    position:absolute!important;
+    inset:0!important;
+    width:100%!important;
+    height:100%!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+    transform:none!important;
+  }
+
+  /* 핵심: 예전 relative 강제 규칙을 해제한다. 실제 px 좌표는 V39 JS가 계산한다. */
+  #battleScreen #gameCanvas{
+    position:absolute!important;
+    z-index:2!important;
+    display:block!important;
+    left:50%!important;
+    top:50%!important;
+    margin:0!important;
+    padding:0!important;
+    transform:translate(-50%,-50%)!important;
+    transform-origin:center center!important;
+    width:auto;
+    height:auto;
+    max-width:none!important;
+    max-height:none!important;
+    aspect-ratio:900 / 520!important;
+    border:0!important;
+    border-radius:8px!important;
+    box-shadow:0 5px 18px rgba(0,0,0,.25)!important;
+    background:#0a1019!important;
+    touch-action:none!important;
+  }
+
+  /* 상단 재화: 왼쪽 한 줄, 게임 밖의 검은 안전영역 */
+  #battleScreen .battle-topbar{
+    position:absolute!important;
+    z-index:60!important;
+    top:max(3px,env(safe-area-inset-top))!important;
+    left:max(4px,env(safe-area-inset-left))!important;
+    right:auto!important;
+    width:auto!important;
+    max-width:35vw!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0!important;
+    align-items:flex-start!important;
+    pointer-events:none!important;
+  }
+  #battleScreen .battle-topbar>div:first-child{
+    display:block!important;
+    width:auto!important;
+    max-width:35vw!important;
+    padding:4px 5px!important;
+    border-radius:9px!important;
+    border:1px solid rgba(160,198,234,.18)!important;
+    background:rgba(9,20,34,.96)!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+    pointer-events:auto!important;
+  }
+  #battleScreen .battle-topbar h2{display:none!important}
+  #battleScreen .battle-topbar .resource-bar{
+    display:flex!important;
+    align-items:center!important;
+    gap:3px!important;
+    flex-wrap:nowrap!important;
+  }
+  #battleScreen .battle-topbar .resource{
+    min-width:0!important;
+    padding:3px 5px!important;
+    border-radius:7px!important;
+    font-size:clamp(7px,2.3dvh,9px)!important;
+    line-height:1!important;
+    white-space:nowrap!important;
+    background:rgba(255,255,255,.055)!important;
+  }
+
+  /* 웨이브는 정중앙. 스킵/나가기는 바로 아래 한 줄. */
+  #battleScreen .battle-wave-center{
+    position:absolute!important;
+    z-index:62!important;
+    top:max(2px,env(safe-area-inset-top))!important;
+    left:50%!important;
+    right:auto!important;
+    width:auto!important;
+    max-width:48vw!important;
+    gap:3px!important;
+    transform:translateX(-50%)!important;
+    pointer-events:none!important;
+  }
+  #battleScreen .battle-wave-center .map-wave-hud{
+    min-width:72px!important;
+    padding:3px 7px!important;
+    border-radius:8px!important;
+    background:rgba(9,20,34,.96)!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+  }
+  #battleScreen .battle-wave-center .map-wave-hud span,
+  #battleScreen .battle-wave-center .map-wave-hud small{
+    font-size:7px!important;
+  }
+  #battleScreen .battle-wave-center .map-wave-hud strong{
+    font-size:15px!important;
+  }
+  #battleScreen .wave-skip-controls{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:3px!important;
+    max-width:48vw!important;
+    padding:0!important;
+    border:0!important;
+    background:transparent!important;
+    pointer-events:auto!important;
+  }
+  #battleScreen .wave-skip-button,
+  #battleScreen .auto-skip-button,
+  #battleScreen .battle-exit-button{
+    min-width:0!important;
+    min-height:24px!important;
+    height:24px!important;
+    padding:2px 5px!important;
+    border-radius:7px!important;
+    font-size:clamp(6px,2dvh,8px)!important;
+    line-height:1!important;
+    white-space:nowrap!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+  }
+  #battleScreen .wave-skip-button small{display:none!important}
+
+  /* BGM은 우측 위 한 개의 작은 버튼만. 맵 바깥 안전영역에 위치. */
+  #battleScreen .battle-bgm-controls{
+    position:absolute!important;
+    z-index:63!important;
+    top:max(3px,env(safe-area-inset-top))!important;
+    right:max(4px,env(safe-area-inset-right))!important;
+    left:auto!important;
+    width:auto!important;
+    max-width:none!important;
+    padding:3px!important;
+    margin:0!important;
+    border-radius:8px!important;
+    border:1px solid rgba(160,198,234,.18)!important;
+    background:rgba(9,20,34,.96)!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+    transform:none!important;
+  }
+  #battleScreen .battle-bgm-volume,
+  #battleScreen .battle-bgm-track{display:none!important}
+  #battleScreen .battle-bgm-toggle{
+    min-width:0!important;
+    width:auto!important;
+    min-height:24px!important;
+    height:24px!important;
+    padding:3px 6px!important;
+    font-size:8px!important;
+    border-radius:6px!important;
+    box-shadow:none!important;
+  }
+
+  /* 하단 배치창도 맵과 겹치지 않는 별도 안전영역으로 사용 */
+  #battleScreen .battle-deploy-section{
+    z-index:61!important;
+    left:max(4px,env(safe-area-inset-left))!important;
+    right:max(4px,env(safe-area-inset-right))!important;
+    bottom:max(3px,env(safe-area-inset-bottom))!important;
+    width:auto!important;
+    max-width:none!important;
+    padding:3px 4px!important;
+    border-radius:9px!important;
+    transform:none!important;
+    background:rgba(8,18,31,.97)!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+  }
+  #battleScreen .battle-deck{gap:3px!important}
+  #battleScreen .battle-unit-button,
+  #battleScreen .battle-empty-slot{
+    min-height:42px!important;
+    height:42px!important;
+    padding:2px 1px!important;
+    border-radius:7px!important;
+  }
+  #battleScreen .battle-unit-button .battle-unit-icon{
+    margin:0!important;
+    font-size:14px!important;
+  }
+  #battleScreen .battle-unit-button .battle-unit-name{
+    font-size:7px!important;
+  }
+  #battleScreen .battle-unit-button .battle-unit-cost{
+    margin:0!important;
+    font-size:6px!important;
+  }
+
+  /* 맵 정보 버튼도 맵 안을 가리지 않고 상단 안전영역 끝으로 이동 */
+  #battleScreen .stage-map-info-button{
+    z-index:64!important;
+    top:calc(var(--pd-mobile-top-safe) - 25px)!important;
+    right:max(5px,env(safe-area-inset-right))!important;
+    width:21px!important;
+    height:21px!important;
+    min-width:21px!important;
+    min-height:21px!important;
+    font-size:10px!important;
+  }
+
+  /* 선택 정보창은 기본적으로 맵 오른쪽을 크게 가리지 않게 더 작게 */
+  #battleScreen .battle-info-section{
+    top:calc(var(--pd-mobile-top-safe) + 5px)!important;
+    bottom:calc(var(--pd-mobile-bottom-safe) + 5px)!important;
+    right:max(4px,env(safe-area-inset-right))!important;
+    width:min(150px,27vw)!important;
+    min-width:0!important;
+    max-width:27vw!important;
+    padding:6px!important;
+    border-radius:9px!important;
+    font-size:8px!important;
+  }
+  #battleScreen .battle-info-section.is-empty{
+    display:none!important;
+  }
+}
+
+/* 가장 낮은 휴대전화에서는 컨트롤을 더 압축해 맵 높이를 확보. */
+@media (pointer:coarse) and (orientation:landscape) and (max-height:390px){
+  #battleScreen:not(.hidden){
+    --pd-mobile-top-safe:60px;
+    --pd-mobile-bottom-safe:52px;
+  }
+  #battleScreen .battle-topbar .resource{padding:2px 4px!important;font-size:7px!important}
+  #battleScreen .battle-bgm-toggle{height:22px!important;min-height:22px!important;font-size:7px!important}
+  #battleScreen .battle-wave-center .map-wave-hud{padding:2px 5px!important}
+  #battleScreen .wave-skip-button,
+  #battleScreen .auto-skip-button,
+  #battleScreen .battle-exit-button{height:21px!important;min-height:21px!important;padding:2px 4px!important;font-size:6px!important}
+  #battleScreen .battle-unit-button,
+  #battleScreen .battle-empty-slot{height:37px!important;min-height:37px!important}
+}
+</style>
+
+
+<script id="pdMobileBattleViewportFixV39Script">
+(()=>{
+  'use strict';
+  if(window.__pdMobileBattleViewportFixV39)return;
+  window.__pdMobileBattleViewportFixV39=true;
+
+  const battle=document.getElementById('battleScreen');
+  const canvas=document.getElementById('gameCanvas');
+  if(!battle||!canvas)return;
+
+  let raf=0;
+  const isMobileBattle=()=>window.matchMedia('(pointer:coarse)').matches &&
+    window.innerHeight<=700 && !battle.classList.contains('hidden');
+
+  function px(v){const n=parseFloat(v);return Number.isFinite(n)?n:0}
+
+  function fit(){
+    raf=0;
+    if(!isMobileBattle()){
+      canvas.style.removeProperty('width');
+      canvas.style.removeProperty('height');
+      canvas.style.removeProperty('left');
+      canvas.style.removeProperty('top');
+      battle.style.removeProperty('--pd-mobile-top-safe');
+      battle.style.removeProperty('--pd-mobile-bottom-safe');
+      return;
+    }
+
+    const vv=window.visualViewport;
+    const vw=Math.max(1,Math.round(vv?.width||window.innerWidth||document.documentElement.clientWidth||1));
+    const vh=Math.max(1,Math.round(vv?.height||window.innerHeight||document.documentElement.clientHeight||1));
+    const vx=Math.max(0,Number(vv?.offsetLeft||0));
+    const vy=Math.max(0,Number(vv?.offsetTop||0));
+
+    const cs=getComputedStyle(battle);
+    let topSafe=px(cs.getPropertyValue('--pd-mobile-top-safe'))||68;
+    let bottomSafe=px(cs.getPropertyValue('--pd-mobile-bottom-safe'))||58;
+
+    // 실제 HUD가 CSS 예상보다 커지는 기종에서는 그 크기만큼 자동으로 안전영역 확장.
+    const candidates=[
+      battle.querySelector('.battle-topbar>div:first-child'),
+      battle.querySelector('.battle-wave-center'),
+      battle.querySelector('.battle-bgm-controls')
+    ].filter(Boolean);
+    let hudBottom=vy;
+    for(const el of candidates){
+      const r=el.getBoundingClientRect();
+      if(r.width>0&&r.height>0)hudBottom=Math.max(hudBottom,r.bottom);
+    }
+    topSafe=Math.max(topSafe,Math.ceil(hudBottom-vy+4));
+
+    const deploy=battle.querySelector('.battle-deploy-section');
+    if(deploy){
+      const r=deploy.getBoundingClientRect();
+      if(r.width>0&&r.height>0){
+        bottomSafe=Math.max(bottomSafe,Math.ceil(vy+vh-r.top+4));
+      }
+    }
+
+    // 너무 큰 HUD 때문에 맵이 사라지는 비정상 상황 방지.
+    topSafe=Math.min(topSafe,Math.max(44,Math.floor(vh*.30)));
+    bottomSafe=Math.min(bottomSafe,Math.max(42,Math.floor(vh*.25)));
+
+    battle.style.setProperty('--pd-mobile-top-safe',`${topSafe}px`);
+    battle.style.setProperty('--pd-mobile-bottom-safe',`${bottomSafe}px`);
+
+    const safeLeft=4;
+    const safeRight=4;
+    const availW=Math.max(120,vw-safeLeft-safeRight);
+    const availH=Math.max(90,vh-topSafe-bottomSafe-4);
+    const ratio=900/520;
+
+    let drawW=Math.min(availW,availH*ratio);
+    let drawH=drawW/ratio;
+    if(drawH>availH){drawH=availH;drawW=drawH*ratio;}
+
+    // visualViewport의 offset까지 포함하므로 주소창/노치/확대 상태에서도 정확한 중앙.
+    const centerX=vx+safeLeft+availW/2;
+    const centerY=vy+topSafe+2+availH/2;
+
+    canvas.style.setProperty('position','absolute','important');
+    canvas.style.setProperty('width',`${Math.floor(drawW)}px`,'important');
+    canvas.style.setProperty('height',`${Math.floor(drawH)}px`,'important');
+    canvas.style.setProperty('left',`${Math.round(centerX)}px`,'important');
+    canvas.style.setProperty('top',`${Math.round(centerY)}px`,'important');
+    canvas.style.setProperty('transform','translate(-50%,-50%)','important');
+    canvas.style.setProperty('margin','0','important');
+  }
+
+  function schedule(){cancelAnimationFrame(raf);raf=requestAnimationFrame(fit)}
+
+  window.addEventListener('resize',schedule,{passive:true});
+  window.addEventListener('orientationchange',()=>setTimeout(schedule,80),{passive:true});
+  if(window.visualViewport){
+    visualViewport.addEventListener('resize',schedule,{passive:true});
+    visualViewport.addEventListener('scroll',schedule,{passive:true});
+  }
+
+  try{
+    new MutationObserver(schedule).observe(battle,{attributes:true,attributeFilter:['class']});
+    const deploy=battle.querySelector('.battle-deploy-section');
+    const wave=battle.querySelector('.battle-wave-center');
+    if(window.ResizeObserver){
+      const ro=new ResizeObserver(schedule);
+      if(deploy)ro.observe(deploy);
+      if(wave)ro.observe(wave);
+    }
+  }catch(_){}
+
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)schedule()});
+  schedule();
+})();
+</script>
+
+
+<!-- V39 MOBILE BATTLE LAYOUT FIX
+- fixes mobile right-shift caused by historical gameCanvas position:relative!important
+- centers canvas against visualViewport including safe-area/browser offsets
+- reserves real top and bottom safe bands so money/wave/BGM/deck never cover the map
+- dynamically measures HUD/deck height on each mobile device
+-->
 
 </body>
 </html>

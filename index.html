@@ -8856,8 +8856,9 @@ body{background:#07111c;background-image:radial-gradient(circle at 15% 10%,rgba(
           <div class="battle-result-card">
             <div id="battleResultIcon" class="battle-result-icon">💥</div>
             <strong id="battleResultTitle">게임 오버</strong>
+            <button id="battleResultExitBtn" class="battle-result-exit-button" type="button">나가기</button>
             <p id="battleResultReason">성의 체력이 모두 소진되었습니다.</p>
-            <small>상단의 전투 나가기 버튼을 눌러 돌아가세요.</small>
+            <small>결과를 확인한 뒤 바로 메뉴로 돌아갈 수 있습니다.</small>
           </div>
         </div>
         <button id="stageMapInfoBtn" class="stage-map-info-button" type="button" aria-expanded="false" aria-controls="stageMapInfoPanel">!</button>
@@ -10287,6 +10288,14 @@ function applyStagePreview(stageId = selectedStage) {
     let adminSelectedUserId = null;
     let adminSelectedUsernameValue = '';
 
+    // ===== V42 SAME-ACCOUNT CROSS-DEVICE SYNC =====
+    // game_saves의 마지막 서버 스냅샷을 기준으로 3-way merge를 하므로,
+    // 한 기기에서 특성을 뽑고 다른 기기에서 덱을 바꿔도 서로 다른 필드가 덮어써지지 않습니다.
+    let pdLastServerSaveUpdatedAt = '';
+    let pdLastSyncedPlayerSnapshot = null;
+    let pdAccountSyncBusy = false;
+    let pdSavePlayerBusy = false;
+
     function showScreen(name) {
       Object.values(screens).forEach(screen => screen.classList.add('hidden'));
       screens[name].classList.remove('hidden');
@@ -10944,48 +10953,191 @@ function applyStagePreview(stageId = selectedStage) {
   }
 }
 
+
+function pdCloneSaveValue(value){
+  if(value===undefined)return undefined;
+  try{return structuredClone(value);}catch(_){}
+  try{return JSON.parse(JSON.stringify(value));}catch(_){return value;}
+}
+function pdSaveEqual(a,b){
+  if(a===b)return true;
+  try{return JSON.stringify(a)===JSON.stringify(b);}catch(_){return false;}
+}
+function pdPlainObject(v){
+  return !!v&&typeof v==='object'&&!Array.isArray(v);
+}
+function pdThreeWayMergeSave(base,local,remote){
+  if(pdSaveEqual(local,base))return pdCloneSaveValue(remote);
+  if(pdSaveEqual(remote,base))return pdCloneSaveValue(local);
+  if(pdSaveEqual(local,remote))return pdCloneSaveValue(local);
+
+  if(Array.isArray(base)&&Array.isArray(local)&&Array.isArray(remote)){
+    const len=Math.max(base.length,local.length,remote.length);
+    const merged=[];
+    for(let i=0;i<len;i++){
+      merged[i]=pdThreeWayMergeSave(base[i],local[i],remote[i]);
+    }
+    return merged;
+  }
+  if(pdPlainObject(base)&&pdPlainObject(local)&&pdPlainObject(remote)){
+    const merged={};
+    const keys=new Set([...Object.keys(base),...Object.keys(local),...Object.keys(remote)]);
+    for(const key of keys){
+      merged[key]=pdThreeWayMergeSave(base[key],local[key],remote[key]);
+      if(merged[key]===undefined)delete merged[key];
+    }
+    return merged;
+  }
+
+  // 같은 값이 두 기기에서 동시에 바뀐 경우 현재 조작 중인 기기의 값이 마지막 변경으로 처리됩니다.
+  return pdCloneSaveValue(local);
+}
+function pdServerSaveIsNewer(updatedAt){
+  if(!updatedAt)return false;
+  if(!pdLastServerSaveUpdatedAt)return true;
+  const remote=Date.parse(updatedAt),known=Date.parse(pdLastServerSaveUpdatedAt);
+  if(Number.isFinite(remote)&&Number.isFinite(known))return remote>known+1;
+  return String(updatedAt)!==String(pdLastServerSaveUpdatedAt);
+}
+function pdRefreshSyncedAccountUi(){
+  if(!player)return;
+  try{
+    const menuGems=document.querySelector('#menuGems');
+    const menuStage=document.querySelector('#menuStage');
+    if(menuGems)menuGems.textContent=Number(player.gems||0).toLocaleString();
+    if(menuStage)menuStage.textContent=player.highestStage;
+    if(typeof refreshGachaButtons==='function')refreshGachaButtons();
+    if(typeof renderProfileTitles==='function')renderProfileTitles();
+    if(!screens.inventory?.classList.contains('hidden')&&typeof renderInventory==='function')renderInventory();
+    if(!screens.deck?.classList.contains('hidden')&&typeof renderDeck==='function')renderDeck();
+    if(!screens.traits?.classList.contains('hidden')&&typeof renderTraitScreen==='function')renderTraitScreen();
+    if(typeof window.refreshSocialMenu==='function')window.refreshSocialMenu();
+    if(typeof updateFeatureUnlockCards==='function')updateFeatureUnlockCards();
+  }catch(error){
+    console.warn('동기화 후 화면 갱신 일부 실패:',error);
+  }
+}
+async function pdPullAccountFromServer(force=false){
+  if(pdAccountSyncBusy||!player)return false;
+  if((battle&&!battle.ended)||multiplayerBattleActive)return false;
+
+  pdAccountSyncBusy=true;
+  try{
+    const {data:{user},error:userError}=await supabaseClient.auth.getUser();
+    if(userError||!user)return false;
+
+    const {data,error}=await supabaseClient
+      .from('game_saves')
+      .select('save_data, updated_at')
+      .eq('user_id',user.id)
+      .maybeSingle();
+    if(error||!data?.save_data)return false;
+    if(!force&&!pdServerSaveIsNewer(data.updated_at))return false;
+
+    const remote=pdCloneSaveValue(data.save_data);
+    const local=pdCloneSaveValue(player);
+    const base=pdLastSyncedPlayerSnapshot
+      ? pdCloneSaveValue(pdLastSyncedPlayerSnapshot)
+      : pdCloneSaveValue(remote);
+
+    player=pdThreeWayMergeSave(base,local,remote);
+    ensurePlayerData();
+
+    // 이 시점의 기준 서버 스냅샷은 remote. 로컬 변경이 남아 있으면 다음 savePlayer가 병합해 저장합니다.
+    pdLastServerSaveUpdatedAt=String(data.updated_at||'');
+    pdLastSyncedPlayerSnapshot=pdCloneSaveValue(remote);
+
+    await syncServerWallet();
+    await syncServerDiceInventory();
+    await syncServerItemInventory();
+    await syncTitleStateFromServer(true);
+    ensurePlayerData();
+    pdRefreshSyncedAccountUi();
+
+    if(!pdSaveEqual(player,remote)){
+      void savePlayer();
+    }
+    return true;
+  }catch(error){
+    console.warn('다른 기기 계정 동기화 실패:',error?.message||error);
+    return false;
+  }finally{
+    pdAccountSyncBusy=false;
+  }
+}
+
 async function savePlayer() {
-  if (!player) {
-    return;
-  }
+  if (!player) return;
+  if(pdSavePlayerBusy)return;
 
-  ensurePlayerData();
+  pdSavePlayerBusy=true;
+  try{
+    ensurePlayerData();
 
-  const {
-    data: { user },
-    error: userError
-  } = await supabaseClient.auth.getUser();
+    const {
+      data: { user },
+      error: userError
+    } = await supabaseClient.auth.getUser();
 
-  if (userError || !user) {
-    console.error('로그인 사용자 확인 실패:', userError);
-    return;
-  }
+    if (userError || !user) {
+      console.error('로그인 사용자 확인 실패:', userError);
+      return;
+    }
 
-  // 관리자가 다른 기기에서 삭제한 수량을 오래된 로컬 저장이 되살리지 못하게 합니다.
-  await applyAdminInventoryCorrectionsBeforeSave(user.id);
+    await applyAdminInventoryCorrectionsBeforeSave(user.id);
 
-  const { error } = await supabaseClient
-    .from('game_saves')
-    .upsert(
-      {
-        user_id: user.id,
-        save_data: player,
-        updated_at: new Date().toISOString()
-      },
-      {
-        onConflict: 'user_id'
+    // 다른 기기가 마지막 동기화 이후 저장했다면 현재 로컬 변경과 서버 변경을 필드별로 병합합니다.
+    try{
+      const {data:remoteRow,error:remoteError}=await supabaseClient
+        .from('game_saves')
+        .select('save_data, updated_at')
+        .eq('user_id',user.id)
+        .maybeSingle();
+
+      if(!remoteError&&remoteRow?.save_data&&pdServerSaveIsNewer(remoteRow.updated_at)){
+        const remote=pdCloneSaveValue(remoteRow.save_data);
+        const base=pdLastSyncedPlayerSnapshot
+          ? pdCloneSaveValue(pdLastSyncedPlayerSnapshot)
+          : pdCloneSaveValue(remote);
+        player=pdThreeWayMergeSave(base,player,remote);
+        ensurePlayerData();
       }
-    );
+    }catch(error){
+      console.warn('저장 전 다른 기기 데이터 병합 실패, 현재 데이터로 저장 계속:',error);
+    }
 
-  if (error) {
-    console.error('게임 저장 실패:', error.message);
+    const saveStamp=new Date().toISOString();
+    const savePayload=pdCloneSaveValue(player);
+
+    const { error } = await supabaseClient
+      .from('game_saves')
+      .upsert(
+        {
+          user_id: user.id,
+          save_data: savePayload,
+          updated_at: saveStamp
+        },
+        {
+          onConflict: 'user_id'
+        }
+      );
+
+    if (error) {
+      console.error('게임 저장 실패:', error.message);
+      return;
+    }
+
+    pdLastServerSaveUpdatedAt=saveStamp;
+    pdLastSyncedPlayerSnapshot=pdCloneSaveValue(savePayload);
+  }finally{
+    pdSavePlayerBusy=false;
   }
 }
 
 async function loadPlayer(user) {
   const { data, error } = await supabaseClient
     .from('game_saves')
-    .select('save_data')
+    .select('save_data, updated_at')
     .eq('user_id', user.id)
     .maybeSingle();
 
@@ -11007,8 +11159,12 @@ currentUsername =
 
   if (data?.save_data) {
     player = data.save_data;
+    pdLastServerSaveUpdatedAt=String(data.updated_at||'');
+    pdLastSyncedPlayerSnapshot=pdCloneSaveValue(data.save_data);
   } else {
     player = createDefaultPlayer();
+    pdLastServerSaveUpdatedAt='';
+    pdLastSyncedPlayerSnapshot=pdCloneSaveValue(player);
   }
 
   ensurePlayerData();
@@ -11018,6 +11174,7 @@ currentUsername =
   await syncServerDiceInventory();
   await syncServerItemInventory();
   await syncTitleStateFromServer(true);
+  ensurePlayerData();
   await savePlayer();
   return true;
 }
@@ -23844,9 +24001,18 @@ function requestGachaDraw(count) {
       g.save();
 
       if(kind==='pigeon'){
+        // 사진풍 파츠도 기본 비둘기와 똑같은 상하 움직임을 사용합니다.
+        // 이전 버전은 눈/부리/목 광택만 고정 좌표에 남아 몸에서 분리돼 보였습니다.
+        const wingPhase=Number(enemy?.wingPhase||0);
+        const bodyCycle=(time*.00245+wingPhase/(Math.PI*2))%1;
+        const bodyPowerStroke=bodyCycle<.38
+          ?Math.sin((bodyCycle/.38)*Math.PI)
+          :-.58*Math.sin(((bodyCycle-.38)/.62)*Math.PI);
+        const bodyBob=-Math.max(0,bodyPowerStroke)*4.6+Math.sin(time*.006+wingPhase)*1.4;
+        g.translate(0,bodyBob);
+
         // 비둘기: 실제 걷는 다리 + 발가락 + 날개깃 분리.
-        // 캐시 프레임의 시간값을 사용해 좌/우 다리가 교대로 앞으로 나갑니다.
-        const phase=time*.014+Number(enemy?.wingPhase||0);
+        const phase=time*.014+wingPhase;
         const gait=Math.sin(phase), gait2=Math.sin(phase+Math.PI);
         const lift1=Math.max(0,Math.sin(phase+Math.PI*.20));
         const lift2=Math.max(0,Math.sin(phase+Math.PI*1.20));
@@ -23951,38 +24117,44 @@ function requestGachaDraw(count) {
 
         // 목 구조색: 실제 비둘기처럼 녹색→청록→보라의 얇은 반사.
         g.globalCompositeOperation='screen';
-        const neck=g.createLinearGradient(cx+r*.30,cy-r*.72,cx+r*.72,cy-r*.12);
+        const neck=g.createLinearGradient(cx+r*.36,cy-r*.43,cx+r*.92,cy+r*.28);
         neck.addColorStop(0,'rgba(36,224,156,.10)');
         neck.addColorStop(.30,'rgba(36,189,165,.22)');
         neck.addColorStop(.58,'rgba(68,100,205,.15)');
         neck.addColorStop(.82,'rgba(180,65,184,.16)');
         neck.addColorStop(1,'rgba(255,255,255,0)');
         g.fillStyle=neck;
-        g.beginPath();g.ellipse(cx+r*.44,cy-r*.36,r*.34,r*.52,-.28,0,Math.PI*2);g.fill();
+        g.beginPath();g.ellipse(cx+r*.65,cy,r*.34,r*.43,-.10,0,Math.PI*2);g.fill();
         g.globalCompositeOperation='source-over';
 
-        // 눈: 광택 있는 홍채 + 동공 + 반사점.
-        const eyeX=cx+r*.76, eyeY=cy-r*.55;
+        // 눈: 기본 비둘기의 실제 눈 중심(1.09r, -0.35r)에 정확히 겹칩니다.
+        const eyeX=cx+r*1.09, eyeY=cy-r*.35;
         const eyeOuter=g.createRadialGradient(eyeX-r*.025,eyeY-r*.02,1,eyeX,eyeY,r*.15);
         eyeOuter.addColorStop(0,'#ffdc8a');eyeOuter.addColorStop(.42,'#e9843e');
         eyeOuter.addColorStop(.72,'#a83e26');eyeOuter.addColorStop(1,'#301b1a');
-        g.fillStyle='rgba(236,241,242,.88)';
-        g.beginPath();g.arc(eyeX,eyeY,r*.145,0,Math.PI*2);g.fill();
+        g.fillStyle='rgba(236,241,242,.70)';
+        g.beginPath();g.arc(eyeX,eyeY,r*.138,0,Math.PI*2);g.fill();
         g.fillStyle=eyeOuter;g.beginPath();g.arc(eyeX,eyeY,r*.105,0,Math.PI*2);g.fill();
-        g.fillStyle='#07090a';g.beginPath();g.arc(eyeX+r*.012,eyeY,r*.052,0,Math.PI*2);g.fill();
-        g.fillStyle='rgba(255,255,255,.96)';g.beginPath();g.arc(eyeX-r*.03,eyeY-r*.035,r*.022,0,Math.PI*2);g.fill();
+        g.fillStyle='#07090a';g.beginPath();g.arc(eyeX+r*.008,eyeY,r*.052,0,Math.PI*2);g.fill();
+        g.fillStyle='rgba(255,255,255,.98)';g.beginPath();g.arc(eyeX-r*.030,eyeY-r*.035,r*.023,0,Math.PI*2);g.fill();
 
-        // 부리의 각질 하이라이트.
-        const beak=g.createLinearGradient(cx+r*.86,cy-r*.45,cx+r*1.27,cy-r*.35);
-        beak.addColorStop(0,'rgba(228,201,181,.78)');
-        beak.addColorStop(.50,'rgba(194,139,111,.90)');
-        beak.addColorStop(1,'rgba(116,77,65,.88)');
+        // 부리도 기본 비둘기의 실제 부리 좌표에 덧씌웁니다.
+        const beak=g.createLinearGradient(cx+r*1.38,cy-r*.25,cx+r*1.90,cy+r*.09);
+        beak.addColorStop(0,'rgba(236,208,184,.80)');
+        beak.addColorStop(.50,'rgba(205,148,113,.90)');
+        beak.addColorStop(1,'rgba(116,77,65,.90)');
         g.fillStyle=beak;
         g.beginPath();
-        g.moveTo(cx+r*.86,cy-r*.47);g.lineTo(cx+r*1.25,cy-r*.36);
-        g.lineTo(cx+r*.88,cy-r*.28);g.closePath();g.fill();
+        g.moveTo(cx+r*1.38,cy-r*.25);
+        g.lineTo(cx+r*1.90,cy-r*.04);
+        g.lineTo(cx+r*1.37,cy+r*.09);
+        g.closePath();g.fill();
         g.strokeStyle='rgba(74,46,42,.60)';g.lineWidth=Math.max(.5,r*.02);
-        g.beginPath();g.moveTo(cx+r*.91,cy-r*.36);g.lineTo(cx+r*1.18,cy-r*.36);g.stroke();
+        g.beginPath();g.moveTo(cx+r*1.43,cy-r*.08);g.lineTo(cx+r*1.80,cy-r*.01);g.stroke();
+
+        // 콧살
+        g.fillStyle='rgba(238,234,228,.82)';
+        g.beginPath();g.ellipse(cx+r*1.39,cy-r*.17,r*.14,r*.10,0,0,Math.PI*2);g.fill();
 
       } else if(kind==='golem'){
         // 돌틈의 AO + 이끼 + 광물 결정을 더해 실제 암석 느낌 강화.
@@ -24116,6 +24288,7 @@ function requestGachaDraw(count) {
     }
 
     function pdApplyPhotoEnemyFinish(g, enemy, kind, cx, cy, radius) {
+      if(kind==='pigeon') return;
       const r=Math.max(10,Number(radius||enemy?.radius||22));
       // Render-time is attached temporarily so articulated details can match cached animation frame.
       enemy._pdRenderTime=Number(enemy._pdRenderTime||0);
@@ -24270,7 +24443,213 @@ function requestGachaDraw(count) {
       g.restore();
       try{delete enemy._pdRenderTime;}catch(_){}
     }
-    function renderEnemySpriteBase(g, proxy, kind, cx, cy, renderTime) {
+    
+    // ===== REAL PHOTO PIGEON V41 =====
+    // Source: Wikimedia Commons, CC0
+    // "Feral pigeon walking on cobblestone or paved surface.jpg"
+    // https://commons.wikimedia.org/wiki/File:Feral_pigeon_walking_on_cobblestone_or_paved_surface.jpg
+    const PD_PIGEON_PHOTO_V41_URL =
+      'https://commons.wikimedia.org/wiki/Special:FilePath/Feral_pigeon_walking_on_cobblestone_or_paved_surface.jpg?width=640';
+    const PD_PIGEON_PHOTO_V41 = new Image();
+    PD_PIGEON_PHOTO_V41.decoding = 'async';
+    PD_PIGEON_PHOTO_V41.referrerPolicy = 'no-referrer';
+    PD_PIGEON_PHOTO_V41_READY = false;
+    PD_PIGEON_PHOTO_V41.onload = () => {
+      PD_PIGEON_PHOTO_V41_READY = true;
+      // 혹시 이전 비둘기 캐시가 남아 있으면 버립니다.
+      try {
+        for (const cached of enemySpriteCache.values()) {
+          try { cached.bitmap?.close?.(); } catch (_) {}
+        }
+        enemySpriteCache.clear();
+      } catch (_) {}
+    };
+    PD_PIGEON_PHOTO_V41.onerror = () => {
+      PD_PIGEON_PHOTO_V41_READY = false;
+    };
+    PD_PIGEON_PHOTO_V41.src = PD_PIGEON_PHOTO_V41_URL;
+
+    function pdPhotoPigeonBodyPathV41(g, r) {
+      g.beginPath();
+      // 꼬리
+      g.moveTo(-r*1.36, r*.10);
+      g.quadraticCurveTo(-r*1.72, r*.12, -r*1.92, r*.27);
+      g.quadraticCurveTo(-r*1.55, r*.38, -r*1.02, r*.38);
+      // 배/가슴
+      g.bezierCurveTo(-r*.62,r*.76,r*.13,r*.78,r*.64,r*.43);
+      // 목 아래
+      g.bezierCurveTo(r*.78,r*.27,r*.79,r*.04,r*.70,-r*.12);
+      // 머리/이마
+      g.bezierCurveTo(r*.69,-r*.53,r*.88,-r*.78,r*1.17,-r*.76);
+      g.bezierCurveTo(r*1.46,-r*.74,r*1.60,-r*.52,r*1.57,-r*.28);
+      // 부리 쪽
+      g.quadraticCurveTo(r*1.72,-r*.24,r*1.92,-r*.12);
+      g.quadraticCurveTo(r*1.70,-r*.01,r*1.52,r*.01);
+      // 턱/목
+      g.bezierCurveTo(r*1.29,r*.08,r*1.11,r*.30,r*.98,r*.49);
+      g.bezierCurveTo(r*.76,r*.83,r*.32,r*.94,-r*.16,r*.86);
+      g.bezierCurveTo(-r*.64,r*.78,-r*.90,r*.56,-r*1.02,r*.38);
+      g.closePath();
+    }
+
+    function pdDrawWalkingPigeonLegV41(g, r, x, phase, far=false) {
+      const swing = Math.sin(phase);
+      const lift = Math.max(0, Math.sin(phase + Math.PI*.16));
+      const hipY = r*.48;
+      const kneeX = x + swing*r*.13;
+      const kneeY = hipY + r*(.20 - lift*.07);
+      const ankleX = x + swing*r*.27;
+      const ankleY = hipY + r*(.43 - lift*.13);
+
+      g.save();
+      if (far) g.globalAlpha = .72;
+      g.lineCap = 'round';
+      g.lineJoin = 'round';
+
+      // 실제 비둘기 다리 같은 붉은 분홍색.
+      const leg = g.createLinearGradient(x,hipY,ankleX,ankleY);
+      leg.addColorStop(0,'#b94848');
+      leg.addColorStop(.48,'#e27d70');
+      leg.addColorStop(1,'#a64143');
+      g.strokeStyle = leg;
+      g.lineWidth = Math.max(2.2,r*.105);
+      g.beginPath();
+      g.moveTo(x,hipY);
+      g.quadraticCurveTo(kneeX,kneeY,ankleX,ankleY);
+      g.stroke();
+
+      // 발목 비늘.
+      g.strokeStyle='rgba(255,214,199,.46)';
+      g.lineWidth=Math.max(.55,r*.018);
+      for(let k=0;k<3;k++){
+        const yy=ankleY-r*.12+k*r*.055;
+        g.beginPath();
+        g.moveTo(ankleX-r*.045,yy);
+        g.lineTo(ankleX+r*.045,yy);
+        g.stroke();
+      }
+
+      const baseY=ankleY+r*.02;
+      const forward=swing*r*.075+r*.10;
+      g.strokeStyle='#b34d50';
+      g.lineWidth=Math.max(1.25,r*.047);
+
+      // 앞쪽 세 발가락.
+      for(const spread of [-.11,0,.11]){
+        g.beginPath();
+        g.moveTo(ankleX,baseY);
+        g.quadraticCurveTo(
+          ankleX+forward+r*.14,
+          baseY+r*.045,
+          ankleX+forward+r*.28,
+          baseY+r*.07+spread*r
+        );
+        g.stroke();
+      }
+      // 뒤 발가락.
+      g.beginPath();
+      g.moveTo(ankleX,baseY);
+      g.quadraticCurveTo(
+        ankleX-r*.12,
+        baseY+r*.015,
+        ankleX-r*.25,
+        baseY-r*.055
+      );
+      g.stroke();
+
+      // 발톱.
+      g.strokeStyle='rgba(48,31,32,.80)';
+      g.lineWidth=Math.max(.6,r*.018);
+      for(const spread of [-.11,0,.11]){
+        const tx=ankleX+forward+r*.28;
+        const ty=baseY+r*.07+spread*r;
+        g.beginPath();
+        g.moveTo(tx-r*.025,ty);
+        g.lineTo(tx+r*.035,ty+r*.012);
+        g.stroke();
+      }
+      g.restore();
+    }
+
+    function drawRealPhotoPigeonV41(g, enemy, x, y, time) {
+      const r=Math.max(12,Number(enemy?.radius||22));
+      const wingPhase=Number(enemy?.wingPhase||0);
+      const walkPhase=time*.015+wingPhase;
+      const bodyBob=Math.abs(Math.sin(walkPhase))*r*.035;
+      const headBob=Math.sin(walkPhase*2)*r*.018;
+
+      g.save();
+      g.translate(x,y-bodyBob);
+
+      // 깔끔한 접지 그림자 하나만 사용. 흰색 선/속도선 없음.
+      g.save();
+      g.scale(1,.34);
+      const sh=g.createRadialGradient(-r*.02,r*1.45,1,-r*.02,r*1.45,r*1.45);
+      sh.addColorStop(0,'rgba(0,0,0,.35)');
+      sh.addColorStop(.65,'rgba(0,0,0,.16)');
+      sh.addColorStop(1,'rgba(0,0,0,0)');
+      g.fillStyle=sh;
+      g.beginPath();
+      g.ellipse(-r*.04,r*1.30,r*1.20,r*.36,0,0,Math.PI*2);
+      g.fill();
+      g.restore();
+
+      // 뒤 다리 -> 몸 -> 앞 다리 순으로 그려 사진 몸체와 자연스럽게 겹칩니다.
+      pdDrawWalkingPigeonLegV41(g,r,-r*.18,walkPhase+Math.PI,true);
+
+      if(PD_PIGEON_PHOTO_V41_READY && PD_PIGEON_PHOTO_V41.naturalWidth>0){
+        g.save();
+        g.translate(0,headBob);
+
+        // 절대 사각형 사진을 그대로 그리지 않고 비둘기 실루엣으로 자릅니다.
+        pdPhotoPigeonBodyPathV41(g,r);
+        g.clip();
+
+        const img=PD_PIGEON_PHOTO_V41;
+        const iw=Math.max(1,img.naturalWidth), ih=Math.max(1,img.naturalHeight);
+
+        // 원본 4:3 사진의 가운데 비둘기 영역을 사용.
+        // 최종 출력은 유기적인 비둘기 실루엣 내부만 보이므로 배경 사각형이 생기지 않습니다.
+        const sx=iw*.13, sy=ih*.05, sw=iw*.74, sh=ih*.86;
+        g.drawImage(
+          img,
+          sx,sy,sw,sh,
+          -r*1.96,-r*.94,r*3.95,r*1.93
+        );
+
+        // 사진을 조금 더 선명하게 보이도록 얇은 명암만 추가.
+        g.globalCompositeOperation='source-atop';
+        const light=g.createLinearGradient(-r*1.4,-r*.9,r*1.5,r*.9);
+        light.addColorStop(0,'rgba(255,255,255,.12)');
+        light.addColorStop(.40,'rgba(255,255,255,0)');
+        light.addColorStop(1,'rgba(8,15,20,.12)');
+        g.fillStyle=light;
+        g.fillRect(-r*2,-r,r*4,r*2);
+        g.restore();
+
+        // 사진 경계는 밝은 흰 선 대신 거의 보이지 않는 어두운 외곽만.
+        g.save();
+        g.translate(0,headBob);
+        pdPhotoPigeonBodyPathV41(g,r);
+        g.strokeStyle='rgba(28,38,45,.44)';
+        g.lineWidth=Math.max(.7,r*.024);
+        g.stroke();
+        g.restore();
+
+      } else {
+        // 외부 사진이 아직 로드되지 않았을 때도 사각형 없는 깨끗한 기존 비둘기로 표시.
+        const fallback={...enemy,heading:0};
+        drawCanvasPigeon(fallback,0,0,time,g);
+      }
+
+      pdDrawWalkingPigeonLegV41(g,r,r*.14,walkPhase,false);
+
+      // 사진 위에 눈이나 부리를 따로 다시 그리지 않습니다.
+      // 따라서 이전처럼 눈만 하늘에 떠 있거나 흰 선이 분리되는 현상이 없습니다.
+      g.restore();
+    }
+
+function renderEnemySpriteBase(g, proxy, kind, cx, cy, renderTime) {
       if (kind === 'rainbow') drawCanvasRainbowEnemy(proxy, cx, cy, renderTime, g);
       else if (kind === 'golem') drawCanvasGolem(proxy, cx, cy, renderTime, g);
       else if (kind === 'llama') drawCanvasLlama(proxy, cx, cy, renderTime, g);
@@ -24316,11 +24695,22 @@ function requestGachaDraw(count) {
 
     function drawCachedEnemyBase(enemy, drawX, drawY, time) {
       if (window.PDTrue3D && window.PDTrue3D.shouldHideBattleSprites && window.PDTrue3D.shouldHideBattleSprites()) return;
+
+      const kind=enemySpriteKind(enemy);
+      if(kind==='pigeon'){
+        // V41: 비둘기는 캐시 타일 자체를 사용하지 않아 사각형 경계가 생길 수 없습니다.
+        ctx.save();
+        ctx.translate(drawX,drawY);
+        ctx.rotate(Number(enemy.heading||0));
+        drawRealPhotoPigeonV41(ctx,enemy,0,0,time);
+        ctx.restore();
+        return;
+      }
+
       const sprite = getEnemySprite(enemy, time);
       ctx.save();
       ctx.translate(drawX, drawY);
-      // 비둘기와 전갈은 진행 방향으로 몸 전체가 회전하는 디자인입니다.
-      if (sprite.kind === 'pigeon' || sprite.kind === 'scorpion' || (sprite.kind === 'rainbow' && !enemy.rainbowOre && enemy.type!=='rainbowFeverCore')) ctx.rotate(Number(enemy.heading || 0));
+      if (sprite.kind === 'scorpion' || (sprite.kind === 'rainbow' && !enemy.rainbowOre && enemy.type!=='rainbowFeverCore')) ctx.rotate(Number(enemy.heading || 0));
       ctx.drawImage(sprite.source, -sprite.half, -sprite.half, sprite.logicalSize, sprite.logicalSize);
       ctx.restore();
     }
@@ -24483,7 +24873,7 @@ function drawEnemy(enemy, time) {
         ctx.translate(drawX, drawY);
         ctx.scale(BATTLE_ENEMY_VISUAL_SCALE, BATTLE_ENEMY_VISUAL_SCALE);
         ctx.translate(-drawX, -drawY);
-        draw3DEnemyFoundation(enemy,drawX,drawY,time,ctx);
+        if(enemySpriteKind(enemy)!=='pigeon') draw3DEnemyFoundation(enemy,drawX,drawY,time,ctx);
         ctx.restore();
       }
       const isBoss = enemy.type !== 'normal';
@@ -24523,12 +24913,15 @@ function drawEnemy(enemy, time) {
         ctx.translate(drawX, drawY);
         ctx.scale(BATTLE_ENEMY_VISUAL_SCALE, BATTLE_ENEMY_VISUAL_SCALE);
         ctx.translate(-drawX, -drawY);
-        if (battlePerfMode === 0 || isBoss || enemy.rainbowOre) {
+        const pdKindV41=enemySpriteKind(enemy);
+        if(pdKindV41==='pigeon'){
+          // 실제 사진 비둘기는 사각 캐시/속도선/흰 링을 전부 사용하지 않습니다.
+          drawCachedEnemyBase(enemy, drawX, drawY, time);
+        } else if (battlePerfMode === 0 || isBoss || enemy.rainbowOre) {
           drawPremiumEnemyBackdrop(enemy, drawX, drawY, time);
           drawCachedEnemyBase(enemy, drawX, drawY, time);
           drawPremiumEnemyForeground(enemy, drawX, drawY, time);
         } else {
-          // 부하가 높을 때 일반 적은 캐시된 본체를 그대로 유지합니다.
           drawCachedEnemyBase(enemy, drawX, drawY, time);
         }
         ctx.restore();
@@ -35403,7 +35796,14 @@ function drawEnemy(enemy, time) {
       if(sid===2){e.variant='Golem';drawCanvasGolem(e,w/2,h/2+4,t,g);if(typeof pdApplyPhotoEnemyFinish==='function')pdApplyPhotoEnemyFinish(g,e,'golem',w/2,h/2+4,r);}
       else if(sid===3){e.variant='llama';drawCanvasLlama(e,w/2,h/2+8,t,g);if(typeof pdApplyPhotoEnemyFinish==='function')pdApplyPhotoEnemyFinish(g,e,'llama',w/2,h/2+8,r);}
       else if(sid===4){e.variant='scorpion';drawCanvasScorpion(e,w/2,h/2+5,t,g);if(typeof pdApplyPhotoEnemyFinish==='function')pdApplyPhotoEnemyFinish(g,e,'scorpion',w/2,h/2+5,r);}
-      else{drawCanvasPigeon(e,w/2,h/2+2,t,g);if(typeof pdApplyPhotoEnemyFinish==='function')pdApplyPhotoEnemyFinish(g,e,'pigeon',w/2,h/2+2,r);}
+      else{
+        const pcx=w/2,pcy=h/2+2;
+        if(typeof drawRealPhotoPigeonV41==='function'){
+          drawRealPhotoPigeonV41(g,e,pcx,pcy,t);
+        }else{
+          drawCanvasPigeon(e,pcx,pcy,t,g);
+        }
+      }
     };requestAnimationFrame(frame);
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
@@ -35866,45 +36266,49 @@ Admin title-management UI remains available to administrators.
 -->
 
 
-<style id="pdMobileBattleViewportFixV39">
-/* ===== V39 MOBILE BATTLE VIEWPORT / HUD SAFE AREA =====
-   모바일에서는 전투 UI를 맵 위에 얹지 않고 별도 안전영역으로 분리합니다.
-   V29의 position:relative!important를 이 규칙이 최종적으로 덮습니다.
-*/
-@media (pointer:coarse) and (max-height:700px) {
+<!-- V39 MOBILE BATTLE LAYOUT FIX
+- fixes mobile right-shift caused by historical gameCanvas position:relative!important
+- centers canvas against visualViewport including safe-area/browser offsets
+- reserves real top and bottom safe bands so money/wave/BGM/deck never cover the map
+- dynamically measures HUD/deck height on each mobile device
+-->
+
+
+<!-- V40 PIGEON ALIGNMENT FIX
+- Photo eye/beak/neck overlays now follow the exact same pigeon body bob.
+- Eye/beak coordinates match drawCanvasPigeon head coordinates.
+- Battle and menu pigeon art use the same visual center correction.
+- Fixes floating eye and off-center pigeon appearance.
+-->
+
+
+<!-- V41 REAL PHOTO PIGEON
+Pigeon source is a CC0 Wikimedia Commons real photograph:
+"Feral pigeon walking on cobblestone or paved surface.jpg" by Salwa Farwaneh Dameh.
+Pigeons no longer use cached rectangular sprite tiles, premium white motion lines,
+photo-grain overlays, detached artificial eyes, or 3D foundation rings.
+The photo is clipped to an organic bird silhouette and the two legs are animated independently.
+-->
+
+
+<style id="pdMobileBattleFullMapV42">
+/* ===== V42 MOBILE BATTLE: FULL MAP + RESTORED CONTROLS ===== */
+@media (pointer:coarse) and (max-height:700px){
+  html,body{overscroll-behavior:none}
   #battleScreen:not(.hidden){
-    --pd-mobile-top-safe:68px;
-    --pd-mobile-bottom-safe:58px;
+    position:fixed!important;
+    inset:0!important;
     width:100dvw!important;
     height:100dvh!important;
-    inset:0!important;
+    min-width:0!important;
+    min-height:0!important;
+    padding:0!important;
+    margin:0!important;
     overflow:hidden!important;
-    background:#060b12!important;
+    background:transparent!important;
   }
-
-  /* 위/아래 컨트롤 전용 레터박스. 실제 맵은 이 영역을 침범하지 않음. */
-  #battleScreen::before{
-    content:"";
-    position:absolute;
-    z-index:24;
-    left:0;right:0;top:0;
-    height:var(--pd-mobile-top-safe);
-    pointer-events:none;
-    background:
-      linear-gradient(180deg,rgba(5,11,19,.99),rgba(8,18,30,.97) 72%,rgba(8,18,30,.90));
-    border-bottom:1px solid rgba(158,197,234,.16);
-    box-shadow:0 5px 14px rgba(0,0,0,.20);
-  }
-  #battleScreen::after{
-    content:"";
-    position:absolute;
-    z-index:24;
-    left:0;right:0;bottom:0;
-    height:var(--pd-mobile-bottom-safe);
-    pointer-events:none;
-    background:linear-gradient(0deg,rgba(4,10,18,.99),rgba(7,16,27,.96));
-    border-top:1px solid rgba(158,197,234,.14);
-  }
+  #battleScreen::before,
+  #battleScreen::after{display:none!important;content:none!important}
 
   #battleScreen .battle-layout,
   #battleScreen .battle-map-shell{
@@ -35914,365 +36318,382 @@ Admin title-management UI remains available to administrators.
     height:100%!important;
     margin:0!important;
     padding:0!important;
+    border:0!important;
+    border-radius:0!important;
     overflow:hidden!important;
-    transform:none!important;
+    background:transparent!important;
   }
 
-  /* 핵심: 예전 relative 강제 규칙을 해제한다. 실제 px 좌표는 V39 JS가 계산한다. */
+  /* 화면 끝까지 맵을 늘립니다. 레터박스/검정 여백 없음. */
   #battleScreen #gameCanvas{
     position:absolute!important;
     z-index:2!important;
-    display:block!important;
-    left:50%!important;
-    top:50%!important;
-    margin:0!important;
-    padding:0!important;
-    transform:translate(-50%,-50%)!important;
-    transform-origin:center center!important;
-    width:auto;
-    height:auto;
+    left:0!important;
+    top:0!important;
+    right:auto!important;
+    bottom:auto!important;
+    width:100dvw!important;
+    height:100dvh!important;
+    min-width:100dvw!important;
+    min-height:100dvh!important;
     max-width:none!important;
     max-height:none!important;
-    aspect-ratio:900 / 520!important;
+    margin:0!important;
+    padding:0!important;
     border:0!important;
-    border-radius:8px!important;
-    box-shadow:0 5px 18px rgba(0,0,0,.25)!important;
-    background:#0a1019!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    transform:none!important;
+    transform-origin:0 0!important;
+    aspect-ratio:auto!important;
+    background:transparent!important;
     touch-action:none!important;
   }
 
-  /* 상단 재화: 왼쪽 한 줄, 게임 밖의 검은 안전영역 */
+  #battleScreen #battleRangeOverlay{
+    display:none!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+  }
+
+  /* 돈/처치 수는 V39 이전의 원래 모바일 HUD 크기로 복원. */
   #battleScreen .battle-topbar{
     position:absolute!important;
-    z-index:60!important;
-    top:max(3px,env(safe-area-inset-top))!important;
-    left:max(4px,env(safe-area-inset-left))!important;
-    right:auto!important;
+    z-index:92!important;
+    top:max(6px,env(safe-area-inset-top))!important;
+    left:max(6px,env(safe-area-inset-left))!important;
+    right:max(6px,env(safe-area-inset-right))!important;
     width:auto!important;
-    max-width:35vw!important;
-    height:auto!important;
-    margin:0!important;
+    max-width:none!important;
     padding:0!important;
+    margin:0!important;
+    display:flex!important;
     align-items:flex-start!important;
+    justify-content:space-between!important;
     pointer-events:none!important;
   }
   #battleScreen .battle-topbar>div:first-child{
     display:block!important;
     width:auto!important;
-    max-width:35vw!important;
-    padding:4px 5px!important;
-    border-radius:9px!important;
-    border:1px solid rgba(160,198,234,.18)!important;
-    background:rgba(9,20,34,.96)!important;
-    box-shadow:none!important;
-    backdrop-filter:none!important;
+    max-width:43vw!important;
+    padding:7px 8px!important;
+    border:1px solid rgba(156,190,230,.28)!important;
+    border-radius:12px!important;
+    background:rgba(8,20,36,.82)!important;
+    box-shadow:0 8px 24px rgba(0,0,0,.26)!important;
+    backdrop-filter:blur(8px)!important;
     pointer-events:auto!important;
   }
   #battleScreen .battle-topbar h2{display:none!important}
   #battleScreen .battle-topbar .resource-bar{
     display:flex!important;
+    grid-template-columns:none!important;
     align-items:center!important;
-    gap:3px!important;
     flex-wrap:nowrap!important;
+    gap:4px!important;
   }
   #battleScreen .battle-topbar .resource{
+    display:flex!important;
     min-width:0!important;
-    padding:3px 5px!important;
-    border-radius:7px!important;
-    font-size:clamp(7px,2.3dvh,9px)!important;
+    padding:5px 7px!important;
+    border-radius:8px!important;
+    font-size:10px!important;
     line-height:1!important;
     white-space:nowrap!important;
     background:rgba(255,255,255,.055)!important;
   }
 
-  /* 웨이브는 정중앙. 스킵/나가기는 바로 아래 한 줄. */
+  /* BGM도 V39의 초소형 버튼이 아니라 기존 모바일 형태로 복원. */
+  #battleScreen .battle-bgm-controls{
+    position:fixed!important;
+    z-index:94!important;
+    top:max(6px,env(safe-area-inset-top))!important;
+    right:max(6px,env(safe-area-inset-right))!important;
+    left:auto!important;
+    bottom:auto!important;
+    display:flex!important;
+    align-items:center!important;
+    gap:5px!important;
+    width:auto!important;
+    max-width:78px!important;
+    padding:4px!important;
+    margin:0!important;
+    border:1px solid rgba(255,255,255,.16)!important;
+    border-radius:10px!important;
+    background:rgba(7,16,29,.72)!important;
+    box-shadow:0 7px 22px rgba(0,0,0,.22)!important;
+    backdrop-filter:blur(9px)!important;
+    transform:none!important;
+    pointer-events:auto!important;
+  }
+  #battleScreen .battle-bgm-toggle{
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    min-width:68px!important;
+    width:auto!important;
+    min-height:28px!important;
+    height:28px!important;
+    padding:5px 6px!important;
+    border-radius:999px!important;
+    font-size:10px!important;
+    line-height:1!important;
+  }
+  #battleScreen .battle-bgm-track,
+  #battleScreen .battle-bgm-volume{display:none!important}
+
+  /* WAVE + 스킵 + 자동스킵 + 나가기: 모바일에서도 항상 표시. */
   #battleScreen .battle-wave-center{
     position:absolute!important;
-    z-index:62!important;
+    z-index:96!important;
     top:max(2px,env(safe-area-inset-top))!important;
     left:50%!important;
     right:auto!important;
+    display:flex!important;
+    visibility:visible!important;
+    opacity:1!important;
     width:auto!important;
-    max-width:48vw!important;
-    gap:3px!important;
+    max-width:56vw!important;
+    align-items:center!important;
+    flex-direction:column!important;
+    gap:4px!important;
     transform:translateX(-50%)!important;
     pointer-events:none!important;
   }
   #battleScreen .battle-wave-center .map-wave-hud{
-    min-width:72px!important;
-    padding:3px 7px!important;
-    border-radius:8px!important;
-    background:rgba(9,20,34,.96)!important;
-    box-shadow:none!important;
-    backdrop-filter:none!important;
-  }
-  #battleScreen .battle-wave-center .map-wave-hud span,
-  #battleScreen .battle-wave-center .map-wave-hud small{
-    font-size:7px!important;
-  }
-  #battleScreen .battle-wave-center .map-wave-hud strong{
-    font-size:15px!important;
+    display:flex!important;
+    min-width:84px!important;
+    padding:5px 8px!important;
+    border-radius:10px!important;
+    background:rgba(8,20,36,.84)!important;
   }
   #battleScreen .wave-skip-controls{
     display:flex!important;
+    visibility:visible!important;
+    opacity:1!important;
     align-items:center!important;
     justify-content:center!important;
-    gap:3px!important;
-    max-width:48vw!important;
+    gap:4px!important;
+    width:max-content!important;
+    max-width:62vw!important;
     padding:0!important;
-    border:0!important;
-    background:transparent!important;
     pointer-events:auto!important;
   }
   #battleScreen .wave-skip-button,
   #battleScreen .auto-skip-button,
   #battleScreen .battle-exit-button{
+    display:inline-flex!important;
+    visibility:visible!important;
+    opacity:1!important;
+    align-items:center!important;
+    justify-content:center!important;
     min-width:0!important;
-    min-height:24px!important;
-    height:24px!important;
-    padding:2px 5px!important;
-    border-radius:7px!important;
-    font-size:clamp(6px,2dvh,8px)!important;
+    width:auto!important;
+    min-height:28px!important;
+    height:28px!important;
+    padding:4px 7px!important;
+    border-radius:9px!important;
+    font-size:9px!important;
     line-height:1!important;
     white-space:nowrap!important;
-    box-shadow:none!important;
-    backdrop-filter:none!important;
+    pointer-events:auto!important;
   }
   #battleScreen .wave-skip-button small{display:none!important}
 
-  /* BGM은 우측 위 한 개의 작은 버튼만. 맵 바깥 안전영역에 위치. */
-  #battleScreen .battle-bgm-controls{
+  /* 설치 유닛 선택창 강제 복구. */
+  #battleScreen .battle-bottom-panel{
     position:absolute!important;
-    z-index:63!important;
-    top:max(3px,env(safe-area-inset-top))!important;
-    right:max(4px,env(safe-area-inset-right))!important;
-    left:auto!important;
-    width:auto!important;
-    max-width:none!important;
-    padding:3px!important;
+    z-index:88!important;
+    inset:0!important;
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    padding:0!important;
     margin:0!important;
-    border-radius:8px!important;
-    border:1px solid rgba(160,198,234,.18)!important;
-    background:rgba(9,20,34,.96)!important;
-    box-shadow:none!important;
-    backdrop-filter:none!important;
-    transform:none!important;
+    border:0!important;
+    background:transparent!important;
+    pointer-events:none!important;
   }
-  #battleScreen .battle-bgm-volume,
-  #battleScreen .battle-bgm-track{display:none!important}
-  #battleScreen .battle-bgm-toggle{
-    min-width:0!important;
-    width:auto!important;
-    min-height:24px!important;
-    height:24px!important;
-    padding:3px 6px!important;
-    font-size:8px!important;
-    border-radius:6px!important;
-    box-shadow:none!important;
-  }
-
-  /* 하단 배치창도 맵과 겹치지 않는 별도 안전영역으로 사용 */
   #battleScreen .battle-deploy-section{
-    z-index:61!important;
-    left:max(4px,env(safe-area-inset-left))!important;
-    right:max(4px,env(safe-area-inset-right))!important;
-    bottom:max(3px,env(safe-area-inset-bottom))!important;
+    position:absolute!important;
+    z-index:98!important;
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    left:max(6px,env(safe-area-inset-left))!important;
+    right:max(6px,env(safe-area-inset-right))!important;
+    bottom:max(5px,env(safe-area-inset-bottom))!important;
     width:auto!important;
     max-width:none!important;
-    padding:3px 4px!important;
-    border-radius:9px!important;
+    min-height:0!important;
+    padding:6px!important;
+    margin:0!important;
+    border:1px solid rgba(157,188,226,.32)!important;
+    border-radius:12px!important;
+    background:rgba(8,20,36,.86)!important;
+    box-shadow:0 8px 24px rgba(0,0,0,.28)!important;
+    backdrop-filter:blur(8px)!important;
     transform:none!important;
-    background:rgba(8,18,31,.97)!important;
-    box-shadow:none!important;
-    backdrop-filter:none!important;
+    pointer-events:auto!important;
   }
-  #battleScreen .battle-deck{gap:3px!important}
+  #battleScreen .battle-bottom-heading{display:none!important}
+  #battleScreen #battleDeck,
+  #battleScreen .battle-deck{
+    display:grid!important;
+    visibility:visible!important;
+    opacity:1!important;
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    gap:4px!important;
+    width:100%!important;
+  }
   #battleScreen .battle-unit-button,
   #battleScreen .battle-empty-slot{
-    min-height:42px!important;
-    height:42px!important;
-    padding:2px 1px!important;
-    border-radius:7px!important;
-  }
-  #battleScreen .battle-unit-button .battle-unit-icon{
-    margin:0!important;
-    font-size:14px!important;
-  }
-  #battleScreen .battle-unit-button .battle-unit-name{
-    font-size:7px!important;
-  }
-  #battleScreen .battle-unit-button .battle-unit-cost{
-    margin:0!important;
-    font-size:6px!important;
-  }
-
-  /* 맵 정보 버튼도 맵 안을 가리지 않고 상단 안전영역 끝으로 이동 */
-  #battleScreen .stage-map-info-button{
-    z-index:64!important;
-    top:calc(var(--pd-mobile-top-safe) - 25px)!important;
-    right:max(5px,env(safe-area-inset-right))!important;
-    width:21px!important;
-    height:21px!important;
-    min-width:21px!important;
-    min-height:21px!important;
-    font-size:10px!important;
-  }
-
-  /* 선택 정보창은 기본적으로 맵 오른쪽을 크게 가리지 않게 더 작게 */
-  #battleScreen .battle-info-section{
-    top:calc(var(--pd-mobile-top-safe) + 5px)!important;
-    bottom:calc(var(--pd-mobile-bottom-safe) + 5px)!important;
-    right:max(4px,env(safe-area-inset-right))!important;
-    width:min(150px,27vw)!important;
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
     min-width:0!important;
-    max-width:27vw!important;
-    padding:6px!important;
-    border-radius:9px!important;
-    font-size:8px!important;
+    min-height:44px!important;
+    height:44px!important;
+    padding:2px 1px!important;
+    border-radius:8px!important;
   }
-  #battleScreen .battle-info-section.is-empty{
-    display:none!important;
+  #battleScreen .battle-unit-button .battle-unit-icon{font-size:15px!important;margin:0!important}
+  #battleScreen .battle-unit-button .battle-unit-name{font-size:7px!important}
+  #battleScreen .battle-unit-button .battle-unit-cost{font-size:6px!important;margin:0!important}
+
+  #battleScreen .battle-info-section.is-empty{display:none!important}
+
+  /* 결과창은 클릭 가능하며 나가기 버튼이 제목 바로 아래에 표시됩니다. */
+  #battleScreen .battle-result-overlay{
+    z-index:150!important;
+    pointer-events:auto!important;
+  }
+  #battleScreen .battle-result-card{
+    width:min(420px,84vw)!important;
+    padding:17px 18px 16px!important;
+  }
+  #battleScreen .battle-result-exit-button{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    width:min(230px,72vw)!important;
+    min-height:38px!important;
+    margin:9px auto 5px!important;
+    border:1px solid rgba(255,255,255,.30)!important;
+    border-radius:12px!important;
+    background:linear-gradient(180deg,#4d8fff,#2461d5)!important;
+    color:#fff!important;
+    font-size:14px!important;
+    font-weight:1000!important;
+    box-shadow:0 8px 22px rgba(0,0,0,.28)!important;
+    pointer-events:auto!important;
   }
 }
-
-/* 가장 낮은 휴대전화에서는 컨트롤을 더 압축해 맵 높이를 확보. */
-@media (pointer:coarse) and (orientation:landscape) and (max-height:390px){
-  #battleScreen:not(.hidden){
-    --pd-mobile-top-safe:60px;
-    --pd-mobile-bottom-safe:52px;
-  }
-  #battleScreen .battle-topbar .resource{padding:2px 4px!important;font-size:7px!important}
-  #battleScreen .battle-bgm-toggle{height:22px!important;min-height:22px!important;font-size:7px!important}
-  #battleScreen .battle-wave-center .map-wave-hud{padding:2px 5px!important}
-  #battleScreen .wave-skip-button,
-  #battleScreen .auto-skip-button,
-  #battleScreen .battle-exit-button{height:21px!important;min-height:21px!important;padding:2px 4px!important;font-size:6px!important}
-  #battleScreen .battle-unit-button,
-  #battleScreen .battle-empty-slot{height:37px!important;min-height:37px!important}
+#battleScreen .battle-result-exit-button{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:min(260px,74vw);
+  min-height:44px;
+  margin:12px auto 7px;
+  border:1px solid rgba(255,255,255,.30);
+  border-radius:13px;
+  background:linear-gradient(180deg,#4d8fff,#2461d5);
+  color:#fff;
+  font-size:15px;
+  font-weight:1000;
+  cursor:pointer;
+  pointer-events:auto;
+}
+#battleScreen .battle-result-overlay.is-victory .battle-result-exit-button{
+  background:linear-gradient(180deg,#34c987,#14885a);
 }
 </style>
 
 
-<script id="pdMobileBattleViewportFixV39Script">
+<script id="pdV42SyncAndMobileBattleScript">
 (()=>{
   'use strict';
-  if(window.__pdMobileBattleViewportFixV39)return;
-  window.__pdMobileBattleViewportFixV39=true;
+  if(window.__pdV42Installed)return;
+  window.__pdV42Installed=true;
 
-  const battle=document.getElementById('battleScreen');
-  const canvas=document.getElementById('gameCanvas');
-  if(!battle||!canvas)return;
+  const battleScreen=document.querySelector('#battleScreen');
+  const canvas=document.querySelector('#gameCanvas');
+  let fitRaf=0;
 
-  let raf=0;
-  const isMobileBattle=()=>window.matchMedia('(pointer:coarse)').matches &&
-    window.innerHeight<=700 && !battle.classList.contains('hidden');
+  function isMobileBattle(){
+    return !!battleScreen &&
+      !battleScreen.classList.contains('hidden') &&
+      window.matchMedia('(pointer:coarse)').matches &&
+      window.innerHeight<=700;
+  }
 
-  function px(v){const n=parseFloat(v);return Number.isFinite(n)?n:0}
-
-  function fit(){
-    raf=0;
-    if(!isMobileBattle()){
-      canvas.style.removeProperty('width');
-      canvas.style.removeProperty('height');
-      canvas.style.removeProperty('left');
-      canvas.style.removeProperty('top');
-      battle.style.removeProperty('--pd-mobile-top-safe');
-      battle.style.removeProperty('--pd-mobile-bottom-safe');
-      return;
-    }
-
+  function fitBattleToVisibleScreen(){
+    fitRaf=0;
+    if(!canvas||!isMobileBattle())return;
     const vv=window.visualViewport;
-    const vw=Math.max(1,Math.round(vv?.width||window.innerWidth||document.documentElement.clientWidth||1));
-    const vh=Math.max(1,Math.round(vv?.height||window.innerHeight||document.documentElement.clientHeight||1));
-    const vx=Math.max(0,Number(vv?.offsetLeft||0));
-    const vy=Math.max(0,Number(vv?.offsetTop||0));
+    const w=Math.max(1,Math.round(vv?.width||window.innerWidth));
+    const h=Math.max(1,Math.round(vv?.height||window.innerHeight));
+    const x=Math.max(0,Math.round(vv?.offsetLeft||0));
+    const y=Math.max(0,Math.round(vv?.offsetTop||0));
 
-    const cs=getComputedStyle(battle);
-    let topSafe=px(cs.getPropertyValue('--pd-mobile-top-safe'))||68;
-    let bottomSafe=px(cs.getPropertyValue('--pd-mobile-bottom-safe'))||58;
-
-    // 실제 HUD가 CSS 예상보다 커지는 기종에서는 그 크기만큼 자동으로 안전영역 확장.
-    const candidates=[
-      battle.querySelector('.battle-topbar>div:first-child'),
-      battle.querySelector('.battle-wave-center'),
-      battle.querySelector('.battle-bgm-controls')
-    ].filter(Boolean);
-    let hudBottom=vy;
-    for(const el of candidates){
-      const r=el.getBoundingClientRect();
-      if(r.width>0&&r.height>0)hudBottom=Math.max(hudBottom,r.bottom);
-    }
-    topSafe=Math.max(topSafe,Math.ceil(hudBottom-vy+4));
-
-    const deploy=battle.querySelector('.battle-deploy-section');
-    if(deploy){
-      const r=deploy.getBoundingClientRect();
-      if(r.width>0&&r.height>0){
-        bottomSafe=Math.max(bottomSafe,Math.ceil(vy+vh-r.top+4));
-      }
-    }
-
-    // 너무 큰 HUD 때문에 맵이 사라지는 비정상 상황 방지.
-    topSafe=Math.min(topSafe,Math.max(44,Math.floor(vh*.30)));
-    bottomSafe=Math.min(bottomSafe,Math.max(42,Math.floor(vh*.25)));
-
-    battle.style.setProperty('--pd-mobile-top-safe',`${topSafe}px`);
-    battle.style.setProperty('--pd-mobile-bottom-safe',`${bottomSafe}px`);
-
-    const safeLeft=4;
-    const safeRight=4;
-    const availW=Math.max(120,vw-safeLeft-safeRight);
-    const availH=Math.max(90,vh-topSafe-bottomSafe-4);
-    const ratio=900/520;
-
-    let drawW=Math.min(availW,availH*ratio);
-    let drawH=drawW/ratio;
-    if(drawH>availH){drawH=availH;drawW=drawH*ratio;}
-
-    // visualViewport의 offset까지 포함하므로 주소창/노치/확대 상태에서도 정확한 중앙.
-    const centerX=vx+safeLeft+availW/2;
-    const centerY=vy+topSafe+2+availH/2;
-
+    // 내부 게임 좌표(900×520)는 그대로, 화면 표시만 기기 끝까지 확대합니다.
+    // canvasPoint()가 X/Y 배율을 각각 계산하므로 설치 좌표도 정상 유지됩니다.
     canvas.style.setProperty('position','absolute','important');
-    canvas.style.setProperty('width',`${Math.floor(drawW)}px`,'important');
-    canvas.style.setProperty('height',`${Math.floor(drawH)}px`,'important');
-    canvas.style.setProperty('left',`${Math.round(centerX)}px`,'important');
-    canvas.style.setProperty('top',`${Math.round(centerY)}px`,'important');
-    canvas.style.setProperty('transform','translate(-50%,-50%)','important');
+    canvas.style.setProperty('left',`${x}px`,'important');
+    canvas.style.setProperty('top',`${y}px`,'important');
+    canvas.style.setProperty('width',`${w}px`,'important');
+    canvas.style.setProperty('height',`${h}px`,'important');
+    canvas.style.setProperty('min-width',`${w}px`,'important');
+    canvas.style.setProperty('min-height',`${h}px`,'important');
+    canvas.style.setProperty('transform','none','important');
     canvas.style.setProperty('margin','0','important');
+    canvas.style.setProperty('border-radius','0','important');
+  }
+  function scheduleFit(){
+    cancelAnimationFrame(fitRaf);
+    fitRaf=requestAnimationFrame(fitBattleToVisibleScreen);
   }
 
-  function schedule(){cancelAnimationFrame(raf);raf=requestAnimationFrame(fit)}
-
-  window.addEventListener('resize',schedule,{passive:true});
-  window.addEventListener('orientationchange',()=>setTimeout(schedule,80),{passive:true});
-  if(window.visualViewport){
-    visualViewport.addEventListener('resize',schedule,{passive:true});
-    visualViewport.addEventListener('scroll',schedule,{passive:true});
-  }
-
+  window.addEventListener('resize',scheduleFit,{passive:true});
+  window.addEventListener('orientationchange',()=>setTimeout(scheduleFit,80),{passive:true});
+  window.visualViewport?.addEventListener('resize',scheduleFit,{passive:true});
+  window.visualViewport?.addEventListener('scroll',scheduleFit,{passive:true});
   try{
-    new MutationObserver(schedule).observe(battle,{attributes:true,attributeFilter:['class']});
-    const deploy=battle.querySelector('.battle-deploy-section');
-    const wave=battle.querySelector('.battle-wave-center');
-    if(window.ResizeObserver){
-      const ro=new ResizeObserver(schedule);
-      if(deploy)ro.observe(deploy);
-      if(wave)ro.observe(wave);
-    }
+    new MutationObserver(scheduleFit).observe(battleScreen,{attributes:true,attributeFilter:['class']});
   }catch(_){}
+  scheduleFit();
 
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)schedule()});
-  schedule();
+  // 결과 화면의 나가기 버튼은 전투가 이미 끝난 상태이므로 확인 절차 없이 바로 기존 나가기 처리로 연결됩니다.
+  document.querySelector('#battleResultExitBtn')?.addEventListener('click',event=>{
+    event.preventDefault();
+    event.stopPropagation();
+    document.querySelector('#leaveBattleBtn')?.click();
+  });
+
+  // 같은 계정을 다른 기기에서 변경하면 메뉴 상태에서 수 초 안에 자동 반영.
+  const pull=()=>{
+    try{
+      if(typeof pdPullAccountFromServer==='function')void pdPullAccountFromServer(false);
+    }catch(_){}
+  };
+  window.addEventListener('focus',pull,{passive:true});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)pull();});
+  setInterval(()=>{
+    if(document.hidden)return;
+    pull();
+  },4000);
 })();
 </script>
 
 
-<!-- V39 MOBILE BATTLE LAYOUT FIX
-- fixes mobile right-shift caused by historical gameCanvas position:relative!important
-- centers canvas against visualViewport including safe-area/browser offsets
-- reserves real top and bottom safe bands so money/wave/BGM/deck never cover the map
-- dynamically measures HUD/deck height on each mobile device
+<!-- V42 COMBINED ACCOUNT/MOBILE BATTLE FIX
+- same-account game_saves synchronization uses three-way merge and periodic/focus pulls
+- traits, deck, owned units and save-data progression synchronize across devices
+- wallet, dice, items and titles still use their server-authoritative stores
+- removes V39 black top/bottom safe bands and stretches the battle map to the visible mobile viewport
+- restores money/kills/BGM HUD, skip/auto-skip/exit and deploy-unit picker on mobile
+- adds a clickable result Exit button immediately below Victory/Game Over title
 -->
 
 </body>

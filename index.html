@@ -16342,7 +16342,7 @@ function requestGachaDraw(count) {
         earnedWaveGems:0, skipUses:0, maxSkipUses:5, autoWaveSkip:false, autoSkipTimer:.8,
         placementPreview:{active:false,x:0,y:0,valid:false,pointerType:'mouse'}
       };
-      renderBattleDeck(); showScreen('battle'); window.pdCenterBattleCanvasV50?.(); resetBattleResultOverlay(); updateStageMapInfo();
+      renderBattleDeck(); showScreen('battle'); window.pdCenterBattleCanvasV51?.(); resetBattleResultOverlay(); updateStageMapInfo();
       document.querySelector('#stageMapInfoPanel')?.classList.add('hidden');
       document.querySelector('#stageMapInfoBtn')?.setAttribute('aria-expanded','false');
       renderSelectedPanel(); updateOrientationGuard(); launchWave(1); updateBattleUi();
@@ -16397,7 +16397,7 @@ function requestGachaDraw(count) {
         eventDiceCollected:0, rainbowDiceDrops:[], rainbowBaseSpears:[], rainbowAllyOres:[], rainbowAlliedSoldiers:[], rainbowMapBuffRemaining:0, rainbowBossRolls:{},
         placementPreview:{active:false,x:0,y:0,valid:false,pointerType:'mouse'}
       };
-      renderBattleDeck(); showScreen('battle'); window.pdCenterBattleCanvasV50?.(); resetBattleResultOverlay(); updateStageMapInfo();
+      renderBattleDeck(); showScreen('battle'); window.pdCenterBattleCanvasV51?.(); resetBattleResultOverlay(); updateStageMapInfo();
       document.querySelector('#stageMapInfoPanel')?.classList.add('hidden'); document.querySelector('#stageMapInfoBtn')?.setAttribute('aria-expanded','false');
       renderSelectedPanel(); updateOrientationGuard(); launchWave(1); updateBattleUi(true);
       try { drawBattle(performance.now()); } catch (error) { console.warn('초기 무지개 전투 렌더 fallback', error); }
@@ -16481,8 +16481,8 @@ function requestGachaDraw(count) {
       };
 
       renderBattleDeck();
-      showScreen('battle');
-      window.pdCenterBattleCanvasV50?.();
+      showScreen('battle'); window.pdCenterBattleCanvasV51?.();
+     
       resetBattleResultOverlay();
       updateStageMapInfo();
       document.querySelector('#stageMapInfoPanel')?.classList.add('hidden');
@@ -24018,11 +24018,9 @@ function requestGachaDraw(count) {
 
     const enemySpriteCache = new Map();
     let enemySpriteCacheTheme = -1;
-    const ENEMY_SPRITE_CACHE_LIMIT = window.PD_IS_IOS ? 96 : 280;
-    const ENEMY_SPRITE_CACHE_SCALE = window.PD_IS_IOS
-      ? Math.min(1.45, Math.max(1.15, Number(window.devicePixelRatio || 1) * .58))
-      : Math.min(2.20, Math.max(1.50, Number(window.devicePixelRatio || 1) * 1.10));
-    const ENEMY_SPRITE_FRAMES = window.PD_IS_IOS ? 12 : 24;
+    const ENEMY_SPRITE_CACHE_LIMIT = 280;
+    const ENEMY_SPRITE_CACHE_SCALE = Math.min(2.05, Math.max(1.35, Number(window.devicePixelRatio || 1) * 1.08));
+    const ENEMY_SPRITE_FRAMES = 24;
 
     function enemySpriteCanvas(width, height) {
       const pixelWidth = Math.max(2, Math.ceil(width * ENEMY_SPRITE_CACHE_SCALE));
@@ -24154,292 +24152,6 @@ function requestGachaDraw(count) {
       return proxy;
     }
 
-
-    // ===== PHOTO ENEMY RIG V37 =====
-    // 기본 실루엣 위에 관절/재질/세부 광택을 추가합니다.
-    // 이 함수는 적 스프라이트 캐시를 만들 때만 실행되므로 전투 매 프레임 비용은 작습니다.
-    function pdDrawPhotographicEnemyRigV37(g, enemy, kind, cx, cy, radius) {
-      const r=Math.max(10,Number(radius||enemy?.radius||22));
-      const time=Number(enemy?._pdRenderTime||0);
-      const type=String(enemy?.type||'normal');
-      const variant=String(enemy?.variant||'');
-      g.save();
-
-      if(kind==='pigeon'){
-        // 사진풍 파츠도 기본 비둘기와 똑같은 상하 움직임을 사용합니다.
-        // 이전 버전은 눈/부리/목 광택만 고정 좌표에 남아 몸에서 분리돼 보였습니다.
-        const wingPhase=Number(enemy?.wingPhase||0);
-        const bodyCycle=(time*.00245+wingPhase/(Math.PI*2))%1;
-        const bodyPowerStroke=bodyCycle<.38
-          ?Math.sin((bodyCycle/.38)*Math.PI)
-          :-.58*Math.sin(((bodyCycle-.38)/.62)*Math.PI);
-        const bodyBob=-Math.max(0,bodyPowerStroke)*4.6+Math.sin(time*.006+wingPhase)*1.4;
-        g.translate(0,bodyBob);
-
-        // 비둘기: 실제 걷는 다리 + 발가락 + 날개깃 분리.
-        const phase=time*.014+wingPhase;
-        const gait=Math.sin(phase), gait2=Math.sin(phase+Math.PI);
-        const lift1=Math.max(0,Math.sin(phase+Math.PI*.20));
-        const lift2=Math.max(0,Math.sin(phase+Math.PI*1.20));
-
-        // 뒤쪽 다리 먼저
-        function leg(x0,p,lift,far){
-          const hipY=cy+r*.34;
-          const kneeX=x0+p*r*.12;
-          const kneeY=hipY+r*(.24-lift*.05);
-          const ankleX=x0+p*r*.22;
-          const ankleY=hipY+r*(.47-lift*.10);
-
-          g.save();
-          if(far)g.globalAlpha=.72;
-          const lg=g.createLinearGradient(x0,hipY,ankleX,ankleY);
-          lg.addColorStop(0,'#b45a46');lg.addColorStop(.50,'#d98265');lg.addColorStop(1,'#9b493b');
-          g.strokeStyle=lg;g.lineCap='round';g.lineJoin='round';
-          g.lineWidth=Math.max(2,r*.115);
-          g.beginPath();g.moveTo(x0,hipY);g.quadraticCurveTo(kneeX,kneeY,ankleX,ankleY);g.stroke();
-
-          // 발목 비늘
-          g.strokeStyle='rgba(255,210,185,.34)';g.lineWidth=Math.max(.6,r*.025);
-          for(let k=0;k<3;k++){
-            const yy=ankleY-r*.11+k*r*.055;
-            g.beginPath();g.moveTo(ankleX-r*.045,yy);g.lineTo(ankleX+r*.045,yy);g.stroke();
-          }
-
-          // 세 앞발가락 + 뒷발가락
-          const toeBaseY=ankleY+r*.015;
-          const toeSpread=r*.25;
-          const forward= p*r*.15;
-          g.strokeStyle='#b85d49';g.lineWidth=Math.max(1.1,r*.055);
-          for(const s of [-1,0,1]){
-            g.beginPath();
-            g.moveTo(ankleX,toeBaseY);
-            g.quadraticCurveTo(
-              ankleX+forward+toeSpread*.45,
-              toeBaseY+r*(.05+Math.abs(s)*.02),
-              ankleX+forward+toeSpread,
-              toeBaseY+s*r*.115+r*.07
-            );
-            g.stroke();
-          }
-          g.beginPath();
-          g.moveTo(ankleX,toeBaseY);
-          g.quadraticCurveTo(ankleX-r*.14,toeBaseY+r*.01,ankleX-r*.24,toeBaseY-r*.05);
-          g.stroke();
-
-          // 작은 검은 발톱
-          g.fillStyle='rgba(48,33,30,.78)';
-          for(const s of [-1,0,1]){
-            const tx=ankleX+forward+toeSpread;
-            const ty=toeBaseY+s*r*.115+r*.07;
-            g.beginPath();g.arc(tx,ty,Math.max(.7,r*.022),0,Math.PI*2);g.fill();
-          }
-          g.restore();
-        }
-        leg(cx-r*.16,gait2,lift2,true);
-        leg(cx+r*.12,gait,lift1,false);
-
-        // 날개깃: 몸체 위에 겹쳐 보이는 2차/1차 깃의 밝고 어두운 층.
-        const flap=Math.sin(time*.0155);
-        g.save();
-        g.translate(cx-r*.14,cy-r*.09);
-        g.rotate(-.10+flap*.13);
-        const wingGrad=g.createLinearGradient(-r*.82,-r*.20,r*.50,r*.30);
-        wingGrad.addColorStop(0,'rgba(50,62,72,.84)');
-        wingGrad.addColorStop(.35,'rgba(88,103,114,.84)');
-        wingGrad.addColorStop(.70,'rgba(152,165,174,.74)');
-        wingGrad.addColorStop(1,'rgba(224,232,236,.58)');
-        g.fillStyle=wingGrad;
-        g.beginPath();
-        g.moveTo(r*.35,-r*.14);
-        g.bezierCurveTo(-r*.12,-r*.42,-r*.58,-r*.33,-r*.98,r*.04);
-        g.bezierCurveTo(-r*.66,r*.27,-r*.23,r*.35,r*.42,r*.13);
-        g.closePath();g.fill();
-
-        for(let i=0;i<7;i++){
-          const q=i/6;
-          const bx=-r*(.16+q*.44), by=-r*(.12-q*.13);
-          const tx=-r*(.54+q*.57), ty=r*(.04+q*.17+flap*.025*i);
-          const feather=g.createLinearGradient(bx,by,tx,ty);
-          feather.addColorStop(0,i%2?'rgba(144,158,167,.65)':'rgba(111,126,137,.76)');
-          feather.addColorStop(1,'rgba(43,54,63,.88)');
-          g.fillStyle=feather;
-          g.beginPath();
-          g.moveTo(bx,by);
-          g.quadraticCurveTo((bx+tx)*.52,ty-r*.11,tx,ty);
-          g.quadraticCurveTo((bx+tx)*.53,ty+r*.07,bx+r*.14,by+r*.13);
-          g.closePath();g.fill();
-          g.strokeStyle='rgba(225,235,240,.23)';g.lineWidth=Math.max(.45,r*.017);
-          g.beginPath();g.moveTo(bx+r*.03,by+r*.03);g.lineTo(tx-r*.04,ty);g.stroke();
-        }
-        g.restore();
-
-        // 가슴의 볼륨을 살리는 반투명 솜털 층.
-        const breast=g.createRadialGradient(cx+r*.17,cy+r*.03,2,cx+r*.04,cy+r*.10,r*.88);
-        breast.addColorStop(0,'rgba(255,255,255,.19)');
-        breast.addColorStop(.48,'rgba(227,235,239,.08)');
-        breast.addColorStop(1,'rgba(0,0,0,0)');
-        g.fillStyle=breast;g.beginPath();g.ellipse(cx+r*.02,cy+r*.10,r*.72,r*.58,.05,0,Math.PI*2);g.fill();
-
-        // 목 구조색: 실제 비둘기처럼 녹색→청록→보라의 얇은 반사.
-        g.globalCompositeOperation='screen';
-        const neck=g.createLinearGradient(cx+r*.36,cy-r*.43,cx+r*.92,cy+r*.28);
-        neck.addColorStop(0,'rgba(36,224,156,.10)');
-        neck.addColorStop(.30,'rgba(36,189,165,.22)');
-        neck.addColorStop(.58,'rgba(68,100,205,.15)');
-        neck.addColorStop(.82,'rgba(180,65,184,.16)');
-        neck.addColorStop(1,'rgba(255,255,255,0)');
-        g.fillStyle=neck;
-        g.beginPath();g.ellipse(cx+r*.65,cy,r*.34,r*.43,-.10,0,Math.PI*2);g.fill();
-        g.globalCompositeOperation='source-over';
-
-        // 눈: 기본 비둘기의 실제 눈 중심(1.09r, -0.35r)에 정확히 겹칩니다.
-        const eyeX=cx+r*1.09, eyeY=cy-r*.35;
-        const eyeOuter=g.createRadialGradient(eyeX-r*.025,eyeY-r*.02,1,eyeX,eyeY,r*.15);
-        eyeOuter.addColorStop(0,'#ffdc8a');eyeOuter.addColorStop(.42,'#e9843e');
-        eyeOuter.addColorStop(.72,'#a83e26');eyeOuter.addColorStop(1,'#301b1a');
-        g.fillStyle='rgba(236,241,242,.70)';
-        g.beginPath();g.arc(eyeX,eyeY,r*.138,0,Math.PI*2);g.fill();
-        g.fillStyle=eyeOuter;g.beginPath();g.arc(eyeX,eyeY,r*.105,0,Math.PI*2);g.fill();
-        g.fillStyle='#07090a';g.beginPath();g.arc(eyeX+r*.008,eyeY,r*.052,0,Math.PI*2);g.fill();
-        g.fillStyle='rgba(255,255,255,.98)';g.beginPath();g.arc(eyeX-r*.030,eyeY-r*.035,r*.023,0,Math.PI*2);g.fill();
-
-        // 부리도 기본 비둘기의 실제 부리 좌표에 덧씌웁니다.
-        const beak=g.createLinearGradient(cx+r*1.38,cy-r*.25,cx+r*1.90,cy+r*.09);
-        beak.addColorStop(0,'rgba(236,208,184,.80)');
-        beak.addColorStop(.50,'rgba(205,148,113,.90)');
-        beak.addColorStop(1,'rgba(116,77,65,.90)');
-        g.fillStyle=beak;
-        g.beginPath();
-        g.moveTo(cx+r*1.38,cy-r*.25);
-        g.lineTo(cx+r*1.90,cy-r*.04);
-        g.lineTo(cx+r*1.37,cy+r*.09);
-        g.closePath();g.fill();
-        g.strokeStyle='rgba(74,46,42,.60)';g.lineWidth=Math.max(.5,r*.02);
-        g.beginPath();g.moveTo(cx+r*1.43,cy-r*.08);g.lineTo(cx+r*1.80,cy-r*.01);g.stroke();
-
-        // 콧살
-        g.fillStyle='rgba(238,234,228,.82)';
-        g.beginPath();g.ellipse(cx+r*1.39,cy-r*.17,r*.14,r*.10,0,0,Math.PI*2);g.fill();
-
-      } else if(kind==='golem'){
-        // 돌틈의 AO + 이끼 + 광물 결정을 더해 실제 암석 느낌 강화.
-        g.save();g.globalCompositeOperation='multiply';
-        for(let i=0;i<12;i++){
-          const a=i*.91+time*.0002, rr=r*(.22+(i%4)*.18);
-          g.strokeStyle=`rgba(22,25,24,${.06+(i%3)*.018})`;
-          g.lineWidth=Math.max(.7,r*.027);
-          g.beginPath();
-          g.moveTo(cx+Math.cos(a)*rr,cy+Math.sin(a)*rr*.95);
-          g.lineTo(cx+Math.cos(a+.44)*rr*1.35,cy+Math.sin(a+.44)*rr*1.12);
-          g.stroke();
-        }
-        g.restore();
-        g.fillStyle='rgba(69,92,55,.18)';
-        for(let i=0;i<8;i++){
-          const a=i*2.13+1.4;
-          g.beginPath();g.ellipse(cx+Math.cos(a)*r*.62,cy+Math.sin(a)*r*.58,r*.10,r*.05,a,0,Math.PI*2);g.fill();
-        }
-        g.globalCompositeOperation='screen';
-        g.fillStyle='rgba(197,231,255,.18)';
-        for(let i=0;i<5;i++){
-          const a=i*1.7+.4, px=cx+Math.cos(a)*r*.58,py=cy+Math.sin(a)*r*.55;
-          g.beginPath();g.moveTo(px,py-r*.08);g.lineTo(px+r*.045,py);g.lineTo(px,py+r*.09);g.lineTo(px-r*.04,py);g.closePath();g.fill();
-        }
-        g.globalCompositeOperation='source-over';
-
-      } else if(kind==='llama'){
-        // 긴 털 다발: 실루엣 바깥까지 살짝 튀어나오도록 하여 사진 같은 털 가장자리 생성.
-        const phase=time*.010;
-        g.lineCap='round';
-        for(let i=0;i<56;i++){
-          const a=(i/56)*Math.PI*2;
-          const px=cx+Math.cos(a)*r*(.78+.10*Math.sin(i*2.7));
-          const py=cy+Math.sin(a)*r*(.58+.08*Math.cos(i*1.9));
-          const len=r*(.08+(i%5)*.012);
-          const sway=Math.sin(phase+i*.73)*r*.025;
-          g.strokeStyle=i%3===0?'rgba(255,246,225,.40)':'rgba(113,83,64,.20)';
-          g.lineWidth=Math.max(.5,r*.022);
-          g.beginPath();g.moveTo(px,py);g.quadraticCurveTo(px+sway,py+len*.45,px+sway*.5,py+len);g.stroke();
-        }
-        // 코/눈 주변의 촉촉한 반사.
-        g.globalCompositeOperation='screen';
-        g.fillStyle='rgba(255,255,255,.20)';
-        g.beginPath();g.ellipse(cx+r*.68,cy-r*.26,r*.18,r*.08,-.15,0,Math.PI*2);g.fill();
-        g.globalCompositeOperation='source-over';
-
-      } else if(kind==='scorpion'){
-        // 관절마다 갑각 하이라이트, 다리 끝은 실제 보행처럼 위아래 변화.
-        const p=time*.018;
-        g.lineCap='round';
-        for(let side of [-1,1]){
-          for(let i=0;i<4;i++){
-            const gait=Math.sin(p+i*1.15+(side<0?Math.PI:0));
-            const rootX=cx-r*.12+i*r*.13, rootY=cy+side*r*(.22+i*.045);
-            const midX=rootX-r*(.25+i*.035), midY=rootY+side*r*(.15+gait*.035);
-            const tipX=midX-r*(.24+i*.04), tipY=midY+side*r*(.11-gait*.06);
-            g.strokeStyle='rgba(55,27,20,.82)';g.lineWidth=Math.max(1.3,r*.065);
-            g.beginPath();g.moveTo(rootX,rootY);g.lineTo(midX,midY);g.lineTo(tipX,tipY);g.stroke();
-            g.strokeStyle='rgba(255,205,153,.22)';g.lineWidth=Math.max(.45,r*.018);
-            g.beginPath();g.moveTo(rootX,rootY-r*.02*side);g.lineTo(midX,midY-r*.02*side);g.stroke();
-          }
-        }
-        // 단단한 등판의 점광원 반사.
-        g.globalCompositeOperation='screen';
-        const hi=g.createLinearGradient(cx-r*.55,cy-r*.38,cx+r*.55,cy+r*.15);
-        hi.addColorStop(0,'rgba(255,235,204,.20)');
-        hi.addColorStop(.42,'rgba(255,175,116,.08)');
-        hi.addColorStop(1,'rgba(255,255,255,0)');
-        g.fillStyle=hi;g.beginPath();g.ellipse(cx,cy-r*.06,r*.68,r*.43,-.1,0,Math.PI*2);g.fill();
-        g.globalCompositeOperation='source-over';
-
-      } else if(kind==='sandworm'){
-        // 젖은 가죽성 표피와 각 체절의 밝은 윗면/어두운 아랫면.
-        for(let i=0;i<8;i++){
-          const yy=cy-r*.62+i*r*.18;
-          g.strokeStyle=i%2?'rgba(255,218,163,.19)':'rgba(89,42,25,.24)';
-          g.lineWidth=Math.max(1,r*.055);
-          g.beginPath();g.ellipse(cx,yy,r*(.58+i*.035),r*.105,0,0,Math.PI*2);g.stroke();
-        }
-        g.globalCompositeOperation='screen';
-        const wet=g.createLinearGradient(cx-r*.7,cy-r*.9,cx+r*.3,cy+r*.5);
-        wet.addColorStop(0,'rgba(255,240,200,.18)');
-        wet.addColorStop(.45,'rgba(255,165,110,.07)');
-        wet.addColorStop(1,'rgba(255,255,255,0)');
-        g.fillStyle=wet;g.beginPath();g.ellipse(cx-r*.10,cy-r*.12,r*.72,r*.92,0,0,Math.PI*2);g.fill();
-        g.globalCompositeOperation='source-over';
-
-      } else if(kind==='cactus'){
-        // 왁스성 표피, 실제 세로 능선, 가시 그림자.
-        for(let i=-4;i<=4;i++){
-          const xx=cx+i*r*.105;
-          g.strokeStyle=i%2?'rgba(205,240,146,.22)':'rgba(22,73,35,.18)';
-          g.lineWidth=Math.max(.7,r*.028);
-          g.beginPath();g.moveTo(xx,cy-r*.93);g.quadraticCurveTo(xx+i*r*.008,cy,xx,cy+r*.65);g.stroke();
-        }
-        for(let i=0;i<18;i++){
-          const a=i*2.17,px=cx+Math.sin(a)*r*.31,py=cy-r*.78+(i%7)*r*.22;
-          g.strokeStyle='rgba(252,238,185,.78)';g.lineWidth=Math.max(.5,r*.016);
-          g.beginPath();g.moveTo(px,py);g.lineTo(px+Math.cos(a)*r*.11,py+Math.sin(a)*r*.07);g.stroke();
-          g.strokeStyle='rgba(30,52,26,.16)';g.beginPath();g.moveTo(px+r*.018,py+r*.025);g.lineTo(px+r*.09,py+r*.08);g.stroke();
-        }
-
-      } else if(kind==='rainbow'){
-        // 무지개 적: 장난감 플라스틱 대신 금속/유리 프리즘 재질.
-        g.globalCompositeOperation='screen';
-        const prism=g.createLinearGradient(cx-r,cy-r,cx+r,cy+r);
-        prism.addColorStop(0,'rgba(255,116,160,.15)');
-        prism.addColorStop(.22,'rgba(255,220,100,.15)');
-        prism.addColorStop(.44,'rgba(110,245,176,.13)');
-        prism.addColorStop(.67,'rgba(100,200,255,.16)');
-        prism.addColorStop(.86,'rgba(187,125,255,.15)');
-        prism.addColorStop(1,'rgba(255,255,255,.04)');
-        g.fillStyle=prism;g.fillRect(cx-r*1.45,cy-r*1.45,r*2.9,r*2.9);
-        g.globalCompositeOperation='source-over';
-      }
-
-      g.restore();
-    }
-
     // ===== 2D PHOTO MATERIAL FINISH V1 =====
     // 기존 적 실루엣은 유지하면서, 캐시 스프라이트 위에 종류별 미세 질감과
     // 방향성 조명을 합성해 종이/카툰 느낌을 줄이고 사진 같은 표면감을 만듭니다.
@@ -24453,11 +24165,110 @@ function requestGachaDraw(count) {
     }
 
     function pdApplyPhotoEnemyFinish(g, enemy, kind, cx, cy, radius) {
-      // V46: 사진풍 후처리를 끕니다. Safari에서 사각형/깨진 텍스처가 생길 수 있습니다.
-      return;
+      const r = Math.max(10, Number(radius || enemy?.radius || 22));
+      let seed = pdEnemyPhotoSeed(`${kind}|${enemy?.type||'normal'}|${enemy?.variant||''}|${Math.round(r)}`);
+      const rnd = () => {
+        seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+        return seed / 4294967296;
+      };
+      const span = r * (kind === 'scorpion' ? 2.7 : kind === 'sandworm' ? 2.45 : 2.15);
+
+      g.save();
+      // 이미 그려진 적 픽셀 안에서만 작동합니다. 투명 배경은 건드리지 않습니다.
+      g.globalCompositeOperation = 'source-atop';
+
+      // 왼쪽 위에서 들어오는 부드러운 자연광 + 오른쪽 아래의 접촉 음영.
+      const light = g.createLinearGradient(cx-span, cy-span, cx+span, cy+span);
+      light.addColorStop(0, 'rgba(255,255,255,.20)');
+      light.addColorStop(.34, 'rgba(255,255,255,.045)');
+      light.addColorStop(.62, 'rgba(31,39,45,.015)');
+      light.addColorStop(1, 'rgba(7,10,14,.20)');
+      g.fillStyle = light;
+      g.fillRect(cx-span, cy-span, span*2, span*2);
+
+      // 아주 미세한 필름 그레인. 캐시 생성 때 한 번만 계산되므로 전투 중 부담이 작습니다.
+      const grainCount = kind === 'golem' ? 150 : kind === 'llama' ? 170 : kind === 'pigeon' ? 145 : 120;
+      for (let i = 0; i < grainCount; i += 1) {
+        const px = cx + (rnd()-.5) * span * 1.65;
+        const py = cy + (rnd()-.5) * span * 1.65;
+        const bright = rnd() > .48;
+        const a = .018 + rnd() * .045;
+        g.fillStyle = bright ? `rgba(255,255,255,${a})` : `rgba(8,10,12,${a*.82})`;
+        const sz = .45 + rnd() * 1.15;
+        g.fillRect(px, py, sz, sz);
+      }
+
+      if (kind === 'pigeon') {
+        // 짧은 깃털 결: 몸통 방향으로 흐르는 섬세한 바브 패턴.
+        g.lineCap='round';
+        for (let i=0;i<74;i+=1) {
+          const px=cx+(rnd()-.56)*r*2.35, py=cy+(rnd()-.5)*r*1.55;
+          const len=r*(.10+rnd()*.23), bend=(rnd()-.5)*r*.08;
+          g.strokeStyle=rnd()>.34?'rgba(238,244,248,.095)':'rgba(25,32,38,.075)';
+          g.lineWidth=.45+rnd()*.75;
+          g.beginPath();g.moveTo(px,py);g.quadraticCurveTo(px-len*.46,py+bend,px-len,py+bend*.34);g.stroke();
+        }
+        // 목의 녹색/보라색 구조색을 아주 얕게 합성.
+        const ir=g.createRadialGradient(cx+r*.45,cy-r*.48,1,cx+r*.38,cy-r*.42,r*.68);
+        ir.addColorStop(0,'rgba(75,205,168,.15)');ir.addColorStop(.42,'rgba(92,104,205,.07)');ir.addColorStop(1,'rgba(0,0,0,0)');
+        g.fillStyle=ir;g.fillRect(cx-r*.3,cy-r*1.25,r*1.7,r*1.55);
+      } else if (kind === 'llama') {
+        // 불규칙한 짧은 털 다발. 완전한 직선보다 미세하게 휘게 합니다.
+        g.lineCap='round';
+        for (let i=0;i<105;i+=1) {
+          const px=cx+(rnd()-.52)*r*2.2, py=cy+(rnd()-.53)*r*2.45;
+          const len=r*(.07+rnd()*.18), sway=(rnd()-.5)*r*.12;
+          g.strokeStyle=rnd()>.30?'rgba(255,250,238,.12)':'rgba(91,67,53,.07)';
+          g.lineWidth=.5+rnd()*.9;
+          g.beginPath();g.moveTo(px,py);g.quadraticCurveTo(px+sway,py+len*.48,px+sway*.55,py+len);g.stroke();
+        }
+      } else if (kind === 'golem') {
+        // 돌 표면의 작은 균열과 광물 입자.
+        g.lineCap='butt';g.lineJoin='miter';
+        for (let i=0;i<34;i+=1) {
+          const px=cx+(rnd()-.5)*r*1.85, py=cy+(rnd()-.47)*r*2.0;
+          const len=r*(.16+rnd()*.35), ang=rnd()*Math.PI*2;
+          const mx=px+Math.cos(ang)*len*.54, my=py+Math.sin(ang)*len*.54;
+          const ex=mx+Math.cos(ang+(rnd()-.5)*1.15)*len*.55, ey=my+Math.sin(ang+(rnd()-.5)*1.15)*len*.55;
+          g.strokeStyle='rgba(23,25,23,.15)';g.lineWidth=.65+rnd()*1.1;
+          g.beginPath();g.moveTo(px,py);g.lineTo(mx,my);g.lineTo(ex,ey);g.stroke();
+          if(rnd()>.62){g.fillStyle='rgba(230,234,224,.11)';g.fillRect(px-1,py-1,1.5+rnd()*1.7,1.5+rnd()*1.7);}
+        }
+      } else if (kind === 'scorpion') {
+        // 검은 갑각의 얇고 강한 반사광.
+        g.lineCap='round';
+        for (let i=0;i<48;i+=1) {
+          const px=cx+(rnd()-.48)*r*2.7, py=cy+(rnd()-.5)*r*2.0;
+          const len=r*(.08+rnd()*.18);
+          g.strokeStyle=rnd()>.22?'rgba(255,221,188,.10)':'rgba(255,255,255,.055)';
+          g.lineWidth=.45+rnd()*.8;
+          g.beginPath();g.moveTo(px,py);g.lineTo(px+len,py-len*.16);g.stroke();
+        }
+      } else if (kind === 'sandworm') {
+        // 가죽성 주름과 모래 마모.
+        for(let i=0;i<30;i+=1){
+          const py=cy-r*.85+i*(r*1.7/29)+(rnd()-.5)*r*.05;
+          g.strokeStyle='rgba(82,43,24,.105)';g.lineWidth=.6+rnd()*.9;
+          g.beginPath();g.moveTo(cx-r*1.45,py);g.quadraticCurveTo(cx,py+(rnd()-.5)*r*.13,cx+r*1.25,py);g.stroke();
+        }
+      } else if (kind === 'cactus') {
+        // 선인장 세로 골과 표피 점묘.
+        for(let i=-4;i<=4;i+=1){
+          g.strokeStyle=i%2?'rgba(224,242,169,.085)':'rgba(16,74,37,.09)';g.lineWidth=.65;
+          g.beginPath();g.moveTo(cx+i*r*.13,cy-r*1.16);g.quadraticCurveTo(cx+i*r*.15,cy,cx+i*r*.12,cy+r*.85);g.stroke();
+        }
+      } else if (kind === 'rainbow') {
+        // 무지개 적도 플라스틱처럼 보이지 않도록 작은 표면 스크래치를 추가합니다.
+        for(let i=0;i<44;i+=1){
+          const px=cx+(rnd()-.5)*r*2.2,py=cy+(rnd()-.5)*r*2.1,len=r*(.04+rnd()*.10);
+          g.strokeStyle='rgba(255,255,255,.085)';g.lineWidth=.5;
+          g.beginPath();g.moveTo(px,py);g.lineTo(px+len,py-len*.22);g.stroke();
+        }
+      }
+      g.restore();
     }
 
-function renderEnemySpriteBase(g, proxy, kind, cx, cy, renderTime) {
+    function renderEnemySpriteBase(g, proxy, kind, cx, cy, renderTime) {
       if (kind === 'rainbow') drawCanvasRainbowEnemy(proxy, cx, cy, renderTime, g);
       else if (kind === 'golem') drawCanvasGolem(proxy, cx, cy, renderTime, g);
       else if (kind === 'llama') drawCanvasLlama(proxy, cx, cy, renderTime, g);
@@ -24487,7 +24298,6 @@ function renderEnemySpriteBase(g, proxy, kind, cx, cy, renderTime) {
       const logicalSize = half * 2;
       const { surface, g } = enemySpriteCanvas(logicalSize, logicalSize);
       const proxy = enemySpriteProxy(enemy, kind, data.facing);
-      proxy._pdRenderTime = data.info.renderTime;
       renderEnemySpriteBase(g, proxy, kind, half, half, data.info.renderTime);
       pdApplyPhotoEnemyFinish(g, proxy, kind, half, half, data.radius);
       let bitmap=null;
@@ -24503,24 +24313,42 @@ function renderEnemySpriteBase(g, proxy, kind, cx, cy, renderTime) {
 
     function drawCachedEnemyBase(enemy, drawX, drawY, time) {
       if (window.PDTrue3D && window.PDTrue3D.shouldHideBattleSprites && window.PDTrue3D.shouldHideBattleSprites()) return;
-
-      // V46: 회색 사각형의 원인이 될 수 있는 별도 캐시 캔버스/비트맵을 사용하지 않습니다.
-      const kind=enemySpriteKind(enemy);
+      const sprite = getEnemySprite(enemy, time);
       ctx.save();
-      ctx.globalAlpha=1;
-      ctx.globalCompositeOperation='source-over';
-      ctx.filter='none';
-      ctx.shadowBlur=0;
-      ctx.shadowColor='transparent';
-      renderEnemySpriteBase(ctx, enemy, kind, drawX, drawY, time);
+      ctx.translate(drawX, drawY);
+      // 비둘기와 전갈은 진행 방향으로 몸 전체가 회전하는 디자인입니다.
+      if (sprite.kind === 'pigeon' || sprite.kind === 'scorpion' || (sprite.kind === 'rainbow' && !enemy.rainbowOre && enemy.type!=='rainbowFeverCore')) ctx.rotate(Number(enemy.heading || 0));
+      ctx.drawImage(sprite.source, -sprite.half, -sprite.half, sprite.logicalSize, sprite.logicalSize);
       ctx.restore();
     }
 
 
     let enemyPrewarmToken=0;
     function scheduleEnemySpritePrewarm(queue){
-      // V46: 전투 적은 직접 렌더링하므로 캐시 사전 생성도 사용하지 않습니다.
-      return;
+      if (!Array.isArray(queue) || !queue.length || !battle) return;
+      const token=++enemyPrewarmToken;
+      const unique=[];const seen=new Set();
+      for(const spec of queue){const k=`${spec.type||'normal'}|${spec.variant||''}|${spec.radius||22}|${spec.speed||50}`;if(seen.has(k))continue;seen.add(k);unique.push(spec);}
+      const tasks=[];
+      for(const spec of unique){for(let frame=0;frame<ENEMY_SPRITE_FRAMES;frame+=1)tasks.push({spec,frame});}
+      let index=0;
+      const run=(deadline)=>{
+        if(token!==enemyPrewarmToken||!battle)return;
+        let budget=0;
+        while(index<tasks.length && budget<4 && (!deadline || deadline.timeRemaining()>2)){
+          const {spec,frame}=tasks[index++];
+          const fake={...spec,maxHealth:spec.health||1,health:spec.health||1,targetIndex:1,x:0,y:0,heading:0,wingPhase:0};
+          // 24개 애니메이션 프레임을 실제 전투 전에 캐시에 천천히 채웁니다.
+          const syntheticTime=frame*(1000/24)*6;
+          try{getEnemySprite(fake,syntheticTime);}catch(_){}
+          budget+=1;
+        }
+        if(index<tasks.length){
+          if(typeof requestIdleCallback==='function')requestIdleCallback(run,{timeout:120});
+          else setTimeout(()=>run(null),16);
+        }
+      };
+      if(typeof requestIdleCallback==='function')requestIdleCallback(run,{timeout:80});else setTimeout(()=>run(null),0);
     }
     function prewarmRainbowEventSprites(){
       const specs=[
@@ -24555,7 +24383,7 @@ function drawPremiumEnemyBackdrop(enemy, drawX, drawY, time) {
       if (moving) {
         ctx.globalCompositeOperation = 'lighter';
         if (kind === 'pigeon') {
-          for (let i=0;i<1;i++) {
+          for (let i=0;i<3;i++) {
             const y=-r*.15+i*r*.24+Math.sin(t*5+i)*2;
             ctx.strokeStyle=`rgba(205,235,255,${.16+i*.045})`;ctx.lineWidth=1.4+i*.35;
             ctx.beginPath();ctx.moveTo(-r*.55-i*4,y);ctx.quadraticCurveTo(-r*1.05-i*7,y-3,-r*1.55-i*8,y+1);ctx.stroke();
@@ -24652,7 +24480,7 @@ function drawEnemy(enemy, time) {
         ctx.translate(drawX, drawY);
         ctx.scale(BATTLE_ENEMY_VISUAL_SCALE, BATTLE_ENEMY_VISUAL_SCALE);
         ctx.translate(-drawX, -drawY);
-        // V46: 적 본체와 분리된 기초/바닥 효과를 사용하지 않습니다.
+        draw3DEnemyFoundation(enemy,drawX,drawY,time,ctx);
         ctx.restore();
       }
       const isBoss = enemy.type !== 'normal';
@@ -24692,8 +24520,14 @@ function drawEnemy(enemy, time) {
         ctx.translate(drawX, drawY);
         ctx.scale(BATTLE_ENEMY_VISUAL_SCALE, BATTLE_ENEMY_VISUAL_SCALE);
         ctx.translate(-drawX, -drawY);
-        // V46: 본체만 직접 그립니다. 회색 사각형/분리된 흰 선/깨진 사진 효과 제거.
-        drawCachedEnemyBase(enemy, drawX, drawY, time);
+        if (battlePerfMode === 0 || isBoss || enemy.rainbowOre) {
+          drawPremiumEnemyBackdrop(enemy, drawX, drawY, time);
+          drawCachedEnemyBase(enemy, drawX, drawY, time);
+          drawPremiumEnemyForeground(enemy, drawX, drawY, time);
+        } else {
+          // 부하가 높을 때 일반 적은 캐시된 본체를 그대로 유지합니다.
+          drawCachedEnemyBase(enemy, drawX, drawY, time);
+        }
         ctx.restore();
       }
 
@@ -35781,12 +35615,10 @@ Gameplay stats, movement, HP and enemy behavior are unchanged.
 V45 iPhone login/service-worker fixes remain active.
 -->
 
-
-<style id="pdBattleCanvasCenterFixV50">
-/* ===== V50 BATTLE CANVAS CENTER FIX =====
-   V29 accidentally forced gameCanvas to position:relative!important.
-   The existing left:50%/transform centering rules then offset from normal flow.
-   This final rule makes the battle canvas absolutely positioned again. */
+<style id="pdBattleVisualViewportCenterV51">
+/* V51: gameCanvas is positioned in pixels by JS.
+   This specifically fixes iPhone Safari where the visual viewport can be
+   horizontally offset inside the larger layout viewport. */
 #battleScreen .battle-map-shell{
   position:absolute!important;
   inset:0!important;
@@ -35799,128 +35631,88 @@ V45 iPhone login/service-worker fixes remain active.
 
 #battleScreen #gameCanvas{
   position:absolute!important;
-  box-sizing:border-box!important;
+  right:auto!important;
+  bottom:auto!important;
   margin:0!important;
   padding:0!important;
-  transform-origin:center center!important;
+  transform:none!important;
+  transform-origin:0 0!important;
+  box-sizing:border-box!important;
 }
 
-/* PC: keep the established 96% centered map. */
-@media (min-width:821px) and (pointer:fine){
-  #battleScreen #gameCanvas{
-    inset:auto!important;
-    left:50%!important;
-    top:50%!important;
-    right:auto!important;
-    bottom:auto!important;
-    width:96%!important;
-    height:auto!important;
-    max-width:none!important;
-    max-height:100%!important;
-    aspect-ratio:900 / 520!important;
-    transform:translate(-50%,-50%)!important;
-  }
-}
-
-/* Mobile landscape: keep the established compact map, but truly centered horizontally. */
-@media (orientation:landscape) and (max-height:650px) and (pointer:coarse){
-  #battleScreen #gameCanvas{
-    inset:auto!important;
-    left:50%!important;
-    top:42.5%!important;
-    right:auto!important;
-    bottom:auto!important;
-    width:88%!important;
-    height:auto!important;
-    max-width:none!important;
-    max-height:none!important;
-    aspect-ratio:900 / 520!important;
-    transform:translate(-50%,-50%)!important;
-  }
-}
-
-/* Very wide phones use height as the limiter, still centered on X. */
-@media (orientation:landscape) and (max-height:650px) and (pointer:coarse) and (min-aspect-ratio:17/10){
-  #battleScreen #gameCanvas{
-    left:50%!important;
-    top:42.5%!important;
-    width:auto!important;
-    height:85%!important;
-    max-width:88%!important;
-    transform:translate(-50%,-50%)!important;
-  }
-}
-
-/* Fallback for other screen shapes. */
-@media not all and (min-width:821px) and (pointer:fine){
-  #battleScreen #gameCanvas{
-    left:0;
-    top:0;
-  }
+/* The old historical rule must never make it a relative-flow element again. */
+#battleScreen .battle-map-shell > #gameCanvas{
+  position:absolute!important;
 }
 </style>
 
 
-<script id="pdBattleCanvasCenterFixV50Script">
+<script id="pdBattleVisualViewportCenterV51Script">
 (()=>{
   'use strict';
-  if(window.__pdBattleCanvasCenterFixV50)return;
-  window.__pdBattleCanvasCenterFixV50=true;
+  if(window.__pdBattleVisualViewportCenterV51)return;
+  window.__pdBattleVisualViewportCenterV51=true;
 
-  const screen=document.querySelector('#battleScreen');
-  const canvas=document.querySelector('#gameCanvas');
-  if(!screen||!canvas)return;
+  const battle=document.getElementById('battleScreen');
+  const shell=battle?.querySelector('.battle-map-shell');
+  const canvas=document.getElementById('gameCanvas');
+  if(!battle||!shell||!canvas)return;
 
   let raf=0;
+  const RATIO=900/520;
 
   function apply(){
     raf=0;
-    if(screen.classList.contains('hidden'))return;
+    if(battle.classList.contains('hidden'))return;
+
+    const vv=window.visualViewport;
+    const vw=Math.max(1,Number(vv?.width||window.innerWidth||document.documentElement.clientWidth||1));
+    const vh=Math.max(1,Number(vv?.height||window.innerHeight||document.documentElement.clientHeight||1));
+    const vx=Math.max(0,Number(vv?.offsetLeft||0));
+    const vy=Math.max(0,Number(vv?.offsetTop||0));
 
     const coarse=window.matchMedia('(pointer:coarse)').matches;
-    const landscape=window.matchMedia('(orientation:landscape)').matches;
+    const landscape=vw>vh;
     const fine=window.matchMedia('(pointer:fine)').matches;
-    const w=Math.max(1,window.visualViewport?.width||window.innerWidth||document.documentElement.clientWidth);
-    const h=Math.max(1,window.visualViewport?.height||window.innerHeight||document.documentElement.clientHeight);
-    const aspect=w/h;
+
+    let drawW,drawH,centerX,centerY;
+
+    if(coarse && landscape && vh<=700){
+      // Original mobile size: max width 88%, or max height 85% on very wide phones.
+      drawW=Math.min(vw*.88, vh*.85*RATIO);
+      drawH=drawW/RATIO;
+
+      // IMPORTANT: center inside the *visible* viewport, not the layout viewport.
+      centerX=vx+vw/2;
+      centerY=vy+vh*.425;
+    }else if(fine && vw>=821){
+      drawW=Math.min(vw*.96, vh*RATIO);
+      drawH=drawW/RATIO;
+      centerX=vx+vw/2;
+      centerY=vy+vh/2;
+    }else{
+      // Portrait/tablet fallback: fill the visible region without horizontal offset.
+      drawW=vw;
+      drawH=vh;
+      centerX=vx+vw/2;
+      centerY=vy+vh/2;
+    }
+
+    // Pixel placement; no translate() or percentage left calculation.
+    const left=Math.round(centerX-drawW/2);
+    const top=Math.round(centerY-drawH/2);
 
     canvas.style.setProperty('position','absolute','important');
-    canvas.style.setProperty('margin','0','important');
-    canvas.style.setProperty('padding','0','important');
+    canvas.style.setProperty('left',`${left}px`,'important');
+    canvas.style.setProperty('top',`${top}px`,'important');
+    canvas.style.setProperty('width',`${Math.round(drawW)}px`,'important');
+    canvas.style.setProperty('height',`${Math.round(drawH)}px`,'important');
+    canvas.style.setProperty('max-width','none','important');
+    canvas.style.setProperty('max-height','none','important');
     canvas.style.setProperty('right','auto','important');
     canvas.style.setProperty('bottom','auto','important');
-
-    if(coarse && landscape && h<=650){
-      canvas.style.setProperty('left','50%','important');
-      canvas.style.setProperty('top','42.5%','important');
-      canvas.style.setProperty('transform','translate(-50%,-50%)','important');
-
-      if(aspect>=1.7){
-        canvas.style.setProperty('width','auto','important');
-        canvas.style.setProperty('height','85%','important');
-        canvas.style.setProperty('max-width','88%','important');
-      }else{
-        canvas.style.setProperty('width','88%','important');
-        canvas.style.setProperty('height','auto','important');
-        canvas.style.setProperty('max-width','none','important');
-      }
-    }else if(fine && w>=821){
-      canvas.style.setProperty('left','50%','important');
-      canvas.style.setProperty('top','50%','important');
-      canvas.style.setProperty('width','96%','important');
-      canvas.style.setProperty('height','auto','important');
-      canvas.style.setProperty('max-width','none','important');
-      canvas.style.setProperty('max-height','100%','important');
-      canvas.style.setProperty('transform','translate(-50%,-50%)','important');
-    }else{
-      canvas.style.setProperty('left','0','important');
-      canvas.style.setProperty('top','0','important');
-      canvas.style.setProperty('width','100%','important');
-      canvas.style.setProperty('height','100%','important');
-      canvas.style.setProperty('max-width','none','important');
-      canvas.style.setProperty('max-height','none','important');
-      canvas.style.setProperty('transform','none','important');
-    }
+    canvas.style.setProperty('margin','0','important');
+    canvas.style.setProperty('transform','none','important');
   }
 
   function schedule(){
@@ -35928,34 +35720,46 @@ V45 iPhone login/service-worker fixes remain active.
     raf=requestAnimationFrame(apply);
   }
 
-  try{
-    new MutationObserver(schedule).observe(screen,{
-      attributes:true,
-      attributeFilter:['class']
-    });
-  }catch(_){}
+  window.pdCenterBattleCanvasV51=schedule;
 
   window.addEventListener('resize',schedule,{passive:true});
   window.addEventListener('orientationchange',()=>{
     schedule();
     setTimeout(schedule,80);
-    setTimeout(schedule,250);
+    setTimeout(schedule,220);
+    setTimeout(schedule,500);
   },{passive:true});
-  window.visualViewport?.addEventListener('resize',schedule,{passive:true});
 
-  // Expose for battle-start code / debugging.
-  window.pdCenterBattleCanvasV50=schedule;
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize',schedule,{passive:true});
+    window.visualViewport.addEventListener('scroll',schedule,{passive:true});
+  }
+
+  try{
+    new MutationObserver(schedule).observe(battle,{
+      attributes:true,
+      attributeFilter:['class']
+    });
+    if(window.ResizeObserver){
+      const ro=new ResizeObserver(schedule);
+      ro.observe(shell);
+    }
+  }catch(_){}
+
+  document.addEventListener('visibilitychange',()=>{
+    if(!document.hidden)schedule();
+  });
+
   schedule();
 })();
 </script>
 
 
-<!-- V50 ORIGINAL ENEMY LOOK + BATTLE CENTER FIX
-- Based on V46 stable enemy appearance, so V47/V48/V49 cinematic quality overlays are fully absent.
-- Restores the original stable vector enemy look with no photo/cache gray rectangles.
-- Fixes the historical V29 gameCanvas position:relative!important bug.
-- Re-centers the battle canvas on battle start, resize and orientation change.
-- Gameplay, account sync, traits and iPhone login fixes remain unchanged.
+<!-- V51 TRUE ORIGINAL ENEMY APPEARANCE + VISUAL VIEWPORT CENTER
+Enemy drawing/render/cache/effects are copied exactly from V36, the last version before V37 photo-enemy upgrade.
+V47/V48/V49 quality passes and V37/V40/V41 enemy appearance changes are not used by the active enemy renderer.
+Battle canvas uses exact pixel coordinates from visualViewport.offsetLeft/offsetTop,
+so iPhone Safari layout-viewport offsets cannot push the visible game screen to the right.
 -->
 
 </body>

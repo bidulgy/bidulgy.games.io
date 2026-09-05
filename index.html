@@ -7731,6 +7731,23 @@ body{background:#07111c;background-image:radial-gradient(circle at 15% 10%,rgba(
 
 
 
+
+<script id="pdIOSBootGuardV44">
+(() => {
+  const ua = navigator.userAgent || '';
+  const isiOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  window.PD_IS_IOS = isiOS;
+  window.__pdBootRestoringSession = true;
+  document.documentElement.classList.add('pd-session-booting');
+  if (isiOS) document.documentElement.classList.add('pd-ios-device');
+})();
+</script>
+<style id="pdIOSBootGuardStyleV44">
+html.pd-session-booting #authScreen{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+html.pd-ios-device #pdLoginLoading{display:none!important}
+html.pd-ios-device #pdLoginLoading *{animation:none!important;transition:none!important;backdrop-filter:none!important;filter:none!important}
+</style>
+
 </head>
 
 <body>
@@ -7940,6 +7957,13 @@ body{background:#07111c;background-image:radial-gradient(circle at 15% 10%,rgba(
   }
   function show(status='계정 정보를 확인하는 중...',start=8){
     const e=els(); if(!e.root)return;
+    // iPhone Safari에서는 로딩 SVG/blur 애니메이션을 완전히 사용하지 않습니다.
+    if(window.PD_IS_IOS){
+      clearInterval(pulseTimer);pulseTimer=null;
+      e.root.classList.add('hidden');
+      e.root.setAttribute('aria-hidden','true');
+      return;
+    }
     e.root.classList.remove('hidden','pd-loading-exit');e.root.setAttribute('aria-hidden','false');
     if(e.tip){const tip=tips[Math.floor(Math.random()*tips.length)];e.tip.innerHTML=`<span class="pd-loading-dice">🎲</span>${tip}`;}
     setProgress(start,status);clearInterval(pulseTimer);
@@ -7947,12 +7971,23 @@ body{background:#07111c;background-image:radial-gradient(circle at 15% 10%,rgba(
   }
   async function hide(){
     const e=els();clearInterval(pulseTimer);pulseTimer=null;if(!e.root)return;
+    if(window.PD_IS_IOS){
+      e.root.classList.add('hidden');
+      e.root.classList.remove('pd-loading-exit');
+      e.root.setAttribute('aria-hidden','true');
+      return;
+    }
     e.root.classList.add('pd-loading-exit');await sleep(360);e.root.classList.add('hidden');
     e.root.classList.remove('pd-loading-exit');e.root.setAttribute('aria-hidden','true');
   }
   async function finishEntrance({autoLogin=false}={}){
     if(entrancePromise)return entrancePromise;
     entrancePromise=(async()=>{
+      if(window.PD_IS_IOS){
+        // iPhone은 로딩 화면 자체를 띄우지 않아 Safari GPU/메모리 재시작 루프를 피합니다.
+        openMenu();
+        return true;
+      }
       show(autoLogin?'자동 로그인 완료 · 게임을 준비하는 중...':'플레이어 데이터를 적용하는 중...',autoLogin?38:18);
       const started=performance.now();
       setProgress(Math.max(progress,58),'보유 유닛과 재화를 동기화하는 중...');await sleep(150);
@@ -7968,10 +8003,17 @@ body{background:#07111c;background-image:radial-gradient(circle at 15% 10%,rgba(
   async function loadPlayerAndEnter(user){
     if(entrancePromise)return entrancePromise;
     entrancePromise=(async()=>{
-      show('로그인 성공 · 플레이어 데이터를 불러오는 중...',10);
+      if(!window.PD_IS_IOS) show('로그인 성공 · 플레이어 데이터를 불러오는 중...',10);
       try{
         const loaded=await loadPlayer(user);
-        if(!loaded){setProgress(100,'데이터를 불러오지 못했습니다.');await sleep(420);await hide();return false;}
+        if(!loaded){
+          if(!window.PD_IS_IOS){setProgress(100,'데이터를 불러오지 못했습니다.');await sleep(420);await hide();}
+          return false;
+        }
+        if(window.PD_IS_IOS){
+          openMenu();
+          return true;
+        }
         setProgress(Math.max(progress,68),'플레이어 데이터 확인 완료');
         await sleep(120);
         setProgress(82,'주사위와 특성 데이터를 준비하는 중...');await sleep(150);
@@ -7979,8 +8021,12 @@ body{background:#07111c;background-image:radial-gradient(circle at 15% 10%,rgba(
         setProgress(100,'준비 완료! 메뉴로 이동합니다.');await sleep(210);
         openMenu();await hide();return true;
       }catch(error){
-        console.error('로그인 로딩 중 오류:',error);setProgress(100,'입장 준비 중 오류가 발생했습니다.');
-        await sleep(500);await hide();return false;
+        console.error('로그인 로딩 중 오류:',error);
+        if(!window.PD_IS_IOS){
+          setProgress(100,'입장 준비 중 오류가 발생했습니다.');
+          await sleep(500);await hide();
+        }
+        return false;
       }
     })();
     try{return await entrancePromise;}finally{entrancePromise=null;}
@@ -10296,6 +10342,8 @@ function applyStagePreview(stageId = selectedStage) {
     let pdSavePlayerBusy = false;
 
     function showScreen(name) {
+      // iPhone/Safari 세션 복구 중 일시적인 null 상태가 와도 로그인 화면으로 튀지 않게 합니다.
+      if(name==='auth' && window.__pdBootRestoringSession) return;
       Object.values(screens).forEach(screen => screen.classList.add('hidden'));
       screens[name].classList.remove('hidden');
       updatePersistentGameDock(name);
@@ -12802,6 +12850,9 @@ async function logout() {
 
   currentUsername = null;
   player = null;
+  window.__pdBootRestoringSession = false;
+  window.__pdSessionBootDone = true;
+  document.documentElement.classList.remove('pd-session-booting');
   adminAccessKnown = false;
   adminIsAuthorized = false;
   adminSelectedUserId = null;
@@ -12814,59 +12865,114 @@ async function logout() {
 
   async function restoreSession() {
   if (window.__pdRestoreSessionPromise) return window.__pdRestoreSessionPromise;
+  if (window.__pdSessionBootDone) return !!player;
+
+  window.__pdBootRestoringSession = true;
+  document.documentElement.classList.add('pd-session-booting');
 
   window.__pdRestoreSessionPromise = (async () => {
     let session = null;
     let lastError = null;
 
-    // 브라우저 시작 직후 Supabase 저장 세션을 두 번까지 확인합니다.
-    // 로딩 연출은 세션 복구/데이터 로드가 끝난 뒤 실행하므로 자동 로그인을 방해하지 않습니다.
-    for (let attempt = 0; attempt < 2; attempt++) {
+    // Safari는 IndexedDB/localStorage 기반 Supabase 세션을 늦게 돌려주는 경우가 있어
+    // 최대 약 3초 동안 점진적으로 다시 확인합니다.
+    const delays = [0, 180, 320, 520, 760, 1050];
+    for (let attempt = 0; attempt < delays.length; attempt++) {
+      if (delays[attempt]) await new Promise(resolve => setTimeout(resolve, delays[attempt]));
       try {
         const result = await supabaseClient.auth.getSession();
         lastError = result.error || null;
         session = result.data?.session || null;
-        if (session) break;
+        if (session?.user) break;
       } catch (error) {
         lastError = error;
       }
-      if (attempt === 0) await new Promise(resolve => setTimeout(resolve, 260));
     }
 
-    if (!session) {
+    if (!session?.user) {
       if (lastError) console.warn('자동 로그인 세션 복구 실패:', lastError);
+      window.__pdBootRestoringSession = false;
+      window.__pdSessionBootDone = true;
+      document.documentElement.classList.remove('pd-session-booting');
+      try { await window.pdHideLoginLoading?.(); } catch (_) {}
+      showScreen('auth');
+      return false;
+    }
+
+    // 세션이 존재하는데 네트워크가 잠깐 느리다는 이유로 로그인 화면으로 보내지 않도록
+    // 플레이어 데이터 로드도 짧게 재시도합니다.
+    let loaded = false;
+    let loadError = null;
+    for (let attempt = 0; attempt < 3 && !loaded; attempt++) {
+      try {
+        loaded = !!(await loadPlayer(session.user));
+      } catch (error) {
+        loadError = error;
+      }
+      if (!loaded && attempt < 2) {
+        await new Promise(resolve => setTimeout(resolve, 450 + attempt * 450));
+      }
+    }
+
+    if (!loaded) {
+      console.error('자동 로그인 플레이어 데이터 복구 실패:', loadError || 'loadPlayer returned false');
+
+      // 인증 세션은 살아 있으므로 즉시 로그인 화면으로 튕기지 않습니다.
+      // 한 번 더 현재 세션을 검증한 뒤 정말 세션이 사라졌을 때만 로그인 화면을 표시합니다.
+      try {
+        const verify = await supabaseClient.auth.getSession();
+        if (verify.data?.session?.user) {
+          window.__pdBootRestoringSession = false;
+          window.__pdSessionBootDone = true;
+          document.documentElement.classList.remove('pd-session-booting');
+          try { await window.pdHideLoginLoading?.(); } catch (_) {}
+          setAuthMessage('서버 데이터 연결이 지연되고 있습니다. 잠시 후 다시 실행해 주세요.', 'error');
+          showScreen('auth');
+          return false;
+        }
+      } catch (_) {}
+
+      window.__pdBootRestoringSession = false;
+      window.__pdSessionBootDone = true;
+      document.documentElement.classList.remove('pd-session-booting');
+      try { await window.pdHideLoginLoading?.(); } catch (_) {}
       showScreen('auth');
       return false;
     }
 
     try {
-      // 중요: 플레이어 데이터 로드가 로그인 로딩 애니메이션보다 항상 먼저 끝납니다.
-      const loaded = await loadPlayer(session.user);
-      if (!loaded) {
-        showScreen('auth');
-        return false;
-      }
-
-      if (typeof window.pdEnterLoadedPlayer === 'function') {
+      // iPhone에서는 로딩 애니메이션 없이 바로 메뉴로 진입합니다.
+      if (window.PD_IS_IOS) {
+        openMenu();
+      } else if (typeof window.pdEnterLoadedPlayer === 'function') {
         await window.pdEnterLoadedPlayer({ autoLogin: true });
       } else {
         openMenu();
       }
 
       if (typeof initializeSocialProfile === 'function') void initializeSocialProfile(false);
+
+      window.__pdBootRestoringSession = false;
+      window.__pdSessionBootDone = true;
+      document.documentElement.classList.remove('pd-session-booting');
       return true;
     } catch (error) {
-      console.error('자동 로그인 복구 중 오류:', error);
-      showScreen('auth');
-      return false;
+      console.error('자동 로그인 메뉴 진입 중 오류:', error);
+
+      // 세션/데이터가 이미 정상이라면 로그인 화면으로 되돌아가지 않고 메뉴 진입을 한 번 더 시도.
+      try { openMenu(); } catch (_) {}
+      window.__pdBootRestoringSession = false;
+      window.__pdSessionBootDone = true;
+      document.documentElement.classList.remove('pd-session-booting');
+      return true;
     }
   })();
 
   try {
     return await window.__pdRestoreSessionPromise;
   } finally {
-    // 현재 부팅 중 중복 호출만 막고, 로그아웃 후 재로그인은 가능하게 합니다.
-    setTimeout(() => { window.__pdRestoreSessionPromise = null; }, 0);
+    // 부팅이 완료된 뒤에도 결과 플래그를 유지하여 iOS pageshow/복원에서 재실행되지 않게 합니다.
+    window.__pdRestoreSessionPromise = null;
   }
 }
 
@@ -23854,9 +23960,11 @@ function requestGachaDraw(count) {
 
     const enemySpriteCache = new Map();
     let enemySpriteCacheTheme = -1;
-    const ENEMY_SPRITE_CACHE_LIMIT = 280;
-    const ENEMY_SPRITE_CACHE_SCALE = Math.min(2.20, Math.max(1.50, Number(window.devicePixelRatio || 1) * 1.10));
-    const ENEMY_SPRITE_FRAMES = 24;
+    const ENEMY_SPRITE_CACHE_LIMIT = window.PD_IS_IOS ? 96 : 280;
+    const ENEMY_SPRITE_CACHE_SCALE = window.PD_IS_IOS
+      ? Math.min(1.45, Math.max(1.15, Number(window.devicePixelRatio || 1) * .58))
+      : Math.min(2.20, Math.max(1.50, Number(window.devicePixelRatio || 1) * 1.10));
+    const ENEMY_SPRITE_FRAMES = window.PD_IS_IOS ? 12 : 24;
 
     function enemySpriteCanvas(width, height) {
       const pixelWidth = Math.max(2, Math.ceil(width * ENEMY_SPRITE_CACHE_SCALE));
@@ -36023,6 +36131,16 @@ The photo is clipped to an organic bird silhouette and the two legs are animated
 - Removed V42 forced mobile full-map/HUD/deploy-layout CSS and viewport resizing JS.
 - Restored original battle result card layout.
 - Kept same-account cross-device server synchronization, traits, gameplay fixes, title hiding and photo pigeon updates.
+-->
+
+
+<!-- V44 IPHONE LOGIN STABILITY
+- iPhone/Safari never shows the animated login loading screen.
+- Auth screen stays hidden until saved-session restoration is definitively finished.
+- Supabase getSession retries over ~3 seconds for Safari storage timing.
+- Player-data loading retries before any auth fallback.
+- Boot restore is single-run and cannot loop on pageshow/BFCache restore.
+- iPhone enemy sprite cache is capped/lower-resolution to reduce Safari memory termination.
 -->
 
 </body>

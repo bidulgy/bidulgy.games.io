@@ -24452,365 +24452,8 @@ function requestGachaDraw(count) {
     }
 
     function pdApplyPhotoEnemyFinish(g, enemy, kind, cx, cy, radius) {
-      if(kind==='pigeon') return;
-      const r=Math.max(10,Number(radius||enemy?.radius||22));
-      // Render-time is attached temporarily so articulated details can match cached animation frame.
-      enemy._pdRenderTime=Number(enemy._pdRenderTime||0);
-      pdDrawPhotographicEnemyRigV37(g,enemy,kind,cx,cy,r);
-
-      let seed=pdEnemyPhotoSeed(`${kind}|${enemy?.type||'normal'}|${enemy?.variant||''}|${Math.round(r)}`);
-      const rnd=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
-      const span=r*(kind==='scorpion'?2.9:kind==='sandworm'?2.65:kind==='pigeon'?2.55:2.35);
-
-      g.save();
-
-      // 1) Ambient-occlusion edge shading.
-      g.globalCompositeOperation='source-atop';
-      const ao=g.createRadialGradient(cx-r*.18,cy-r*.22,r*.12,cx,cy,r*1.62);
-      ao.addColorStop(0,'rgba(0,0,0,0)');
-      ao.addColorStop(.52,'rgba(0,0,0,.015)');
-      ao.addColorStop(.79,'rgba(12,15,18,.10)');
-      ao.addColorStop(1,'rgba(4,6,8,.26)');
-      g.fillStyle=ao;g.fillRect(cx-span,cy-span,span*2,span*2);
-
-      // 2) Soft daylight from upper-left.
-      g.globalCompositeOperation='screen';
-      const light=g.createLinearGradient(cx-span,cy-span,cx+span,cy+span);
-      light.addColorStop(0,'rgba(255,255,255,.30)');
-      light.addColorStop(.25,'rgba(255,247,231,.12)');
-      light.addColorStop(.53,'rgba(212,229,238,.035)');
-      light.addColorStop(1,'rgba(255,255,255,0)');
-      g.fillStyle=light;g.fillRect(cx-span,cy-span,span*2,span*2);
-
-      // 3) Lower-right contact shadow for volume.
-      g.globalCompositeOperation='multiply';
-      const shade=g.createLinearGradient(cx-r*.15,cy-r*.25,cx+r*1.25,cy+r*1.35);
-      shade.addColorStop(0,'rgba(255,255,255,0)');
-      shade.addColorStop(.54,'rgba(45,50,55,.02)');
-      shade.addColorStop(1,'rgba(20,23,28,.21)');
-      g.fillStyle=shade;g.fillRect(cx-span,cy-span,span*2,span*2);
-
-      // 4) Micro texture / sensor grain. Cached once per animation frame.
-      g.globalCompositeOperation='source-atop';
-      const grainCount =
-        kind==='pigeon'?300:
-        kind==='llama'?260:
-        kind==='golem'?220:
-        kind==='scorpion'?210:
-        kind==='sandworm'?180:
-        kind==='cactus'?170:190;
-      for(let i=0;i<grainCount;i++){
-        const px=cx+(rnd()-.5)*span*1.72,py=cy+(rnd()-.5)*span*1.72;
-        const a=.012+rnd()*.050, bright=rnd()>.53;
-        g.fillStyle=bright?`rgba(255,255,255,${a})`:`rgba(5,7,9,${a*.82})`;
-        const sz=.35+rnd()*1.08;
-        g.fillRect(px,py,sz,sz);
-      }
-
-      if(kind==='pigeon'){
-        // Body contour feathers: many short curved barbs instead of flat fill.
-        g.lineCap='round';
-        for(let i=0;i<165;i++){
-          const px=cx+(rnd()-.60)*r*2.45,py=cy+(rnd()-.48)*r*1.72;
-          const len=r*(.07+rnd()*.18),curve=(rnd()-.5)*r*.07;
-          g.strokeStyle=rnd()>.36?'rgba(246,250,252,.105)':'rgba(23,29,34,.085)';
-          g.lineWidth=.35+rnd()*.65;
-          g.beginPath();g.moveTo(px,py);
-          g.quadraticCurveTo(px-len*.48,py+curve,px-len,py+curve*.28);g.stroke();
-        }
-
-        // Wing coverts: overlapping scalloped feather edges.
-        for(let row=0;row<4;row++){
-          for(let col=0;col<7;col++){
-            const px=cx-r*(.12+col*.11),py=cy-r*(.19-row*.105);
-            g.strokeStyle=`rgba(245,249,251,${.07+row*.014})`;
-            g.lineWidth=.6;
-            g.beginPath();g.arc(px,py,r*(.13-row*.012),Math.PI*.12,Math.PI*.92);g.stroke();
-          }
-        }
-
-        // Iridescent neck micro-bars.
-        g.globalCompositeOperation='screen';
-        for(let i=0;i<36;i++){
-          const a=i/35*Math.PI*2;
-          const px=cx+r*.42+Math.cos(a)*r*(.20+rnd()*.08);
-          const py=cy-r*.38+Math.sin(a)*r*(.35+rnd()*.08);
-          const hue=i%3===0?155:(i%3===1?205:292);
-          g.strokeStyle=`hsla(${hue},80%,63%,${.035+rnd()*.075})`;
-          g.lineWidth=.55+rnd()*.55;
-          g.beginPath();g.moveTo(px-r*.05,py);g.lineTo(px+r*.05,py+r*.025);g.stroke();
-        }
-        g.globalCompositeOperation='source-atop';
-
-      } else if(kind==='llama'){
-        g.lineCap='round';
-        for(let i=0;i<180;i++){
-          const px=cx+(rnd()-.52)*r*2.25,py=cy+(rnd()-.52)*r*2.48;
-          const len=r*(.055+rnd()*.16),sway=(rnd()-.5)*r*.10;
-          g.strokeStyle=rnd()>.32?'rgba(255,250,239,.13)':'rgba(83,61,49,.075)';
-          g.lineWidth=.4+rnd()*.85;
-          g.beginPath();g.moveTo(px,py);g.quadraticCurveTo(px+sway,py+len*.45,px+sway*.48,py+len);g.stroke();
-        }
-
-      } else if(kind==='golem'){
-        for(let i=0;i<58;i++){
-          const px=cx+(rnd()-.5)*r*1.95,py=cy+(rnd()-.48)*r*2.08;
-          const len=r*(.11+rnd()*.27),ang=rnd()*Math.PI*2;
-          const mx=px+Math.cos(ang)*len*.50,my=py+Math.sin(ang)*len*.50;
-          const ex=mx+Math.cos(ang+(rnd()-.5)*1.10)*len*.55,ey=my+Math.sin(ang+(rnd()-.5)*1.10)*len*.55;
-          g.strokeStyle='rgba(19,22,20,.17)';g.lineWidth=.5+rnd()*1.0;
-          g.beginPath();g.moveTo(px,py);g.lineTo(mx,my);g.lineTo(ex,ey);g.stroke();
-          if(rnd()>.66){g.fillStyle='rgba(232,238,228,.12)';g.fillRect(px,py,.8+rnd()*1.8,.8+rnd()*1.8);}
-        }
-
-      } else if(kind==='scorpion'){
-        for(let i=0;i<88;i++){
-          const px=cx+(rnd()-.48)*r*2.85,py=cy+(rnd()-.5)*r*2.10;
-          const len=r*(.05+rnd()*.14);
-          g.strokeStyle=rnd()>.20?'rgba(255,224,193,.115)':'rgba(255,255,255,.06)';
-          g.lineWidth=.35+rnd()*.70;
-          g.beginPath();g.moveTo(px,py);g.lineTo(px+len,py-len*.14);g.stroke();
-        }
-
-      } else if(kind==='sandworm'){
-        for(let i=0;i<44;i++){
-          const py=cy-r*.88+i*(r*1.78/43)+(rnd()-.5)*r*.035;
-          g.strokeStyle='rgba(73,39,25,.105)';g.lineWidth=.5+rnd()*.75;
-          g.beginPath();g.moveTo(cx-r*1.42,py);
-          g.quadraticCurveTo(cx,py+(rnd()-.5)*r*.11,cx+r*1.32,py);g.stroke();
-        }
-
-      } else if(kind==='cactus'){
-        for(let i=-5;i<=5;i++){
-          g.strokeStyle=i%2?'rgba(230,246,182,.10)':'rgba(13,68,32,.11)';
-          g.lineWidth=.55;
-          g.beginPath();g.moveTo(cx+i*r*.11,cy-r*1.18);
-          g.quadraticCurveTo(cx+i*r*.13,cy,cx+i*r*.10,cy+r*.87);g.stroke();
-        }
-
-      } else if(kind==='rainbow'){
-        for(let i=0;i<70;i++){
-          const px=cx+(rnd()-.5)*r*2.35,py=cy+(rnd()-.5)*r*2.20,len=r*(.03+rnd()*.085);
-          g.strokeStyle='rgba(255,255,255,.095)';g.lineWidth=.45;
-          g.beginPath();g.moveTo(px,py);g.lineTo(px+len,py-len*.18);g.stroke();
-        }
-      }
-
-      // 5) Crisp photographic rim light without cartoon outline.
-      g.globalCompositeOperation='screen';
-      const rim=g.createLinearGradient(cx-r*1.1,cy-r*1.2,cx+r*.3,cy+r*.8);
-      rim.addColorStop(0,'rgba(255,255,255,.12)');
-      rim.addColorStop(.34,'rgba(210,237,250,.045)');
-      rim.addColorStop(1,'rgba(255,255,255,0)');
-      g.fillStyle=rim;g.fillRect(cx-span,cy-span,span*2,span*2);
-
-      g.restore();
-      try{delete enemy._pdRenderTime;}catch(_){}
-    }
-    
-    // ===== REAL PHOTO PIGEON V41 =====
-    // Source: Wikimedia Commons, CC0
-    // "Feral pigeon walking on cobblestone or paved surface.jpg"
-    // https://commons.wikimedia.org/wiki/File:Feral_pigeon_walking_on_cobblestone_or_paved_surface.jpg
-    const PD_PIGEON_PHOTO_V41_URL =
-      'https://commons.wikimedia.org/wiki/Special:FilePath/Feral_pigeon_walking_on_cobblestone_or_paved_surface.jpg?width=640';
-    const PD_PIGEON_PHOTO_V41 = new Image();
-    PD_PIGEON_PHOTO_V41.decoding = 'async';
-    PD_PIGEON_PHOTO_V41.referrerPolicy = 'no-referrer';
-    PD_PIGEON_PHOTO_V41_READY = false;
-    PD_PIGEON_PHOTO_V41.onload = () => {
-      PD_PIGEON_PHOTO_V41_READY = true;
-      // 혹시 이전 비둘기 캐시가 남아 있으면 버립니다.
-      try {
-        for (const cached of enemySpriteCache.values()) {
-          try { cached.bitmap?.close?.(); } catch (_) {}
-        }
-        enemySpriteCache.clear();
-      } catch (_) {}
-    };
-    PD_PIGEON_PHOTO_V41.onerror = () => {
-      PD_PIGEON_PHOTO_V41_READY = false;
-    };
-    PD_PIGEON_PHOTO_V41.src = PD_PIGEON_PHOTO_V41_URL;
-
-    function pdPhotoPigeonBodyPathV41(g, r) {
-      g.beginPath();
-      // 꼬리
-      g.moveTo(-r*1.36, r*.10);
-      g.quadraticCurveTo(-r*1.72, r*.12, -r*1.92, r*.27);
-      g.quadraticCurveTo(-r*1.55, r*.38, -r*1.02, r*.38);
-      // 배/가슴
-      g.bezierCurveTo(-r*.62,r*.76,r*.13,r*.78,r*.64,r*.43);
-      // 목 아래
-      g.bezierCurveTo(r*.78,r*.27,r*.79,r*.04,r*.70,-r*.12);
-      // 머리/이마
-      g.bezierCurveTo(r*.69,-r*.53,r*.88,-r*.78,r*1.17,-r*.76);
-      g.bezierCurveTo(r*1.46,-r*.74,r*1.60,-r*.52,r*1.57,-r*.28);
-      // 부리 쪽
-      g.quadraticCurveTo(r*1.72,-r*.24,r*1.92,-r*.12);
-      g.quadraticCurveTo(r*1.70,-r*.01,r*1.52,r*.01);
-      // 턱/목
-      g.bezierCurveTo(r*1.29,r*.08,r*1.11,r*.30,r*.98,r*.49);
-      g.bezierCurveTo(r*.76,r*.83,r*.32,r*.94,-r*.16,r*.86);
-      g.bezierCurveTo(-r*.64,r*.78,-r*.90,r*.56,-r*1.02,r*.38);
-      g.closePath();
-    }
-
-    function pdDrawWalkingPigeonLegV41(g, r, x, phase, far=false) {
-      const swing = Math.sin(phase);
-      const lift = Math.max(0, Math.sin(phase + Math.PI*.16));
-      const hipY = r*.48;
-      const kneeX = x + swing*r*.13;
-      const kneeY = hipY + r*(.20 - lift*.07);
-      const ankleX = x + swing*r*.27;
-      const ankleY = hipY + r*(.43 - lift*.13);
-
-      g.save();
-      if (far) g.globalAlpha = .72;
-      g.lineCap = 'round';
-      g.lineJoin = 'round';
-
-      // 실제 비둘기 다리 같은 붉은 분홍색.
-      const leg = g.createLinearGradient(x,hipY,ankleX,ankleY);
-      leg.addColorStop(0,'#b94848');
-      leg.addColorStop(.48,'#e27d70');
-      leg.addColorStop(1,'#a64143');
-      g.strokeStyle = leg;
-      g.lineWidth = Math.max(2.2,r*.105);
-      g.beginPath();
-      g.moveTo(x,hipY);
-      g.quadraticCurveTo(kneeX,kneeY,ankleX,ankleY);
-      g.stroke();
-
-      // 발목 비늘.
-      g.strokeStyle='rgba(255,214,199,.46)';
-      g.lineWidth=Math.max(.55,r*.018);
-      for(let k=0;k<3;k++){
-        const yy=ankleY-r*.12+k*r*.055;
-        g.beginPath();
-        g.moveTo(ankleX-r*.045,yy);
-        g.lineTo(ankleX+r*.045,yy);
-        g.stroke();
-      }
-
-      const baseY=ankleY+r*.02;
-      const forward=swing*r*.075+r*.10;
-      g.strokeStyle='#b34d50';
-      g.lineWidth=Math.max(1.25,r*.047);
-
-      // 앞쪽 세 발가락.
-      for(const spread of [-.11,0,.11]){
-        g.beginPath();
-        g.moveTo(ankleX,baseY);
-        g.quadraticCurveTo(
-          ankleX+forward+r*.14,
-          baseY+r*.045,
-          ankleX+forward+r*.28,
-          baseY+r*.07+spread*r
-        );
-        g.stroke();
-      }
-      // 뒤 발가락.
-      g.beginPath();
-      g.moveTo(ankleX,baseY);
-      g.quadraticCurveTo(
-        ankleX-r*.12,
-        baseY+r*.015,
-        ankleX-r*.25,
-        baseY-r*.055
-      );
-      g.stroke();
-
-      // 발톱.
-      g.strokeStyle='rgba(48,31,32,.80)';
-      g.lineWidth=Math.max(.6,r*.018);
-      for(const spread of [-.11,0,.11]){
-        const tx=ankleX+forward+r*.28;
-        const ty=baseY+r*.07+spread*r;
-        g.beginPath();
-        g.moveTo(tx-r*.025,ty);
-        g.lineTo(tx+r*.035,ty+r*.012);
-        g.stroke();
-      }
-      g.restore();
-    }
-
-    function drawRealPhotoPigeonV41(g, enemy, x, y, time) {
-      const r=Math.max(12,Number(enemy?.radius||22));
-      const wingPhase=Number(enemy?.wingPhase||0);
-      const walkPhase=time*.015+wingPhase;
-      const bodyBob=Math.abs(Math.sin(walkPhase))*r*.035;
-      const headBob=Math.sin(walkPhase*2)*r*.018;
-
-      g.save();
-      g.translate(x,y-bodyBob);
-
-      // 깔끔한 접지 그림자 하나만 사용. 흰색 선/속도선 없음.
-      g.save();
-      g.scale(1,.34);
-      const sh=g.createRadialGradient(-r*.02,r*1.45,1,-r*.02,r*1.45,r*1.45);
-      sh.addColorStop(0,'rgba(0,0,0,.35)');
-      sh.addColorStop(.65,'rgba(0,0,0,.16)');
-      sh.addColorStop(1,'rgba(0,0,0,0)');
-      g.fillStyle=sh;
-      g.beginPath();
-      g.ellipse(-r*.04,r*1.30,r*1.20,r*.36,0,0,Math.PI*2);
-      g.fill();
-      g.restore();
-
-      // 뒤 다리 -> 몸 -> 앞 다리 순으로 그려 사진 몸체와 자연스럽게 겹칩니다.
-      pdDrawWalkingPigeonLegV41(g,r,-r*.18,walkPhase+Math.PI,true);
-
-      if(PD_PIGEON_PHOTO_V41_READY && PD_PIGEON_PHOTO_V41.naturalWidth>0){
-        g.save();
-        g.translate(0,headBob);
-
-        // 절대 사각형 사진을 그대로 그리지 않고 비둘기 실루엣으로 자릅니다.
-        pdPhotoPigeonBodyPathV41(g,r);
-        g.clip();
-
-        const img=PD_PIGEON_PHOTO_V41;
-        const iw=Math.max(1,img.naturalWidth), ih=Math.max(1,img.naturalHeight);
-
-        // 원본 4:3 사진의 가운데 비둘기 영역을 사용.
-        // 최종 출력은 유기적인 비둘기 실루엣 내부만 보이므로 배경 사각형이 생기지 않습니다.
-        const sx=iw*.13, sy=ih*.05, sw=iw*.74, sh=ih*.86;
-        g.drawImage(
-          img,
-          sx,sy,sw,sh,
-          -r*1.96,-r*.94,r*3.95,r*1.93
-        );
-
-        // 사진을 조금 더 선명하게 보이도록 얇은 명암만 추가.
-        g.globalCompositeOperation='source-atop';
-        const light=g.createLinearGradient(-r*1.4,-r*.9,r*1.5,r*.9);
-        light.addColorStop(0,'rgba(255,255,255,.12)');
-        light.addColorStop(.40,'rgba(255,255,255,0)');
-        light.addColorStop(1,'rgba(8,15,20,.12)');
-        g.fillStyle=light;
-        g.fillRect(-r*2,-r,r*4,r*2);
-        g.restore();
-
-        // 사진 경계는 밝은 흰 선 대신 거의 보이지 않는 어두운 외곽만.
-        g.save();
-        g.translate(0,headBob);
-        pdPhotoPigeonBodyPathV41(g,r);
-        g.strokeStyle='rgba(28,38,45,.44)';
-        g.lineWidth=Math.max(.7,r*.024);
-        g.stroke();
-        g.restore();
-
-      } else {
-        // 외부 사진이 아직 로드되지 않았을 때도 사각형 없는 깨끗한 기존 비둘기로 표시.
-        const fallback={...enemy,heading:0};
-        drawCanvasPigeon(fallback,0,0,time,g);
-      }
-
-      pdDrawWalkingPigeonLegV41(g,r,r*.14,walkPhase,false);
-
-      // 사진 위에 눈이나 부리를 따로 다시 그리지 않습니다.
-      // 따라서 이전처럼 눈만 하늘에 떠 있거나 흰 선이 분리되는 현상이 없습니다.
-      g.restore();
+      // V46: 사진풍 후처리를 끕니다. Safari에서 사각형/깨진 텍스처가 생길 수 있습니다.
+      return;
     }
 
 function renderEnemySpriteBase(g, proxy, kind, cx, cy, renderTime) {
@@ -24860,52 +24503,23 @@ function renderEnemySpriteBase(g, proxy, kind, cx, cy, renderTime) {
     function drawCachedEnemyBase(enemy, drawX, drawY, time) {
       if (window.PDTrue3D && window.PDTrue3D.shouldHideBattleSprites && window.PDTrue3D.shouldHideBattleSprites()) return;
 
+      // V46: 회색 사각형의 원인이 될 수 있는 별도 캐시 캔버스/비트맵을 사용하지 않습니다.
       const kind=enemySpriteKind(enemy);
-      if(kind==='pigeon'){
-        // V41: 비둘기는 캐시 타일 자체를 사용하지 않아 사각형 경계가 생길 수 없습니다.
-        ctx.save();
-        ctx.translate(drawX,drawY);
-        ctx.rotate(Number(enemy.heading||0));
-        drawRealPhotoPigeonV41(ctx,enemy,0,0,time);
-        ctx.restore();
-        return;
-      }
-
-      const sprite = getEnemySprite(enemy, time);
       ctx.save();
-      ctx.translate(drawX, drawY);
-      if (sprite.kind === 'scorpion' || (sprite.kind === 'rainbow' && !enemy.rainbowOre && enemy.type!=='rainbowFeverCore')) ctx.rotate(Number(enemy.heading || 0));
-      ctx.drawImage(sprite.source, -sprite.half, -sprite.half, sprite.logicalSize, sprite.logicalSize);
+      ctx.globalAlpha=1;
+      ctx.globalCompositeOperation='source-over';
+      ctx.filter='none';
+      ctx.shadowBlur=0;
+      ctx.shadowColor='transparent';
+      renderEnemySpriteBase(ctx, enemy, kind, drawX, drawY, time);
       ctx.restore();
     }
 
 
     let enemyPrewarmToken=0;
     function scheduleEnemySpritePrewarm(queue){
-      if (!Array.isArray(queue) || !queue.length || !battle) return;
-      const token=++enemyPrewarmToken;
-      const unique=[];const seen=new Set();
-      for(const spec of queue){const k=`${spec.type||'normal'}|${spec.variant||''}|${spec.radius||22}|${spec.speed||50}`;if(seen.has(k))continue;seen.add(k);unique.push(spec);}
-      const tasks=[];
-      for(const spec of unique){for(let frame=0;frame<ENEMY_SPRITE_FRAMES;frame+=1)tasks.push({spec,frame});}
-      let index=0;
-      const run=(deadline)=>{
-        if(token!==enemyPrewarmToken||!battle)return;
-        let budget=0;
-        while(index<tasks.length && budget<4 && (!deadline || deadline.timeRemaining()>2)){
-          const {spec,frame}=tasks[index++];
-          const fake={...spec,maxHealth:spec.health||1,health:spec.health||1,targetIndex:1,x:0,y:0,heading:0,wingPhase:0};
-          // 24개 애니메이션 프레임을 실제 전투 전에 캐시에 천천히 채웁니다.
-          const syntheticTime=frame*(1000/24)*6;
-          try{getEnemySprite(fake,syntheticTime);}catch(_){}
-          budget+=1;
-        }
-        if(index<tasks.length){
-          if(typeof requestIdleCallback==='function')requestIdleCallback(run,{timeout:120});
-          else setTimeout(()=>run(null),16);
-        }
-      };
-      if(typeof requestIdleCallback==='function')requestIdleCallback(run,{timeout:80});else setTimeout(()=>run(null),0);
+      // V46: 전투 적은 직접 렌더링하므로 캐시 사전 생성도 사용하지 않습니다.
+      return;
     }
     function prewarmRainbowEventSprites(){
       const specs=[
@@ -25037,7 +24651,7 @@ function drawEnemy(enemy, time) {
         ctx.translate(drawX, drawY);
         ctx.scale(BATTLE_ENEMY_VISUAL_SCALE, BATTLE_ENEMY_VISUAL_SCALE);
         ctx.translate(-drawX, -drawY);
-        if(enemySpriteKind(enemy)!=='pigeon') draw3DEnemyFoundation(enemy,drawX,drawY,time,ctx);
+        // V46: 적 본체와 분리된 기초/바닥 효과를 사용하지 않습니다.
         ctx.restore();
       }
       const isBoss = enemy.type !== 'normal';
@@ -25077,17 +24691,8 @@ function drawEnemy(enemy, time) {
         ctx.translate(drawX, drawY);
         ctx.scale(BATTLE_ENEMY_VISUAL_SCALE, BATTLE_ENEMY_VISUAL_SCALE);
         ctx.translate(-drawX, -drawY);
-        const pdKindV41=enemySpriteKind(enemy);
-        if(pdKindV41==='pigeon'){
-          // 실제 사진 비둘기는 사각 캐시/속도선/흰 링을 전부 사용하지 않습니다.
-          drawCachedEnemyBase(enemy, drawX, drawY, time);
-        } else if (battlePerfMode === 0 || isBoss || enemy.rainbowOre) {
-          drawPremiumEnemyBackdrop(enemy, drawX, drawY, time);
-          drawCachedEnemyBase(enemy, drawX, drawY, time);
-          drawPremiumEnemyForeground(enemy, drawX, drawY, time);
-        } else {
-          drawCachedEnemyBase(enemy, drawX, drawY, time);
-        }
+        // V46: 본체만 직접 그립니다. 회색 사각형/분리된 흰 선/깨진 사진 효과 제거.
+        drawCachedEnemyBase(enemy, drawX, drawY, time);
         ctx.restore();
       }
 
@@ -35962,11 +35567,7 @@ function drawEnemy(enemy, time) {
       else if(sid===4){e.variant='scorpion';drawCanvasScorpion(e,w/2,h/2+5,t,g);if(typeof pdApplyPhotoEnemyFinish==='function')pdApplyPhotoEnemyFinish(g,e,'scorpion',w/2,h/2+5,r);}
       else{
         const pcx=w/2,pcy=h/2+2;
-        if(typeof drawRealPhotoPigeonV41==='function'){
-          drawRealPhotoPigeonV41(g,e,pcx,pcy,t);
-        }else{
-          drawCanvasPigeon(e,pcx,pcy,t,g);
-        }
+        drawCanvasPigeon(e,pcx,pcy,t,g);
       }
     };requestAnimationFrame(frame);
   };
@@ -36170,12 +35771,13 @@ The photo is clipped to an organic bird silhouette and the two legs are animated
 - Kept same-account cross-device server synchronization, traits, gameplay fixes, title hiding and photo pigeon updates.
 -->
 
-<!-- V45 IPHONE RELOAD LOOP ROOT FIX
-Root cause removed:
-old code still registered service-worker.js and called window.location.reload() on controllerchange,
-while another block unregistered workers/caches. That could create an iPhone Safari reload/auth/loading loop.
-V45 has zero service-worker registration calls, zero controllerchange reload calls,
-one early unregister/cache cleanup path, and iPhone login/auto-login bypasses the loading overlay entirely.
+<!-- V46 STABLE ENEMY RENDERING
+Battle enemies are rendered directly on the main canvas.
+OffscreenCanvas/ImageBitmap enemy tiles, photo material overlays, separate foundation effects,
+and premium detached highlights are not used in battle.
+This removes gray rectangles and broken enemy artwork on iPhone/Safari.
+Gameplay stats, movement, HP and enemy behavior are unchanged.
+V45 iPhone login/service-worker fixes remain active.
 -->
 
 </body>

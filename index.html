@@ -16342,7 +16342,7 @@ function requestGachaDraw(count) {
         earnedWaveGems:0, skipUses:0, maxSkipUses:5, autoWaveSkip:false, autoSkipTimer:.8,
         placementPreview:{active:false,x:0,y:0,valid:false,pointerType:'mouse'}
       };
-      renderBattleDeck(); showScreen('battle'); resetBattleResultOverlay(); updateStageMapInfo();
+      renderBattleDeck(); showScreen('battle'); window.pdCenterBattleCanvasV50?.(); resetBattleResultOverlay(); updateStageMapInfo();
       document.querySelector('#stageMapInfoPanel')?.classList.add('hidden');
       document.querySelector('#stageMapInfoBtn')?.setAttribute('aria-expanded','false');
       renderSelectedPanel(); updateOrientationGuard(); launchWave(1); updateBattleUi();
@@ -16397,7 +16397,7 @@ function requestGachaDraw(count) {
         eventDiceCollected:0, rainbowDiceDrops:[], rainbowBaseSpears:[], rainbowAllyOres:[], rainbowAlliedSoldiers:[], rainbowMapBuffRemaining:0, rainbowBossRolls:{},
         placementPreview:{active:false,x:0,y:0,valid:false,pointerType:'mouse'}
       };
-      renderBattleDeck(); showScreen('battle'); resetBattleResultOverlay(); updateStageMapInfo();
+      renderBattleDeck(); showScreen('battle'); window.pdCenterBattleCanvasV50?.(); resetBattleResultOverlay(); updateStageMapInfo();
       document.querySelector('#stageMapInfoPanel')?.classList.add('hidden'); document.querySelector('#stageMapInfoBtn')?.setAttribute('aria-expanded','false');
       renderSelectedPanel(); updateOrientationGuard(); launchWave(1); updateBattleUi(true);
       try { drawBattle(performance.now()); } catch (error) { console.warn('초기 무지개 전투 렌더 fallback', error); }
@@ -16482,6 +16482,7 @@ function requestGachaDraw(count) {
 
       renderBattleDeck();
       showScreen('battle');
+      window.pdCenterBattleCanvasV50?.();
       resetBattleResultOverlay();
       updateStageMapInfo();
       document.querySelector('#stageMapInfoPanel')?.classList.add('hidden');
@@ -24456,1191 +24457,6 @@ function requestGachaDraw(count) {
       return;
     }
 
-
-    // ===== V47 DIRECT VECTOR ENEMY QUALITY PASS =====
-    // 별도 이미지/OffscreenCanvas 없이 메인 캔버스에 국소적인 디테일만 추가합니다.
-    // 따라서 이전의 회색 사각형 문제를 다시 만들지 않습니다.
-    function pdEnemyQualityPassV47(g, enemy, kind, x, y, time){
-      if(!g||!enemy)return;
-      const r=Math.max(12,Number(enemy.radius||22));
-      const detail = (typeof battlePerfMode==='number' && battlePerfMode>=2) ? 0 :
-                     (typeof battlePerfMode==='number' && battlePerfMode===1) ? 1 : 2;
-      const phase=Number(enemy.wingPhase||0);
-
-      g.save();
-      g.globalCompositeOperation='source-over';
-      g.filter='none';
-      g.lineCap='round';
-      g.lineJoin='round';
-
-      if(kind==='pigeon'){
-        const cycle=(time*.00245+phase/(Math.PI*2))%1;
-        const powerStroke=cycle<.38
-          ?Math.sin((cycle/.38)*Math.PI)
-          :-0.58*Math.sin(((cycle-.38)/.62)*Math.PI);
-        const bob=-Math.max(0,powerStroke)*4.6+Math.sin(time*.006+phase)*1.4;
-        const walk=time*.013+phase;
-
-        g.translate(x,y+bob);
-        g.rotate(Number(enemy.heading||0));
-
-        // 실제로 걷는 두 다리 + 발가락
-        for(const leg of [
-          {x:-r*.16,p:walk+Math.PI,far:true},
-          {x:r*.13,p:walk,far:false}
-        ]){
-          const swing=Math.sin(leg.p);
-          const lift=Math.max(0,Math.sin(leg.p+Math.PI*.16));
-          const hipY=r*.45;
-          const kneeX=leg.x+swing*r*.12;
-          const kneeY=hipY+r*(.18-lift*.045);
-          const ankleX=leg.x+swing*r*.25;
-          const ankleY=hipY+r*(.40-lift*.11);
-          g.save();
-          if(leg.far)g.globalAlpha=.68;
-          const lg=g.createLinearGradient(leg.x,hipY,ankleX,ankleY);
-          lg.addColorStop(0,'#b84c4d');
-          lg.addColorStop(.5,'#df756c');
-          lg.addColorStop(1,'#8f3d43');
-          g.strokeStyle=lg;g.lineWidth=Math.max(2,r*.09);
-          g.beginPath();g.moveTo(leg.x,hipY);g.quadraticCurveTo(kneeX,kneeY,ankleX,ankleY);g.stroke();
-          g.strokeStyle='#a5484d';g.lineWidth=Math.max(1,r*.04);
-          const baseY=ankleY+r*.015;
-          for(const s of [-1,0,1]){
-            g.beginPath();g.moveTo(ankleX,baseY);
-            g.quadraticCurveTo(ankleX+r*.13,baseY+r*.025,ankleX+r*.28,baseY+s*r*.10+r*.055);g.stroke();
-          }
-          g.beginPath();g.moveTo(ankleX,baseY);g.quadraticCurveTo(ankleX-r*.12,baseY,ankleX-r*.23,baseY-r*.05);g.stroke();
-          g.restore();
-        }
-
-        if(detail>0){
-          // 몸통 깃털을 실제 깃 겹침처럼 짧은 곡선으로 추가
-          g.strokeStyle='rgba(238,244,248,.34)';
-          g.lineWidth=Math.max(.55,r*.022);
-          for(let row=0;row<4;row++){
-            const yy=-r*.26+row*r*.16;
-            const count=detail>1?7:4;
-            for(let i=0;i<count;i++){
-              const xx=-r*.63+i*r*.19+(row%2)*r*.07;
-              g.beginPath();
-              g.arc(xx,yy,r*.13,.14,Math.PI-.14);
-              g.stroke();
-            }
-          }
-
-          // 목 구조색: 녹색/청록/보라의 미세한 깃 결
-          const neckCols=[
-            'rgba(50,235,161,.42)',
-            'rgba(56,201,190,.38)',
-            'rgba(111,103,226,.35)',
-            'rgba(193,79,204,.32)'
-          ];
-          for(let i=0;i<(detail>1?10:5);i++){
-            const yy=-r*.28+i*r*.055;
-            g.strokeStyle=neckCols[i%neckCols.length];
-            g.lineWidth=Math.max(.7,r*.025);
-            g.beginPath();
-            g.arc(r*.64,yy,r*(.25-i*.006),-.95,.88);
-            g.stroke();
-          }
-        }
-
-        // 눈의 테두리/홍채/반사점을 더 선명하게
-        const ex=r*1.09,ey=-r*.35;
-        g.strokeStyle='rgba(36,26,24,.88)';g.lineWidth=Math.max(.8,r*.026);
-        g.beginPath();g.arc(ex,ey,r*.135,0,Math.PI*2);g.stroke();
-        g.strokeStyle='rgba(255,190,92,.55)';g.lineWidth=Math.max(.6,r*.018);
-        g.beginPath();g.arc(ex,ey,r*.095,0,Math.PI*2);g.stroke();
-        g.fillStyle='rgba(255,255,255,.95)';
-        g.beginPath();g.arc(ex-r*.028,ey-r*.035,r*.022,0,Math.PI*2);g.fill();
-
-        // 콧구멍 + 부리 중앙선
-        g.fillStyle='rgba(63,45,40,.70)';
-        g.beginPath();g.ellipse(r*1.43,-r*.17,r*.025,r*.018,0,0,Math.PI*2);g.fill();
-        g.strokeStyle='rgba(91,58,43,.72)';g.lineWidth=Math.max(.5,r*.018);
-        g.beginPath();g.moveTo(r*1.46,-r*.08);g.lineTo(r*1.80,-r*.015);g.stroke();
-
-      }else if(kind==='golem'){
-        g.translate(x,y);
-        const boss=/Golem/i.test(String(enemy.type||'')) && enemy.type!=='normal';
-
-        // 돌 표면의 층리와 균열
-        const cracks=detail>1?13:detail?7:3;
-        for(let i=0;i<cracks;i++){
-          const a=i*2.399+phase;
-          const rr=r*(.20+(i%4)*.16);
-          const px=Math.cos(a)*rr*.9,py=Math.sin(a)*rr*.78;
-          g.strokeStyle=i%3===0?'rgba(236,245,250,.24)':'rgba(18,24,29,.42)';
-          g.lineWidth=Math.max(.55,r*(i%3===0?.018:.024));
-          g.beginPath();
-          g.moveTo(px-r*.09,py-r*.04);
-          g.lineTo(px+r*.02,py+r*.05);
-          g.lineTo(px+r*.10,py-r*.015);
-          g.stroke();
-        }
-
-        // 광물성 점광 반사
-        if(detail>0){
-          g.save();g.globalCompositeOperation='screen';
-          for(let i=0;i<(boss?7:4);i++){
-            const a=i*1.71+time*.0004;
-            const px=Math.cos(a)*r*.66,py=Math.sin(a)*r*.55-r*.08;
-            g.fillStyle=boss?'rgba(143,236,255,.38)':'rgba(225,240,247,.25)';
-            g.beginPath();g.moveTo(px,py-r*.055);g.lineTo(px+r*.035,py);g.lineTo(px,py+r*.055);g.lineTo(px-r*.035,py);g.closePath();g.fill();
-          }
-          g.restore();
-        }
-
-      }else if(kind==='llama'){
-        const gait=Math.sin(time*.0062*2.25);
-        const bob=Math.abs(gait)*r*.025;
-        const facing=Math.cos(Number(enemy.heading||0))<0?-1:1;
-        g.translate(x,y-bob);g.scale(facing,1);
-
-        // 털 실루엣과 털 결
-        const furCount=detail>1?36:detail?20:8;
-        for(let i=0;i<furCount;i++){
-          const a=(i/furCount)*Math.PI*2;
-          const px=Math.cos(a)*r*.82-r*.02;
-          const py=Math.sin(a)*r*.48-r*.02;
-          const len=r*(.07+(i%4)*.012);
-          g.strokeStyle=i%3===0?'rgba(255,244,222,.42)':'rgba(74,48,34,.20)';
-          g.lineWidth=Math.max(.45,r*.018);
-          g.beginPath();
-          g.moveTo(px,py);
-          g.quadraticCurveTo(px+Math.sin(time*.006+i)*r*.018,py+len*.45,px,py+len);
-          g.stroke();
-        }
-
-        // 머리의 눈/코 광택
-        const hx=r*1.10,hy=-r*1.20;
-        g.fillStyle='rgba(255,255,255,.90)';
-        g.beginPath();g.arc(hx+r*.035,hy-r*.025,r*.024,0,Math.PI*2);g.fill();
-        g.save();g.globalCompositeOperation='screen';
-        g.fillStyle='rgba(255,255,255,.18)';
-        g.beginPath();g.ellipse(hx+r*.20,hy+r*.25,r*.20,r*.08,-.2,0,Math.PI*2);g.fill();
-        g.restore();
-
-        if(detail>0){
-          // 목의 긴 털
-          for(let i=0;i<8;i++){
-            const yy=-r*.88+i*r*.13;
-            g.strokeStyle='rgba(245,223,196,.28)';
-            g.lineWidth=Math.max(.5,r*.022);
-            g.beginPath();g.moveTo(r*.72,yy);g.quadraticCurveTo(r*.60,yy+r*.08,r*.72,yy+r*.16);g.stroke();
-          }
-        }
-
-      }else if(kind==='scorpion'){
-        const boss=enemy.type==='venomScorpionBoss';
-        const venom=enemy.variant==='venomScorpion'||boss;
-        g.translate(x,y);g.rotate(Number(enemy.heading||0));g.scale(boss?1.13:1,boss?1.13:1);
-
-        // 각 갑각판의 날카로운 광택
-        for(let i=0;i<(detail>1?8:4);i++){
-          const px=-r*.66+i*r*.18;
-          g.strokeStyle=venom?'rgba(196,255,128,.34)':'rgba(255,183,126,.30)';
-          g.lineWidth=Math.max(.55,r*.021);
-          g.beginPath();g.moveTo(px,-r*.27);g.lineTo(px+r*.12,-r*.34);g.stroke();
-        }
-
-        if(detail>0){
-          // 갑각 미세 점각
-          for(let i=0;i<18;i++){
-            const a=i*2.37;
-            const px=-r*.18+Math.cos(a)*r*.62;
-            const py=Math.sin(a)*r*.42;
-            g.fillStyle=venom?'rgba(206,255,136,.18)':'rgba(255,185,127,.17)';
-            g.beginPath();g.arc(px,py,Math.max(.6,r*.018),0,Math.PI*2);g.fill();
-          }
-        }
-
-        // 눈의 반사광
-        g.save();g.globalCompositeOperation='screen';
-        for(const side of [-1,1]){
-          for(let i=0;i<3;i++){
-            g.fillStyle=venom?'rgba(229,255,161,.88)':'rgba(255,187,139,.82)';
-            g.beginPath();g.arc(r*(.72+i*.12)-r*.012,side*r*(.09+i*.10)-r*.012,r*.018,0,Math.PI*2);g.fill();
-          }
-        }
-        g.restore();
-
-      }else if(kind==='sandworm'){
-        g.translate(x,y);
-        if(enemy.sandBurrowed){
-          if(detail>0){
-            for(let i=0;i<10;i++){
-              const a=time*.004+i*.628;
-              const rr=r*(.74+(i%3)*.12);
-              g.fillStyle='rgba(255,216,139,.38)';
-              g.beginPath();g.arc(Math.cos(a)*rr,8+Math.sin(a)*rr*.23,1.2+(i%2),0,Math.PI*2);g.fill();
-            }
-          }
-        }else{
-          const sway=Math.sin(time*.005)*.12;
-          g.rotate(sway);
-
-          // 피부 체절의 이중 음영
-          for(let i=0;i<7;i++){
-            const yy=-r*.70+i*r*.22;
-            g.strokeStyle=i%2?'rgba(255,209,142,.26)':'rgba(66,25,17,.30)';
-            g.lineWidth=Math.max(.8,r*.028);
-            g.beginPath();g.arc(0,yy,r*(.47+i*.028),.20,Math.PI-.20);g.stroke();
-          }
-
-          // 피부 모공/반점
-          if(detail>0){
-            for(let i=0;i<(detail>1?26:12);i++){
-              const a=i*2.11;
-              const px=Math.cos(a)*r*.45;
-              const py=-r*.20+Math.sin(a*1.33)*r*.62;
-              g.fillStyle=i%2?'rgba(255,193,123,.19)':'rgba(52,20,15,.20)';
-              g.beginPath();g.ellipse(px,py,r*.026,r*.014,a,0,Math.PI*2);g.fill();
-            }
-          }
-
-          // 입 안쪽의 잇몸과 작은 침 광택
-          g.strokeStyle='rgba(171,56,45,.65)';g.lineWidth=Math.max(1,r*.032);
-          g.beginPath();g.ellipse(0,-r*.45,r*.27,r*.19,0,0,Math.PI*2);g.stroke();
-          g.save();g.globalCompositeOperation='screen';
-          g.strokeStyle='rgba(255,255,255,.38)';g.lineWidth=Math.max(.6,r*.018);
-          g.beginPath();g.arc(r*.06,-r*.43,r*.19,-1.2,.5);g.stroke();g.restore();
-        }
-
-      }else if(kind==='cactus'){
-        const boss=enemy.type!=='normal';
-        const hacker=enemy.type==='hackerCactusBoss';
-        const jumpP=enemy.cactusJumping?Math.max(0,Math.min(1,Number(enemy.cactusJumpProgress||0))):0;
-        const jumpLift=Math.sin(jumpP*Math.PI)*(boss?34:29);
-        g.translate(x,y-jumpLift);
-        if(enemy.cactusJumping)g.rotate(-.10*Math.sin(jumpP*Math.PI));
-        if(enemy.fleeingToSpawn)g.rotate(Math.PI);
-
-        // 선인장 세로 능선
-        for(let i=-2;i<=2;i++){
-          g.strokeStyle=i%2===0
-            ?(hacker?'rgba(147,255,204,.28)':'rgba(206,238,147,.24)')
-            :(hacker?'rgba(0,74,52,.34)':'rgba(24,82,37,.30)');
-          g.lineWidth=Math.max(.7,r*.026);
-          g.beginPath();
-          g.moveTo(i*r*.105,-r*.88);
-          g.quadraticCurveTo(i*r*.12,-r*.10,i*r*.10,r*.58);
-          g.stroke();
-        }
-
-        if(detail>0){
-          // 가시가 솟는 areole와 가시 그림자
-          for(let i=0;i<(boss?16:11);i++){
-            const a=i*2.31;
-            const px=Math.sin(a)*r*.27;
-            const py=-r*.78+(i%(boss?8:6))*r*.22;
-            g.fillStyle=hacker?'rgba(126,255,202,.35)':'rgba(230,216,153,.35)';
-            g.beginPath();g.arc(px,py,r*.035,0,Math.PI*2);g.fill();
-            g.strokeStyle='rgba(47,51,33,.26)';g.lineWidth=Math.max(.45,r*.014);
-            g.beginPath();g.moveTo(px+r*.025,py+r*.025);g.lineTo(px+r*.14,py+r*.10);g.stroke();
-          }
-        }
-
-        // 눈 반사
-        if(enemy.type!=='dollCactusBoss'||enemy.maskBroken){
-          g.fillStyle='rgba(255,255,255,.85)';
-          g.beginPath();g.arc(-r*.15,-r*.58,r*.023,0,Math.PI*2);g.arc(r*.11,-r*.58,r*.023,0,Math.PI*2);g.fill();
-        }
-
-      }else if(kind==='rainbow'){
-        g.translate(x,y);
-        const captain=enemy.type==='rainbowGuardCaptainBoss';
-
-        if(enemy.rainbowOre||enemy.type==='rainbowOre'){
-          // 광석의 여러 면에 각각 다른 반사광
-          g.save();g.globalCompositeOperation='screen';
-          for(let i=0;i<5;i++){
-            const a=-1.4+i*1.18;
-            const px=Math.cos(a)*r*.46,py=Math.sin(a)*r*.46;
-            g.fillStyle=`hsla(${(time*.025+i*70)%360},100%,80%,.32)`;
-            g.beginPath();g.moveTo(px,py-r*.15);g.lineTo(px+r*.11,py);g.lineTo(px,py+r*.15);g.lineTo(px-r*.08,py);g.closePath();g.fill();
-          }
-          g.restore();
-
-        }else if(enemy.type==='rainbowUnicornBoss'){
-          // 갈기 개별 가닥 + 눈 + 뿔 나선
-          for(let i=0;i<(detail>1?9:5);i++){
-            g.strokeStyle=`hsla(${(time*.025+i*38)%360},100%,68%,.62)`;
-            g.lineWidth=Math.max(1.2,r*.055);
-            g.beginPath();
-            g.moveTo(-r*.52,-r*.34+i*r*.055);
-            g.quadraticCurveTo(-r*(.85+i*.035),-r*(.55+i*.06),-r*(1.05+i*.035),r*(-.10+i*.09));
-            g.stroke();
-          }
-          g.fillStyle='rgba(255,255,255,.95)';g.beginPath();g.arc(r*.84,-r*.51,r*.028,0,Math.PI*2);g.fill();
-          g.strokeStyle='rgba(255,255,255,.62)';g.lineWidth=Math.max(.7,r*.025);
-          for(let i=0;i<3;i++){
-            g.beginPath();g.moveTo(r*(.98+i*.10),-r*(.96+i*.10));g.lineTo(r*(1.16+i*.08),-r*(1.15+i*.09));g.stroke();
-          }
-
-        }else{
-          // 병사/대장의 갑옷을 여러 금속판으로 분할
-          g.strokeStyle='rgba(255,255,255,.48)';g.lineWidth=Math.max(.7,r*.025);
-          for(const yy of [-.34,-.08,.18]){
-            g.beginPath();g.moveTo(-r*.50,r*yy);g.quadraticCurveTo(0,r*(yy+.08),r*.50,r*yy);g.stroke();
-          }
-          g.strokeStyle='rgba(44,52,92,.35)';
-          g.beginPath();g.moveTo(0,-r*.54);g.lineTo(0,r*.52);g.stroke();
-
-          // 움직이는 프리즘 반사
-          if(detail>0){
-            g.save();g.globalCompositeOperation='screen';
-            const glintX=Math.sin(time*.0035)*r*.36;
-            const gr=g.createLinearGradient(glintX-r*.10,-r*.55,glintX+r*.12,r*.52);
-            gr.addColorStop(0,'rgba(255,255,255,0)');
-            gr.addColorStop(.5,captain?'rgba(255,244,167,.35)':'rgba(224,250,255,.31)');
-            gr.addColorStop(1,'rgba(255,255,255,0)');
-            g.strokeStyle=gr;g.lineWidth=Math.max(1.2,r*.055);
-            g.beginPath();g.moveTo(glintX,-r*.52);g.lineTo(glintX+r*.06,r*.50);g.stroke();
-            g.restore();
-          }
-        }
-      }
-
-      g.restore();
-    }
-
-
-    // ===== V48 ULTRA DIRECT ENEMY QUALITY =====
-    // 사각 캐시/사진 텍스처 없이 메인 캔버스 도형만 사용합니다.
-    function pdEnemyGroundShadowV48(g,enemy,kind,x,y,time){
-      const r=Math.max(12,Number(enemy?.radius||22));
-      if(enemy?.sandBurrowed)return;
-      g.save();
-      g.globalCompositeOperation='source-over';
-      g.filter='none';
-      const boss=enemy?.type!=='normal'&&!enemy?.rainbowOre&&enemy?.type!=='rainbowFeverCore';
-      const width=kind==='sandworm'?1.15:kind==='scorpion'?1.22:kind==='pigeon'?1.08:1;
-      const sh=g.createRadialGradient(x-r*.12,y+r*.58,1,x,y+r*.62,r*(boss?1.32:1.08));
-      sh.addColorStop(0,boss?'rgba(0,0,0,.42)':'rgba(0,0,0,.34)');
-      sh.addColorStop(.58,'rgba(0,0,0,.16)');
-      sh.addColorStop(1,'rgba(0,0,0,0)');
-      g.fillStyle=sh;
-      g.beginPath();
-      g.ellipse(x,y+r*.64,r*width,r*(boss?.34:.29),0,0,Math.PI*2);
-      g.fill();
-      g.restore();
-    }
-
-    function pdEnemyUltraQualityV48(g,enemy,kind,x,y,time){
-      if(!g||!enemy)return;
-      const r=Math.max(12,Number(enemy.radius||22));
-      const perf=(typeof battlePerfMode==='number'?battlePerfMode:0);
-      const detail=perf>=2?0:perf===1?1:2;
-      const phase=Number(enemy.wingPhase||0);
-      const hp=Math.max(0,Number(enemy.health||0));
-      const maxHp=Math.max(1,Number(enemy.maxHealth||enemy.health||1));
-      const damaged=hp/maxHp<.48;
-
-      g.save();
-      g.globalCompositeOperation='source-over';
-      g.filter='none';
-      g.lineCap='round';
-      g.lineJoin='round';
-
-      if(kind==='pigeon'){
-        const cycle=(time*.00245+phase/(Math.PI*2))%1;
-        const stroke=cycle<.38?Math.sin(cycle/.38*Math.PI):-.58*Math.sin((cycle-.38)/.62*Math.PI);
-        const bob=-Math.max(0,stroke)*4.6+Math.sin(time*.006+phase)*1.4;
-        g.translate(x,y+bob);
-        g.rotate(Number(enemy.heading||0));
-
-        // 꼬리깃을 각각 분리해서 실루엣을 더 자연스럽게.
-        for(let i=0;i<5;i++){
-          const yy=(-2+i)*r*.095;
-          const len=r*(.66+Math.abs(i-2)*.05);
-          const tg=g.createLinearGradient(-r*.72,yy,-r*.72-len,yy);
-          tg.addColorStop(0,'rgba(112,125,136,.84)');
-          tg.addColorStop(.55,'rgba(72,83,92,.86)');
-          tg.addColorStop(1,'rgba(37,45,52,.92)');
-          g.fillStyle=tg;
-          g.beginPath();
-          g.moveTo(-r*.55,yy-r*.055);
-          g.quadraticCurveTo(-r*.82,yy-r*.07,-r*.72-len,yy-r*.035);
-          g.quadraticCurveTo(-r*.82,yy+r*.075,-r*.55,yy+r*.07);
-          g.closePath();g.fill();
-          g.strokeStyle='rgba(235,243,247,.18)';g.lineWidth=Math.max(.45,r*.014);
-          g.beginPath();g.moveTo(-r*.60,yy);g.lineTo(-r*.70-len,yy);g.stroke();
-        }
-
-        // 날개 깃 층: 1차/2차 깃을 별도 모양으로 표현.
-        if(detail>0){
-          g.save();
-          g.translate(-r*.08,-r*.08);
-          g.rotate(-.12+Math.sin(time*.015+phase)*.035);
-          for(let row=0;row<3;row++){
-            const count=detail>1?7:5;
-            for(let i=0;i<count;i++){
-              const q=i/(count-1);
-              const bx=-r*(.08+q*.55);
-              const by=-r*(.14-row*.14);
-              const tx=-r*(.42+q*.74);
-              const ty=r*(.06+row*.12+q*.10);
-              const fg=g.createLinearGradient(bx,by,tx,ty);
-              fg.addColorStop(0,row===0?'rgba(202,212,219,.68)':'rgba(159,172,181,.58)');
-              fg.addColorStop(1,'rgba(45,55,63,.86)');
-              g.fillStyle=fg;
-              g.beginPath();
-              g.moveTo(bx,by);
-              g.quadraticCurveTo((bx+tx)*.53,ty-r*.10,tx,ty);
-              g.quadraticCurveTo((bx+tx)*.52,ty+r*.06,bx+r*.11,by+r*.10);
-              g.closePath();g.fill();
-              g.strokeStyle='rgba(242,248,250,.18)';
-              g.lineWidth=Math.max(.4,r*.012);
-              g.beginPath();g.moveTo(bx+r*.02,by+r*.02);g.lineTo(tx-r*.03,ty);g.stroke();
-            }
-          }
-          g.restore();
-        }
-
-        // 가슴 볼륨광
-        g.save();g.globalCompositeOperation='screen';
-        const breast=g.createRadialGradient(r*.10,-r*.05,r*.05,r*.02,r*.04,r*.73);
-        breast.addColorStop(0,'rgba(255,255,255,.20)');
-        breast.addColorStop(.48,'rgba(222,234,240,.08)');
-        breast.addColorStop(1,'rgba(255,255,255,0)');
-        g.fillStyle=breast;
-        g.beginPath();g.ellipse(0,r*.04,r*.72,r*.58,.04,0,Math.PI*2);g.fill();
-
-        // 목의 구조색을 여러 얇은 광택 띠로.
-        for(let i=0;i<(detail>1?13:7);i++){
-          const yy=-r*.31+i*r*.043;
-          const hue=[150,173,205,264,298][i%5];
-          g.strokeStyle=`hsla(${hue},92%,65%,${.12+(i%3)*.035})`;
-          g.lineWidth=Math.max(.7,r*.027);
-          g.beginPath();g.arc(r*.60,yy,r*(.25-i*.004),-.98,.92);g.stroke();
-        }
-        g.restore();
-
-        // 눈에 각막 반사와 눈꺼풀.
-        const ex=r*1.09,ey=-r*.35;
-        g.strokeStyle='rgba(29,21,21,.90)';g.lineWidth=Math.max(.8,r*.025);
-        g.beginPath();g.arc(ex,ey,r*.145,0,Math.PI*2);g.stroke();
-        g.fillStyle='rgba(255,255,255,.98)';
-        g.beginPath();g.ellipse(ex-r*.032,ey-r*.040,r*.027,r*.019,-.3,0,Math.PI*2);g.fill();
-        g.strokeStyle='rgba(46,34,32,.48)';g.lineWidth=Math.max(.45,r*.014);
-        g.beginPath();g.arc(ex,ey-r*.012,r*.15,Math.PI*1.05,Math.PI*1.92);g.stroke();
-
-      }else if(kind==='golem'){
-        g.translate(x,y);
-        const boss=/Golem/i.test(String(enemy.type||''))&&enemy.type!=='normal';
-
-        // 돌조각의 면을 삼각 패싯으로 표현.
-        if(detail>0){
-          const facets=[
-            [-.60,-.42,-.22,-.58,-.36,-.12],
-            [-.20,-.58,.20,-.50,.04,-.11],
-            [.25,-.49,.61,-.28,.31,-.04],
-            [-.58,-.03,-.30,.14,-.50,.46],
-            [-.18,-.05,.18,.04,.01,.38],
-            [.25,.03,.59,.21,.35,.49]
-          ];
-          for(let i=0;i<facets.length;i++){
-            const f=facets[i];
-            const grad=g.createLinearGradient(r*f[0],r*f[1],r*f[2],r*f[3]);
-            grad.addColorStop(0,i%2?'rgba(232,242,246,.16)':'rgba(255,255,255,.12)');
-            grad.addColorStop(1,'rgba(19,25,29,.12)');
-            g.fillStyle=grad;
-            g.beginPath();
-            g.moveTo(r*f[0],r*f[1]);g.lineTo(r*f[2],r*f[3]);g.lineTo(r*f[4],r*f[5]);g.closePath();g.fill();
-          }
-        }
-
-        // 균열 내부 어둠 + 가장자리 밝기.
-        const cracks=detail>1?8:4;
-        for(let i=0;i<cracks;i++){
-          const a=i*2.17+.8;
-          const px=Math.cos(a)*r*.45,py=Math.sin(a)*r*.42;
-          g.strokeStyle='rgba(10,14,17,.56)';g.lineWidth=Math.max(.8,r*.032);
-          g.beginPath();g.moveTo(px-r*.12,py-r*.06);g.lineTo(px,py+r*.03);g.lineTo(px+r*.11,py-r*.04);g.stroke();
-          g.strokeStyle=boss?'rgba(126,221,255,.28)':'rgba(238,246,248,.20)';
-          g.lineWidth=Math.max(.45,r*.013);
-          g.beginPath();g.moveTo(px-r*.11,py-r*.075);g.lineTo(px,py+r*.015);g.stroke();
-        }
-
-        // 이끼/먼지 작은 패치.
-        if(detail>1&&!boss){
-          for(let i=0;i<10;i++){
-            const a=i*2.43;
-            g.fillStyle='rgba(72,104,62,.22)';
-            g.beginPath();g.ellipse(Math.cos(a)*r*.53,Math.sin(a)*r*.43,r*.06,r*.025,a,0,Math.PI*2);g.fill();
-          }
-        }
-
-      }else if(kind==='llama'){
-        const gait=Math.sin(time*.0062*2.25);
-        const facing=Math.cos(Number(enemy.heading||0))<0?-1:1;
-        g.translate(x,y-Math.abs(gait)*r*.025);g.scale(facing,1);
-
-        // 긴 털 가닥을 겹쳐서 외곽을 더 풍성하게.
-        const hairs=detail>1?54:detail?28:12;
-        for(let i=0;i<hairs;i++){
-          const a=i/hairs*Math.PI*2;
-          const rx=r*(.84+.05*Math.sin(i*2.1));
-          const ry=r*(.50+.035*Math.cos(i*1.7));
-          const px=Math.cos(a)*rx-r*.02;
-          const py=Math.sin(a)*ry-r*.03;
-          const sway=Math.sin(time*.006+i*.8)*r*.018;
-          const len=r*(.055+(i%5)*.012);
-          g.strokeStyle=i%4===0?'rgba(255,249,234,.46)':'rgba(103,75,58,.19)';
-          g.lineWidth=Math.max(.42,r*.016);
-          g.beginPath();g.moveTo(px,py);g.quadraticCurveTo(px+sway,py+len*.45,px+sway*.4,py+len);g.stroke();
-        }
-
-        // 귀 내부와 주둥이 모피.
-        g.fillStyle='rgba(176,116,100,.26)';
-        g.beginPath();g.ellipse(r*.86,-r*1.57,r*.08,r*.22,-.25,0,Math.PI*2);g.fill();
-        g.beginPath();g.ellipse(r*1.20,-r*1.55,r*.08,r*.22,.18,0,Math.PI*2);g.fill();
-        g.strokeStyle='rgba(85,59,46,.28)';g.lineWidth=Math.max(.5,r*.018);
-        for(let i=0;i<5;i++){
-          const yy=-r*.92+i*r*.08;
-          g.beginPath();g.moveTo(r*.92,yy);g.quadraticCurveTo(r*1.12,yy-r*.03,r*1.30,yy+r*.01);g.stroke();
-        }
-
-        // 코의 젖은 반사.
-        g.save();g.globalCompositeOperation='screen';
-        g.fillStyle='rgba(255,255,255,.26)';
-        g.beginPath();g.ellipse(r*1.27,-r*.88,r*.13,r*.045,-.12,0,Math.PI*2);g.fill();
-        g.restore();
-
-      }else if(kind==='scorpion'){
-        const boss=enemy.type==='venomScorpionBoss';
-        const venom=enemy.variant==='venomScorpion'||boss;
-        g.translate(x,y);g.rotate(Number(enemy.heading||0));g.scale(boss?1.13:1,boss?1.13:1);
-
-        // 다리 관절 마디를 명확히.
-        if(detail>0){
-          const p=time*.018;
-          for(const side of [-1,1]){
-            for(let i=0;i<4;i++){
-              const gait=Math.sin(p+i*1.15+(side<0?Math.PI:0));
-              const rootX=-r*.12+i*r*.13,rootY=side*r*(.22+i*.045);
-              const midX=rootX-r*(.25+i*.035),midY=rootY+side*r*(.15+gait*.035);
-              const tipX=midX-r*(.24+i*.04),tipY=midY+side*r*(.11-gait*.06);
-              g.fillStyle=venom?'rgba(103,137,55,.72)':'rgba(96,51,36,.78)';
-              for(const [jx,jy] of [[rootX,rootY],[midX,midY]]){
-                g.beginPath();g.arc(jx,jy,r*.055,0,Math.PI*2);g.fill();
-              }
-              g.strokeStyle=venom?'rgba(222,255,158,.20)':'rgba(255,205,166,.19)';
-              g.lineWidth=Math.max(.45,r*.014);
-              g.beginPath();g.moveTo(rootX,rootY-side*r*.02);g.lineTo(midX,midY-side*r*.02);g.lineTo(tipX,tipY-side*r*.02);g.stroke();
-            }
-          }
-        }
-
-        // 집게의 딱딱한 가장자리.
-        for(const side of [-1,1]){
-          g.strokeStyle=venom?'rgba(216,255,154,.32)':'rgba(255,198,153,.28)';
-          g.lineWidth=Math.max(.7,r*.022);
-          g.beginPath();
-          g.arc(r*.72,side*r*.56,r*.24,side>0?-.8:-2.35,side>0?.75:-.78);
-          g.stroke();
-        }
-
-        // 꼬리 독침 광택.
-        g.save();g.globalCompositeOperation='screen';
-        g.strokeStyle=venom?'rgba(192,255,113,.54)':'rgba(255,219,170,.35)';
-        g.lineWidth=Math.max(.7,r*.022);
-        g.beginPath();g.arc(-r*.55,-r*.55,r*.62,-2.5,-.52);g.stroke();
-        g.restore();
-
-      }else if(kind==='sandworm'){
-        g.translate(x,y);
-        if(enemy.sandBurrowed){
-          if(detail>0){
-            for(let i=0;i<12;i++){
-              const a=time*.005+i*.53;
-              g.fillStyle=i%2?'rgba(242,190,112,.36)':'rgba(255,225,157,.42)';
-              g.beginPath();g.arc(Math.cos(a)*r*(.72+(i%3)*.10),r*.18+Math.sin(a)*r*.20,1+(i%3)*.55,0,Math.PI*2);g.fill();
-            }
-          }
-        }else{
-          g.rotate(Math.sin(time*.005)*.12);
-
-          // 입술/잇몸/이빨을 훨씬 뚜렷하게.
-          const mouthY=-r*.45;
-          g.fillStyle='rgba(74,18,17,.48)';
-          g.beginPath();g.ellipse(0,mouthY,r*.30,r*.215,0,0,Math.PI*2);g.fill();
-          g.strokeStyle='rgba(193,72,59,.60)';g.lineWidth=Math.max(1,r*.035);
-          g.beginPath();g.ellipse(0,mouthY,r*.31,r*.22,0,0,Math.PI*2);g.stroke();
-
-          const teeth=detail>1?8:6;
-          g.fillStyle='rgba(245,231,198,.92)';
-          g.strokeStyle='rgba(82,52,35,.42)';g.lineWidth=Math.max(.4,r*.012);
-          for(let i=0;i<teeth;i++){
-            const a=i/teeth*Math.PI*2;
-            const bx=Math.cos(a)*r*.23,by=mouthY+Math.sin(a)*r*.15;
-            const tx=Math.cos(a)*r*.08,ty=mouthY+Math.sin(a)*r*.05;
-            g.beginPath();g.moveTo(bx-r*.025,by);g.lineTo(bx+r*.025,by);g.lineTo(tx,ty);g.closePath();g.fill();g.stroke();
-          }
-
-          // 피부에 작은 주름.
-          if(detail>0){
-            for(let i=0;i<9;i++){
-              const yy=-r*.88+i*r*.20;
-              g.strokeStyle=i%2?'rgba(255,224,170,.16)':'rgba(71,31,23,.20)';
-              g.lineWidth=Math.max(.5,r*.018);
-              g.beginPath();g.arc(0,yy,r*(.40+i*.025),.18,Math.PI-.18);g.stroke();
-            }
-          }
-        }
-
-      }else if(kind==='cactus'){
-        const boss=enemy.type!=='normal';
-        const hacker=enemy.type==='hackerCactusBoss';
-        const jumpP=enemy.cactusJumping?Math.max(0,Math.min(1,Number(enemy.cactusJumpProgress||0))):0;
-        const lift=Math.sin(jumpP*Math.PI)*(boss?34:29);
-        g.translate(x,y-lift);
-        if(enemy.cactusJumping)g.rotate(-.10*Math.sin(jumpP*Math.PI));
-        if(enemy.fleeingToSpawn)g.rotate(Math.PI);
-
-        // 표피 하이라이트/세로 능선의 입체감을 더 강하게.
-        g.save();g.globalCompositeOperation='screen';
-        const skin=g.createLinearGradient(-r*.36,-r*.85,r*.32,r*.72);
-        skin.addColorStop(0,hacker?'rgba(139,255,210,.22)':'rgba(225,246,158,.20)');
-        skin.addColorStop(.40,'rgba(255,255,255,.03)');
-        skin.addColorStop(1,'rgba(255,255,255,0)');
-        g.fillStyle=skin;g.beginPath();g.ellipse(0,-r*.10,r*.34,r*.80,0,0,Math.PI*2);g.fill();
-        g.restore();
-
-        if(detail>0){
-          const count=boss?22:15;
-          for(let i=0;i<count;i++){
-            const a=i*2.17;
-            const px=Math.sin(a)*r*.29;
-            const py=-r*.78+(i%(boss?9:7))*r*.19;
-            // 가시 뿌리
-            g.fillStyle=hacker?'rgba(159,255,214,.28)':'rgba(231,219,161,.30)';
-            g.beginPath();g.arc(px,py,r*.032,0,Math.PI*2);g.fill();
-            // 3방향 가시
-            for(const da of [-.25,0,.25]){
-              const ang=(px>=0?0:Math.PI)+da;
-              g.strokeStyle='rgba(250,239,194,.76)';
-              g.lineWidth=Math.max(.45,r*.013);
-              g.beginPath();g.moveTo(px,py);g.lineTo(px+Math.cos(ang)*r*.16,py+Math.sin(ang)*r*.10);g.stroke();
-            }
-          }
-        }
-
-      }else if(kind==='rainbow'){
-        g.translate(x,y);
-        const captain=enemy.type==='rainbowGuardCaptainBoss';
-
-        if(enemy.rainbowOre||enemy.type==='rainbowOre'){
-          // 보석 면의 윤곽선을 세밀하게.
-          for(let i=0;i<6;i++){
-            const a=i*Math.PI/3+time*.00025;
-            g.strokeStyle=`hsla(${(time*.03+i*54)%360},100%,82%,.28)`;
-            g.lineWidth=Math.max(.6,r*.020);
-            g.beginPath();
-            g.moveTo(0,-r*.68);
-            g.lineTo(Math.cos(a)*r*.56,Math.sin(a)*r*.56);
-            g.stroke();
-          }
-          g.save();g.globalCompositeOperation='screen';
-          g.fillStyle='rgba(255,255,255,.45)';
-          g.beginPath();g.ellipse(-r*.18,-r*.28,r*.10,r*.20,-.45,0,Math.PI*2);g.fill();
-          g.restore();
-
-        }else if(enemy.type==='rainbowUnicornBoss'){
-          // 눈의 홍채, 콧구멍, 갈기 가닥을 보강.
-          g.fillStyle='rgba(31,44,72,.82)';
-          g.beginPath();g.arc(r*.87,-r*.50,r*.075,0,Math.PI*2);g.fill();
-          g.fillStyle='rgba(255,255,255,.94)';
-          g.beginPath();g.arc(r*.84,-r*.54,r*.024,0,Math.PI*2);g.fill();
-          g.fillStyle='rgba(58,50,72,.48)';
-          g.beginPath();g.ellipse(r*1.20,-r*.20,r*.035,r*.022,0,0,Math.PI*2);g.fill();
-
-          if(detail>0){
-            for(let i=0;i<12;i++){
-              g.strokeStyle=`hsla(${(time*.02+i*30)%360},100%,69%,${.35+(i%3)*.06})`;
-              g.lineWidth=Math.max(1,r*.045);
-              g.beginPath();
-              g.moveTo(-r*.40,-r*.46+i*r*.035);
-              g.quadraticCurveTo(-r*(.80+i*.018),-r*(.58+i*.045),-r*(1.07+i*.025),-r*.08+i*r*.07);
-              g.stroke();
-            }
-          }
-
-        }else{
-          // 갑옷 리벳과 판금 테두리.
-          const rivets=[
-            [-.37,-.31],[.37,-.31],[-.42,.02],[.42,.02],[-.33,.31],[.33,.31]
-          ];
-          g.fillStyle=captain?'rgba(255,233,138,.72)':'rgba(230,245,255,.66)';
-          for(const [rx,ry] of rivets){
-            g.beginPath();g.arc(r*rx,r*ry,r*.028,0,Math.PI*2);g.fill();
-          }
-          g.strokeStyle='rgba(36,46,76,.38)';g.lineWidth=Math.max(.6,r*.020);
-          g.beginPath();g.arc(0,-r*.02,r*.48,-2.8,-.34);g.stroke();
-          g.beginPath();g.arc(0,r*.12,r*.40,.20,Math.PI-.20);g.stroke();
-
-          // 바이저 하이라이트.
-          g.save();g.globalCompositeOperation='screen';
-          const vg=g.createLinearGradient(-r*.34,-r*.42,r*.38,-r*.31);
-          vg.addColorStop(0,'rgba(255,255,255,0)');
-          vg.addColorStop(.45,captain?'rgba(255,238,154,.36)':'rgba(157,231,255,.38)');
-          vg.addColorStop(.58,'rgba(255,255,255,.18)');
-          vg.addColorStop(1,'rgba(255,255,255,0)');
-          g.strokeStyle=vg;g.lineWidth=Math.max(1,r*.045);
-          g.beginPath();g.moveTo(-r*.34,-r*.36);g.lineTo(r*.36,-r*.36);g.stroke();
-          g.restore();
-        }
-      }
-
-      // 공통 림 라이트: 캐릭터 주변에 사각형이 아니라 짧은 호만 사용.
-      if(detail>0 && kind!=='sandworm'){
-        g.save();
-        g.globalCompositeOperation='screen';
-        g.strokeStyle=kind==='rainbow'
-          ?`hsla(${(time*.035)%360},100%,80%,.20)`
-          :'rgba(236,248,255,.12)';
-        g.lineWidth=Math.max(.55,r*.016);
-        g.beginPath();
-        g.arc(0,0,r*.92,-2.55,-.85);
-        g.stroke();
-        g.restore();
-      }
-
-      // 체력이 낮아지면 실제 손상처럼 작은 균열/상처.
-      if(damaged && detail>0 && kind!=='rainbow'){
-        g.strokeStyle='rgba(92,35,31,.26)';
-        g.lineWidth=Math.max(.5,r*.016);
-        g.beginPath();
-        g.moveTo(-r*.18,-r*.10);g.lineTo(-r*.05,r*.02);g.lineTo(-r*.11,r*.15);
-        g.stroke();
-      }
-
-      g.restore();
-    }
-
-
-    // ===== V49 CINEMATIC DIRECT ENEMY QUALITY =====
-    // 메인 캔버스 직접 렌더링만 사용. 사각 캐시/사진 텍스처 없음.
-    function pdEnemyCinematicPassV49(g,enemy,kind,x,y,time){
-      if(!g||!enemy)return;
-      const r=Math.max(12,Number(enemy.radius||22));
-      const perf=(typeof battlePerfMode==='number'?battlePerfMode:0);
-      const detail=perf>=2?0:perf===1?1:2;
-      const hp=Math.max(0,Number(enemy.health||0));
-      const maxHp=Math.max(1,Number(enemy.maxHealth||enemy.health||1));
-      const hpRatio=Math.max(0,Math.min(1,hp/maxHp));
-      const damaged=hpRatio<.50;
-      const critical=hpRatio<.22;
-      const heading=Number(enemy.heading||0);
-      const phase=Number(enemy.wingPhase||0);
-
-      g.save();
-      g.globalCompositeOperation='source-over';
-      g.filter='none';
-      g.lineCap='round';
-      g.lineJoin='round';
-
-      // 공통 입체광: 좌상단 광원 + 우하단 음영
-      if(detail>0){
-        g.save();
-        g.globalCompositeOperation='screen';
-        const key=g.createRadialGradient(
-          x-r*.42,y-r*.48,r*.08,
-          x-r*.16,y-r*.18,r*1.18
-        );
-        key.addColorStop(0,'rgba(255,255,255,.13)');
-        key.addColorStop(.44,'rgba(235,246,255,.045)');
-        key.addColorStop(1,'rgba(255,255,255,0)');
-        g.fillStyle=key;
-        g.beginPath();g.arc(x,y,r*1.03,0,Math.PI*2);g.fill();
-        g.restore();
-
-        g.save();
-        g.globalCompositeOperation='multiply';
-        const fill=g.createRadialGradient(
-          x+r*.45,y+r*.42,r*.08,
-          x+r*.24,y+r*.22,r*1.12
-        );
-        fill.addColorStop(0,'rgba(23,28,34,.17)');
-        fill.addColorStop(.62,'rgba(10,12,16,.06)');
-        fill.addColorStop(1,'rgba(0,0,0,0)');
-        g.fillStyle=fill;
-        g.beginPath();g.arc(x,y,r*1.02,0,Math.PI*2);g.fill();
-        g.restore();
-      }
-
-      if(kind==='pigeon'){
-        const bodyCycle=(time*.00245+phase/(Math.PI*2))%1;
-        const wingStroke=bodyCycle<.38
-          ?Math.sin((bodyCycle/.38)*Math.PI)
-          :-.58*Math.sin(((bodyCycle-.38)/.62)*Math.PI);
-        const bob=-Math.max(0,wingStroke)*4.6+Math.sin(time*.006+phase)*1.4;
-        const gait=time*.0135+phase;
-        const breath=Math.sin(time*.0028+phase)*r*.018;
-
-        g.translate(x,y+bob);
-        g.rotate(heading);
-
-        // 가슴 호흡
-        g.save();
-        g.scale(1+breath/r*.30,1+breath/r*.55);
-        g.globalCompositeOperation='screen';
-        const chest=g.createRadialGradient(r*.10,-r*.02,r*.04,r*.04,r*.06,r*.62);
-        chest.addColorStop(0,'rgba(255,255,255,.16)');
-        chest.addColorStop(.60,'rgba(225,235,241,.05)');
-        chest.addColorStop(1,'rgba(255,255,255,0)');
-        g.fillStyle=chest;
-        g.beginPath();g.ellipse(0,r*.05,r*.69,r*.55,.03,0,Math.PI*2);g.fill();
-        g.restore();
-
-        if(detail>0){
-          // 깃털 층 사이의 음영선
-          for(let row=0;row<5;row++){
-            const yy=-r*.25+row*r*.13;
-            const count=detail>1?8:5;
-            for(let i=0;i<count;i++){
-              const xx=-r*.64+i*r*.18+(row%2)*r*.07;
-              g.strokeStyle=row%2
-                ?'rgba(245,250,252,.19)'
-                :'rgba(38,47,54,.18)';
-              g.lineWidth=Math.max(.4,r*.014);
-              g.beginPath();
-              g.arc(xx,yy,r*.12,.08,Math.PI-.08);
-              g.stroke();
-            }
-          }
-
-          // 날개 끝 깃의 분리 움직임
-          const flutter=Math.sin(time*.020+phase)*r*.035;
-          for(let i=0;i<5;i++){
-            const bx=-r*(.38+i*.12);
-            const by=r*(.02+i*.035);
-            g.strokeStyle='rgba(49,60,68,.56)';
-            g.lineWidth=Math.max(1,r*.045);
-            g.beginPath();
-            g.moveTo(bx,by);
-            g.quadraticCurveTo(
-              bx-r*(.18+i*.025),
-              by+r*(.10+i*.015)+flutter*(i*.22),
-              bx-r*(.31+i*.035),
-              by+r*(.17+i*.020)+flutter*(i*.32)
-            );
-            g.stroke();
-            g.strokeStyle='rgba(236,244,247,.17)';
-            g.lineWidth=Math.max(.38,r*.012);
-            g.beginPath();
-            g.moveTo(bx-r*.02,by-r*.01);
-            g.lineTo(bx-r*(.29+i*.032),by+r*(.15+i*.019));
-            g.stroke();
-          }
-        }
-
-        // 목 구조색을 각도 따라 변화
-        g.save();
-        g.globalCompositeOperation='screen';
-        const ir=g.createLinearGradient(r*.35,-r*.52,r*.88,r*.12);
-        ir.addColorStop(0,'rgba(54,240,163,.12)');
-        ir.addColorStop(.25,'rgba(42,208,183,.21)');
-        ir.addColorStop(.50,'rgba(79,132,235,.15)');
-        ir.addColorStop(.72,'rgba(174,82,217,.17)');
-        ir.addColorStop(1,'rgba(255,255,255,0)');
-        g.fillStyle=ir;
-        g.beginPath();g.ellipse(r*.62,-r*.09,r*.34,r*.43,-.12,0,Math.PI*2);g.fill();
-        g.restore();
-
-        // 실제 다리 흔들림 보강
-        if(detail>0){
-          for(const [lx,p,far] of [
-            [-r*.16,gait+Math.PI,true],
-            [r*.12,gait,false]
-          ]){
-            const swing=Math.sin(p);
-            const lift=Math.max(0,Math.sin(p+Math.PI*.18));
-            const hipY=r*.44;
-            const kneeX=lx+swing*r*.12;
-            const kneeY=hipY+r*(.18-lift*.045);
-            const ankleX=lx+swing*r*.25;
-            const ankleY=hipY+r*(.39-lift*.11);
-
-            g.save();
-            if(far)g.globalAlpha=.66;
-            g.fillStyle='rgba(215,104,91,.65)';
-            g.beginPath();g.arc(kneeX,kneeY,r*.045,0,Math.PI*2);g.fill();
-            g.fillStyle='rgba(180,76,73,.60)';
-            g.beginPath();g.arc(ankleX,ankleY,r*.035,0,Math.PI*2);g.fill();
-            g.restore();
-          }
-        }
-
-        // 눈의 미세 시선 변화
-        const ex=r*1.09,ey=-r*.35;
-        const look=Math.sin(time*.0019+phase)*r*.014;
-        g.fillStyle='rgba(8,11,12,.94)';
-        g.beginPath();g.arc(ex+look,ey,r*.047,0,Math.PI*2);g.fill();
-        g.fillStyle='rgba(255,255,255,.98)';
-        g.beginPath();g.arc(ex-r*.030+look*.3,ey-r*.036,r*.020,0,Math.PI*2);g.fill();
-
-      }else if(kind==='golem'){
-        g.translate(x,y);
-        const boss=/Golem/i.test(String(enemy.type||''))&&enemy.type!=='normal';
-        const breathe=Math.sin(time*.0018)*r*.012;
-        g.scale(1+breathe/r*.5,1-breathe/r*.7);
-
-        if(detail>0){
-          // 각 돌조각 경계의 AO
-          const seams=[
-            [-.52,-.38,-.18,-.52],
-            [-.18,-.52,.22,-.45],
-            [.24,-.43,.57,-.20],
-            [-.56,-.02,-.28,.15],
-            [-.18,-.03,.20,.06],
-            [.24,.04,.55,.22]
-          ];
-          for(let i=0;i<seams.length;i++){
-            const s=seams[i];
-            g.strokeStyle='rgba(7,10,12,.30)';
-            g.lineWidth=Math.max(.65,r*.024);
-            g.beginPath();g.moveTo(r*s[0],r*s[1]);g.lineTo(r*s[2],r*s[3]);g.stroke();
-            g.strokeStyle='rgba(245,251,253,.10)';
-            g.lineWidth=Math.max(.35,r*.011);
-            g.beginPath();g.moveTo(r*s[0],r*s[1]-r*.02);g.lineTo(r*s[2],r*s[3]-r*.02);g.stroke();
-          }
-        }
-
-        // 보스는 균열 내부에서 푸른 광
-        if(boss){
-          g.save();g.globalCompositeOperation='screen';
-          const pulse=.20+.12*(.5+.5*Math.sin(time*.004));
-          g.strokeStyle=`rgba(104,219,255,${pulse})`;
-          g.lineWidth=Math.max(.7,r*.020);
-          for(let i=0;i<5;i++){
-            const a=i*1.47+.4;
-            const px=Math.cos(a)*r*.30,py=Math.sin(a)*r*.34;
-            g.beginPath();g.moveTo(px-r*.08,py-r*.02);g.lineTo(px,py+r*.05);g.lineTo(px+r*.08,py-r*.03);g.stroke();
-          }
-          g.restore();
-        }
-
-        if(damaged&&detail>0){
-          g.fillStyle='rgba(18,14,12,.28)';
-          g.beginPath();g.ellipse(-r*.20,r*.10,r*.13,r*.05,-.3,0,Math.PI*2);g.fill();
-        }
-
-      }else if(kind==='llama'){
-        const facing=Math.cos(heading)<0?-1:1;
-        const gait=Math.sin(time*.0062*2.25);
-        const breath=Math.sin(time*.0024)*r*.018;
-        g.translate(x,y-Math.abs(gait)*r*.025);
-        g.scale(facing,1);
-
-        // 가슴 털이 호흡에 따라 살짝 움직임
-        if(detail>0){
-          for(let i=0;i<(detail>1?30:16);i++){
-            const a=i/30*Math.PI*2;
-            const px=Math.cos(a)*r*.78-r*.05;
-            const py=Math.sin(a)*r*.46;
-            const sway=Math.sin(time*.005+i*.77)*r*.015+breath;
-            g.strokeStyle=i%3===0?'rgba(255,248,232,.32)':'rgba(105,76,58,.16)';
-            g.lineWidth=Math.max(.45,r*.015);
-            g.beginPath();g.moveTo(px,py);g.quadraticCurveTo(px+sway,py+r*.05,px+sway*.4,py+r*.10);g.stroke();
-          }
-        }
-
-        // 눈썹/눈꺼풀로 표정 강화
-        const ex=r*1.10,ey=-r*1.20;
-        g.strokeStyle='rgba(77,51,39,.48)';
-        g.lineWidth=Math.max(.6,r*.018);
-        g.beginPath();g.arc(ex,ey-r*.03,r*.12,Math.PI*1.05,Math.PI*1.90);g.stroke();
-        g.fillStyle='rgba(255,255,255,.94)';
-        g.beginPath();g.arc(ex+r*.025,ey-r*.025,r*.021,0,Math.PI*2);g.fill();
-
-        // 코 광택
-        g.save();g.globalCompositeOperation='screen';
-        g.fillStyle='rgba(255,255,255,.24)';
-        g.beginPath();g.ellipse(r*1.28,-r*.88,r*.12,r*.038,-.18,0,Math.PI*2);g.fill();
-        g.restore();
-
-      }else if(kind==='scorpion'){
-        const boss=enemy.type==='venomScorpionBoss';
-        const venom=enemy.variant==='venomScorpion'||boss;
-        g.translate(x,y);
-        g.rotate(heading);
-        g.scale(boss?1.13:1,boss?1.13:1);
-
-        const p=time*.018;
-        if(detail>0){
-          // 다리 관절마다 하이라이트
-          for(const side of [-1,1]){
-            for(let i=0;i<4;i++){
-              const gait=Math.sin(p+i*1.15+(side<0?Math.PI:0));
-              const rootX=-r*.12+i*r*.13,rootY=side*r*(.22+i*.045);
-              const midX=rootX-r*(.25+i*.035),midY=rootY+side*r*(.15+gait*.035);
-              const tipX=midX-r*(.24+i*.04),tipY=midY+side*r*(.11-gait*.06);
-
-              g.save();g.globalCompositeOperation='screen';
-              g.strokeStyle=venom?'rgba(212,255,142,.18)':'rgba(255,205,166,.16)';
-              g.lineWidth=Math.max(.45,r*.013);
-              g.beginPath();
-              g.moveTo(rootX,rootY-side*r*.018);
-              g.lineTo(midX,midY-side*r*.018);
-              g.lineTo(tipX,tipY-side*r*.018);
-              g.stroke();
-              g.restore();
-            }
-          }
-        }
-
-        // 독침 끝의 반짝임
-        g.save();g.globalCompositeOperation='screen';
-        const stingerPulse=.35+.25*(.5+.5*Math.sin(time*.007));
-        g.fillStyle=venom
-          ?`rgba(207,255,124,${stingerPulse})`
-          :`rgba(255,224,182,${stingerPulse*.75})`;
-        g.beginPath();g.arc(-r*.97,-r*.62,r*.045,0,Math.PI*2);g.fill();
-        g.restore();
-
-      }else if(kind==='sandworm'){
-        g.translate(x,y);
-        if(enemy.sandBurrowed){
-          if(detail>0){
-            for(let i=0;i<10;i++){
-              const a=time*.004+i*.67;
-              const rr=r*(.70+(i%3)*.11);
-              g.fillStyle='rgba(255,217,150,.24)';
-              g.beginPath();g.arc(Math.cos(a)*rr,r*.12+Math.sin(a)*r*.19,1+(i%2)*.6,0,Math.PI*2);g.fill();
-            }
-          }
-        }else{
-          const sway=Math.sin(time*.005)*.12;
-          g.rotate(sway);
-
-          // 입 안쪽 깊이감
-          const mouthY=-r*.45;
-          g.save();
-          g.globalCompositeOperation='multiply';
-          const mouth=g.createRadialGradient(0,mouthY,r*.05,0,mouthY,r*.28);
-          mouth.addColorStop(0,'rgba(10,4,5,.64)');
-          mouth.addColorStop(.55,'rgba(71,15,18,.38)');
-          mouth.addColorStop(1,'rgba(0,0,0,0)');
-          g.fillStyle=mouth;
-          g.beginPath();g.ellipse(0,mouthY,r*.28,r*.20,0,0,Math.PI*2);g.fill();
-          g.restore();
-
-          // 침 광택
-          if(detail>0){
-            g.save();g.globalCompositeOperation='screen';
-            g.strokeStyle='rgba(255,255,255,.24)';
-            g.lineWidth=Math.max(.5,r*.015);
-            g.beginPath();g.moveTo(-r*.10,mouthY+r*.03);g.quadraticCurveTo(0,mouthY+r*.12,r*.08,mouthY+r*.02);g.stroke();
-            g.restore();
-          }
-        }
-
-      }else if(kind==='cactus'){
-        const boss=enemy.type!=='normal';
-        const hacker=enemy.type==='hackerCactusBoss';
-        const jumpP=enemy.cactusJumping?Math.max(0,Math.min(1,Number(enemy.cactusJumpProgress||0))):0;
-        const lift=Math.sin(jumpP*Math.PI)*(boss?34:29);
-        g.translate(x,y-lift);
-        if(enemy.cactusJumping)g.rotate(-.10*Math.sin(jumpP*Math.PI));
-        if(enemy.fleeingToSpawn)g.rotate(Math.PI);
-
-        if(detail>0){
-          // 표피 미세 점과 세로 기공
-          for(let i=0;i<(boss?24:14);i++){
-            const a=i*2.09;
-            const px=Math.sin(a)*r*.26;
-            const py=-r*.72+(i%(boss?9:7))*r*.18;
-            g.fillStyle=hacker?'rgba(140,255,206,.14)':'rgba(214,236,151,.15)';
-            g.beginPath();g.ellipse(px,py,r*.018,r*.032,0,0,Math.PI*2);g.fill();
-          }
-        }
-
-        // 왁스 표피 광택
-        g.save();g.globalCompositeOperation='screen';
-        const wax=g.createLinearGradient(-r*.25,-r*.72,r*.20,r*.60);
-        wax.addColorStop(0,hacker?'rgba(166,255,224,.16)':'rgba(233,246,177,.14)');
-        wax.addColorStop(.42,'rgba(255,255,255,.035)');
-        wax.addColorStop(1,'rgba(255,255,255,0)');
-        g.strokeStyle=wax;g.lineWidth=Math.max(1,r*.04);
-        g.beginPath();g.moveTo(-r*.10,-r*.72);g.quadraticCurveTo(-r*.20,-r*.05,-r*.10,r*.52);g.stroke();
-        g.restore();
-
-      }else if(kind==='rainbow'){
-        g.translate(x,y);
-        const captain=enemy.type==='rainbowGuardCaptainBoss';
-
-        if(enemy.rainbowOre||enemy.type==='rainbowOre'){
-          // 보석 내부 굴절광
-          if(detail>0){
-            g.save();g.globalCompositeOperation='screen';
-            for(let i=0;i<5;i++){
-              const a=time*.0015+i*1.25;
-              g.strokeStyle=`hsla(${(time*.03+i*66)%360},100%,80%,.20)`;
-              g.lineWidth=Math.max(.6,r*.018);
-              g.beginPath();
-              g.moveTo(Math.cos(a)*r*.12,Math.sin(a)*r*.12);
-              g.lineTo(Math.cos(a+.45)*r*.48,Math.sin(a+.45)*r*.48);
-              g.stroke();
-            }
-            g.restore();
-          }
-
-        }else if(enemy.type==='rainbowUnicornBoss'){
-          // 갈기 볼륨감 + 귀/눈 주변 하이라이트
-          if(detail>0){
-            g.save();g.globalCompositeOperation='screen';
-            for(let i=0;i<8;i++){
-              g.strokeStyle=`hsla(${(time*.025+i*42)%360},100%,72%,.18)`;
-              g.lineWidth=Math.max(1,r*.035);
-              g.beginPath();
-              g.moveTo(-r*.42,-r*.44+i*r*.04);
-              g.quadraticCurveTo(-r*.76,-r*.54+i*r*.05,-r*1.02,-r*.08+i*r*.07);
-              g.stroke();
-            }
-            g.restore();
-          }
-
-        }else{
-          // 금속 갑옷의 미세 스크래치
-          if(detail>0){
-            for(let i=0;i<(captain?12:8);i++){
-              const yy=-r*.40+i*r*.09;
-              g.strokeStyle='rgba(31,40,63,.17)';
-              g.lineWidth=Math.max(.4,r*.012);
-              g.beginPath();g.moveTo(-r*.28,yy);g.lineTo(r*.20,yy+r*.025);g.stroke();
-            }
-          }
-
-          // 바이저 반사점
-          g.save();g.globalCompositeOperation='screen';
-          const sx=Math.sin(time*.004)*r*.22;
-          g.strokeStyle=captain?'rgba(255,239,160,.36)':'rgba(162,231,255,.34)';
-          g.lineWidth=Math.max(.8,r*.026);
-          g.beginPath();g.moveTo(sx-r*.07,-r*.36);g.lineTo(sx+r*.08,-r*.36);g.stroke();
-          g.restore();
-        }
-      }
-
-      // 체력 낮을수록 손상 강조
-      if(damaged&&detail>0){
-        g.save();
-        g.globalCompositeOperation='source-over';
-        g.strokeStyle=critical?'rgba(123,28,24,.42)':'rgba(86,34,30,.24)';
-        g.lineWidth=Math.max(.55,r*.016);
-        g.beginPath();
-        g.moveTo(x-r*.13,y-r*.05);
-        g.lineTo(x-r*.02,y+r*.04);
-        g.lineTo(x-r*.08,y+r*.15);
-        g.stroke();
-        g.restore();
-      }
-
-      g.restore();
-    }
-
 function renderEnemySpriteBase(g, proxy, kind, cx, cy, renderTime) {
       if (kind === 'rainbow') drawCanvasRainbowEnemy(proxy, cx, cy, renderTime, g);
       else if (kind === 'golem') drawCanvasGolem(proxy, cx, cy, renderTime, g);
@@ -25691,18 +24507,12 @@ function renderEnemySpriteBase(g, proxy, kind, cx, cy, renderTime) {
       // V46: 회색 사각형의 원인이 될 수 있는 별도 캐시 캔버스/비트맵을 사용하지 않습니다.
       const kind=enemySpriteKind(enemy);
       ctx.save();
-      ctx.imageSmoothingEnabled=true;
-      try{ctx.imageSmoothingQuality='high';}catch(_){}
       ctx.globalAlpha=1;
       ctx.globalCompositeOperation='source-over';
       ctx.filter='none';
       ctx.shadowBlur=0;
       ctx.shadowColor='transparent';
-      pdEnemyGroundShadowV48(ctx, enemy, kind, drawX, drawY, time);
       renderEnemySpriteBase(ctx, enemy, kind, drawX, drawY, time);
-      pdEnemyQualityPassV47(ctx, enemy, kind, drawX, drawY, time);
-      pdEnemyUltraQualityV48(ctx, enemy, kind, drawX, drawY, time);
-      pdEnemyCinematicPassV49(ctx, enemy, kind, drawX, drawY, time);
       ctx.restore();
     }
 
@@ -36824,7 +35634,7 @@ function drawEnemy(enemy, time) {
 #battleScreen .battle-map-shell::before,
 #battleScreen .battle-map-shell::after{pointer-events:none!important}
 #battleScreen #gameCanvas{
-  position:relative!important;z-index:2!important;
+  position:absolute!important;z-index:2!important;
   pointer-events:auto!important;touch-action:none!important;
   cursor:crosshair!important;
 }
@@ -36972,41 +35782,180 @@ V45 iPhone login/service-worker fixes remain active.
 -->
 
 
-<!-- V47 ALL ENEMY QUALITY UPGRADE
-- Keeps V46 direct main-canvas rendering: no cached image tiles and no gray rectangles.
-- Adds localized high-detail vector finishing to every enemy family:
-  pigeon feathers/iridescence/legs, golem strata/cracks/mineral glints,
-  llama fur, scorpion chitin, sandworm skin, cactus ribs/spines,
-  rainbow armor/ore/unicorn prism details.
-- Detail automatically reduces under high battle load; gameplay logic is unchanged.
--->
+<style id="pdBattleCanvasCenterFixV50">
+/* ===== V50 BATTLE CANVAS CENTER FIX =====
+   V29 accidentally forced gameCanvas to position:relative!important.
+   The existing left:50%/transform centering rules then offset from normal flow.
+   This final rule makes the battle canvas absolutely positioned again. */
+#battleScreen .battle-map-shell{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+}
+
+#battleScreen #gameCanvas{
+  position:absolute!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+  padding:0!important;
+  transform-origin:center center!important;
+}
+
+/* PC: keep the established 96% centered map. */
+@media (min-width:821px) and (pointer:fine){
+  #battleScreen #gameCanvas{
+    inset:auto!important;
+    left:50%!important;
+    top:50%!important;
+    right:auto!important;
+    bottom:auto!important;
+    width:96%!important;
+    height:auto!important;
+    max-width:none!important;
+    max-height:100%!important;
+    aspect-ratio:900 / 520!important;
+    transform:translate(-50%,-50%)!important;
+  }
+}
+
+/* Mobile landscape: keep the established compact map, but truly centered horizontally. */
+@media (orientation:landscape) and (max-height:650px) and (pointer:coarse){
+  #battleScreen #gameCanvas{
+    inset:auto!important;
+    left:50%!important;
+    top:42.5%!important;
+    right:auto!important;
+    bottom:auto!important;
+    width:88%!important;
+    height:auto!important;
+    max-width:none!important;
+    max-height:none!important;
+    aspect-ratio:900 / 520!important;
+    transform:translate(-50%,-50%)!important;
+  }
+}
+
+/* Very wide phones use height as the limiter, still centered on X. */
+@media (orientation:landscape) and (max-height:650px) and (pointer:coarse) and (min-aspect-ratio:17/10){
+  #battleScreen #gameCanvas{
+    left:50%!important;
+    top:42.5%!important;
+    width:auto!important;
+    height:85%!important;
+    max-width:88%!important;
+    transform:translate(-50%,-50%)!important;
+  }
+}
+
+/* Fallback for other screen shapes. */
+@media not all and (min-width:821px) and (pointer:fine){
+  #battleScreen #gameCanvas{
+    left:0;
+    top:0;
+  }
+}
+</style>
 
 
-<!-- V48 ULTRA ENEMY QUALITY
-- Keeps V46/V47 direct rendering: no image tiles, no gray rectangles.
-- Adds contact shadows before bodies and an extra ultra-detail pass after bodies.
-- Pigeon: separated tail feathers, layered flight feathers, stronger iridescence, eye/cornea detail.
-- Golem: rock facets, deep cracks, moss/mineral accents.
-- Llama: denser fur silhouette, ears/muzzle/nose highlights.
-- Scorpion: articulated joint detail, claw edges, stinger sheen.
-- Sandworm: visible gums, teeth, skin wrinkles and sand particles.
-- Cactus: stronger ribs, waxy skin lighting and multi-directional spines.
-- Rainbow enemies: gemstone facets, armor rivets/visor polish and richer unicorn mane.
-- Detail still scales down automatically under heavy battle load.
--->
+<script id="pdBattleCanvasCenterFixV50Script">
+(()=>{
+  'use strict';
+  if(window.__pdBattleCanvasCenterFixV50)return;
+  window.__pdBattleCanvasCenterFixV50=true;
+
+  const screen=document.querySelector('#battleScreen');
+  const canvas=document.querySelector('#gameCanvas');
+  if(!screen||!canvas)return;
+
+  let raf=0;
+
+  function apply(){
+    raf=0;
+    if(screen.classList.contains('hidden'))return;
+
+    const coarse=window.matchMedia('(pointer:coarse)').matches;
+    const landscape=window.matchMedia('(orientation:landscape)').matches;
+    const fine=window.matchMedia('(pointer:fine)').matches;
+    const w=Math.max(1,window.visualViewport?.width||window.innerWidth||document.documentElement.clientWidth);
+    const h=Math.max(1,window.visualViewport?.height||window.innerHeight||document.documentElement.clientHeight);
+    const aspect=w/h;
+
+    canvas.style.setProperty('position','absolute','important');
+    canvas.style.setProperty('margin','0','important');
+    canvas.style.setProperty('padding','0','important');
+    canvas.style.setProperty('right','auto','important');
+    canvas.style.setProperty('bottom','auto','important');
+
+    if(coarse && landscape && h<=650){
+      canvas.style.setProperty('left','50%','important');
+      canvas.style.setProperty('top','42.5%','important');
+      canvas.style.setProperty('transform','translate(-50%,-50%)','important');
+
+      if(aspect>=1.7){
+        canvas.style.setProperty('width','auto','important');
+        canvas.style.setProperty('height','85%','important');
+        canvas.style.setProperty('max-width','88%','important');
+      }else{
+        canvas.style.setProperty('width','88%','important');
+        canvas.style.setProperty('height','auto','important');
+        canvas.style.setProperty('max-width','none','important');
+      }
+    }else if(fine && w>=821){
+      canvas.style.setProperty('left','50%','important');
+      canvas.style.setProperty('top','50%','important');
+      canvas.style.setProperty('width','96%','important');
+      canvas.style.setProperty('height','auto','important');
+      canvas.style.setProperty('max-width','none','important');
+      canvas.style.setProperty('max-height','100%','important');
+      canvas.style.setProperty('transform','translate(-50%,-50%)','important');
+    }else{
+      canvas.style.setProperty('left','0','important');
+      canvas.style.setProperty('top','0','important');
+      canvas.style.setProperty('width','100%','important');
+      canvas.style.setProperty('height','100%','important');
+      canvas.style.setProperty('max-width','none','important');
+      canvas.style.setProperty('max-height','none','important');
+      canvas.style.setProperty('transform','none','important');
+    }
+  }
+
+  function schedule(){
+    cancelAnimationFrame(raf);
+    raf=requestAnimationFrame(apply);
+  }
+
+  try{
+    new MutationObserver(schedule).observe(screen,{
+      attributes:true,
+      attributeFilter:['class']
+    });
+  }catch(_){}
+
+  window.addEventListener('resize',schedule,{passive:true});
+  window.addEventListener('orientationchange',()=>{
+    schedule();
+    setTimeout(schedule,80);
+    setTimeout(schedule,250);
+  },{passive:true});
+  window.visualViewport?.addEventListener('resize',schedule,{passive:true});
+
+  // Expose for battle-start code / debugging.
+  window.pdCenterBattleCanvasV50=schedule;
+  schedule();
+})();
+</script>
 
 
-<!-- V49 CINEMATIC ENEMY QUALITY
-- Keeps direct main-canvas rendering and gray-box-safe rendering.
-- Adds breathing, gait-linked micro motion, richer directional lighting, material response,
-  eye/cornea reaction, damage details and boss-specific highlights.
-- Pigeon gets more natural chest breathing, feather separation, structural neck color and eye motion.
-- Golem gains seam AO and boss crack glow.
-- Llama gets reactive fur/face detail.
-- Scorpion gets articulated highlights and stinger glint.
-- Sandworm gets deeper mouth shading and saliva.
-- Cactus gets wax skin pores/highlights.
-- Rainbow enemies gain internal refraction, mane volume and metal scratch/visor polish.
+<!-- V50 ORIGINAL ENEMY LOOK + BATTLE CENTER FIX
+- Based on V46 stable enemy appearance, so V47/V48/V49 cinematic quality overlays are fully absent.
+- Restores the original stable vector enemy look with no photo/cache gray rectangles.
+- Fixes the historical V29 gameCanvas position:relative!important bug.
+- Re-centers the battle canvas on battle start, resize and orientation change.
+- Gameplay, account sync, traits and iPhone login fixes remain unchanged.
 -->
 
 </body>

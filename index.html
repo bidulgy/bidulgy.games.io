@@ -7748,6 +7748,82 @@ html.pd-ios-device #pdLoginLoading{display:none!important}
 html.pd-ios-device #pdLoginLoading *{animation:none!important;transition:none!important;backdrop-filter:none!important;filter:none!important}
 </style>
 
+
+<script id="pdServiceWorkerRetireV45">
+(() => {
+  // Pigeon Defense는 V45부터 서비스워커/PWA 캐시를 전혀 사용하지 않습니다.
+  // 절대로 controllerchange에서 reload하지 않습니다.
+  window.__pdServiceWorkerRetired = true;
+
+  async function retire(){
+    try{
+      if('serviceWorker' in navigator){
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.allSettled(regs.map(reg => reg.unregister()));
+      }
+    }catch(error){
+      console.warn('서비스워커 해제 실패:', error);
+    }
+
+    try{
+      if('caches' in window){
+        const names = await caches.keys();
+        await Promise.allSettled(names.map(name => caches.delete(name)));
+      }
+    }catch(error){
+      console.warn('앱 캐시 삭제 실패:', error);
+    }
+  }
+
+  // 가능한 한 빨리 정리하지만 현재 페이지를 강제로 새로고침하지 않습니다.
+  void retire();
+  window.addEventListener('pageshow', () => void retire(), {passive:true});
+})();
+</script>
+
+
+<script id="pdBlockServiceWorkerRegistrationV45">
+(() => {
+  try{
+    if(!('serviceWorker' in navigator))return;
+    const sw=navigator.serviceWorker;
+    // We cannot overwrite all browser implementations, but where writable,
+    // block game code from registering a worker again.
+    try{
+      const originalRegister=sw.register?.bind(sw);
+      if(originalRegister){
+        Object.defineProperty(sw,'register',{
+          configurable:true,
+          value: async (...args) => {
+            console.warn('V45: service-worker registration blocked', args?.[0] || '');
+            return {
+              scope: location.origin + '/',
+              active: null,
+              installing: null,
+              waiting: null,
+              update: async()=>{},
+              unregister: async()=>true
+            };
+          }
+        });
+      }
+    }catch(_){}
+  }catch(_){}
+})();
+</script>
+
+
+<style id="pdIOSNoLoginOverlayV45">
+@supports (-webkit-touch-callout:none){
+  #pdLoginLoading{
+    display:none!important;
+    visibility:hidden!important;
+    opacity:0!important;
+    pointer-events:none!important;
+  }
+}
+</style>
+
 </head>
 
 <body>
@@ -10340,6 +10416,7 @@ function applyStagePreview(stageId = selectedStage) {
     let pdLastSyncedPlayerSnapshot = null;
     let pdAccountSyncBusy = false;
     let pdSavePlayerBusy = false;
+    let pdManualAuthBusyV45 = false;
 
     function showScreen(name) {
       // iPhone/Safari 세션 복구 중 일시적인 null 상태가 와도 로그인 화면으로 튀지 않게 합니다.
@@ -11317,58 +11394,84 @@ async function signup() {
   }
 }
 async function login() {
-  const username = normalizeUsername(
-    document.querySelector('#username').value
-  );
-
-  const password =
-    document.querySelector('#password').value;
-
-  if (!username || !password) {
-    setAuthMessage(
-      '아이디와 비밀번호를 입력하세요.',
-      'error'
+  if(pdManualAuthBusyV45)return;
+  pdManualAuthBusyV45=true;
+  try{
+    const username = normalizeUsername(
+      document.querySelector('#username').value
     );
-    return;
-  }
 
-  if (!/^[a-z0-9_]{3,20}$/.test(username)) {
-    setAuthMessage(
-      '아이디는 영문 소문자, 숫자, 밑줄로 3~20자 입력하세요.',
-      'error'
-    );
-    return;
-  }
+    const password =
+      document.querySelector('#password').value;
 
-  const internalEmail =
-    usernameToInternalEmail(username);
+    if (!username || !password) {
+      setAuthMessage(
+        '아이디와 비밀번호를 입력하세요.',
+        'error'
+      );
+      return;
+    }
 
-  const { data, error } =
-    await supabaseClient.auth.signInWithPassword({
-      email: internalEmail,
-      password: password
-    });
+    if (!/^[a-z0-9_]{3,20}$/.test(username)) {
+      setAuthMessage(
+        '아이디는 영문 소문자, 숫자, 밑줄로 3~20자 입력하세요.',
+        'error'
+      );
+      return;
+    }
 
-  if (error) {
-    console.error('로그인 실패:', error.message);
+    // 수동 로그인 버튼을 눌렀다면 자동 복구 부팅은 여기서 종료합니다.
+    window.__pdBootRestoringSession = false;
+    window.__pdSessionBootDone = true;
+    document.documentElement.classList.remove('pd-session-booting');
 
-    setAuthMessage(
-      '아이디 또는 비밀번호를 확인하세요.',
-      'error'
-    );
-    return;
-  }
+    const internalEmail =
+      usernameToInternalEmail(username);
 
-  const loaded = (typeof window.pdLoadPlayerAndEnter === 'function')
-    ? await window.pdLoadPlayerAndEnter(data.user)
-    : await loadPlayer(data.user);
+    const { data, error } =
+      await supabaseClient.auth.signInWithPassword({
+        email: internalEmail,
+        password: password
+      });
 
-  if (loaded) {
-    if (typeof window.pdLoadPlayerAndEnter !== 'function') openMenu();
-    if (typeof initializeSocialProfile === 'function') void initializeSocialProfile(false);
+    if (error) {
+      console.error('로그인 실패:', error.message);
+      setAuthMessage(
+        '아이디 또는 비밀번호를 확인하세요.',
+        'error'
+      );
+      return;
+    }
+
+    if(!data?.user){
+      setAuthMessage('로그인 사용자 정보를 받지 못했습니다. 다시 시도하세요.','error');
+      return;
+    }
+
+    // iPhone에서는 어떤 로그인 로딩 오버레이도 띄우지 않고 데이터만 불러옵니다.
+    let loaded=false;
+    try{
+      loaded=!!(await loadPlayer(data.user));
+    }catch(error){
+      console.error('로그인 데이터 로드 실패:',error);
+    }
+
+    if(!loaded){
+      setAuthMessage('게임 데이터를 불러오지 못했습니다. 네트워크를 확인하고 다시 시도하세요.','error');
+      return;
+    }
+
+    // 로딩 화면 함수를 아예 거치지 않습니다.
+    try{await window.pdHideLoginLoading?.();}catch(_){}
+    openMenu();
+
+    if (typeof initializeSocialProfile === 'function') {
+      void initializeSocialProfile(false);
+    }
+  }finally{
+    pdManualAuthBusyV45=false;
   }
 }
-
 
 function adminEscapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, character => ({
@@ -12874,105 +12977,73 @@ async function logout() {
     let session = null;
     let lastError = null;
 
-    // Safari는 IndexedDB/localStorage 기반 Supabase 세션을 늦게 돌려주는 경우가 있어
-    // 최대 약 3초 동안 점진적으로 다시 확인합니다.
-    const delays = [0, 180, 320, 520, 760, 1050];
-    for (let attempt = 0; attempt < delays.length; attempt++) {
-      if (delays[attempt]) await new Promise(resolve => setTimeout(resolve, delays[attempt]));
-      try {
-        const result = await supabaseClient.auth.getSession();
-        lastError = result.error || null;
-        session = result.data?.session || null;
-        if (session?.user) break;
-      } catch (error) {
-        lastError = error;
+    const delays = window.PD_IS_IOS
+      ? [0,150,250,400,650,900,1200]
+      : [0,180,320];
+
+    for(let i=0;i<delays.length;i++){
+      if(delays[i])await new Promise(r=>setTimeout(r,delays[i]));
+      try{
+        const result=await supabaseClient.auth.getSession();
+        lastError=result.error||null;
+        session=result.data?.session||null;
+        if(session?.user)break;
+      }catch(error){
+        lastError=error;
       }
     }
 
-    if (!session?.user) {
-      if (lastError) console.warn('자동 로그인 세션 복구 실패:', lastError);
-      window.__pdBootRestoringSession = false;
-      window.__pdSessionBootDone = true;
+    if(!session?.user){
+      if(lastError)console.warn('저장 로그인 세션 없음/복구 실패:',lastError);
+      window.__pdBootRestoringSession=false;
+      window.__pdSessionBootDone=true;
       document.documentElement.classList.remove('pd-session-booting');
-      try { await window.pdHideLoginLoading?.(); } catch (_) {}
+      try{await window.pdHideLoginLoading?.();}catch(_){}
       showScreen('auth');
       return false;
     }
 
-    // 세션이 존재하는데 네트워크가 잠깐 느리다는 이유로 로그인 화면으로 보내지 않도록
-    // 플레이어 데이터 로드도 짧게 재시도합니다.
-    let loaded = false;
-    let loadError = null;
-    for (let attempt = 0; attempt < 3 && !loaded; attempt++) {
-      try {
-        loaded = !!(await loadPlayer(session.user));
-      } catch (error) {
-        loadError = error;
+    // 세션이 있으면 로그인 화면으로 되돌아가지 않습니다.
+    let loaded=false;
+    let loadError=null;
+    for(let i=0;i<4&&!loaded;i++){
+      try{
+        loaded=!!(await loadPlayer(session.user));
+      }catch(error){
+        loadError=error;
       }
-      if (!loaded && attempt < 2) {
-        await new Promise(resolve => setTimeout(resolve, 450 + attempt * 450));
-      }
+      if(!loaded&&i<3)await new Promise(r=>setTimeout(r,350+i*300));
     }
 
-    if (!loaded) {
-      console.error('자동 로그인 플레이어 데이터 복구 실패:', loadError || 'loadPlayer returned false');
+    if(!loaded){
+      console.error('세션은 있으나 게임 데이터 로드 실패:',loadError||'unknown');
 
-      // 인증 세션은 살아 있으므로 즉시 로그인 화면으로 튕기지 않습니다.
-      // 한 번 더 현재 세션을 검증한 뒤 정말 세션이 사라졌을 때만 로그인 화면을 표시합니다.
-      try {
-        const verify = await supabaseClient.auth.getSession();
-        if (verify.data?.session?.user) {
-          window.__pdBootRestoringSession = false;
-          window.__pdSessionBootDone = true;
-          document.documentElement.classList.remove('pd-session-booting');
-          try { await window.pdHideLoginLoading?.(); } catch (_) {}
-          setAuthMessage('서버 데이터 연결이 지연되고 있습니다. 잠시 후 다시 실행해 주세요.', 'error');
-          showScreen('auth');
-          return false;
-        }
-      } catch (_) {}
-
-      window.__pdBootRestoringSession = false;
-      window.__pdSessionBootDone = true;
+      // 로그인 세션은 유효하므로 화면 전환 루프를 만들지 않고
+      // 현재 로그인 화면 한 곳에서 오류만 표시합니다.
+      window.__pdBootRestoringSession=false;
+      window.__pdSessionBootDone=true;
       document.documentElement.classList.remove('pd-session-booting');
-      try { await window.pdHideLoginLoading?.(); } catch (_) {}
+      try{await window.pdHideLoginLoading?.();}catch(_){}
+      setAuthMessage('로그인은 유지되어 있지만 게임 데이터 연결에 실패했습니다. 새로고침 후 다시 시도하세요.','error');
       showScreen('auth');
       return false;
     }
 
-    try {
-      // iPhone에서는 로딩 애니메이션 없이 바로 메뉴로 진입합니다.
-      if (window.PD_IS_IOS) {
-        openMenu();
-      } else if (typeof window.pdEnterLoadedPlayer === 'function') {
-        await window.pdEnterLoadedPlayer({ autoLogin: true });
-      } else {
-        openMenu();
-      }
+    // 자동 로그인 역시 로딩 오버레이를 거치지 않습니다.
+    try{await window.pdHideLoginLoading?.();}catch(_){}
+    openMenu();
+    if(typeof initializeSocialProfile==='function')void initializeSocialProfile(false);
 
-      if (typeof initializeSocialProfile === 'function') void initializeSocialProfile(false);
-
-      window.__pdBootRestoringSession = false;
-      window.__pdSessionBootDone = true;
-      document.documentElement.classList.remove('pd-session-booting');
-      return true;
-    } catch (error) {
-      console.error('자동 로그인 메뉴 진입 중 오류:', error);
-
-      // 세션/데이터가 이미 정상이라면 로그인 화면으로 되돌아가지 않고 메뉴 진입을 한 번 더 시도.
-      try { openMenu(); } catch (_) {}
-      window.__pdBootRestoringSession = false;
-      window.__pdSessionBootDone = true;
-      document.documentElement.classList.remove('pd-session-booting');
-      return true;
-    }
+    window.__pdBootRestoringSession=false;
+    window.__pdSessionBootDone=true;
+    document.documentElement.classList.remove('pd-session-booting');
+    return true;
   })();
 
-  try {
+  try{
     return await window.__pdRestoreSessionPromise;
-  } finally {
-    // 부팅이 완료된 뒤에도 결과 플래그를 유지하여 iOS pageshow/복원에서 재실행되지 않게 합니다.
-    window.__pdRestoreSessionPromise = null;
+  }finally{
+    window.__pdRestoreSessionPromise=null;
   }
 }
 
@@ -15384,22 +15455,8 @@ function requestGachaDraw(count) {
       setTimeout(updateOrientationGuard, 180);
     });
 
-    if ('serviceWorker' in navigator) {
-      let serviceWorkerReloaded = false;
-
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (serviceWorkerReloaded) return;
-        serviceWorkerReloaded = true;
-        window.location.reload();
-      });
-
-      window.addEventListener('load', () => {
-        navigator.serviceWorker
-          .register('./service-worker.js?v=20260902-v29-menu-placement-fix', { updateViaCache: 'none' })
-          .then(registration => registration.update())
-          .catch(error => console.error('서비스 워커 등록 실패:', error));
-      });
-    }
+    // V45: 서비스워커는 사용하지 않습니다.
+    // iPhone Safari에서 register/controllerchange/reload가 반복되던 원인을 제거했습니다.
 
 
     let battleAudioContext = null;
@@ -36024,26 +36081,6 @@ function drawEnemy(enemy, time) {
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
 </script>
-
-
-
-<script id="pdDisableServiceWorkerV30">
-(async () => {
-  try {
-    if ('serviceWorker' in navigator) {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(regs.map(r => r.unregister()));
-    }
-  } catch (_) {}
-  try {
-    if ('caches' in window) {
-      const names = await caches.keys();
-      await Promise.all(names.map(n => caches.delete(n)));
-    }
-  } catch (_) {}
-})();
-</script>
-
 <!-- V32 EDEN/ERROR PERFORMANCE
 Gameplay damage/cooldowns unchanged. Heavy per-frame gradients, blur, particles,
 Eden minion array sort/allocation, and redundant visual FX were reduced. -->
@@ -36133,14 +36170,12 @@ The photo is clipped to an organic bird silhouette and the two legs are animated
 - Kept same-account cross-device server synchronization, traits, gameplay fixes, title hiding and photo pigeon updates.
 -->
 
-
-<!-- V44 IPHONE LOGIN STABILITY
-- iPhone/Safari never shows the animated login loading screen.
-- Auth screen stays hidden until saved-session restoration is definitively finished.
-- Supabase getSession retries over ~3 seconds for Safari storage timing.
-- Player-data loading retries before any auth fallback.
-- Boot restore is single-run and cannot loop on pageshow/BFCache restore.
-- iPhone enemy sprite cache is capped/lower-resolution to reduce Safari memory termination.
+<!-- V45 IPHONE RELOAD LOOP ROOT FIX
+Root cause removed:
+old code still registered service-worker.js and called window.location.reload() on controllerchange,
+while another block unregistered workers/caches. That could create an iPhone Safari reload/auth/loading loop.
+V45 has zero service-worker registration calls, zero controllerchange reload calls,
+one early unregister/cache cleanup path, and iPhone login/auto-login bypasses the loading overlay entirely.
 -->
 
 </body>
